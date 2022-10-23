@@ -1,0 +1,39 @@
+{
+    "schemaVersion": 1,
+
+    "id": "mineseekdestroy",
+    "version": "${version}",
+
+    "depends": {
+        "java": ">=17",
+        "minecraft": "~1.19.2",
+        "fabricloader": ">=0.14.0",
+        "fabric": "*"
+    },
+
+    "name": "Mine n Seek n Destroy",
+    "description": "Implements many of the gameplay features in MnSnD.",
+
+    "license": "UNLICENSED",
+    "authors": [
+        {
+            "name": "luavixen",
+            "contact": {
+                "email": "lua@foxgirl.dev",
+                "website": "https://foxgirl.dev/"
+            }
+        }
+    ],
+
+    "entrypoints": {
+        "server": [
+            "dev.foxgirl.mineseekdestroy.Game"
+        ]
+    },
+    "mixins": [
+        {
+            "config": "mineseekdestroy.mixins.json",
+            "environment": "server"
+        }
+    ]
+}
