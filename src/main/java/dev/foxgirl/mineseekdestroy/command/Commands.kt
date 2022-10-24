@@ -109,11 +109,32 @@ internal fun setup() {
         }
     }
 
+    Command.build("invis") {
+        it.params(argLiteral("on")) {
+            it.actionWithContext { args, context ->
+                if (context.invisibilityService.isActive) {
+                    args.sendError("Invisibility is already enabled")
+                } else {
+                    context.invisibilityService.isActive = true
+                    args.sendInfo("Invisibility enabled")
+                }
+            }
+        }
+        it.params(argLiteral("off")) {
+            it.actionWithContext { args, context ->
+                if (context.invisibilityService.isActive) {
+                    context.invisibilityService.isActive = false
+                    args.sendInfo("Invisibility disabled")
+                } else {
+                    args.sendError("Invisibility is already disabled")
+                }
+            }
+        }
+    }
+
 }
 
 private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.players(name: String = "players"): List<GamePlayer> {
-    val selector: EntitySelector = this["players"]
-    val source = this.context.source
     val context = Game.getGame().context!!
-    return context.getPlayers(selector.getPlayers(source))
+    return context.getPlayers(this.get<EntitySelector>(name).getPlayers(this.context.source))
 }

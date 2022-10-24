@@ -86,9 +86,9 @@ fun <S : ServerCommandSource, T : ArgumentBuilder<S, *>> T.action(callback: (Com
             } catch (err : CommandSyntaxException) {
                 throw err
             } catch (err : Exception) {
-                args.sendError(err)
-                err.printStackTrace()
-                throw RuntimeException("Unhandled exception running command '${args.context.input}'", err)
+                Game.LOGGER.error(err)
+                args.context.source.sendError(Text.literal("[msd] $err").formatted(Formatting.RED))
+                args.result = -1
             }
         }
     }
@@ -111,7 +111,7 @@ fun <S : ServerCommandSource, T : ArgumentBuilder<S, *>> T.action(callback: (Com
  */
 fun <S : ServerCommandSource, T : ArgumentBuilder<S, *>> T.actionWithContext(callback: (Command.Arguments<S>, GameContext) -> Unit): T {
     action { args ->
-        val context = Game.getGame().getContext()
+        val context = Game.getGame().context
         if (context == null) {
             args.sendError("No game is running, cannot run this command")
         } else {

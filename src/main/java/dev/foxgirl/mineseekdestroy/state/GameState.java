@@ -24,7 +24,6 @@ import org.jetbrains.annotations.Nullable;
 public abstract class GameState {
 
     public GameState update(@NotNull GameContext context) {
-        context.armorService.handleUpdate();
         return null;
     }
 

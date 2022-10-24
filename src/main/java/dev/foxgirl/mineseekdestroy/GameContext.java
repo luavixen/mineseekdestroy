@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.service.ArmorService;
 import dev.foxgirl.mineseekdestroy.service.InventoryService;
+import dev.foxgirl.mineseekdestroy.service.InvisibilityService;
 import dev.foxgirl.mineseekdestroy.service.LootService;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import net.minecraft.entity.Entity;
@@ -53,6 +54,7 @@ public final class GameContext {
     public final @NotNull InventoryService inventoryService;
     public final @NotNull LootService lootService;
     public final @NotNull ArmorService armorService;
+    public final @NotNull InvisibilityService invisibilityService;
 
     GameContext(@NotNull Game game) {
         Objects.requireNonNull(game, "Argument 'game'");
@@ -112,6 +114,7 @@ public final class GameContext {
         inventoryService = new InventoryService();
         lootService = new LootService();
         armorService = new ArmorService();
+        invisibilityService = new InvisibilityService();
     }
 
     public void initialize() {
@@ -132,6 +135,7 @@ public final class GameContext {
         inventoryService.initialize(this);
         lootService.initialize(this);
         armorService.initialize(this);
+        invisibilityService.initialize(this);
     }
 
     public void destroy() {

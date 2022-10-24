@@ -243,6 +243,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         var state = getState().update(context);
         if (state != null) setState(state);
 
+        context.armorService.handleUpdate();
+        context.invisibilityService.handleUpdate();
+
         context.updatePlayers();
     }
 
