@@ -115,7 +115,11 @@ public final class GamePlayer {
     }
 
     public boolean isLiving() {
-        return currentAlive && getEntity() != null;
+        if (currentAlive) {
+            var player = getEntity();
+            return player != null && player.isAlive();
+        }
+        return false;
     }
 
     public boolean isPlaying() {

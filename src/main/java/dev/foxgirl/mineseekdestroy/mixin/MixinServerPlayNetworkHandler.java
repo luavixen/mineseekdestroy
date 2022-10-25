@@ -24,11 +24,8 @@ public abstract class MixinServerPlayNetworkHandler {
         if (packet instanceof EntityPositionS2CPacket) {
             var context = Game.getGame().getContext();
             if (context != null) {
-                var invisibilityService = context.invisibilityService;
-                if (invisibilityService.isActive()) {
-                    var replacement = invisibilityService.handlePositionPacket((EntityPositionS2CPacket) packet, player);
-                    if (replacement != null) return replacement;
-                }
+                var replacement = context.invisibilityService.handlePositionPacket((EntityPositionS2CPacket) packet, player);
+                if (replacement != null) return replacement;
             }
         }
         return packet;

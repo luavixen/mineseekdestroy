@@ -42,8 +42,11 @@ public abstract class GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return true;
         }
-        if (Game.PLACABLE_BLOCKS.contains(state.getBlock())) {
-            return true;
+        if (context != null) {
+            var player = context.getPlayer((ServerPlayerEntity) playerEntity);
+            if (player.isPlaying() && Game.PLACABLE_BLOCKS.contains(state.getBlock())) {
+                return true;
+            }
         }
         return false;
     }
@@ -52,16 +55,15 @@ public abstract class GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
-        if (Game.INTERACTABLE_BLOCKS.contains(blockState.getBlock())) {
-            var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
-            if (blockEntity instanceof LootableContainerBlockEntity) {
-                if (context != null) {
+        if (context != null) {
+            var player = context.getPlayer((ServerPlayerEntity) playerEntity);
+            if (player.isPlaying() && Game.INTERACTABLE_BLOCKS.contains(blockState.getBlock())) {
+                var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
+                if (blockEntity instanceof LootableContainerBlockEntity) {
                     return context.lootService.handleContainerOpen(blockEntity);
-                } else {
-                    return ActionResult.FAIL;
                 }
+                return ActionResult.PASS;
             }
-            return ActionResult.PASS;
         }
         return ActionResult.FAIL;
     }
@@ -70,18 +72,17 @@ public abstract class GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
-        if (
-            blockItemStack.getItem() instanceof BlockItem blockItem &&
-                Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
-                Game.REGION_PLAYABLE.contains(blockHit.getBlockPos())
-        ) {
-            if (context != null) {
-                var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-                if (player.isPlaying() && player.isAlive()) {
+        if (context != null) {
+            var player = context.getPlayer((ServerPlayerEntity) playerEntity);
+            if (player.isPlaying() && player.isAlive()) {
+                if (
+                    blockItemStack.getItem() instanceof BlockItem blockItem &&
+                        Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
+                        Game.REGION_PLAYABLE.contains(blockHit.getBlockPos())
+                ) {
                     return ActionResult.PASS;
                 }
             }
-            return ActionResult.FAIL;
         }
         return ActionResult.FAIL;
     }
@@ -98,8 +99,13 @@ public abstract class GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
-        if (entity instanceof PlayerEntity) {
-            return ActionResult.PASS;
+        if (context != null) {
+            var player = context.getPlayer((ServerPlayerEntity) playerEntity);
+            if (player.isPlaying() && player.isAlive()) {
+                if (entity instanceof PlayerEntity) {
+                    return ActionResult.PASS;
+                }
+            }
         }
         return ActionResult.FAIL;
     }

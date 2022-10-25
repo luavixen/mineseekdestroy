@@ -7,14 +7,14 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
-public final class PlayingGameState extends GameState {
+public class PlayingGameState extends GameState {
 
     @Override
     public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {
         if (context == null) return;
 
         var player = context.getPlayer(newPlayerEntity);
-        if (player.isPlaying() && !player.isLiving()) {
+        if (player.isPlaying() && !player.isAlive()) {
             player.teleport(Game.POSITION_BLIMP);
         }
     }

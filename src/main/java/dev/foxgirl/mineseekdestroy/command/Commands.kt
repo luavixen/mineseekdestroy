@@ -53,9 +53,15 @@ internal fun setup() {
     Command.build("tp") {
         fun register(literal: String, position: Position) {
             it.params(argLiteral(literal)) {
-                it.params(argLiteral("force"), argPlayers()) {
+                it.params(argLiteral("force")) {
+                    it.params(argPlayers()) {
+                        it.actionWithContext { args, context ->
+                            val players = args.players().onEach { it.teleport(position) }
+                            args.sendInfo("Teleported ${players.size} player(s) to '${literal}' forcefully")
+                        }
+                    }
                     it.actionWithContext { args, context ->
-                        val players = args.players().onEach { it.teleport(position) }
+                        val players = context.players.onEach { it.teleport(position) }
                         args.sendInfo("Teleported ${players.size} player(s) to '${literal}' forcefully")
                     }
                 }
@@ -64,6 +70,10 @@ internal fun setup() {
                         val players = args.players().onEach { if (it.isPlaying) it.teleport(position) }
                         args.sendInfo("Teleported ${players.size} player(s) to '${literal}'")
                     }
+                }
+                it.actionWithContext { args, context ->
+                    val players = context.players.onEach { if (it.isPlaying) it.teleport(position) }
+                    args.sendInfo("Teleported ${players.size} player(s) to '${literal}'")
                 }
             }
         }
@@ -112,22 +122,12 @@ internal fun setup() {
     Command.build("invis") {
         it.params(argLiteral("on")) {
             it.actionWithContext { args, context ->
-                if (context.invisibilityService.isActive) {
-                    args.sendError("Invisibility is already enabled")
-                } else {
-                    context.invisibilityService.isActive = true
-                    args.sendInfo("Invisibility enabled")
-                }
+                context.invisibilityService.executeSetEnabled(args)
             }
         }
         it.params(argLiteral("off")) {
             it.actionWithContext { args, context ->
-                if (context.invisibilityService.isActive) {
-                    context.invisibilityService.isActive = false
-                    args.sendInfo("Invisibility disabled")
-                } else {
-                    args.sendError("Invisibility is already disabled")
-                }
+                context.invisibilityService.executeSetDisabled(args)
             }
         }
     }
