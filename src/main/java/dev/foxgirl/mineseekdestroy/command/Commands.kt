@@ -3,6 +3,8 @@ package dev.foxgirl.mineseekdestroy.command
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.state.PlayingGameState
+import dev.foxgirl.mineseekdestroy.state.WaitingGameState
 import net.minecraft.command.EntitySelector
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.math.Position
@@ -25,11 +27,24 @@ internal fun setup() {
             it.action { args ->
                 val game = Game.getGame()
                 if (game.context != null) {
-                    game.initialize()
+                    game.destroy()
                     args.sendInfo("Stopped game")
                 } else {
                     args.sendError("Cannot stop game, no game running")
                 }
+            }
+        }
+    }
+
+    Command.build("state") {
+        it.params(argLiteral("waiting")) {
+            it.action {
+                Game.getGame().state = WaitingGameState()
+            }
+        }
+        it.params(argLiteral("playing")) {
+            it.action {
+                Game.getGame().state = PlayingGameState()
             }
         }
     }
@@ -128,6 +143,33 @@ internal fun setup() {
         it.params(argLiteral("off")) {
             it.actionWithContext { args, context ->
                 context.invisibilityService.executeSetDisabled(args)
+            }
+        }
+    }
+
+    Command.build("barrier") {
+        it.params(argLiteral("arena")) {
+            it.params(argLiteral("open")) {
+                it.actionWithContext { args, context ->
+                    context.barrierService.executeArenaOpen(args)
+                }
+            }
+            it.params(argLiteral("close")) {
+                it.actionWithContext { args, context ->
+                    context.barrierService.executeArenaClose(args)
+                }
+            }
+        }
+        it.params(argLiteral("blimp")) {
+            it.params(argLiteral("open")) {
+                it.actionWithContext { args, context ->
+                    context.barrierService.executeBlimpOpen(args)
+                }
+            }
+            it.params(argLiteral("close")) {
+                it.actionWithContext { args, context ->
+                    context.barrierService.executeBlimpClose(args)
+                }
             }
         }
     }

@@ -15,29 +15,24 @@ import net.minecraft.util.math.BlockPos
 
 class LootService : Service() {
 
-    private val positionsLock = Any()
-    private var positions = listOf<BlockPos>()
-        get() = synchronized(positionsLock) { field }
-        set(value) = synchronized(positionsLock) { field = value }
-
     private fun inventory(entity: BlockEntity?): Inventory? {
-        return when (entity) {
-            is ChestBlockEntity -> {
-                val state = entity.cachedState
-                val world = entity.world
-                val pos = entity.pos
-                ChestBlock.getInventory(state.block as ChestBlock, state, world, pos, true)
-            }
-            is BarrelBlockEntity -> {
-                entity
-            }
-            else -> null
+        if (entity is ChestBlockEntity) {
+            val pos = entity.pos
+            val world = entity.world
+            val state = entity.cachedState
+            return ChestBlock.getInventory(state.block as ChestBlock, state, world, pos, true)
         }
+        if (entity is BarrelBlockEntity) {
+            return entity
+        }
+        return null
     }
 
     private fun locked(container: Inventory): Boolean {
         return Inventories.list(container).any { !it.isEmpty && Game.ILLEGAL_ITEMS.contains(it.item) }
     }
+
+    private var positions = listOf<BlockPos>()
 
     private fun containers() = sequence {
         for (pos in positions) {
@@ -74,7 +69,7 @@ class LootService : Service() {
         }
 
         val lootCount = game.getRuleInt(Game.RULE_LOOT_COUNT)
-        val lootTable = Inventories.list(template).filter { !it.isEmpty }
+        val lootTable = Inventories.list(template)
         if (lootTable.isEmpty()) {
             console.sendError("Cannot create loot table, template chest at ${Game.TEMPLATE_LOOTTABLE} is empty")
             return
@@ -83,7 +78,7 @@ class LootService : Service() {
         containers().forEach { container ->
             val offset = container.size().let { if (it == 54) it / 4 + 9 else it / 2 } - lootCount / 2
             for (i in 0 until lootCount) {
-                container.setStack(i + offset, lootTable.random())
+                container.setStack(i + offset, lootTable.random().copy())
             }
         }
 

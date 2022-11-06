@@ -42,17 +42,22 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Logger LOGGER = LogManager.getLogger("MnSnD");
 
-    public static final @NotNull Position POSITION_BLIMP = new Vec3d(70.0, 6.0, -56.0);
-    public static final @NotNull Position POSITION_ARENA = new Vec3d(70.0, -39.0, -56.0);
-    public static final @NotNull Position POSITION_DUEL1 = new Vec3d(70.0, -39.0, -72.0);
-    public static final @NotNull Position POSITION_DUEL2 = new Vec3d(70.0, -39.0, -40.0);
-    public static final @NotNull Position POSITION_HELL = new Vec3d(70.0, -65536.0, -56.0);
+    public static final @NotNull Position POSITION_BLIMP = new Vec3d(70.5, 1.0, -55.5);
+    public static final @NotNull Position POSITION_ARENA = new Vec3d(70.5, -39.0, -55.5);
+    public static final @NotNull Position POSITION_DUEL1 = new Vec3d(70.5, -39.0, -71.5);
+    public static final @NotNull Position POSITION_DUEL2 = new Vec3d(70.5, -39.0, -39.5);
+    public static final @NotNull Position POSITION_HELL = new Vec3d(70.5, -65536.0, -55.5);
 
-    public static final @NotNull BlockPos TEMPLATE_INVENTORY = new BlockPos(-25, -59, -53);
-    public static final @NotNull BlockPos TEMPLATE_LOOTTABLE = new BlockPos(-25, -59, -51);
+    public static final @NotNull BlockPos TEMPLATE_INVENTORY = new BlockPos(69, 1, -72);
+    public static final @NotNull BlockPos TEMPLATE_LOOTTABLE = new BlockPos(69, 1, -74);
 
     public static final @NotNull Region REGION_ALL = new Region(new BlockPos(-24, 35, 51), new BlockPos(175, -61, -169));
     public static final @NotNull Region REGION_PLAYABLE = new Region(new BlockPos(-24, -6, 51), new BlockPos(175, -56, -169));
+    public static final @NotNull Region REGION_BLIMP = new Region(new BlockPos(91, -1, -102), new BlockPos(49, 20, -32));
+    public static final @NotNull Region REGION_BARRIER_ARENA_TARGET = new Region(new BlockPos(48, -30, -89), new BlockPos(92, -47, -23));
+    public static final @NotNull Region REGION_BARRIER_ARENA_TEMPLATE = new Region(new BlockPos(48, -30, -605), new BlockPos(92, -47, -539));
+    public static final @NotNull Region REGION_BARRIER_BLIMP_TARGET = new Region(new BlockPos(63, 7, -42), new BlockPos(77, -1, -67));
+    public static final @NotNull Region REGION_BARRIER_BLIMP_TEMPLATE = new Region(new BlockPos(63, 7, -558), new BlockPos(77, -1, -583));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
         GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
@@ -94,7 +99,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.BARREL,
         Blocks.ACACIA_DOOR,
         Blocks.BIRCH_DOOR,
-        Blocks.CRIMSON_DOOR,
         Blocks.DARK_OAK_DOOR,
         Blocks.JUNGLE_DOOR,
         Blocks.MANGROVE_DOOR,
@@ -188,25 +192,45 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         var context = getContext();
         if (context != null) {
             var player = context.getPlayer(entity);
-            if (player != null && player.getTeam().isOperator()) {
+            if (player != null) {
+                return player.getTeam().isOperator();
+            }
+        }
+
+        return hasOperator(entity);
+    }
+
+    public boolean hasOperator(@NotNull Entity entity) {
+        Objects.requireNonNull(entity, "Argument 'entity'");
+
+        if (OPERATORS.contains(entity.getUuid())) {
+            return true;
+        }
+
+        if (entity instanceof PlayerEntity playerEntity) {
+            var playerManager = getServer().getPlayerManager();
+            if (playerManager.isOperator(playerEntity.getGameProfile())) {
                 return true;
             }
         }
 
-        if (entity instanceof PlayerEntity player) {
-            return getServer().getPlayerManager().isOperator(player.getGameProfile());
+        var context = getContext();
+        if (context != null) {
+            var player = context.getPlayer(entity);
+            return player != null && player.getTeam().isOperator();
         }
+
         return false;
     }
 
     @Override
     public void sendInfo(@Nullable Object... values) {
-        LOGGER.info(Arrays.stream(values).map(String::valueOf).collect(Collectors.joining(" ")));
+        LOGGER.info(Console.formatValues(values));
     }
 
     @Override
     public void sendError(@Nullable Object... values) {
-        LOGGER.error(Arrays.stream(values).map(String::valueOf).collect(Collectors.joining(" ")));
+        LOGGER.error(Console.formatValues(values));
     }
 
     @Override
@@ -245,6 +269,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
         context.armorService.handleUpdate();
         context.invisibilityService.handleUpdate();
+        context.saturationService.handleUpdate();
+        context.glowService.handleUpdate();
+        context.powderService.handleUpdate();
 
         context.updatePlayers();
     }

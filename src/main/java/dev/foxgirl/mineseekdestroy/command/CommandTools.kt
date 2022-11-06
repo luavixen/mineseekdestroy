@@ -78,7 +78,7 @@ fun <S : ServerCommandSource, T : ArgumentBuilder<S, *>> T.actionUnchecked(callb
 fun <S : ServerCommandSource, T : ArgumentBuilder<S, *>> T.action(callback: (Command.Arguments<S>) -> Unit): T {
     actionUnchecked { args ->
         val entity = args.context.source.entity
-        if (entity is PlayerEntity && !Game.getGame().isOperator(entity)) {
+        if (entity is PlayerEntity && !Game.getGame().hasOperator(entity)) {
             args.sendError("You do not have permission to run this command")
         } else {
             try {
@@ -176,7 +176,7 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendInfo(vararg values: Any?) {
-            val message = values.joinToString(" ")
+            val message = Console.formatValues(values)
             Game.getGame().sendInfo(message)
             context.source.sendFeedback(Text.literal("[msd] $message").formatted(Formatting.GRAY), true)
         }
@@ -190,7 +190,7 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendError(vararg values: Any?) {
-            val message = values.joinToString(" ")
+            val message = Console.formatValues(values)
             Game.getGame().sendError(message)
             context.source.sendError(Text.literal("[msd] $message").formatted(Formatting.RED))
             result = -1

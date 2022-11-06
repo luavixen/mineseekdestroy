@@ -1,9 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
-import dev.foxgirl.mineseekdestroy.service.ArmorService;
-import dev.foxgirl.mineseekdestroy.service.InventoryService;
-import dev.foxgirl.mineseekdestroy.service.InvisibilityService;
-import dev.foxgirl.mineseekdestroy.service.LootService;
+import dev.foxgirl.mineseekdestroy.service.*;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import net.minecraft.entity.Entity;
 import net.minecraft.scoreboard.Scoreboard;
@@ -55,6 +52,10 @@ public final class GameContext {
     public final @NotNull LootService lootService;
     public final @NotNull ArmorService armorService;
     public final @NotNull InvisibilityService invisibilityService;
+    public final @NotNull BarrierService barrierService;
+    public final @NotNull SaturationService saturationService;
+    public final @NotNull GlowService glowService;
+    public final @NotNull PowderService powderService;
 
     GameContext(@NotNull Game game) {
         Objects.requireNonNull(game, "Argument 'game'");
@@ -115,6 +116,10 @@ public final class GameContext {
         lootService = new LootService();
         armorService = new ArmorService();
         invisibilityService = new InvisibilityService();
+        barrierService = new BarrierService();
+        saturationService = new SaturationService();
+        glowService = new GlowService();
+        powderService = new PowderService();
     }
 
     public void initialize() {
@@ -136,6 +141,10 @@ public final class GameContext {
         lootService.initialize(this);
         armorService.initialize(this);
         invisibilityService.initialize(this);
+        barrierService.initialize(this);
+        saturationService.initialize(this);
+        glowService.initialize(this);
+        powderService.initialize(this);
     }
 
     public void destroy() {

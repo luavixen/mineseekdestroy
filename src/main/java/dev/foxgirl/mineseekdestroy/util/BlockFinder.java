@@ -50,7 +50,7 @@ public final class BlockFinder {
 
             for (int x = posXMin; x <= posXMax; x++) {
                 for (int z = posZMin; z <= posZMax; z++) {
-                    var chunk = manager.getChunk(x, z, ChunkStatus.FULL, false);
+                    var chunk = manager.getChunk(x, z, ChunkStatus.FULL, true);
                     if (chunk != null) chunks.add(chunk);
                 }
             }
