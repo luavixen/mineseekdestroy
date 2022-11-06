@@ -175,7 +175,9 @@ public final class GameContext {
         var players = new ArrayList<GamePlayer>(objects.size());
         synchronized (playerMapLock) {
             for (Object obj : objects) {
-                if (obj == null) continue;
+                if (obj == null) {
+                    throw new IllegalArgumentException("Argument 'values' contains null element" );
+                }
                 if (obj instanceof GamePlayer) {
                     players.add((GamePlayer) obj);
                 } else if (obj instanceof ServerPlayerEntity) {

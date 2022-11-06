@@ -6,7 +6,9 @@
         "defaultRequire": 1
     },
     "server": [
+        "MixinEntity",
         "MixinEntityPositionS2CPacket",
+        "MixinEntityTrackerUpdateS2CPacket",
         "MixinProjectileEntity",
         "MixinServerPlayerEntity",
         "MixinServerPlayerInteractionManager",

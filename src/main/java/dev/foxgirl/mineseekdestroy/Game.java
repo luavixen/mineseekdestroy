@@ -203,10 +203,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public boolean hasOperator(@NotNull Entity entity) {
         Objects.requireNonNull(entity, "Argument 'entity'");
 
-        if (OPERATORS.contains(entity.getUuid())) {
-            return true;
-        }
-
         if (entity instanceof PlayerEntity playerEntity) {
             var playerManager = getServer().getPlayerManager();
             if (playerManager.isOperator(playerEntity.getGameProfile())) {
@@ -214,9 +210,15 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             }
         }
 
+        var uuid = entity.getUuid();
+
+        if (OPERATORS.contains(uuid)) {
+            return true;
+        }
+
         var context = getContext();
         if (context != null) {
-            var player = context.getPlayer(entity);
+            var player = context.getPlayer(uuid);
             return player != null && player.getTeam().isOperator();
         }
 

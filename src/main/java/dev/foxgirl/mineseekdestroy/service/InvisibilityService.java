@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class InvisibilityService extends Service {
 
@@ -51,11 +52,9 @@ public final class InvisibilityService extends Service {
         }
     }
 
-    public void handleUpdate() {
-        synchronized (lock) {
-            if (activePrevious == activeCurrent) return;
-            activePrevious = activeCurrent;
-        }
+    private int broadcastTicks = 0;
+
+    private void broadcast() {
         var context = getContext();
         var players = new ArrayList<>(context.playerManager.getPlayerList());
         for (var target : players) {
@@ -67,6 +66,54 @@ public final class InvisibilityService extends Service {
                 target.networkHandler.sendPacket(new EntityPositionS2CPacket(other));
             }
         }
+    }
+
+    public void handleUpdate() {
+        boolean immediate = false;
+        synchronized (lock) {
+            if (activePrevious != activeCurrent) {
+                activePrevious = activeCurrent;
+                immediate = true;
+            }
+        }
+        if (immediate || broadcastTicks >= 40) {
+            broadcastTicks = ThreadLocalRandom.current().nextInt(6);
+            broadcast();
+        } else {
+            broadcastTicks++;
+        }
+    }
+
+    private boolean isVisibleTo(GameTeam targetTeam, GameTeam packetTeam) {
+        return isActive()
+            ? isVisibleToActive(targetTeam, packetTeam)
+            : isVisibleToInactive(targetTeam, packetTeam);
+    }
+
+    private static boolean isVisibleToActive(GameTeam targetTeam, GameTeam packetTeam) {
+        return switch (targetTeam) {
+            case NONE, OPERATOR -> true;
+            case PLAYER_BLACK   -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_BLACK;
+            case PLAYER_YELLOW  -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_YELLOW;
+            case PLAYER_BLUE    -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_BLUE;
+        };
+    }
+
+    private static boolean isVisibleToInactive(GameTeam targetTeam, GameTeam packetTeam) {
+        return switch (targetTeam) {
+            case NONE, OPERATOR -> true;
+            case PLAYER_BLACK, PLAYER_YELLOW, PLAYER_BLUE -> packetTeam != GameTeam.NONE;
+        };
+    }
+
+    private static EntityPositionS2CPacket createInvisiblePositionPacket(int id) {
+        var packet = Fuck.create(EntityPositionS2CPacket.class);
+        var access = (MixinEntityPositionS2CPacket) packet;
+        access.mineseekdestroy$setId(id);
+        access.mineseekdestroy$setX(Game.POSITION_HELL.getX());
+        access.mineseekdestroy$setY(Game.POSITION_HELL.getY());
+        access.mineseekdestroy$setZ(Game.POSITION_HELL.getZ());
+        return packet;
     }
 
     public @Nullable EntityPositionS2CPacket handlePositionPacket(@NotNull EntityPositionS2CPacket packet, @NotNull ServerPlayerEntity targetEntity) {
@@ -88,44 +135,12 @@ public final class InvisibilityService extends Service {
 
         var targetPlayer = context.getPlayer(targetEntity);
 
-        var targetTeam = targetPlayer.getTeam();
         var packetTeam = packetPlayer.getTeam();
+        var targetTeam = targetPlayer.getTeam();
 
-        if (isActive()) {
-            switch (targetTeam) {
-                case NONE:
-                case OPERATOR:
-                    return null;
-                case PLAYER_BLACK:
-                    if (packetTeam == GameTeam.OPERATOR || packetTeam == GameTeam.PLAYER_BLACK) return null;
-                case PLAYER_YELLOW:
-                    if (packetTeam == GameTeam.OPERATOR || packetTeam == GameTeam.PLAYER_YELLOW) return null;
-                case PLAYER_BLUE:
-                    if (packetTeam == GameTeam.OPERATOR || packetTeam == GameTeam.PLAYER_BLUE) return null;
-            }
-        } else {
-            switch (targetTeam) {
-                case NONE:
-                case OPERATOR:
-                    return null;
-                case PLAYER_BLACK:
-                case PLAYER_YELLOW:
-                case PLAYER_BLUE:
-                    if (packetTeam != GameTeam.NONE) return null;
-            }
-        }
+        if (isVisibleTo(targetTeam, packetTeam)) return null;
 
-        return createInvisiblePacket(packetId);
-    }
-
-    private static EntityPositionS2CPacket createInvisiblePacket(int id) {
-        var packet = Fuck.create(EntityPositionS2CPacket.class);
-        var access = (MixinEntityPositionS2CPacket) packet;
-        access.mineseekdestroy$setId(id);
-        access.mineseekdestroy$setX(Game.POSITION_HELL.getX());
-        access.mineseekdestroy$setY(Game.POSITION_HELL.getY());
-        access.mineseekdestroy$setZ(Game.POSITION_HELL.getZ());
-        return packet;
+        return createInvisiblePositionPacket(packetId);
     }
 
 }
