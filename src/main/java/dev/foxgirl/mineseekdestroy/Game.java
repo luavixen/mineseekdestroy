@@ -60,13 +60,18 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull Region REGION_BARRIER_BLIMP_TARGET = new Region(new BlockPos(63, 7, -42), new BlockPos(77, -1, -67));
     public static final @NotNull Region REGION_BARRIER_BLIMP_TEMPLATE = new Region(new BlockPos(63, 7, -558), new BlockPos(77, -1, -583));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_COUNTDOWN =
+        GameRuleRegistry.register("msdStartingCountdownSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_EFFECT_DURATION =
+        GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
+
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
+        GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
+
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
         GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_EGG =
         GameRuleRegistry.register("msdKnockbackEgg", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(-4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
-
-    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
-        GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
 
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
