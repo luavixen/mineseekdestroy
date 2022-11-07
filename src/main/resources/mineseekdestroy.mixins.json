@@ -12,6 +12,7 @@
         "MixinProjectileEntity",
         "MixinServerPlayerEntity",
         "MixinServerPlayerInteractionManager",
-        "MixinServerPlayNetworkHandler"
+        "MixinServerPlayNetworkHandler",
+        "MixinSharedConstants"
     ]
 }

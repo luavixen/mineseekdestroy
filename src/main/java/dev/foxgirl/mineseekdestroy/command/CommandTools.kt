@@ -176,9 +176,7 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendInfo(vararg values: Any?) {
-            val message = Console.formatValues(values)
-            Game.getGame().sendInfo(message)
-            context.source.sendFeedback(Text.literal("[msd] $message").formatted(Formatting.GRAY), true)
+            context.source.sendFeedback(Console.format(values, false), true)
         }
 
         /**
@@ -190,9 +188,7 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendError(vararg values: Any?) {
-            val message = Console.formatValues(values)
-            Game.getGame().sendError(message)
-            context.source.sendError(Text.literal("[msd] $message").formatted(Formatting.RED))
+            context.source.sendError(Console.format(values, true))
             result = -1
         }
     }

@@ -2,8 +2,11 @@ package dev.foxgirl.mineseekdestroy;
 
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
+import net.minecraft.screen.ScreenTexts;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -36,6 +39,18 @@ public enum GameTeam {
 
     public boolean isOperator() {
         return this == OPERATOR;
+    }
+
+    public @NotNull Formatting getColor() {
+        return colorAlive != null ? colorAlive : Formatting.GREEN;
+    }
+
+    public @NotNull Text getName() {
+        return displayName != null ? displayName : ScreenTexts.EMPTY;
+    }
+
+    public @NotNull Text getNameColored() {
+        return getName().copy().formatted(getColor());
     }
 
     private static Team getOrCreateTeam(Scoreboard scoreboard, String name, Consumer<Team> initializer) {

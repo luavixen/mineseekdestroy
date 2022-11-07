@@ -89,7 +89,6 @@ public final class InvisibilityService extends Service {
             ? isVisibleToActive(targetTeam, packetTeam)
             : isVisibleToInactive(targetTeam, packetTeam);
     }
-
     private static boolean isVisibleToActive(GameTeam targetTeam, GameTeam packetTeam) {
         return switch (targetTeam) {
             case NONE, OPERATOR -> true;
@@ -98,7 +97,6 @@ public final class InvisibilityService extends Service {
             case PLAYER_BLUE    -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_BLUE;
         };
     }
-
     private static boolean isVisibleToInactive(GameTeam targetTeam, GameTeam packetTeam) {
         return switch (targetTeam) {
             case NONE, OPERATOR -> true;

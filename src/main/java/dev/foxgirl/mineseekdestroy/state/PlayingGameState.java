@@ -3,48 +3,43 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
-public class PlayingGameState extends GameState {
+public class PlayingGameState extends RunningGameState {
 
     @Override
-    public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {
-        if (context == null) return;
-
-        var player = context.getPlayer(newPlayerEntity);
-        if (player.isPlaying() && !player.isAlive()) {
-            player.teleport(Game.POSITION_BLIMP);
-        }
+    protected GameState onSetup(@NotNull GameContext context) {
+        // TODO: Announce round start
+        return null;
     }
 
     @Override
-    public boolean allowDeath(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
-        if (context == null) return true;
+    protected GameState onUpdate(@NotNull GameContext context) {
+        int aliveYellow = 0;
+        int aliveBlue = 0;
 
-        var player = context.getPlayer(playerEntity);
-        if (player.isPlaying() && player.isAlive()) {
-            player.setAlive(false);
-            player.countDeath();
-
-            if (damageSource.getAttacker() instanceof ServerPlayerEntity playerAttackerEntity) {
-                var playerAttacker = context.getPlayer(playerAttackerEntity);
-                if (player.getTeam() == GameTeam.PLAYER_BLACK) {
-                    playerAttacker.countKill();
-                    playerAttacker.countKill();
-                } else {
-                    playerAttacker.countKill();
-                }
+        for (var player : context.getPlayers()) {
+            if (!player.isPlaying() || !player.isAlive()) continue;
+            switch (player.getTeam()) {
+                case PLAYER_YELLOW -> aliveYellow++;
+                case PLAYER_BLUE -> aliveBlue++;
             }
         }
 
-        return true;
-    }
+        if (aliveYellow == 0 && aliveBlue == 0) {
+            Game.getGame().sendInfo("Round over! Both teams died at the exact same time, nobody wins!");
+            return new FinalizingGameState();
+        }
+        if (aliveYellow == 0) {
+            Game.getGame().sendInfo("Round over!", GameTeam.PLAYER_BLUE.getNameColored(), "wins!");
+            return new FinalizingGameState();
+        }
+        if (aliveBlue == 0) {
+            Game.getGame().sendInfo("Round over!", GameTeam.PLAYER_YELLOW.getNameColored(), "wins!");
+            return new FinalizingGameState();
+        }
 
-    @Override
-    public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
-        return true;
+        return null;
     }
 
 }

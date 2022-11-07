@@ -1,4 +1,4 @@
 package dev.foxgirl.mineseekdestroy.state;
 
-public class FinalizingGameState extends GameState {
+public class FinalizingGameState extends PlayingGameState {
 }

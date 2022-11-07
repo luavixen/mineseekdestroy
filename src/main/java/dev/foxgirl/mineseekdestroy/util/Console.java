@@ -1,11 +1,11 @@
 package dev.foxgirl.mineseekdestroy.util;
 
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public interface Console {
 
@@ -27,19 +27,30 @@ public interface Console {
      */
     void sendError(Object ...values);
 
-    /**
-     * Formats the given array of values for display in console feedback.
-     *
-     * @param values
-     *   Message to format, values will be converted to strings and joined
-     *   with spaces.
-     * @return Formatted message string.
-     */
-    static @NotNull String formatValues(@Nullable Object @NotNull [] values) {
-        Objects.requireNonNull(values, "Argument 'values'");
-        if (values.length == 0) return "";
-        if (values.length == 1) return String.valueOf(values[0]);
-        return Arrays.stream(values).map(String::valueOf).collect(Collectors.joining(" "));
+    static @NotNull Style STYLE_INFO = Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE);
+    static @NotNull Style STYLE_ERROR = Style.EMPTY.withFormatting(Formatting.RED);
+
+    static @NotNull MutableText format(@Nullable Object @NotNull [] values, boolean error) {
+        if (values == null) throw new NullPointerException("Argument 'values'");
+        if (values.length == 0) return Text.empty();
+        Style style = error ? STYLE_ERROR : STYLE_INFO;
+        MutableText message = null;
+        for (Object value : values) {
+            MutableText part;
+            if (value instanceof Text) {
+                part = ((Text) value).copy();
+                part.setStyle(part.getStyle().withParent(style));
+            } else {
+                part = Text.literal(String.valueOf(value)).setStyle(style);
+            }
+            if (message == null) {
+                message = part;
+            } else {
+                message.append(Text.literal(" "));
+                message.append(part);
+            }
+        }
+        return message;
     }
 
 }

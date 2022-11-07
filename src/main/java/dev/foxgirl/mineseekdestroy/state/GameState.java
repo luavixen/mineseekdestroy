@@ -23,8 +23,22 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class GameState {
 
-    public GameState update(@NotNull GameContext context) {
+    protected @Nullable GameState onSetup(@NotNull GameContext context) {
         return null;
+    }
+    protected @Nullable GameState onUpdate(@NotNull GameContext context) {
+        return null;
+    }
+
+    private boolean initialized = false;
+
+    public final @Nullable GameState update(@NotNull GameContext context) {
+        if (initialized) {
+            return onUpdate(context);
+        } else {
+            initialized = true;
+            return onSetup(context);
+        }
     }
 
     public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {

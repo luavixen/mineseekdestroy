@@ -26,6 +26,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Position;
 import net.minecraft.util.math.Vec3d;
@@ -225,14 +226,21 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         return false;
     }
 
+    public void send(@NotNull Text message) {
+        Objects.requireNonNull(message, "Argument 'message'");
+        getServer().getPlayerManager().getPlayerList().forEach((player) -> player.sendMessageToClient(message, false));
+    }
+
     @Override
     public void sendInfo(@Nullable Object... values) {
-        LOGGER.info(Console.formatValues(values));
+        var message = Console.format(values, false);
+        send(message); LOGGER.info(message.getString());
     }
 
     @Override
     public void sendError(@Nullable Object... values) {
-        LOGGER.error(Console.formatValues(values));
+        var message = Console.format(values, true);
+        send(message); LOGGER.error(message.getString());
     }
 
     @Override

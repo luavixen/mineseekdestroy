@@ -16,7 +16,7 @@ public final class GlowService extends Service {
 
     private static final TrackedData<Byte> FLAGS = MixinEntity.mineseekdestroy$getFLAGS();
 
-    private static EntityTrackerUpdateS2CPacket updateFlagsPacket(Entity entity, byte value) {
+    private static EntityTrackerUpdateS2CPacket createFlagsPacket(Entity entity, byte value) {
         var packet = Fuck.create(EntityTrackerUpdateS2CPacket.class);
         var access = (MixinEntityTrackerUpdateS2CPacket) packet;
         access.mineseekdestroy$setId(entity.getId());
@@ -24,23 +24,24 @@ public final class GlowService extends Service {
         return packet;
     }
 
-    private static EntityTrackerUpdateS2CPacket updateFlagsFakePacket(Entity entity, boolean glowing) {
+    private static EntityTrackerUpdateS2CPacket createFakeFlagsPacket(Entity entity, boolean glowing) {
         var value = entity.getDataTracker().get(FLAGS);
         if (glowing) {
             value = (byte) (value | 0x40);
         } else {
             value = (byte) (value & 0xBF);
         }
-        return updateFlagsPacket(entity, value);
+        return createFlagsPacket(entity, value);
     }
 
-    private static EntityTrackerUpdateS2CPacket updateFlagsRealPacket(Entity entity) {
-        return updateFlagsPacket(entity, entity.getDataTracker().get(FLAGS));
+    private static EntityTrackerUpdateS2CPacket createRealFlagsPacket(Entity entity) {
+        return createFlagsPacket(entity, entity.getDataTracker().get(FLAGS));
     }
 
     private int broadcastTicks = 0;
 
     private void broadcast() {
+        var world = getWorld();
         var players = getPlayers();
 
         var packetsFake = new ArrayList<EntityTrackerUpdateS2CPacket>(players.size());
@@ -49,14 +50,16 @@ public final class GlowService extends Service {
         for (var player : players) {
             var entity = player.getEntity();
             if (entity == null) continue;
+            if (entity.getWorld() != world || !entity.isAlive()) continue;
             boolean glowing = player.isPlaying() && player.isAlive();
-            packetsFake.add(updateFlagsFakePacket(entity, glowing));
-            packetsReal.add(updateFlagsRealPacket(entity));
+            packetsFake.add(createFakeFlagsPacket(entity, glowing));
+            packetsReal.add(createRealFlagsPacket(entity));
         }
 
         for (var player : players) {
             var entity = player.getEntity();
             if (entity == null) continue;
+            if (entity.getWorld() != world) continue;
             var networkHandler = entity.networkHandler;
             var packets = (player.isPlaying() && player.isAlive()) ? packetsReal : packetsFake;
             for (var packet : packets) {

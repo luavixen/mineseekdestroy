@@ -3,11 +3,18 @@ package dev.foxgirl.mineseekdestroy.command
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.state.DuelingGameState
+import dev.foxgirl.mineseekdestroy.state.FinalizingGameState
+import dev.foxgirl.mineseekdestroy.state.GameState
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState
+import dev.foxgirl.mineseekdestroy.state.RunningGameState
+import dev.foxgirl.mineseekdestroy.state.StartingGameState
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState
 import net.minecraft.command.EntitySelector
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.text.Text
 import net.minecraft.util.math.Position
+import org.spongepowered.asm.mixin.Final
 
 internal fun setup() {
 
@@ -37,16 +44,19 @@ internal fun setup() {
     }
 
     Command.build("state") {
-        it.params(argLiteral("waiting")) {
-            it.action {
-                Game.getGame().state = WaitingGameState()
+        fun register(literal: String, state: () -> GameState) {
+            it.params(argLiteral(literal)) {
+                it.action { args ->
+                    Game.getGame().setState(state())
+                    args.sendInfo("Set game state to '${literal}'")
+                }
             }
         }
-        it.params(argLiteral("playing")) {
-            it.action {
-                Game.getGame().state = PlayingGameState()
-            }
-        }
+        register("waiting") { WaitingGameState() }
+        register("finalizing") { FinalizingGameState() }
+        register("starting") { StartingGameState() }
+        register("playing") { PlayingGameState() }
+        register("dueling") { DuelingGameState() }
     }
 
     Command.build("team") {
@@ -54,7 +64,7 @@ internal fun setup() {
             it.params(argLiteral(literal), argPlayers()) {
                 it.actionWithContext { args, context ->
                     val players = args.players().onEach { it.team = team }
-                    args.sendInfo("Update team for ${players.size} player(s) to '${literal}'")
+                    args.sendInfo("Update team for ${players.size} player(s) to", team.nameColored)
                 }
             }
         }
