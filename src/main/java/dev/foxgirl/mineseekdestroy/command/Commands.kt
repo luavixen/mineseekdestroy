@@ -3,18 +3,10 @@ package dev.foxgirl.mineseekdestroy.command
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.state.DuelingGameState
-import dev.foxgirl.mineseekdestroy.state.FinalizingGameState
-import dev.foxgirl.mineseekdestroy.state.GameState
-import dev.foxgirl.mineseekdestroy.state.PlayingGameState
-import dev.foxgirl.mineseekdestroy.state.RunningGameState
-import dev.foxgirl.mineseekdestroy.state.StartingGameState
-import dev.foxgirl.mineseekdestroy.state.WaitingGameState
+import dev.foxgirl.mineseekdestroy.state.*
 import net.minecraft.command.EntitySelector
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
 import net.minecraft.util.math.Position
-import org.spongepowered.asm.mixin.Final
 
 internal fun setup() {
 
