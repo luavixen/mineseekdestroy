@@ -62,6 +62,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull Region REGION_BARRIER_BLIMP_TARGET = new Region(new BlockPos(63, 7, -42), new BlockPos(77, -1, -67));
     public static final @NotNull Region REGION_BARRIER_BLIMP_TEMPLATE = new Region(new BlockPos(63, 7, -558), new BlockPos(77, -1, -583));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_PREPARING_COUNTDOWN =
+        GameRuleRegistry.register("msdStartingPreparingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(3.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_COUNTDOWN =
         GameRuleRegistry.register("msdStartingCountdownSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_EFFECT_DURATION =
@@ -131,6 +133,37 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.END_PORTAL_FRAME,
     });
 
+    public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
+        @Override
+        public void sendInfo(@Nullable Object... values) {
+            var message = Console.format(values, false);
+            LOGGER.info(message.getString());
+            Game.getGame().sendToPlayers(message);
+
+        }
+        @Override
+        public void sendError(@Nullable Object... values) {
+            var message = Console.format(values, true);
+            LOGGER.error(message.getString());
+            Game.getGame().sendToPlayers(message);
+        }
+    };
+    public static final @NotNull Console CONSOLE_OPERATORS = new Console() {
+        @Override
+        public void sendInfo(@Nullable Object... values) {
+            var message = Console.format(values, false);
+            LOGGER.info(message.getString());
+            Game.getGame().sendToOperators(message);
+
+        }
+        @Override
+        public void sendError(@Nullable Object... values) {
+            var message = Console.format(values, true);
+            LOGGER.error(message.getString());
+            Game.getGame().sendToOperators(message);
+        }
+    };
+
     private static Game INSTANCE;
 
     public Game() {
@@ -160,7 +193,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public void setState(@NotNull GameState state) {
         Objects.requireNonNull(state, "Argument 'state'");
-        this.state = state;
+        if (this.state != state) {
+            this.state = state;
+            LOGGER.info("Game state changed to " + state.getClass().getSimpleName());
+        }
     }
 
     public @Nullable GameContext getContext() {
@@ -233,21 +269,28 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         return false;
     }
 
-    public void send(@NotNull Text message) {
+    public void sendToPlayers(@NotNull Text message) {
         Objects.requireNonNull(message, "Argument 'message'");
-        getServer().getPlayerManager().getPlayerList().forEach((player) -> player.sendMessageToClient(message, false));
+        for (var player : getServer().getPlayerManager().getPlayerList()) {
+            player.sendMessageToClient(message, false);
+        }
+    }
+
+    public void sendToOperators(@NotNull Text message) {
+        Objects.requireNonNull(message, "Argument 'message'");
+        for (var player : getServer().getPlayerManager().getPlayerList()) {
+            if (isOperator(player)) player.sendMessageToClient(message, false);
+        }
     }
 
     @Override
     public void sendInfo(@Nullable Object... values) {
-        var message = Console.format(values, false);
-        send(message); LOGGER.info(message.getString());
+        CONSOLE_PLAYERS.sendInfo(values);
     }
 
     @Override
     public void sendError(@Nullable Object... values) {
-        var message = Console.format(values, true);
-        send(message); LOGGER.error(message.getString());
+        CONSOLE_OPERATORS.sendError(values);
     }
 
     @Override

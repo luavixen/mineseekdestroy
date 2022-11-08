@@ -30,15 +30,15 @@ public abstract class GameState {
         return null;
     }
 
-    private boolean initialized = false;
+    private boolean fresh = true;
 
     public final @Nullable GameState update(@NotNull GameContext context) {
-        if (initialized) {
-            return onUpdate(context);
-        } else {
-            initialized = true;
-            return onSetup(context);
+        if (fresh) {
+            fresh = false;
+            var state = onSetup(context);
+            if (state != null) return state;
         }
+        return onUpdate(context);
     }
 
     public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {

@@ -4,17 +4,22 @@ import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class PlayingGameState extends RunningGameState {
 
     @Override
-    protected GameState onSetup(@NotNull GameContext context) {
-        // TODO: Announce round start
+    protected @Nullable GameState onSetup(@NotNull GameContext context) {
+        Game.getGame().sendInfo("Round started! KILL!");
+
+        context.invisibilityService.executeSetDisabled(Game.CONSOLE_OPERATORS);
+        context.barrierService.executeBlimpClose(Game.CONSOLE_OPERATORS);
+
         return null;
     }
 
     @Override
-    protected GameState onUpdate(@NotNull GameContext context) {
+    protected @Nullable GameState onUpdate(@NotNull GameContext context) {
         int aliveYellow = 0;
         int aliveBlue = 0;
 

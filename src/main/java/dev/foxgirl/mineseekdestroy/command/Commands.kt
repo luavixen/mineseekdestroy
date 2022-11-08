@@ -35,6 +35,26 @@ internal fun setup() {
         }
     }
 
+    Command.build("begin") {
+        it.params(argLiteral("round")) {
+            it.actionWithContext { args, context ->
+                Game.getGame().setState(StartingGameState())
+            }
+        }
+        it.params(argLiteral("duel")) {
+            it.actionWithContext { args, context ->
+                Game.getGame().setState(DuelingGameState())
+            }
+        }
+    }
+
+    Command.build("end") {
+        it.action { args ->
+            Game.getGame().setState(WaitingGameState())
+            args.sendInfo("Reset current game state")
+        }
+    }
+
     Command.build("state") {
         fun register(literal: String, state: () -> GameState) {
             it.params(argLiteral(literal)) {
@@ -56,7 +76,7 @@ internal fun setup() {
             it.params(argLiteral(literal), argPlayers()) {
                 it.actionWithContext { args, context ->
                     val players = args.players().onEach { it.team = team }
-                    args.sendInfo("Update team for ${players.size} player(s) to", team.nameColored)
+                    args.sendInfo("Updated team for ${players.size} player(s) to", team.nameColored)
                 }
             }
         }
@@ -65,6 +85,34 @@ internal fun setup() {
         register("black", GameTeam.PLAYER_BLACK)
         register("yellow", GameTeam.PLAYER_YELLOW)
         register("blue", GameTeam.PLAYER_BLUE)
+    }
+
+    Command.build("stat") {
+        it.params(argLiteral("setalive"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val players = args.players().onEach { it.isAlive = true }
+                args.sendInfo("Updated alive status for ${players.size} player(s) to living")
+            }
+        }
+        it.params(argLiteral("setdead"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val players = args.players().onEach { it.isAlive = false }
+                args.sendInfo("Updated alive status for ${players.size} player(s) to dead")
+            }
+        }
+        it.params(argLiteral("setkills"), argInt("kills"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val kills: Int = args["kills"]
+                val players = args.players().onEach { it.kills = kills }
+                args.sendInfo("Updated kill count for ${players.size} player(s)")
+            }
+        }
+        it.params(argLiteral("takekill"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val players = args.players().onEach { it.kills-- }
+                args.sendInfo("Updated kill count for ${players.size} player(s)")
+            }
+        }
     }
 
     Command.build("tp") {
