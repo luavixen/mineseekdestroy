@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.mixin;
 import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
+import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,6 +26,13 @@ public abstract class MixinServerPlayNetworkHandler {
             var context = Game.getGame().getContext();
             if (context != null) {
                 var replacement = context.invisibilityService.handlePositionPacket((EntityPositionS2CPacket) packet, player);
+                if (replacement != null) return replacement;
+            }
+        }
+        if (packet instanceof EntityTrackerUpdateS2CPacket) {
+            var context = Game.getGame().getContext();
+            if (context != null) {
+                var replacement = context.glowService.handleTrackerUpdatePacket((EntityTrackerUpdateS2CPacket) packet, player);
                 if (replacement != null) return replacement;
             }
         }
