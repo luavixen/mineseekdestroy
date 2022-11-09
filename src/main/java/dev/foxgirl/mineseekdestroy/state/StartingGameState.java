@@ -53,8 +53,8 @@ public class StartingGameState extends GameState {
         broadcast(context, (player) -> new PlaySoundS2CPacket(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, player.getX(), player.getEyeY(), player.getZ(), 0.18F, 0.45F, 0L));
     }
 
-    private final int ticksPreparing = (int) (Game.getGame().getRuleDouble(Game.RULE_PREPARING_COUNTDOWN) * 20.0);
-    private final int ticksStarting = (int) (Game.getGame().getRuleDouble(Game.RULE_STARTING_COUNTDOWN) * 20.0);
+    private final int ticksPreparing = (int) (Game.getGame().getRuleDouble(Game.RULE_PREPARING_DURATION) * 20.0);
+    private final int ticksStarting = (int) (Game.getGame().getRuleDouble(Game.RULE_STARTING_DURATION) * 20.0);
     private final int ticksEffect = (int) (Game.getGame().getRuleDouble(Game.RULE_STARTING_EFFECT_DURATION) * 20.0);
 
     private int ticks = 0;

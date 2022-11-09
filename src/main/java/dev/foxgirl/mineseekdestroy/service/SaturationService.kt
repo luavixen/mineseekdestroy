@@ -9,6 +9,7 @@ class SaturationService : Service() {
         for (player in players) {
             if (running && player.isPlaying) continue
             val entity = player.entity ?: continue
+            if (entity.isDead || entity.isRemoved) continue
             entity.health = entity.maxHealth
             entity.hungerManager.apply {
                 foodLevel = 20

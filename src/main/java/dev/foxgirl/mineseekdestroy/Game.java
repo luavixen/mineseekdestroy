@@ -62,12 +62,15 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull Region REGION_BARRIER_BLIMP_TARGET = new Region(new BlockPos(63, 7, -42), new BlockPos(77, -1, -67));
     public static final @NotNull Region REGION_BARRIER_BLIMP_TEMPLATE = new Region(new BlockPos(63, 7, -558), new BlockPos(77, -1, -583));
 
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_PREPARING_COUNTDOWN =
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_PREPARING_DURATION =
         GameRuleRegistry.register("msdStartingPreparingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(3.0));
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_COUNTDOWN =
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_DURATION =
         GameRuleRegistry.register("msdStartingCountdownSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_EFFECT_DURATION =
         GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
+
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_FINALIZING_DURATION =
+        GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(5.0));
 
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
