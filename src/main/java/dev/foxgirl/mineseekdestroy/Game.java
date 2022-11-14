@@ -70,7 +70,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_PING_VOLUME =
-        GameRuleRegistry.register("msdStartingPingVolume", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.18));
+        GameRuleRegistry.register("msdStartingPingVolume", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.2));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_PING_PITCH =
+        GameRuleRegistry.register("msdStartingPingPitch", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.45));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FINALIZING_DURATION =
         GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(5.0));

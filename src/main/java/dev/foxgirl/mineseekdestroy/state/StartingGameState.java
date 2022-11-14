@@ -50,7 +50,15 @@ public class StartingGameState extends GameState {
         broadcast(context, new OverlayMessageS2CPacket(text));
     }
     private static void broadcastPing(GameContext context) {
-        broadcast(context, (player) -> new PlaySoundS2CPacket(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, player.getX(), player.getEyeY(), player.getZ(), 0.18F, 0.45F, 0L));
+        var volume = (float) Game.getGame().getRuleDouble(Game.RULE_STARTING_PING_VOLUME);
+        var pitch = (float) Game.getGame().getRuleDouble(Game.RULE_STARTING_PING_PITCH);
+        broadcast(context, (player) ->
+            new PlaySoundS2CPacket(
+                SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS,
+                player.getX(), player.getEyeY(), player.getZ(),
+                volume, pitch, 0L
+            )
+        );
     }
 
     private final int ticksPreparing = (int) (Game.getGame().getRuleDouble(Game.RULE_PREPARING_DURATION) * 20.0);
