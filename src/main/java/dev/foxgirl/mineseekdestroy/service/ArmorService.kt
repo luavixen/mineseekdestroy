@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GameTeam
+import net.minecraft.item.ArmorItem
 import net.minecraft.item.DyeableArmorItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -25,7 +26,7 @@ class ArmorService : Service() {
 
             val team = player.team
             if (team.isPlaying) {
-                if (armorSet(inventory.armor, color(team))) {
+                if (armorSet(inventory.armor, team)) {
                     inventoryDirty = true
                 }
             } else {
@@ -42,39 +43,55 @@ class ArmorService : Service() {
 
     private companion object {
 
-        private val itemHelmet =
+        private val itemLeatherHelmet =
             Items.LEATHER_HELMET as DyeableArmorItem
-        private val itemChestplate =
+        private val itemLeatherChestplate =
             Items.LEATHER_CHESTPLATE as DyeableArmorItem
-        private val itemLeggings =
+        private val itemLeatherLeggings =
             Items.LEATHER_LEGGINGS as DyeableArmorItem
-        private val itemBoots =
+        private val itemLeatherBoots =
             Items.LEATHER_BOOTS as DyeableArmorItem
 
-        private fun armorSet(list: MutableList<ItemStack>, color: Int): Boolean {
+        private val itemChainmailHelmet =
+            Items.CHAINMAIL_HELMET as ArmorItem
+        private val itemChainmailChestplate =
+            Items.CHAINMAIL_CHESTPLATE as ArmorItem
+        private val itemChainmailLeggings =
+            Items.CHAINMAIL_LEGGINGS as ArmorItem
+        private val itemChainmailBoots =
+            Items.CHAINMAIL_BOOTS as ArmorItem
+
+        private fun armorSet(list: MutableList<ItemStack>, team: GameTeam): Boolean {
             var dirty = false
 
+            val color = color(team)
+
+            fun update(index: Int, item: ArmorItem) {
+                val stack = list[index]
+                if (stack.isEmpty || stack.isDamaged || stack.item != item) {
+                    list[index] = ItemStack(item)
+                    dirty = true
+                }
+            }
             fun update(index: Int, item: DyeableArmorItem) {
                 val stack = list[index]
-                if (
-                    // Must not be empty
-                    stack.isEmpty ||
-                    // Must be the correct armor item
-                    stack.item != item ||
-                    // Must not be damaged
-                    stack.isDamaged ||
-                    // Must be the correct color
-                    item.getColor(stack) != color
-                ) {
+                if (stack.isEmpty || stack.isDamaged || stack.item != item || item.getColor(stack) != color) {
                     list[index] = ItemStack(item).also { item.setColor(it, color) }
                     dirty = true
                 }
             }
 
-            update(0, itemBoots)
-            update(1, itemLeggings)
-            update(2, itemChestplate)
-            update(3, itemHelmet)
+            if (team == GameTeam.PLAYER_DUEL) {
+                update(0, itemLeatherBoots)
+                update(1, itemChainmailLeggings)
+                update(2, itemChainmailChestplate)
+                update(3, itemLeatherHelmet)
+            } else {
+                update(0, itemLeatherBoots)
+                update(1, itemLeatherLeggings)
+                update(2, itemLeatherChestplate)
+                update(3, itemLeatherHelmet)
+            }
 
             return dirty
         }
@@ -84,7 +101,7 @@ class ArmorService : Service() {
             for (i in list.indices) {
                 val stack = list[i]
                 if (stack.isEmpty) continue
-                if (stack.item !is DyeableArmorItem) continue
+                if (stack.item !is ArmorItem) continue
                 list[i] = ItemStack.EMPTY
                 dirty = true
             }
