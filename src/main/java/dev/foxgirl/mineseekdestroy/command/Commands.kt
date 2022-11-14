@@ -85,6 +85,7 @@ internal fun setup() {
         register("black", GameTeam.PLAYER_BLACK)
         register("yellow", GameTeam.PLAYER_YELLOW)
         register("blue", GameTeam.PLAYER_BLUE)
+        register("duel", GameTeam.PLAYER_DUEL)
     }
 
     Command.build("stat") {

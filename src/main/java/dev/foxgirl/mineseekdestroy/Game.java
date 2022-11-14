@@ -69,6 +69,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_EFFECT_DURATION =
         GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_PING_VOLUME =
+        GameRuleRegistry.register("msdStartingPingVolume", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.18));
+
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FINALIZING_DURATION =
         GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(5.0));
 
@@ -108,7 +111,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Set<@NotNull Block> INTERACTABLE_BLOCKS = ImmutableSet.copyOf(new Block[] {
         Blocks.CHEST,
-        Blocks.TRAPPED_CHEST,
         Blocks.BARREL,
         Blocks.ACACIA_DOOR,
         Blocks.BIRCH_DOOR,

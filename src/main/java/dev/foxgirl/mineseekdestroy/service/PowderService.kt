@@ -18,6 +18,7 @@ class PowderService : Service() {
                 GameTeam.PLAYER_BLACK -> Blocks.BLACK_CONCRETE_POWDER
                 GameTeam.PLAYER_YELLOW -> Blocks.YELLOW_CONCRETE_POWDER
                 GameTeam.PLAYER_BLUE -> Blocks.BLUE_CONCRETE_POWDER
+                GameTeam.PLAYER_DUEL -> Blocks.BROWN_CONCRETE_POWDER
                 else -> continue
             }
 

@@ -57,7 +57,7 @@ class ArmorService : Service() {
             fun update(index: Int, item: DyeableArmorItem) {
                 val stack = list[index]
                 if (
-                // Must not be empty
+                    // Must not be empty
                     stack.isEmpty ||
                     // Must be the correct armor item
                     stack.item != item ||
@@ -107,6 +107,7 @@ class ArmorService : Service() {
         private val colorBlack = convertColor(DyeColor.BLACK)
         private val colorYellow = convertColor(DyeColor.YELLOW)
         private val colorBlue = convertColor(DyeColor.BLUE)
+        private val colorDuel = convertColor(DyeColor.BROWN)
 
         private fun color(team: GameTeam): Int {
             return when (team) {
@@ -114,6 +115,7 @@ class ArmorService : Service() {
                 GameTeam.PLAYER_BLACK -> colorBlack
                 GameTeam.PLAYER_YELLOW -> colorYellow
                 GameTeam.PLAYER_BLUE -> colorBlue
+                GameTeam.PLAYER_DUEL -> colorDuel
                 else -> 0
             }
         }

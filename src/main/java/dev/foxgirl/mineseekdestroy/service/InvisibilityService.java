@@ -95,12 +95,13 @@ public final class InvisibilityService extends Service {
             case PLAYER_BLACK   -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_BLACK;
             case PLAYER_YELLOW  -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_YELLOW;
             case PLAYER_BLUE    -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_BLUE;
+            case PLAYER_DUEL    -> packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_DUEL;
         };
     }
     private static boolean isVisibleToInactive(GameTeam targetTeam, GameTeam packetTeam) {
         return switch (targetTeam) {
             case NONE, OPERATOR -> true;
-            case PLAYER_BLACK, PLAYER_YELLOW, PLAYER_BLUE -> packetTeam != GameTeam.NONE;
+            case PLAYER_BLACK, PLAYER_YELLOW, PLAYER_BLUE, PLAYER_DUEL -> packetTeam != GameTeam.NONE;
         };
     }
 
