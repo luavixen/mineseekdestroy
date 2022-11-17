@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy;
 
-import dev.foxgirl.mineseekdestroy.util.Inventories;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.scoreboard.Scoreboard;

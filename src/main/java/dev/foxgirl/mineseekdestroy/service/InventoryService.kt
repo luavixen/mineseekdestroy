@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Inventories
