@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 public enum GameTeam {
 
-    NONE(null, null, null, null, null),
+    NONE(Text.of("NONE"), null, null, Formatting.WHITE, null),
     OPERATOR(Text.of("ADMIN"), "msd_operator", null, Formatting.GREEN, null),
     PLAYER_DUEL(Text.of("DUEL"), "msd_duel", "msd_duel_dead", Formatting.RED, Formatting.DARK_GRAY),
     PLAYER_BLACK(Text.of("BLACK"), "msd_black", "msd_black_dead", Formatting.DARK_PURPLE, Formatting.DARK_GRAY),
@@ -41,8 +41,12 @@ public enum GameTeam {
         return this == OPERATOR;
     }
 
+    public boolean isSpectator() {
+        return this == NONE;
+    }
+
     public @NotNull Formatting getColor() {
-        return colorAlive != null ? colorAlive : Formatting.GREEN;
+        return colorAlive != null ? colorAlive : Formatting.WHITE;
     }
 
     public @NotNull Text getName() {

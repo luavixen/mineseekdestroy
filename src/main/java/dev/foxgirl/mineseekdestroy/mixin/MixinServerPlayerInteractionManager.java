@@ -5,6 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -12,7 +13,9 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class MixinServerPlayerInteractionManager {
@@ -32,20 +35,22 @@ public abstract class MixinServerPlayerInteractionManager {
         at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;")
     )
     private ActionResult mineseekdestroy$hookInteractBlock$1(ItemStack itemStack, ItemUsageContext itemUsageContext) {
-        var result = ExtraEvents.BLOCK_PLACED.invoker().handle(
-            itemUsageContext.getPlayer(),
-            itemUsageContext.getWorld(),
-            itemUsageContext.getHand(),
-            new BlockHitResult(
-                itemUsageContext.getHitPos(),
-                itemUsageContext.getSide(),
-                itemUsageContext.getBlockPos(),
-                itemUsageContext.hitsInsideBlock()
-            ),
+        var access = (MixinItemUsageContext) itemUsageContext;
+        var result = ExtraEvents.BLOCK_USED_WITH.invoker().handle(
+            access.mineseekdestroy$getPlayer(),
+            access.mineseekdestroy$getWorld(),
+            access.mineseekdestroy$getHand(),
+            access.mineseekdestroy$getHit(),
             itemStack
         );
         if (result != ActionResult.PASS) return result;
         return itemStack.useOnBlock(itemUsageContext);
+    }
+
+    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
+    private void mineseekdestroy$hookInteractItem(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> info) {
+        var result = ExtraEvents.ITEM_USED.invoker().handle(player, world, hand, stack);
+        if (result != ActionResult.PASS) info.setReturnValue(result);
     }
 
 }

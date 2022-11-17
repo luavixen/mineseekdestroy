@@ -55,6 +55,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull BlockPos TEMPLATE_LOOTTABLE = new BlockPos(69, 1, -74);
 
     public static final @NotNull Region REGION_ALL = new Region(new BlockPos(-24, 35, 51), new BlockPos(175, -61, -169));
+    public static final @NotNull Region REGION_LEGAL = new Region(new BlockPos(-24, 65536, 51), new BlockPos(175, -56, -169));
     public static final @NotNull Region REGION_PLAYABLE = new Region(new BlockPos(-24, -6, 51), new BlockPos(175, -56, -169));
     public static final @NotNull Region REGION_BLIMP = new Region(new BlockPos(91, -1, -102), new BlockPos(49, 20, -32));
     public static final @NotNull Region REGION_BARRIER_ARENA_TARGET = new Region(new BlockPos(48, -30, -89), new BlockPos(92, -47, -23));
@@ -141,6 +142,22 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.GREEN_SHULKER_BOX,
         Blocks.RED_SHULKER_BOX,
         Blocks.BLACK_SHULKER_BOX,
+    });
+
+    public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
+        Items.SHIELD,
+        Items.BOW,
+        Items.CROSSBOW,
+        Items.FISHING_ROD,
+        Items.FIREWORK_ROCKET,
+        Items.EGG,
+        Items.SNOWBALL,
+        Items.POTION,
+        Items.SPLASH_POTION,
+        Items.LINGERING_POTION,
+        Items.MILK_BUCKET,
+        Items.POTATO,
+        Items.BREAD,
     });
 
     public static final @NotNull Set<@NotNull Item> ILLEGAL_ITEMS = ImmutableSet.copyOf(new Item[] {
@@ -261,7 +278,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         if (context != null) {
             var player = context.getPlayer(entity);
             if (player != null) {
-                return player.getTeam().isOperator();
+                return player.isOperator();
             }
         }
 
@@ -287,7 +304,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         var context = getContext();
         if (context != null) {
             var player = context.getPlayer(uuid);
-            return player != null && player.getTeam().isOperator();
+            return player != null && player.isOperator();
         }
 
         return false;
@@ -328,11 +345,14 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         ServerPlayerEvents.ALLOW_DEATH.register((playerEntity, damageSource, damageAmount) -> getState().allowDeath(getContext(), playerEntity, damageSource, damageAmount));
         ExtraEvents.PLAYER_DAMAGED.register((playerEntity, damageSource, damageAmount) -> getState().onTakeDamage(getContext(), playerEntity, damageSource, damageAmount));
         PlayerBlockBreakEvents.BEFORE.register((world, playerEntity, pos, blockState, blockEntity) -> getState().allowBlockBreak(getContext(), playerEntity, world, pos, blockState, blockEntity));
-        ExtraEvents.BLOCK_USED.register((player, world, hand, blockHit, blockState) -> getState().onBlockUsed(getContext(), player, world, hand, blockHit, blockState));
-        ExtraEvents.BLOCK_PLACED.register((player, world, hand, blockHit, blockItemStack) -> getState().onBlockPlaced(getContext(), player, world, hand, blockHit, blockItemStack));
+        ExtraEvents.BLOCK_USED.register((player, world, hand, blockHit, blockState) -> getState().onUseBlock(getContext(), player, world, hand, blockHit, blockState));
+        ExtraEvents.BLOCK_USED_WITH.register((player, world, hand, blockHit, blockItemStack) -> getState().onUseBlockWith(getContext(), player, world, hand, blockHit, blockItemStack));
+        ExtraEvents.ITEM_USED.register((player, world, hand, stack) -> getState().onUseItem(getContext(), player, world, hand, stack));
         UseEntityCallback.EVENT.register((playerEntity, world, hand, entity, hitResult) -> getState().onUseEntity(getContext(), playerEntity, world, hand, entity, hitResult));
         AttackBlockCallback.EVENT.register((playerEntity, world, hand, pos, direction) -> getState().onAttackBlock(getContext(), playerEntity, world, hand, pos, direction));
         AttackEntityCallback.EVENT.register((playerEntity, world, hand, entity, hitResult) -> getState().onAttackEntity(getContext(), playerEntity, world, hand, entity, hitResult));
+        ExtraEvents.ITEM_DROPPED.register((player, stack, throwRandomly, retainOwnership) -> getState().onItemDropped(getContext(), player, stack, throwRandomly, retainOwnership));
+        ExtraEvents.ITEM_ACQUIRED.register((player, inventory, stack, slot) -> getState().onItemAcquired(getContext(), player, inventory, stack, slot));
     }
 
     @Override
@@ -343,6 +363,22 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     @Override
     public void onStartTick(MinecraftServer server) {
+        var world = server.getOverworld();
+        var players = server.getPlayerManager().getPlayerList();
+        for (var player : players) {
+            if ((player.getWorld() != world || !REGION_LEGAL.contains(player.getPos())) && !hasOperator(player)) {
+                player.teleport(
+                    world,
+                    POSITION_ARENA.getX(),
+                    POSITION_ARENA.getY(),
+                    POSITION_ARENA.getZ(),
+                    player.getYaw(),
+                    player.getPitch()
+                );
+                player.setHealth(0.0F);
+            }
+        }
+
         var context = getContext();
         if (context == null) return;
 
@@ -351,6 +387,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         var state = getState().update(context);
         if (state != null) setState(state);
 
+        context.inventoryService.handleUpdate();
         context.armorService.handleUpdate();
         context.invisibilityService.handleUpdate();
         context.saturationService.handleUpdate();

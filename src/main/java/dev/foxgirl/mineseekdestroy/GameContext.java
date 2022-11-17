@@ -12,6 +12,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -131,6 +132,8 @@ public final class GameContext {
                 player.setTeam(GameTeam.OPERATOR);
             }
         }
+
+        server.setDifficulty(Difficulty.NORMAL, true);
 
         game.getRule(GameRules.PLAYERS_SLEEPING_PERCENTAGE).set(200, server);
         game.getRule(GameRules.KEEP_INVENTORY).set(true, server);

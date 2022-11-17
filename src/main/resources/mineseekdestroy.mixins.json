@@ -10,6 +10,8 @@
         "MixinEntity",
         "MixinEntityPositionS2CPacket",
         "MixinEntityTrackerUpdateS2CPacket",
+        "MixinItemUsageContext",
+        "MixinPlayerInventory",
         "MixinProjectileEntity",
         "MixinServerPlayerEntity",
         "MixinServerPlayerInteractionManager",

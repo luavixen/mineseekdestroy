@@ -7,7 +7,9 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -65,7 +67,7 @@ public abstract class GameState {
         return false;
     }
 
-    public ActionResult onBlockUsed(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHit, BlockState blockState) {
+    public ActionResult onUseBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHit, BlockState blockState) {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
@@ -82,20 +84,35 @@ public abstract class GameState {
         return ActionResult.FAIL;
     }
 
-    public ActionResult onBlockPlaced(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHit, ItemStack blockItemStack) {
+    public ActionResult onUseBlockWith(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHit, ItemStack stack) {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
-                if (
-                    blockItemStack.getItem() instanceof BlockItem blockItem &&
+                var item = stack.getItem();
+                if (item instanceof BlockItem blockItem) {
+                    if (
                         Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
                         Game.REGION_PLAYABLE.contains(blockHit.getBlockPos())
-                ) {
-                    return ActionResult.PASS;
+                    ) return ActionResult.PASS;
+                } else {
+                    if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
                 }
+            }
+        }
+        return ActionResult.FAIL;
+    }
+
+    public ActionResult onUseItem(@Nullable GameContext context, ServerPlayerEntity playerEntity, World world, Hand hand, ItemStack stack) {
+        if (Game.getGame().isOperator(playerEntity)) {
+            return ActionResult.PASS;
+        }
+        if (context != null) {
+            var player = context.getPlayer(playerEntity);
+            if (player.isPlaying() && Game.USABLE_ITEMS.contains(stack.getItem())) {
+                return ActionResult.PASS;
             }
         }
         return ActionResult.FAIL;
@@ -116,12 +133,20 @@ public abstract class GameState {
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
-                if (entity instanceof PlayerEntity) {
+                if (entity instanceof PlayerEntity || entity instanceof MobEntity) {
                     return ActionResult.PASS;
                 }
             }
         }
         return ActionResult.FAIL;
+    }
+
+    public boolean onItemDropped(@Nullable GameContext context, ServerPlayerEntity playerEntity, ItemStack stack, boolean throwRandomly, boolean retainOwnership) {
+        return true;
+    }
+
+    public boolean onItemAcquired(@Nullable GameContext context, ServerPlayerEntity playerEntity, PlayerInventory inventory, ItemStack stack, int slot) {
+        return true;
     }
 
 }

@@ -2,6 +2,8 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
+import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.block.entity.ChestBlockEntity
@@ -41,6 +43,34 @@ class InventoryService : Service() {
             }
         }
         console.sendInfo("Updated inventories of ${count} players")
+    }
+
+    fun handleUpdate() {
+        players.forEach(if (state is RunningGameState) ::mirrorUpdate else ::mirrorReset)
+    }
+
+    private companion object {
+
+        private fun mirrorUpdate(player: GamePlayer) {
+            val actual = player.inventory ?: return
+            val mirror = player.inventoryMirror
+            if (player.isSpectator) {
+                if (mirror != null) {
+                    if (!Inventories.equals(mirror, actual)) Inventories.copy(mirror, actual)
+                } else {
+                    player.inventoryMirror = Inventories.copyOf(actual)
+                }
+            } else {
+                if (mirror != null) {
+                    player.inventoryMirror = null
+                }
+            }
+        }
+
+        private fun mirrorReset(player: GamePlayer) {
+            player.inventoryMirror = null
+        }
+
     }
 
 }

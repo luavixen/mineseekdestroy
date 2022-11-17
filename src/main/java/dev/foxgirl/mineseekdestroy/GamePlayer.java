@@ -1,6 +1,8 @@
 package dev.foxgirl.mineseekdestroy;
 
+import dev.foxgirl.mineseekdestroy.util.Inventories;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
@@ -30,7 +32,7 @@ public final class GamePlayer {
             return true;
         }
         if (obj instanceof GamePlayer player) {
-            return Objects.equals(uuid, player.uuid);
+            return uuid.equals(player.uuid);
         }
         return false;
     }
@@ -40,6 +42,8 @@ public final class GamePlayer {
 
     private int statsKills = 0;
     private int statsDeaths = 0;
+
+    private Inventory inventoryMirror = null;
 
     GamePlayer(@NotNull GameContext context, @NotNull ServerPlayerEntity player) {
         Objects.requireNonNull(context, "Argument 'context'");
@@ -110,6 +114,14 @@ public final class GamePlayer {
         return player != null ? player.getInventory() : null;
     }
 
+    public @Nullable Inventory getInventoryMirror() {
+        return inventoryMirror;
+    }
+
+    public void setInventoryMirror(@Nullable Inventory mirror) {
+        inventoryMirror = mirror;
+    }
+
     public boolean isAlive() {
         return currentAlive;
     }
@@ -124,6 +136,14 @@ public final class GamePlayer {
 
     public boolean isPlaying() {
         return currentTeam.isPlaying();
+    }
+
+    public boolean isOperator() {
+        return currentTeam.isOperator();
+    }
+
+    public boolean isSpectator() {
+        return currentTeam.isSpectator();
     }
 
     public void teleport(@NotNull Position position) {

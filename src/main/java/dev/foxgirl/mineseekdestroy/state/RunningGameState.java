@@ -4,6 +4,8 @@ import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +46,30 @@ public abstract class RunningGameState extends GameState {
 
     @Override
     public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
+        return true;
+    }
+
+    @Override
+    public boolean onItemDropped(@Nullable GameContext context, ServerPlayerEntity playerEntity, ItemStack stack, boolean throwRandomly, boolean retainOwnership) {
+        if (Game.getGame().isOperator(playerEntity)) {
+            return true;
+        }
+        if (context != null) {
+            var player = context.getPlayer(playerEntity);
+            return player.isPlaying();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onItemAcquired(@Nullable GameContext context, ServerPlayerEntity playerEntity, PlayerInventory inventory, ItemStack stack, int slot) {
+        if (Game.getGame().isOperator(playerEntity)) {
+            return true;
+        }
+        if (context != null) {
+            var player = context.getPlayer(playerEntity);
+            return player.isPlaying();
+        }
         return true;
     }
 
