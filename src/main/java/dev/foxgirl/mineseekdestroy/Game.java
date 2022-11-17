@@ -30,6 +30,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Position;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -376,6 +377,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     player.getPitch()
                 );
                 player.setHealth(0.0F);
+            }
+            if (player.interactionManager.getGameMode() != GameMode.SURVIVAL && !hasOperator(player)) {
+                player.interactionManager.changeGameMode(GameMode.SURVIVAL);
             }
         }
 
