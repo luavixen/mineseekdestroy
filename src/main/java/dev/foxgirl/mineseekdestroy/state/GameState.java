@@ -97,9 +97,8 @@ public abstract class GameState {
                         Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
                         Game.REGION_PLAYABLE.contains(blockHit.getBlockPos())
                     ) return ActionResult.PASS;
-                } else {
-                    if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
                 }
+                if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
             }
         }
         return ActionResult.FAIL;
