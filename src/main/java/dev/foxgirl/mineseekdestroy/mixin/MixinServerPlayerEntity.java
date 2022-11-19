@@ -20,7 +20,7 @@ public abstract class MixinServerPlayerEntity {
         }
     }
 
-    @Inject(method = "dropItem", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "dropItem(Lnet/minecraft/item/ItemStack;ZZ)Lnet/minecraft/entity/ItemEntity;", at = @At("HEAD"), cancellable = true)
     private void mineseekdestroy$hookDropItem(ItemStack stack, boolean throwRandomly, boolean retainOwnership, CallbackInfoReturnable<ItemEntity> info) {
         if (!ExtraEvents.ITEM_DROPPED.invoker().handle((ServerPlayerEntity) (Object) this, stack, throwRandomly, retainOwnership)) {
             info.setReturnValue(null);
