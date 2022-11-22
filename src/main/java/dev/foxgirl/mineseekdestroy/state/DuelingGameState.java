@@ -2,6 +2,8 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.GameTeam;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +27,8 @@ public class DuelingGameState extends RunningGameState {
             Game.getGame().sendInfo("Duel started!");
         }
 
+        context.barrierService.executeArenaClose(Game.CONSOLE_OPERATORS);
+
         return null;
     }
 
@@ -32,12 +36,15 @@ public class DuelingGameState extends RunningGameState {
     protected @Nullable GameState onUpdate(@NotNull GameContext context) {
         var players = findPlayers(context);
 
-        if (players.size() == 0) {
-            Game.getGame().sendInfo("Duel over! Both players died at the exact same time, nobody wins!");
-            return new FinalizingGameState();
-        }
-        if (players.size() == 1) {
-            Game.getGame().sendInfo("Duel over!", players.get(0).getDisplayName(), "wins!");
+        if (players.size() < 2) {
+            if (players.size() == 1) {
+                Game.getGame().sendInfo("Duel over!", players.get(0).getDisplayName(), "wins!");
+            } else {
+                Game.getGame().sendInfo("Duel over! Both players died at the exact same time, nobody wins!");
+            }
+
+            context.barrierService.executeArenaOpen(Game.CONSOLE_OPERATORS);
+
             return new FinalizingGameState();
         }
 
@@ -55,6 +62,15 @@ public class DuelingGameState extends RunningGameState {
             list.add(entity);
         }
         return list;
+    }
+
+    @Override
+    public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
+        if (context != null) {
+            var player = context.getPlayer(playerEntity);
+            return player.getTeam() == GameTeam.PLAYER_DUEL;
+        }
+        return true;
     }
 
 }

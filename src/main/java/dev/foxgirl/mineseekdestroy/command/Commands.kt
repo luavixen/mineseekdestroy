@@ -1,9 +1,12 @@
 package dev.foxgirl.mineseekdestroy.command
 
 import dev.foxgirl.mineseekdestroy.Game
+import dev.foxgirl.mineseekdestroy.GameContext
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.*
+import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Region
 import net.minecraft.command.EntitySelector
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.math.Position
@@ -11,17 +14,6 @@ import net.minecraft.util.math.Position
 internal fun setup() {
 
     Command.build("game") {
-        it.params(argLiteral("start")) {
-            it.action { args ->
-                val game = Game.getGame()
-                if (game.context == null) {
-                    game.initialize()
-                    args.sendInfo("Started new game")
-                } else {
-                    args.sendError("Cannot start new game, already running")
-                }
-            }
-        }
         it.params(argLiteral("stop")) {
             it.action { args ->
                 val game = Game.getGame()
@@ -33,17 +25,55 @@ internal fun setup() {
                 }
             }
         }
+        it.params(argLiteral("start")) {
+            it.action { args ->
+                val game = Game.getGame()
+                if (game.context == null) {
+                    game.initialize()
+                    args.sendInfo("Started new game")
+                } else {
+                    args.sendError("Cannot start new game, already running")
+                }
+            }
+        }
+        it.params(argLiteral("prepare")) {
+            it.actionWithContext { args, context ->
+                args.sendInfo("Resetting and preparing game state")
+                context.barrierService.executeArenaOpen(args)
+                context.barrierService.executeBlimpClose(args)
+                context.lootService.executeClear(args)
+                context.inventoryService.executeClear(args)
+                context.players.forEach { if (!it.isOperator) it.teleport(Game.POSITION_BLIMP) }
+            }
+        }
     }
 
     Command.build("begin") {
         it.params(argLiteral("round")) {
             it.actionWithContext { args, context ->
-                Game.getGame().setState(StartingGameState())
+                context.game.state = StartingGameState()
             }
         }
         it.params(argLiteral("duel")) {
+            it.params(argPlayers("aggressor"), argPlayers("victim")) {
+                it.actionWithContext { args, context ->
+                    val player1 = args.player(context, "aggressor")
+                    val player2 = args.player(context, "victim")
+
+                    player1.team = GameTeam.PLAYER_DUEL
+                    player2.team = GameTeam.PLAYER_DUEL
+                    player1.isAlive = true
+                    player2.isAlive = true
+
+                    player1.kills = 0
+                    player1.teleport(Game.POSITION_DUEL1)
+                    player2.teleport(Game.POSITION_DUEL2)
+
+                    context.game.state = DuelingGameState()
+                }
+            }
             it.actionWithContext { args, context ->
-                Game.getGame().setState(DuelingGameState())
+                context.game.state = DuelingGameState()
             }
         }
     }
@@ -75,7 +105,7 @@ internal fun setup() {
         fun register(literal: String, team: GameTeam) {
             it.params(argLiteral(literal), argPlayers()) {
                 it.actionWithContext { args, context ->
-                    val players = args.players().onEach { it.team = team }
+                    val players = args.players(context).onEach { it.team = team }
                     args.sendInfo("Updated team for ${players.size} player(s) to", team.nameColored)
                 }
             }
@@ -91,69 +121,73 @@ internal fun setup() {
     Command.build("stat") {
         it.params(argLiteral("setalive"), argPlayers()) {
             it.actionWithContext { args, context ->
-                val players = args.players().onEach { it.isAlive = true }
+                val players = args.players(context).onEach { it.isAlive = true }
                 args.sendInfo("Updated alive status for ${players.size} player(s) to living")
             }
         }
         it.params(argLiteral("setdead"), argPlayers()) {
             it.actionWithContext { args, context ->
-                val players = args.players().onEach { it.isAlive = false }
+                val players = args.players(context).onEach { it.isAlive = false }
                 args.sendInfo("Updated alive status for ${players.size} player(s) to dead")
             }
         }
         it.params(argLiteral("setkills"), argInt("kills"), argPlayers()) {
             it.actionWithContext { args, context ->
                 val kills: Int = args["kills"]
-                val players = args.players().onEach { it.kills = kills }
+                val players = args.players(context).onEach { it.kills = kills }
                 args.sendInfo("Updated kill count for ${players.size} player(s)")
             }
         }
         it.params(argLiteral("takekill"), argPlayers()) {
             it.actionWithContext { args, context ->
-                val players = args.players().onEach { it.kills-- }
+                val players = args.players(context).onEach { it.kills-- }
                 args.sendInfo("Updated kill count for ${players.size} player(s)")
             }
         }
     }
 
     Command.build("tp") {
-        fun register(literal: String, position: Position) {
-            it.params(argLiteral(literal)) {
-                it.params(argLiteral("force")) {
-                    it.params(argPlayers()) {
-                        it.actionWithContext { args, context ->
-                            val players = args.players().onEach { it.teleport(position) }
-                            args.sendInfo("Teleported ${players.size} player(s) to '${literal}' forcefully")
-                        }
-                    }
-                    it.actionWithContext { args, context ->
-                        val players = context.players.onEach { it.teleport(position) }
-                        args.sendInfo("Teleported ${players.size} player(s) to '${literal}' forcefully")
-                    }
-                }
-                it.params(argPlayers()) {
-                    it.actionWithContext { args, context ->
-                        val players = args.players().onEach { if (it.isPlaying) it.teleport(position) }
-                        args.sendInfo("Teleported ${players.size} player(s) to '${literal}'")
-                    }
-                }
-                it.actionWithContext { args, context ->
-                    val players = context.players.onEach { if (it.isPlaying) it.teleport(position) }
-                    args.sendInfo("Teleported ${players.size} player(s) to '${literal}'")
+        fun register(literal: String, position: Position, region: Region) {
+            fun teleport(console: Console, players: List<GamePlayer>, filter: (GamePlayer) -> Boolean = { true }) {
+                players.filter(filter).let {
+                    it.forEach { player -> player.teleport(position) }
+                    console.sendInfo("Teleported ${it.size} player(s) to '${literal}'")
                 }
             }
+
+            fun isPlaying(player: GamePlayer) = player.isPlaying
+            fun isInRegion(player: GamePlayer) = player.entity?.let { region.contains(it.pos) } ?: false
+
+            it.params(argLiteral(literal)) {
+                it.params(argLiteral("area")) {
+                    it.params(argPlayers()) {
+                        it.actionWithContext { args, context -> teleport(args, args.players(context), ::isInRegion) }
+                    }
+                    it.actionWithContext { args, context -> teleport(args, context.players, ::isInRegion) }
+                }
+                it.params(argLiteral("force")) {
+                    it.params(argPlayers()) {
+                        it.actionWithContext { args, context -> teleport(args, args.players(context)) }
+                    }
+                    it.actionWithContext { args, context -> teleport(args, context.players) }
+                }
+                it.params(argPlayers()) {
+                    it.actionWithContext { args, context -> teleport(args, args.players(context), ::isPlaying) }
+                }
+                it.actionWithContext { args, context -> teleport(args, context.players, ::isPlaying) }
+            }
         }
-        register("blimp", Game.POSITION_BLIMP)
-        register("arena", Game.POSITION_ARENA)
-        register("duel1", Game.POSITION_DUEL1)
-        register("duel2", Game.POSITION_DUEL2)
+        register("blimp", Game.POSITION_BLIMP, Game.REGION_BLIMP)
+        register("arena", Game.POSITION_ARENA, Game.REGION_PLAYABLE)
+        register("duel1", Game.POSITION_DUEL1, Game.REGION_PLAYABLE)
+        register("duel2", Game.POSITION_DUEL2, Game.REGION_PLAYABLE)
     }
 
     Command.build("inv") {
         it.params(argLiteral("clear")) {
             it.params(argPlayers()) {
                 it.actionWithContext { args, context ->
-                    context.inventoryService.executeClear(args, args.players())
+                    context.inventoryService.executeClear(args, args.players(context))
                 }
             }
             it.actionWithContext { args, context ->
@@ -163,7 +197,7 @@ internal fun setup() {
         it.params(argLiteral("fill")) {
             it.params(argPlayers()) {
                 it.actionWithContext { args, context ->
-                    context.inventoryService.executeFill(args, args.players())
+                    context.inventoryService.executeFill(args, args.players(context))
                 }
             }
             it.actionWithContext { args, context ->
@@ -227,7 +261,9 @@ internal fun setup() {
 
 }
 
-private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.players(name: String = "players"): List<GamePlayer> {
-    val context = Game.getGame().context!!
-    return context.getPlayers(this.get<EntitySelector>(name).getPlayers(this.context.source))
-}
+private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.player(context: GameContext, name: String = "player")
+    = context.getPlayer(this.get<EntitySelector>(name).getPlayer(this.context.source))
+
+private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.players(context: GameContext, name: String = "players")
+    = context.getPlayers(this.get<EntitySelector>(name).getPlayers(this.context.source))
+
