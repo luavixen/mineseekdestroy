@@ -217,7 +217,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     }
 
     public static @NotNull Game getGame() {
-        return Game.INSTANCE;
+        return Objects.requireNonNull(Game.INSTANCE);
     }
 
     private MinecraftServer server;
@@ -226,7 +226,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     private GameContext context = null;
 
     public @NotNull MinecraftServer getServer() {
-        return server;
+        return Objects.requireNonNull(server);
     }
 
     public @NotNull GameState getState() {
@@ -296,7 +296,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             }
         }
 
-        var uuid = entity.getUuid();
+        var uuid = Objects.requireNonNull(entity.getUuid());
 
         if (OPERATORS.contains(uuid)) {
             return true;
