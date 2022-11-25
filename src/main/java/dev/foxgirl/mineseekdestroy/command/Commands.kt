@@ -118,7 +118,7 @@ internal fun setup() {
         register("duel", GameTeam.PLAYER_DUEL)
     }
 
-    Command.build("stat") {
+    Command.build("score") {
         it.params(argLiteral("setalive"), argPlayers()) {
             it.actionWithContext { args, context ->
                 val players = args.players(context).onEach { it.isAlive = true }
@@ -135,6 +135,18 @@ internal fun setup() {
             it.actionWithContext { args, context ->
                 val kills: Int = args["kills"]
                 val players = args.players(context).onEach { it.kills = kills }
+                args.sendInfo("Updated kill count for ${players.size} player(s)")
+            }
+        }
+        it.params(argLiteral("clearkills"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val players = args.players(context).onEach { it.kills = 0 }
+                args.sendInfo("Updated kill count for ${players.size} player(s)")
+            }
+        }
+        it.params(argLiteral("givekill"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val players = args.players(context).onEach { it.kills++ }
                 args.sendInfo("Updated kill count for ${players.size} player(s)")
             }
         }
