@@ -156,7 +156,7 @@ internal fun setup() {
             }
 
             fun isPlaying(player: GamePlayer) = player.isPlaying
-            fun isInRegion(player: GamePlayer) = player.entity?.let { region.contains(it.pos) } ?: false
+            fun isInRegion(player: GamePlayer) = player.entity?.let(region::contains) ?: false
 
             it.params(argLiteral(literal)) {
                 it.params(argLiteral("area")) {

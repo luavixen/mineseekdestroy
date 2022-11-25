@@ -24,7 +24,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
@@ -370,7 +369,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         var world = server.getOverworld();
         var players = server.getPlayerManager().getPlayerList();
         for (var player : players) {
-            if ((player.getWorld() != world || !REGION_LEGAL.contains(player.getPos())) && !hasOperator(player)) {
+            if ((player.getWorld() != world || !REGION_LEGAL.contains(player)) && !hasOperator(player)) {
                 player.teleport(
                     world,
                     POSITION_ARENA.getX(),
@@ -379,7 +378,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     player.getYaw(),
                     player.getPitch()
                 );
-                player.setHealth(0.0F);
             }
             if (player.interactionManager.getGameMode() != GameMode.SURVIVAL && !hasOperator(player)) {
                 player.interactionManager.changeGameMode(GameMode.SURVIVAL);

@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy.util;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Position;
@@ -56,6 +57,10 @@ public final class Region {
 
     public boolean contains(@NotNull Position pos) {
         return contains((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
+    }
+
+    public boolean contains(@NotNull Entity entity) {
+        return contains(entity.getBlockPos());
     }
 
     @Override
