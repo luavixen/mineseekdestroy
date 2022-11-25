@@ -46,6 +46,10 @@ public abstract class RunningGameState extends GameState {
 
     @Override
     public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
+        if (context != null) {
+            var player = context.getPlayer(playerEntity);
+            return player.isPlaying() && player.isAlive();
+        }
         return true;
     }
 
