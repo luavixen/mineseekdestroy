@@ -50,6 +50,7 @@ internal fun setup() {
         it.params(argLiteral("round")) {
             it.actionWithContext { args, context ->
                 game.state = StartingGameState()
+                context.snapshotService.executeSnapshotSave(args)
             }
         }
         it.params(argLiteral("duel")) {
@@ -68,10 +69,12 @@ internal fun setup() {
                     player2.teleport(properties.positionDuel2)
 
                     game.state = DuelingGameState()
+                    context.snapshotService.executeSnapshotSave(args)
                 }
             }
             it.actionWithContext { args, context ->
                 game.state = DuelingGameState()
+                context.snapshotService.executeSnapshotSave(args)
             }
         }
     }
@@ -97,6 +100,19 @@ internal fun setup() {
         register("starting") { StartingGameState() }
         register("playing") { PlayingGameState() }
         register("dueling") { DuelingGameState() }
+    }
+
+    Command.build("snapshot") {
+        it.params(argLiteral("save")) {
+            it.actionWithContext { args, context ->
+                context.snapshotService.executeSnapshotSave(args)
+            }
+        }
+        it.params(argLiteral("restore")) {
+            it.actionWithContext { args, context ->
+                context.snapshotService.executeSnapshotRestore(args)
+            }
+        }
     }
 
     Command.build("team") {
