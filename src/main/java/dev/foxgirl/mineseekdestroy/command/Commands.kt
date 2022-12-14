@@ -117,10 +117,23 @@ internal fun setup() {
 
     Command.build("team") {
         fun register(literal: String, team: GameTeam) {
-            it.params(argLiteral(literal), argPlayers()) {
-                it.actionWithContext { args, context ->
-                    val players = args.players(context).onEach { it.team = team }
-                    args.sendInfo("Updated team for ${players.size} player(s) to", team.nameColored)
+            it.params(argLiteral(literal)) {
+                it.params(argPlayers()) {
+                    it.actionWithContext { args, context ->
+                        val players = args.players(context).onEach { it.team = team }
+                        args.sendInfo("Updated team for ${players.size} player(s) to", team.nameColored)
+                    }
+                }
+                it.params(argString("player")) {
+                    it.actionWithContext { args, context ->
+                        val player = context.getPlayer(args.get<String>("player"))
+                        if (player != null) {
+                            player.team = team
+                            args.sendInfo("Updated team for 1 player to", team.nameColored)
+                        } else {
+                            args.sendError("Player not found")
+                        }
+                    }
                 }
             }
         }
