@@ -95,7 +95,7 @@ public abstract class GameState {
                 if (item instanceof BlockItem blockItem) {
                     if (
                         Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
-                        Game.REGION_PLAYABLE.contains(blockHit.getBlockPos())
+                        Game.getGameProperties().getRegionPlayable().contains(blockHit.getBlockPos())
                     ) return ActionResult.PASS;
                 }
                 if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;

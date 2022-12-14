@@ -26,9 +26,9 @@ class InventoryService : Service() {
 
     fun executeFill(console: Console) = executeFill(console, players)
     fun executeFill(console: Console, targets: Collection<GamePlayer>) {
-        val template = world.getBlockEntity(Game.TEMPLATE_INVENTORY)
+        val template = world.getBlockEntity(properties.templateInventory)
         if (template !is ChestBlockEntity) {
-            console.sendError("Failed to read template chest at ${Game.TEMPLATE_INVENTORY}")
+            console.sendError("Failed to read template chest at ${properties.templateInventory}")
             return
         }
         var count = 0

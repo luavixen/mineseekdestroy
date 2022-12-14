@@ -100,12 +100,12 @@ public class StartingGameState extends GameState {
                 context.invisibilityService.executeSetEnabled(Game.CONSOLE_OPERATORS);
                 context.barrierService.executeBlimpOpen(Game.CONSOLE_OPERATORS);
 
-                var effect = new StatusEffectInstance(StatusEffects.SLOW_FALLING, ticksEffect);
-
                 for (var player : context.getPlayers()) {
                     if (!player.isPlaying() || !player.isAlive()) continue;
                     var entity = player.getEntity();
-                    if (entity != null) entity.addStatusEffect(effect);
+                    if (entity != null) {
+                        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOW_FALLING, ticksEffect));
+                    }
                 }
             }
 

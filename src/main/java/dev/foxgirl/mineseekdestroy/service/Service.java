@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.service;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GamePlayer;
+import dev.foxgirl.mineseekdestroy.GameProperties;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
@@ -51,6 +52,14 @@ public abstract class Service {
 
     protected final @NotNull Game getGame() {
         return Game.getGame();
+    }
+
+    protected final @NotNull GameProperties getProperties() {
+        return getGame().getProperties();
+    }
+
+    protected final void setProperties(@NotNull GameProperties properties) {
+        getGame().setProperties(properties);
     }
 
     protected final @NotNull GameState getState() {

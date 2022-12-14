@@ -186,11 +186,11 @@ public final class GameContext {
                 } else if (obj instanceof ServerPlayerEntity) {
                     players.add(getPlayer((ServerPlayerEntity) obj));
                 } else if (obj instanceof Entity) {
-                    players.add(getPlayer((Entity) obj));
+                    players.add(Objects.requireNonNull(getPlayer((Entity) obj), "Expression 'getPlayer((Entity) obj)'"));
                 } else if (obj instanceof UUID) {
-                    players.add(getPlayer((UUID) obj));
+                    players.add(Objects.requireNonNull(getPlayer((UUID) obj), "Expression 'getPlayer((UUID) obj)'"));
                 } else if (obj instanceof String) {
-                    players.add(getPlayer((String) obj));
+                    players.add(Objects.requireNonNull(getPlayer((String) obj), "Expression 'getPlayer((String) obj)'"));
                 } else {
                     throw new IllegalArgumentException(
                         "Argument 'values' contains element of unexpected type: " + obj.getClass().getName()
@@ -239,7 +239,7 @@ public final class GameContext {
 
     public @NotNull GamePlayer getPlayer(@NotNull ServerPlayerEntity player) {
         Objects.requireNonNull(player, "Argument 'player'");
-        var uuid = Objects.requireNonNull(player.getUuid());
+        var uuid = Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'");
         synchronized (playerMapLock) {
             var wrapper = playerMap.get(uuid);
             if (wrapper == null) {

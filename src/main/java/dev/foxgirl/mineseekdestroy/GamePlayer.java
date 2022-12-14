@@ -50,8 +50,8 @@ public final class GamePlayer {
 
         this.context = context;
 
-        uuid = Objects.requireNonNull(player.getUuid());
-        name = Objects.requireNonNull(player.getEntityName());
+        uuid = Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'");
+        name = Objects.requireNonNull(player.getEntityName(), "Expression 'player.getEntityName()'");
     }
 
     public @NotNull UUID getUUID() {

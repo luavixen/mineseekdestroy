@@ -27,7 +27,7 @@ class LootService : Service() {
 
     override fun setup() {
         BlockFinder
-            .search(world, Game.REGION_ALL) {
+            .search(world, properties.regionAll) {
                 containerBlocks.contains(it.block)
             }
             .handle { results, err ->
@@ -46,16 +46,16 @@ class LootService : Service() {
     }
 
     fun executeFill(console: Console) {
-        val template = inventory(world.getBlockEntity(Game.TEMPLATE_LOOTTABLE))
+        val template = inventory(world.getBlockEntity(properties.templateLoottable))
         if (template == null) {
-            console.sendError("Failed to read template chest at ${Game.TEMPLATE_LOOTTABLE}")
+            console.sendError("Failed to read template chest at ${properties.templateLoottable}")
             return
         }
 
         val lootCount = game.getRuleInt(Game.RULE_LOOT_COUNT)
         val lootTable = Inventories.list(template)
         if (lootTable.isEmpty()) {
-            console.sendError("Cannot create loot table, template chest at ${Game.TEMPLATE_LOOTTABLE} is empty")
+            console.sendError("Cannot create loot table, template chest at ${properties.templateLoottable} is empty")
             return
         }
 

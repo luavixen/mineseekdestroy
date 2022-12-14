@@ -16,7 +16,6 @@ internal fun setup() {
     Command.build("game") {
         it.params(argLiteral("stop")) {
             it.action { args ->
-                val game = Game.getGame()
                 if (game.context != null) {
                     game.destroy()
                     args.sendInfo("Stopped game")
@@ -27,7 +26,6 @@ internal fun setup() {
         }
         it.params(argLiteral("start")) {
             it.action { args ->
-                val game = Game.getGame()
                 if (game.context == null) {
                     game.initialize()
                     args.sendInfo("Started new game")
@@ -43,7 +41,7 @@ internal fun setup() {
                 context.barrierService.executeBlimpClose(args)
                 context.lootService.executeClear(args)
                 context.inventoryService.executeClear(args)
-                context.players.forEach { if (!it.isOperator) it.teleport(Game.POSITION_BLIMP) }
+                context.players.forEach { if (!it.isOperator) it.teleport(properties.positionBlimp) }
             }
         }
     }
@@ -51,7 +49,7 @@ internal fun setup() {
     Command.build("begin") {
         it.params(argLiteral("round")) {
             it.actionWithContext { args, context ->
-                context.game.state = StartingGameState()
+                game.state = StartingGameState()
             }
         }
         it.params(argLiteral("duel")) {
@@ -66,21 +64,21 @@ internal fun setup() {
                     player2.isAlive = true
 
                     player1.kills = 0
-                    player1.teleport(Game.POSITION_DUEL1)
-                    player2.teleport(Game.POSITION_DUEL2)
+                    player1.teleport(properties.positionDuel1)
+                    player2.teleport(properties.positionDuel2)
 
-                    context.game.state = DuelingGameState()
+                    game.state = DuelingGameState()
                 }
             }
             it.actionWithContext { args, context ->
-                context.game.state = DuelingGameState()
+                game.state = DuelingGameState()
             }
         }
     }
 
     Command.build("end") {
         it.action { args ->
-            Game.getGame().setState(WaitingGameState())
+            game.state = WaitingGameState()
             args.sendInfo("Reset current game state")
         }
     }
@@ -89,7 +87,7 @@ internal fun setup() {
         fun register(literal: String, state: () -> GameState) {
             it.params(argLiteral(literal)) {
                 it.action { args ->
-                    Game.getGame().setState(state())
+                    game.state = state()
                     args.sendInfo("Set game state to '${literal}'")
                 }
             }
@@ -189,10 +187,10 @@ internal fun setup() {
                 it.actionWithContext { args, context -> teleport(args, context.players, ::isPlaying) }
             }
         }
-        register("blimp", Game.POSITION_BLIMP, Game.REGION_BLIMP)
-        register("arena", Game.POSITION_ARENA, Game.REGION_PLAYABLE)
-        register("duel1", Game.POSITION_DUEL1, Game.REGION_PLAYABLE)
-        register("duel2", Game.POSITION_DUEL2, Game.REGION_PLAYABLE)
+        register("blimp", properties.positionBlimp, properties.regionBlimp)
+        register("arena", properties.positionArena, properties.regionPlayable)
+        register("duel1", properties.positionDuel1, properties.regionPlayable)
+        register("duel2", properties.positionDuel2, properties.regionPlayable)
     }
 
     Command.build("inv") {
@@ -273,9 +271,11 @@ internal fun setup() {
 
 }
 
+private val game get() = Game.getGame()
+private val properties get() = Game.getGameProperties()
+
 private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.player(context: GameContext, name: String = "player")
     = context.getPlayer(this.get<EntitySelector>(name).getPlayer(this.context.source))
 
 private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.players(context: GameContext, name: String = "players")
     = context.getPlayers(this.get<EntitySelector>(name).getPlayers(this.context.source))
-

@@ -17,7 +17,7 @@ public abstract class RunningGameState extends GameState {
 
         var player = context.getPlayer(newPlayerEntity);
         if (player.isPlaying() && !player.isAlive()) {
-            player.teleport(Game.POSITION_BLIMP);
+            player.teleport(Game.getGameProperties().getPositionBlimp());
         }
     }
 

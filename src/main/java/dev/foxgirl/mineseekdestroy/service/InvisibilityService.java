@@ -110,17 +110,18 @@ public final class InvisibilityService extends Service {
             case NONE, OPERATOR ->
                 true;
             case PLAYER_BLACK, PLAYER_YELLOW, PLAYER_BLUE, PLAYER_DUEL ->
-                !packetTeam.isSpectator() || Game.REGION_BLIMP.contains(packetEntity);
+                !packetTeam.isSpectator() || Game.getGameProperties().getRegionBlimp().contains(packetEntity);
         };
     }
 
     private static EntityPositionS2CPacket createInvisiblePositionPacket(int id) {
+        var position = Game.getGameProperties().getPositionHell();
         var packet = Fuck.create(EntityPositionS2CPacket.class);
         var access = (MixinEntityPositionS2CPacket) packet;
         access.mineseekdestroy$setId(id);
-        access.mineseekdestroy$setX(Game.POSITION_HELL.getX());
-        access.mineseekdestroy$setY(Game.POSITION_HELL.getY());
-        access.mineseekdestroy$setZ(Game.POSITION_HELL.getZ());
+        access.mineseekdestroy$setX(position.getX());
+        access.mineseekdestroy$setY(position.getY());
+        access.mineseekdestroy$setZ(position.getZ());
         return packet;
     }
 

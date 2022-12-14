@@ -33,13 +33,13 @@ class BarrierService : Service() {
     }
 
     private fun setupArena() {
-        val target = Game.REGION_BARRIER_ARENA_TARGET
-        val template = Game.REGION_BARRIER_ARENA_TEMPLATE
+        val target = properties.regionBarrierArenaTarget
+        val template = properties.regionBarrierArenaTemplate
         search("arena", template, target.start.subtract(template.start)).thenAccept { targetsArena = it }
     }
     private fun setupBlimp() {
-        val target = Game.REGION_BARRIER_BLIMP_TARGET
-        val template = Game.REGION_BARRIER_BLIMP_TEMPLATE
+        val target = properties.regionBarrierBlimpTarget
+        val template = properties.regionBarrierBlimpTemplate
         search("blimp", template, target.start.subtract(template.start)).thenAccept { targetsBlimp = it }
     }
 
