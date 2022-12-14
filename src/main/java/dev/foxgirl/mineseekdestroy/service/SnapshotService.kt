@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
+import dev.foxgirl.mineseekdestroy.state.WaitingGameState
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.inventory.Inventory
@@ -62,6 +63,7 @@ class SnapshotService : Service() {
                     }
                 }
             }
+            state = WaitingGameState()
             console.sendInfo("Restored snapshot of ${snapshot.players.size} players")
         }
     }

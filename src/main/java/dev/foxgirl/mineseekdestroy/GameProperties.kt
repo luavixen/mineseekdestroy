@@ -69,4 +69,26 @@ sealed interface GameProperties {
 
     }
 
+    object Radiator : GameProperties {
+
+        override val positionBlimp = Vec3d(0.0, 0.0, 0.0)
+        override val positionArena = Vec3d(0.0, 0.0, 0.0)
+        override val positionDuel1 = Vec3d(0.0, 0.0, 0.0)
+        override val positionDuel2 = Vec3d(0.0, 0.0, 0.0)
+        override val positionHell = Vec3d(0.0, 0.0, 0.0)
+
+        override val templateInventory = BlockPos(0, 0, 0)
+        override val templateLoottable = BlockPos(0, 0, 0)
+
+        override val regionAll = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionLegal = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionPlayable = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBlimp = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierArenaTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierArenaTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+
+    }
+
 }

@@ -1,9 +1,6 @@
 package dev.foxgirl.mineseekdestroy.command
 
-import dev.foxgirl.mineseekdestroy.Game
-import dev.foxgirl.mineseekdestroy.GameContext
-import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.*
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Region
@@ -12,6 +9,19 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.math.Position
 
 internal fun setup() {
+
+    Command.build("properties") {
+        fun register(literal: String, properties: () -> GameProperties) {
+            it.params(argLiteral(literal)) {
+                it.action { args ->
+                    game.properties = properties()
+                    args.sendInfo("Set game properties to '${literal}'")
+                }
+            }
+        }
+        register("macander") { GameProperties.Macander }
+        register("radiator") { GameProperties.Radiator }
+    }
 
     Command.build("game") {
         it.params(argLiteral("stop")) {
@@ -129,9 +139,9 @@ internal fun setup() {
                         val player = context.getPlayer(args.get<String>("player"))
                         if (player != null) {
                             player.team = team
-                            args.sendInfo("Updated team for 1 player to", team.nameColored)
+                            args.sendInfo("Updated team for specified player to", team.nameColored)
                         } else {
-                            args.sendError("Player not found")
+                            args.sendError("Specified player not found")
                         }
                     }
                 }
