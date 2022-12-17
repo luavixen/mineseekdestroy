@@ -6,6 +6,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.*;
+import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -52,10 +53,10 @@ public class StartingGameState extends GameState {
     private static void broadcastPing(GameContext context) {
         var volume = (float) Game.getGame().getRuleDouble(Game.RULE_STARTING_PING_VOLUME);
         var pitch = (float) Game.getGame().getRuleDouble(Game.RULE_STARTING_PING_PITCH);
+        var sound = Registries.SOUND_EVENT.getEntry(SoundEvents.ENTITY_ARROW_HIT_PLAYER);
         broadcast(context, (player) ->
             new PlaySoundS2CPacket(
-                SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS,
-                player.getX(), player.getEyeY(), player.getZ(),
+                sound, SoundCategory.PLAYERS, player.getX(), player.getEyeY(), player.getZ(),
                 volume, pitch, 0L
             )
         );

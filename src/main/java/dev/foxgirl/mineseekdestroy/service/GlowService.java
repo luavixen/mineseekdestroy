@@ -21,20 +21,20 @@ public final class GlowService extends Service {
 
     private static final TrackedData<Byte> FLAGS = MixinEntity.mineseekdestroy$getFLAGS();
 
-    private static EntityTrackerUpdateS2CPacket createPacket(int id, List<DataTracker.Entry<?>> values) {
+    private static EntityTrackerUpdateS2CPacket createPacket(int id, List<DataTracker.SerializedEntry<?>> values) {
         var packet = Fuck.create(EntityTrackerUpdateS2CPacket.class);
-        var access = (MixinEntityTrackerUpdateS2CPacket) packet;
+        var access = (MixinEntityTrackerUpdateS2CPacket) (Object) packet;
         access.mineseekdestroy$setId(id);
         access.mineseekdestroy$setTrackedValues(values);
         return packet;
     }
 
     private static EntityTrackerUpdateS2CPacket createFlagsPacket(Entity entity, byte value) {
-        return createPacket(entity.getId(), ImmutableList.of(new DataTracker.Entry<>(FLAGS, value)));
+        return createPacket(entity.getId(), ImmutableList.of(DataTracker.SerializedEntry.of(FLAGS, value)));
     }
 
     private static EntityTrackerUpdateS2CPacket createFakeFlagsPacket(Entity entity, boolean glowing) {
-        var value = entity.getDataTracker().get(FLAGS);
+        var value = (byte) entity.getDataTracker().get(FLAGS);
         if (glowing) {
             value = (byte) (value | 0x40);
         } else {
@@ -91,15 +91,15 @@ public final class GlowService extends Service {
         Objects.requireNonNull(packet, "Argument 'packet'");
         Objects.requireNonNull(targetEntity, "Argument 'targetEntity'");
 
-        var valuesOld = packet.getTrackedValues();
+        var valuesOld = packet.trackedValues();
         if (valuesOld == null) return null;
 
-        var flags = (DataTracker.Entry<Byte>) null;
+        var flags = (DataTracker.SerializedEntry<Byte>) null;
         int flagsIndex = 0;
         for (int i = 0, size = valuesOld.size(); i < size; i++) {
             var value = valuesOld.get(i);
-            if (value.getData() == FLAGS) {
-                flags = (DataTracker.Entry<Byte>) value;
+            if (value.id() == FLAGS.getId()) {
+                flags = (DataTracker.SerializedEntry<Byte>) value;
                 flagsIndex = i;
             }
         }
@@ -119,7 +119,7 @@ public final class GlowService extends Service {
         var packetPlayer = context.getPlayer(packetEntity);
         if (packetPlayer == null) return null;
 
-        var value = flags.get();
+        var value = (byte) flags.value();
         if (packetPlayer.isPlaying() && packetPlayer.isAlive()) {
             value = (byte) (value | 0x40);
         } else {
@@ -129,7 +129,7 @@ public final class GlowService extends Service {
         var valuesNew = new ArrayList<>(valuesOld);
 
         valuesNew.remove(flagsIndex);
-        valuesNew.add(new DataTracker.Entry<>(FLAGS, value));
+        valuesNew.add(DataTracker.SerializedEntry.of(FLAGS, value));
 
         return createPacket(packetId, valuesNew);
     }

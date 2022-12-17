@@ -15,6 +15,6 @@ public interface MixinEntityTrackerUpdateS2CPacket {
     void mineseekdestroy$setId(int id);
 
     @Accessor("trackedValues") @Mutable
-    void mineseekdestroy$setTrackedValues(List<DataTracker.Entry<?>> trackedValues);
+    void mineseekdestroy$setTrackedValues(List<DataTracker.SerializedEntry<?>> trackedValues);
 
 }
