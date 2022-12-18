@@ -11,6 +11,7 @@
         "MixinEntity",
         "MixinEntityPositionS2CPacket",
         "MixinEntityTrackerUpdateS2CPacket",
+        "MixinFarmlandBlock",
         "MixinItemUsageContext",
         "MixinPlayerInventory",
         "MixinProjectileEntity",
