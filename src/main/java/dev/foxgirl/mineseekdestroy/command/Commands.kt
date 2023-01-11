@@ -21,6 +21,7 @@ internal fun setup() {
         }
         register("macander") { GameProperties.Macander }
         register("radiator") { GameProperties.Radiator }
+        register("realm") { GameProperties.Realm }
     }
 
     Command.build("game") {

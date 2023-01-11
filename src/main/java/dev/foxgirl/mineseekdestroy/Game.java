@@ -60,6 +60,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_TOWER_EFFECT_DURATION =
+        GameRuleRegistry.register("msdTowerEffectDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
+
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
         GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_EGG =
@@ -68,7 +71,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
-        UUID.fromString("ae60cf7c-6ba0-4cf6-884e-23decd3e0ab6"), // ry755
         UUID.fromString("01dc40cd-2dba-4063-b2c5-bc333e864e0c"), // Karma_Dragon
     });
 
@@ -91,38 +93,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.BLACK_CONCRETE_POWDER,
         Blocks.SNOW_BLOCK,
         Blocks.BONE_BLOCK,
-    });
-
-    public static final @NotNull Set<@NotNull Block> INTERACTABLE_BLOCKS = ImmutableSet.copyOf(new Block[] {
-        Blocks.CHEST,
-        Blocks.BARREL,
-        Blocks.ACACIA_DOOR,
-        Blocks.BIRCH_DOOR,
-        Blocks.DARK_OAK_DOOR,
-        Blocks.JUNGLE_DOOR,
-        Blocks.MANGROVE_DOOR,
-        Blocks.OAK_DOOR,
-        Blocks.SPRUCE_DOOR,
-        Blocks.WARPED_DOOR,
-        Blocks.MANGROVE_FENCE_GATE,
-        Blocks.BIRCH_TRAPDOOR,
-        Blocks.SHULKER_BOX,
-        Blocks.WHITE_SHULKER_BOX,
-        Blocks.ORANGE_SHULKER_BOX,
-        Blocks.MAGENTA_SHULKER_BOX,
-        Blocks.LIGHT_BLUE_SHULKER_BOX,
-        Blocks.YELLOW_SHULKER_BOX,
-        Blocks.LIME_SHULKER_BOX,
-        Blocks.PINK_SHULKER_BOX,
-        Blocks.GRAY_SHULKER_BOX,
-        Blocks.LIGHT_GRAY_SHULKER_BOX,
-        Blocks.CYAN_SHULKER_BOX,
-        Blocks.PURPLE_SHULKER_BOX,
-        Blocks.BLUE_SHULKER_BOX,
-        Blocks.BROWN_SHULKER_BOX,
-        Blocks.GREEN_SHULKER_BOX,
-        Blocks.RED_SHULKER_BOX,
-        Blocks.BLACK_SHULKER_BOX,
     });
 
     public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
@@ -395,6 +365,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         context.saturationService.handleUpdate();
         context.glowService.handleUpdate();
         context.powderService.handleUpdate();
+        context.towerService.handleUpdate();
 
         context.updatePlayers();
     }

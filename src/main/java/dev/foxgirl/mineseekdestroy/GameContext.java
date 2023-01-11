@@ -58,6 +58,7 @@ public final class GameContext {
     public final @NotNull GlowService glowService;
     public final @NotNull PowderService powderService;
     public final @NotNull SnapshotService snapshotService;
+    public final @NotNull TowerService towerService;
 
     GameContext(@NotNull Game game) {
         Objects.requireNonNull(game, "Argument 'game'");
@@ -123,6 +124,7 @@ public final class GameContext {
         glowService = new GlowService();
         powderService = new PowderService();
         snapshotService = new SnapshotService();
+        towerService = new TowerService();
     }
 
     public void initialize() {
@@ -150,6 +152,7 @@ public final class GameContext {
         saturationService.initialize(this);
         glowService.initialize(this);
         powderService.initialize(this);
+        towerService.initialize(this);
     }
 
     public void destroy() {
