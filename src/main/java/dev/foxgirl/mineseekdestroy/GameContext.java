@@ -152,6 +152,7 @@ public final class GameContext {
         saturationService.initialize(this);
         glowService.initialize(this);
         powderService.initialize(this);
+        snapshotService.initialize(this);
         towerService.initialize(this);
     }
 

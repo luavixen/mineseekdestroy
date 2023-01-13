@@ -197,16 +197,16 @@ internal fun setup() {
     }
 
     Command.build("tp") {
-        fun register(literal: String, position: Position, region: Region) {
+        fun register(literal: String, position: () -> Position, region: () -> Region) {
             fun teleport(console: Console, players: List<GamePlayer>, filter: (GamePlayer) -> Boolean = { true }) {
                 players.filter(filter).let {
-                    it.forEach { player -> player.teleport(position) }
+                    it.forEach { player -> player.teleport(position()) }
                     console.sendInfo("Teleported ${it.size} player(s) to '${literal}'")
                 }
             }
 
             fun isPlaying(player: GamePlayer) = player.isPlaying
-            fun isInRegion(player: GamePlayer) = player.entity?.let(region::contains) ?: false
+            fun isInRegion(player: GamePlayer) = player.entity?.let(region()::contains) ?: false
 
             it.params(argLiteral(literal)) {
                 it.params(argLiteral("area")) {
@@ -227,10 +227,10 @@ internal fun setup() {
                 it.actionWithContext { args, context -> teleport(args, context.players, ::isPlaying) }
             }
         }
-        register("blimp", properties.positionBlimp, properties.regionBlimp)
-        register("arena", properties.positionArena, properties.regionPlayable)
-        register("duel1", properties.positionDuel1, properties.regionPlayable)
-        register("duel2", properties.positionDuel2, properties.regionPlayable)
+        register("blimp", { properties.positionBlimp }, { properties.regionBlimp })
+        register("arena", { properties.positionArena }, { properties.regionPlayable })
+        register("duel1", { properties.positionDuel1 }, { properties.regionPlayable })
+        register("duel2", { properties.positionDuel2 }, { properties.regionPlayable })
     }
 
     Command.build("inv") {
