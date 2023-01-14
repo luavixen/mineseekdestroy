@@ -27,6 +27,8 @@ sealed interface GameProperties {
     val regionBarrierBlimpTarget: Region
     val regionBarrierBlimpTemplate: Region
 
+    val borderSize: Double
+
     val interactableBlocks: Set<Block>
 
     object Empty : GameProperties {
@@ -48,6 +50,8 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+
+        override val borderSize = 0.0
 
         override val interactableBlocks = setOf<Block>(
             CHEST,
@@ -93,6 +97,8 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTarget = Region(BlockPos(63, 7, -42), BlockPos(77, -1, -67))
         override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
 
+        override val borderSize = 200.0
+
         override val interactableBlocks = Empty.interactableBlocks + setOf(
             ACACIA_DOOR,
             BIRCH_DOOR,
@@ -128,6 +134,8 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
 
+        override val borderSize = 250.0
+
         override val interactableBlocks = Empty.interactableBlocks + setOf(
         )
 
@@ -152,6 +160,8 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+
+        override val borderSize = 333.0
 
         override val interactableBlocks = Empty.interactableBlocks + setOf(
         )

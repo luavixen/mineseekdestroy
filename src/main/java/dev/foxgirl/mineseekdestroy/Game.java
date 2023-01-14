@@ -63,6 +63,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_TOWER_EFFECT_DURATION =
         GameRuleRegistry.register("msdTowerEffectDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_BORDER_CLOSE_DURATION =
+        GameRuleRegistry.register("msdBorderCloseDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(180.0));
+
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
         GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_EGG =
