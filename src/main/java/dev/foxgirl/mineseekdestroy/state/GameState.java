@@ -73,7 +73,11 @@ public abstract class GameState {
         }
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            if (player.isPlaying() && Game.getGameProperties().getInteractableBlocks().contains(blockState.getBlock())) {
+            if (
+                player.isPlaying() &&
+                Game.getGameProperties().getRegionPlayable().contains(blockHit.getBlockPos()) &&
+                Game.getGameProperties().getInteractableBlocks().contains(blockState.getBlock())
+            ) {
                 var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
                 if (blockEntity instanceof LootableContainerBlockEntity) {
                     return context.lootService.handleContainerOpen(blockEntity);
@@ -94,8 +98,8 @@ public abstract class GameState {
                 var item = stack.getItem();
                 if (item instanceof BlockItem blockItem) {
                     if (
-                        Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
-                        Game.getGameProperties().getRegionPlayable().contains(blockHit.getBlockPos())
+                        Game.getGameProperties().getRegionPlayable().contains(blockHit.getBlockPos()) &&
+                        Game.PLACABLE_BLOCKS.contains(blockItem.getBlock())
                     ) return ActionResult.PASS;
                 }
                 if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;

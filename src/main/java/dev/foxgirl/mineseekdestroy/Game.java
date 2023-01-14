@@ -189,14 +189,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         return properties;
     }
 
-    public void setProperties(@NotNull GameProperties properties) {
-        Objects.requireNonNull(properties, "Argument 'properties'");
-        if (this.properties != properties) {
-            this.properties = properties;
-            LOGGER.info("Game properties changed to " + properties.getClass().getSimpleName());
-        }
-    }
-
     public @NotNull GameState getState() {
         return state;
     }
@@ -371,10 +363,17 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         context.updatePlayers();
     }
 
-    public @NotNull GameContext initialize() {
+    public @NotNull GameContext initialize(@NotNull GameProperties properties) {
+        Objects.requireNonNull(properties, "Argument 'properties'");
         if (context == null) {
+            if (this.properties != properties) {
+                this.properties = properties;
+                LOGGER.info("Game properties changed to " + properties.getClass().getSimpleName());
+            }
             context = new GameContext(this);
             context.initialize();
+        } else {
+            throw new IllegalStateException("Attempted to double-initialize game");
         }
         return context;
     }

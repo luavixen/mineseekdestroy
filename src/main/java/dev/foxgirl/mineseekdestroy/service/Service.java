@@ -58,10 +58,6 @@ public abstract class Service {
         return getGame().getProperties();
     }
 
-    protected final void setProperties(@NotNull GameProperties properties) {
-        getGame().setProperties(properties);
-    }
-
     protected final @NotNull GameState getState() {
         return getGame().getState();
     }

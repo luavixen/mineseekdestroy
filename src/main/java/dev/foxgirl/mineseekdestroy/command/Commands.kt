@@ -10,20 +10,6 @@ import net.minecraft.util.math.Position
 
 internal fun setup() {
 
-    Command.build("properties") {
-        fun register(literal: String, properties: () -> GameProperties) {
-            it.params(argLiteral(literal)) {
-                it.action { args ->
-                    game.properties = properties()
-                    args.sendInfo("Set game properties to '${literal}'")
-                }
-            }
-        }
-        register("macander") { GameProperties.Macander }
-        register("radiator") { GameProperties.Radiator }
-        register("realm") { GameProperties.Realm }
-    }
-
     Command.build("game") {
         it.params(argLiteral("stop")) {
             it.action { args ->
@@ -36,14 +22,21 @@ internal fun setup() {
             }
         }
         it.params(argLiteral("start")) {
-            it.action { args ->
-                if (game.context == null) {
-                    game.initialize()
-                    args.sendInfo("Started new game")
-                } else {
-                    args.sendError("Cannot start new game, already running")
+            fun register(literal: String, properties: () -> GameProperties) {
+                it.params(argLiteral(literal)) {
+                    it.action { args ->
+                        if (game.context == null) {
+                            game.initialize(properties())
+                            args.sendInfo("Started new game")
+                        } else {
+                            args.sendError("Cannot start new game, already running")
+                        }
+                    }
                 }
             }
+            register("macander") { GameProperties.Macander }
+            register("radiator") { GameProperties.Radiator }
+            register("realm") { GameProperties.Realm }
         }
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->
