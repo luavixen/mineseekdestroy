@@ -344,6 +344,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     player.getYaw(),
                     player.getPitch()
                 );
+                player.kill();
             }
             if (player.interactionManager.getGameMode() != GameMode.SURVIVAL && !hasOperator(player)) {
                 player.interactionManager.changeGameMode(GameMode.SURVIVAL);

@@ -21,6 +21,7 @@ class TowerService : Service() {
     fun handleUpdate() {
         if (properties != GameProperties.Realm) return
         for (player in players) {
+            if (!player.isPlaying || !player.isAlive) continue
             val entity = player.entity ?: continue
             if (regions.any { it.contains(entity) }) {
                 entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, duration))
