@@ -4,7 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.util.Console
 import net.minecraft.world.border.WorldBorder
 
-class BorderService : Service() {
+class StormService : Service() {
 
     private val border: WorldBorder get() = world.worldBorder
 
@@ -21,15 +21,20 @@ class BorderService : Service() {
         border.setCenter(properties.positionBlimp.x, properties.positionBlimp.z)
     }
 
-    fun executeBorderStop(console: Console) {
+    fun executeStormClear(console: Console) {
         border.size = sizeMax
-        console.sendInfo("Stopped world border")
+        console.sendInfo("Cleared the storm")
     }
 
-    fun executeBorderStart(console: Console) {
+    fun executeStormStop(console: Console) {
+        border.size = border.size
+        console.sendInfo("Stopped the storm")
+    }
+
+    fun executeStormStart(console: Console) {
         border.size = sizeCurrent
         border.interpolateSize(sizeCurrent, sizeMin, (game.getRuleDouble(Game.RULE_BORDER_CLOSE_DURATION) * 1000.0).toLong())
-        console.sendInfo("Started world border")
+        console.sendInfo("Started the storm")
     }
 
 }

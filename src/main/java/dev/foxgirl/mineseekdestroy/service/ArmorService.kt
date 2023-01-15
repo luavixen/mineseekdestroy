@@ -1,10 +1,13 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.GameTeam.*
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ArmorItem
-import net.minecraft.item.DyeableArmorItem
+import net.minecraft.item.DyeableItem
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
+import net.minecraft.item.Items.*
 import net.minecraft.util.DyeColor
 
 class ArmorService : Service() {
@@ -43,56 +46,67 @@ class ArmorService : Service() {
 
     private companion object {
 
-        private val itemLeatherHelmet =
-            Items.LEATHER_HELMET as DyeableArmorItem
-        private val itemLeatherChestplate =
-            Items.LEATHER_CHESTPLATE as DyeableArmorItem
-        private val itemLeatherLeggings =
-            Items.LEATHER_LEGGINGS as DyeableArmorItem
-        private val itemLeatherBoots =
-            Items.LEATHER_BOOTS as DyeableArmorItem
+        private val loadouts: Map<GameTeam, Array<ItemStack>>
 
-        private val itemChainmailHelmet =
-            Items.CHAINMAIL_HELMET as ArmorItem
-        private val itemChainmailChestplate =
-            Items.CHAINMAIL_CHESTPLATE as ArmorItem
-        private val itemChainmailLeggings =
-            Items.CHAINMAIL_LEGGINGS as ArmorItem
-        private val itemChainmailBoots =
-            Items.CHAINMAIL_BOOTS as ArmorItem
+        init {
+            fun convertComponent(component: Float): Int {
+                return (component * 255.0F).toInt().coerceIn(0, 0xFF)
+            }
+            fun convertColor(color: DyeColor): Int {
+                val components = color.colorComponents
+                val r = convertComponent(components[0])
+                val g = convertComponent(components[1])
+                val b = convertComponent(components[2])
+                return (r shl 16) or (g shl 8) or b
+            }
+
+            val colorBlack = convertColor(DyeColor.BLACK)
+            val colorYellow = convertColor(DyeColor.YELLOW)
+            val colorBlue = convertColor(DyeColor.BLUE)
+
+            fun loadoutEmpty(): Array<ItemStack> {
+                return Array(4) { ItemStack.EMPTY }
+            }
+            fun loadoutDueler(): Array<ItemStack> {
+                fun armor(item: Item) = ItemStack(item)
+                return arrayOf(
+                    armor(LEATHER_BOOTS),
+                    armor(CHAINMAIL_LEGGINGS)
+                        .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
+                    armor(CHAINMAIL_CHESTPLATE),
+                    armor(LEATHER_HELMET),
+                )
+            }
+            fun loadoutNormal(color: Int): Array<ItemStack> {
+                fun armorDyed(item: Item) =
+                    ItemStack(item).also { (item as DyeableItem).setColor(it, color) }
+                return arrayOf(
+                    armorDyed(LEATHER_BOOTS),
+                    armorDyed(LEATHER_LEGGINGS)
+                        .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
+                    armorDyed(LEATHER_CHESTPLATE),
+                    armorDyed(LEATHER_HELMET),
+                )
+            }
+
+            loadouts = buildMap(8) {
+                put(NONE, loadoutEmpty())
+                put(OPERATOR, loadoutEmpty())
+                put(PLAYER_DUEL, loadoutDueler())
+                put(PLAYER_BLACK, loadoutNormal(colorBlack))
+                put(PLAYER_YELLOW, loadoutNormal(colorYellow))
+                put(PLAYER_BLUE, loadoutNormal(colorBlue))
+            }
+        }
 
         private fun armorSet(list: MutableList<ItemStack>, team: GameTeam): Boolean {
+            val loadout = loadouts[team]!!
             var dirty = false
-
-            val color = color(team)
-
-            fun update(index: Int, item: ArmorItem) {
-                val stack = list[index]
-                if (stack.isEmpty || stack.isDamaged || stack.item != item) {
-                    list[index] = ItemStack(item)
-                    dirty = true
-                }
+            for (i in list.indices) {
+                if (ItemStack.areEqual(list[i], loadout[i])) continue
+                list[i] = loadout[i].copy()
+                dirty = true
             }
-            fun update(index: Int, item: DyeableArmorItem) {
-                val stack = list[index]
-                if (stack.isEmpty || stack.isDamaged || stack.item != item || item.getColor(stack) != color) {
-                    list[index] = ItemStack(item).also { item.setColor(it, color) }
-                    dirty = true
-                }
-            }
-
-            if (team == GameTeam.PLAYER_DUEL) {
-                update(0, itemLeatherBoots)
-                update(1, itemChainmailLeggings)
-                update(2, itemChainmailChestplate)
-                update(3, itemLeatherHelmet)
-            } else {
-                update(0, itemLeatherBoots)
-                update(1, itemLeatherLeggings)
-                update(2, itemLeatherChestplate)
-                update(3, itemLeatherHelmet)
-            }
-
             return dirty
         }
 
@@ -106,35 +120,6 @@ class ArmorService : Service() {
                 dirty = true
             }
             return dirty
-        }
-
-        private fun convertComponent(component: Float): Int {
-            return (component * 255.0F).toInt().coerceIn(0, 0xFF);
-        }
-
-        private fun convertColor(color: DyeColor): Int {
-            val components = color.colorComponents
-            val r = convertComponent(components[0])
-            val g = convertComponent(components[1])
-            val b = convertComponent(components[2])
-            return (r shl 16) or (g shl 8) or b
-        }
-
-        private val colorOperator = convertColor(DyeColor.LIME)
-        private val colorBlack = convertColor(DyeColor.BLACK)
-        private val colorYellow = convertColor(DyeColor.YELLOW)
-        private val colorBlue = convertColor(DyeColor.BLUE)
-        private val colorDuel = convertColor(DyeColor.BROWN)
-
-        private fun color(team: GameTeam): Int {
-            return when (team) {
-                GameTeam.OPERATOR -> colorOperator
-                GameTeam.PLAYER_BLACK -> colorBlack
-                GameTeam.PLAYER_YELLOW -> colorYellow
-                GameTeam.PLAYER_BLUE -> colorBlue
-                GameTeam.PLAYER_DUEL -> colorDuel
-                else -> 0
-            }
         }
 
     }

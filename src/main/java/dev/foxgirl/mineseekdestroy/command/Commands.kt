@@ -41,7 +41,7 @@ internal fun setup() {
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->
                 args.sendInfo("Resetting and preparing game state")
-                context.borderService.executeBorderStop(args)
+                context.stormService.executeStormStop(args)
                 context.barrierService.executeArenaOpen(args)
                 context.barrierService.executeBlimpClose(args)
                 context.lootService.executeClear(args)
@@ -303,21 +303,26 @@ internal fun setup() {
         }
     }
 
-    Command.build("border") {
+    Command.build("storm") {
         it.params(argLiteral("start")) {
             it.params(argDouble("seconds")) {
                 it.actionWithContext { args, context ->
                     game.getRule(Game.RULE_BORDER_CLOSE_DURATION).set(args.context, "seconds")
-                    context.borderService.executeBorderStart(args)
+                    context.stormService.executeStormStart(args)
                 }
             }
             it.actionWithContext { args, context ->
-                context.borderService.executeBorderStart(args)
+                context.stormService.executeStormStart(args)
             }
         }
         it.params(argLiteral("stop")) {
             it.actionWithContext { args, context ->
-                context.borderService.executeBorderStop(args)
+                context.stormService.executeStormStop(args)
+            }
+        }
+        it.params(argLiteral("clear")) {
+            it.actionWithContext { args, context ->
+                context.stormService.executeStormClear(args)
             }
         }
     }

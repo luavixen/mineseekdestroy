@@ -125,9 +125,9 @@ sealed interface GameProperties {
         override val templateInventory = BlockPos(886, 55, -41)
         override val templateLoottable = BlockPos(888, 55, -41)
 
-        override val regionAll = Region(BlockPos(788, 57, -170), BlockPos(974, -8, 30))
-        override val regionLegal = Region(BlockPos(788, 65536, -170), BlockPos(974, -8, 30))
-        override val regionPlayable = Region(BlockPos(788, 57, -170), BlockPos(974, -8, 30))
+        override val regionAll = Region(BlockPos(788, 57, -170), BlockPos(974, -7, 30))
+        override val regionLegal = Region(BlockPos(788, 65536, -170), BlockPos(974, -7, 30))
+        override val regionPlayable = Region(BlockPos(788, 57, -170), BlockPos(974, -7, 30))
         override val regionBlimp = Region(BlockPos(918, 80, -16), BlockPos(835, 53, -62))
         override val regionBarrierArenaTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierArenaTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
@@ -137,6 +137,15 @@ sealed interface GameProperties {
         override val borderSize = 250.0
 
         override val interactableBlocks = Empty.interactableBlocks + setOf(
+            ACACIA_DOOR,
+            BIRCH_DOOR,
+            DARK_OAK_DOOR,
+            JUNGLE_DOOR,
+            MANGROVE_DOOR,
+            OAK_DOOR,
+            SPRUCE_DOOR,
+            CRIMSON_DOOR,
+            WARPED_DOOR,
         )
 
     }
@@ -149,8 +158,8 @@ sealed interface GameProperties {
         override val positionDuel2 = Vec3d(-1271.5, 63.0, 205.5)
         override val positionHell = Vec3d(-1293.5, -65536.0, 197.5)
 
-        override val templateInventory = BlockPos(-1278, 114, 192)
-        override val templateLoottable = BlockPos(-1276, 114, 197)
+        override val templateInventory = BlockPos(-1278, 114, 196)
+        override val templateLoottable = BlockPos(-1276, 114, 196)
 
         override val regionAll = Region(BlockPos(-1600, 112, 591), BlockPos(-945, -8, -192))
         override val regionLegal = Region(BlockPos(-1600, 65536, 591), BlockPos(-945, -64, -192))
@@ -164,6 +173,15 @@ sealed interface GameProperties {
         override val borderSize = 333.0
 
         override val interactableBlocks = Empty.interactableBlocks + setOf(
+            ACACIA_DOOR,
+            BIRCH_DOOR,
+            DARK_OAK_DOOR,
+            JUNGLE_DOOR,
+            MANGROVE_DOOR,
+            OAK_DOOR,
+            SPRUCE_DOOR,
+            CRIMSON_DOOR,
+            WARPED_DOOR,
         )
 
     }
