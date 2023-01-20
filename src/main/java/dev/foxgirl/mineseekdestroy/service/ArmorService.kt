@@ -67,7 +67,7 @@ class ArmorService : Service() {
             fun loadoutEmpty(): Array<ItemStack> {
                 return Array(4) { ItemStack.EMPTY }
             }
-            fun loadoutDueler(): Array<ItemStack> {
+            fun loadoutDuel(): Array<ItemStack> {
                 fun armor(item: Item) = ItemStack(item)
                 return arrayOf(
                     armor(LEATHER_BOOTS),
@@ -75,6 +75,18 @@ class ArmorService : Service() {
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
                     armor(CHAINMAIL_CHESTPLATE),
                     armor(LEATHER_HELMET),
+                )
+            }
+            fun loadoutBlack(): Array<ItemStack> {
+                fun armorDyed(item: Item) =
+                    ItemStack(item).also { (item as DyeableItem).setColor(it, colorBlack) }
+                return arrayOf(
+                    armorDyed(LEATHER_BOOTS),
+                    armorDyed(LEATHER_LEGGINGS)
+                        .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
+                    armorDyed(LEATHER_CHESTPLATE)
+                        .apply { addEnchantment(Enchantments.THORNS, 1) },
+                    armorDyed(LEATHER_HELMET),
                 )
             }
             fun loadoutNormal(color: Int): Array<ItemStack> {
@@ -92,8 +104,8 @@ class ArmorService : Service() {
             loadouts = buildMap(8) {
                 put(NONE, loadoutEmpty())
                 put(OPERATOR, loadoutEmpty())
-                put(PLAYER_DUEL, loadoutDueler())
-                put(PLAYER_BLACK, loadoutNormal(colorBlack))
+                put(PLAYER_DUEL, loadoutDuel())
+                put(PLAYER_BLACK, loadoutBlack())
                 put(PLAYER_YELLOW, loadoutNormal(colorYellow))
                 put(PLAYER_BLUE, loadoutNormal(colorBlue))
             }

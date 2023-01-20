@@ -1,10 +1,7 @@
 package dev.foxgirl.mineseekdestroy.util;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Position;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -43,6 +40,14 @@ public final class Region {
 
     public @NotNull ChunkPos getChunkEnd() {
         return new ChunkPos(end);
+    }
+
+    public @NotNull Vec3d getCenter() {
+        return new Vec3d(
+            ((double) start.getX() + (double) end.getX()) / 2.0 + 0.5,
+            ((double) start.getY() + (double) end.getY()) / 2.0 + 0.5,
+            ((double) start.getZ() + (double) end.getZ()) / 2.0 + 0.5
+        );
     }
 
     public boolean contains(int x, int y, int z) {

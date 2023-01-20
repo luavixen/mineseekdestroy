@@ -12,6 +12,8 @@ class StormService : Service() {
     private val sizeMax: Double = 4096.0
     private val sizeCurrent get() = properties.borderSize
 
+    private val time get() = (game.getRuleDouble(Game.RULE_BORDER_CLOSE_DURATION) * 1000.0).toLong()
+
     override fun setup() {
         border.damagePerBlock = 0.5
         border.safeZone = 5.0
@@ -33,7 +35,7 @@ class StormService : Service() {
 
     fun executeStormStart(console: Console) {
         border.size = sizeCurrent
-        border.interpolateSize(sizeCurrent, sizeMin, (game.getRuleDouble(Game.RULE_BORDER_CLOSE_DURATION) * 1000.0).toLong())
+        border.interpolateSize(sizeCurrent, sizeMin, time)
         console.sendInfo("Started the storm")
     }
 

@@ -62,6 +62,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_TOWER_EFFECT_DURATION =
         GameRuleRegistry.register("msdTowerEffectDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_TOWER_KNOCKBACK =
+        GameRuleRegistry.register("msdTowerKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BORDER_CLOSE_DURATION =
         GameRuleRegistry.register("msdBorderCloseDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(180.0));
@@ -134,7 +136,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             var message = Console.format(values, false);
             LOGGER.info(message.getString());
             Game.getGame().sendToPlayers(message);
-
         }
         @Override
         public void sendError(@Nullable Object... values) {
@@ -149,7 +150,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             var message = Console.format(values, false);
             LOGGER.info(message.getString());
             Game.getGame().sendToOperators(message);
-
         }
         @Override
         public void sendError(@Nullable Object... values) {
