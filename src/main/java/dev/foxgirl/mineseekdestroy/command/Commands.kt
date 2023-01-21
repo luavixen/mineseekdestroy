@@ -307,7 +307,7 @@ internal fun setup() {
         it.params(argLiteral("start")) {
             it.params(argDouble("seconds")) {
                 it.actionWithContext { args, context ->
-                    game.getRule(Game.RULE_BORDER_CLOSE_DURATION).set(args.context, "seconds")
+                    game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, args["seconds"])
                     context.stormService.executeStormStart(args)
                 }
             }
@@ -323,6 +323,37 @@ internal fun setup() {
         it.params(argLiteral("clear")) {
             it.actionWithContext { args, context ->
                 context.stormService.executeStormClear(args)
+            }
+        }
+    }
+
+    Command.build("ghosts") {
+        it.params(argLiteral("enable")) {
+            it.actionWithContext { args, context ->
+                if (properties != GameProperties.Macander) {
+                    args.sendError("Cannot manage ghosts for this arena")
+                    return@actionWithContext
+                }
+                if (game.getRuleBoolean(Game.RULE_GHOSTS_ENABLED) == true) {
+                    args.sendError("Ghosts are already enabled")
+                    return@actionWithContext
+                }
+                game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, true)
+                args.sendInfo("Ghosts set to enabled")
+            }
+        }
+        it.params(argLiteral("disable")) {
+            it.actionWithContext { args, context ->
+                if (properties != GameProperties.Macander) {
+                    args.sendError("Cannot manage ghosts for this arena")
+                    return@actionWithContext
+                }
+                if (game.getRuleBoolean(Game.RULE_GHOSTS_ENABLED) == false) {
+                    args.sendError("Ghosts are already disabled")
+                    return@actionWithContext
+                }
+                game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false)
+                args.sendInfo("Ghosts set to disabled")
             }
         }
     }

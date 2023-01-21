@@ -6,7 +6,7 @@ import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameProperties;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
+import net.minecraft.server.world.ServerWorld;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +42,7 @@ public abstract class Service {
         return getContext().server;
     }
 
-    protected final @NotNull World getWorld() {
+    protected final @NotNull ServerWorld getWorld() {
         return getContext().world;
     }
 

@@ -9,7 +9,7 @@ class StormService : Service() {
     private val border: WorldBorder get() = world.worldBorder
 
     private val sizeMin: Double = 8.0
-    private val sizeMax: Double = 4096.0
+    private val sizeMax: Double = WorldBorder.STATIC_AREA_SIZE
     private val sizeCurrent get() = properties.borderSize
 
     private val time get() = (game.getRuleDouble(Game.RULE_BORDER_CLOSE_DURATION) * 1000.0).toLong()

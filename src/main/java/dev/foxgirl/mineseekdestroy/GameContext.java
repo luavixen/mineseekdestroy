@@ -58,8 +58,9 @@ public final class GameContext {
     public final @NotNull GlowService glowService;
     public final @NotNull PowderService powderService;
     public final @NotNull SnapshotService snapshotService;
-    public final @NotNull TowerService towerService;
     public final @NotNull StormService stormService;
+    public final @NotNull SpecialTowerService specialTowerService;
+    public final @NotNull SpecialGhostService specialGhostService;
 
     GameContext(@NotNull Game game) {
         Objects.requireNonNull(game, "Argument 'game'");
@@ -125,8 +126,9 @@ public final class GameContext {
         glowService = new GlowService();
         powderService = new PowderService();
         snapshotService = new SnapshotService();
-        towerService = new TowerService();
         stormService = new StormService();
+        specialTowerService = new SpecialTowerService();
+        specialGhostService = new SpecialGhostService();
     }
 
     public void initialize() {
@@ -141,10 +143,13 @@ public final class GameContext {
 
         server.setDifficulty(Difficulty.NORMAL, true);
 
-        game.getRule(GameRules.PLAYERS_SLEEPING_PERCENTAGE).set(200, server);
-        game.getRule(GameRules.KEEP_INVENTORY).set(true, server);
-        game.getRule(GameRules.DO_FIRE_TICK).set(false, server);
-        game.getRule(GameRules.DO_MOB_GRIEFING).set(false, server);
+        game.setRuleInt(GameRules.PLAYERS_SLEEPING_PERCENTAGE, 200);
+        game.setRuleBoolean(GameRules.KEEP_INVENTORY, true);
+        game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
+        game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
+
+        game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
+        game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false);
 
         inventoryService.initialize(this);
         lootService.initialize(this);
@@ -155,8 +160,9 @@ public final class GameContext {
         glowService.initialize(this);
         powderService.initialize(this);
         snapshotService.initialize(this);
-        towerService.initialize(this);
         stormService.initialize(this);
+        specialTowerService.initialize(this);
+        specialGhostService.initialize(this);
     }
 
     public void destroy() {

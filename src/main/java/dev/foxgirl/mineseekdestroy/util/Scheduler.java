@@ -171,4 +171,18 @@ public final class Scheduler {
         return schedule(new Task(System.currentTimeMillis() + ms, ms, callback));
     }
 
+    public static @NotNull Schedule delay(double seconds, @NotNull Callback callback) {
+        if (seconds < 0.0 || !Double.isFinite(seconds)) {
+            throw new IllegalArgumentException("Argument 'seconds' is negative/invalid");
+        }
+        return delay((long) (seconds * 1000.0D), callback);
+    }
+
+    public static @NotNull Schedule interval(double seconds, @NotNull Callback callback) {
+        if (seconds < 0.0 || !Double.isFinite(seconds)) {
+            throw new IllegalArgumentException("Argument 'seconds' is negative/invalid");
+        }
+        return interval((long) (seconds * 1000.0D), callback);
+    }
+
 }

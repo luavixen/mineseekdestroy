@@ -10,11 +10,11 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.BlockPos
 import kotlin.math.sqrt
 
-class TowerService : Service() {
+class SpecialTowerService : Service() {
 
     private val regions = listOf(
         Region(BlockPos(-1268, 124, 235), BlockPos(-1262, 131, 241)),
-        Region(BlockPos(-1144, 136, 239), BlockPos(-1150, 129, 239)),
+        Region(BlockPos(-1144, 136, 239), BlockPos(-1150, 129, 245)),
         Region(BlockPos(-1379, 143, 177), BlockPos(-1373, 136, 183)),
         Region(BlockPos(-1290, 151, 62), BlockPos(-1296, 144, 68)),
     )

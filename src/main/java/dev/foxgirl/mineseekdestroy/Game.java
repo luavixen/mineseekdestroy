@@ -60,18 +60,25 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
+        GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_EGG =
+        GameRuleRegistry.register("msdKnockbackEgg", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(-4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
+
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_BORDER_CLOSE_DURATION =
+        GameRuleRegistry.register("msdBorderCloseDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(180.0));
+
     public static final @NotNull GameRules.Key<DoubleRule> RULE_TOWER_EFFECT_DURATION =
         GameRuleRegistry.register("msdTowerEffectDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_TOWER_KNOCKBACK =
         GameRuleRegistry.register("msdTowerKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
 
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_BORDER_CLOSE_DURATION =
-        GameRuleRegistry.register("msdBorderCloseDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(180.0));
-
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
-        GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_EGG =
-        GameRuleRegistry.register("msdKnockbackEgg", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(-4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_GHOSTS_ENABLED =
+        GameRuleRegistry.register("msdGhostsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_SPAWN_DELAY_MIN =
+        GameRuleRegistry.register("msdGhostsSpawnDelayMin", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(15.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_SPAWN_DELAY_MAX =
+        GameRuleRegistry.register("msdGhostsSpawnDelayMax", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(30.0));
 
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
@@ -235,6 +242,16 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         return getRule(key).get();
     }
 
+    public void setRuleDouble(GameRules.Key<DoubleRule> key, double value) {
+        getRule(key).setValue(GameRuleFactory.createDoubleRule(value).createRule(), getServer());
+    }
+    public void setRuleInt(GameRules.Key<GameRules.IntRule> key, int value) {
+        getRule(key).set(value, getServer());
+    }
+    public void setRuleBoolean(GameRules.Key<GameRules.BooleanRule> key, boolean value) {
+        getRule(key).set(value, getServer());
+    }
+
     public boolean isOperator(@NotNull Entity entity) {
         Objects.requireNonNull(entity, "Argument 'entity'");
 
@@ -361,7 +378,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         context.saturationService.handleUpdate();
         context.glowService.handleUpdate();
         context.powderService.handleUpdate();
-        context.towerService.handleUpdate();
+        context.specialTowerService.handleUpdate();
+        context.specialGhostService.handleUpdate();
 
         context.updatePlayers();
     }
