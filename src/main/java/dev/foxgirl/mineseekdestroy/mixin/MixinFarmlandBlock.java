@@ -16,7 +16,7 @@ public abstract class MixinFarmlandBlock {
 
     @Inject(method = "onLandedUpon", at = @At("HEAD"), cancellable = true)
     private void mineseekdestroy$hookOnLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance, CallbackInfo info) {
-        entity.handleFallDamage(fallDistance, 1.0f, DamageSource.FALL);
+        entity.handleFallDamage(fallDistance, 1.0F, DamageSource.FALL);
         info.cancel();
     }
 

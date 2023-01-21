@@ -9,6 +9,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.mob.MobEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.util.math.BlockPos
@@ -31,13 +32,18 @@ class SpecialGhostService : Service() {
         }
     }
 
+    private val spawnEntityTypes = listOf<EntityType<out MobEntity>>(
+        EntityType.SKELETON,
+        EntityType.HUSK,
+        EntityType.VEX,
+    )
+
     private var spawnPositions = listOf<Vec3d>()
 
     private fun spawn() {
         if (!spawnEnabled) return
         if (!world.isNight) return
-        val entityType = if (Random.nextBoolean()) EntityType.SKELETON else EntityType.HUSK
-        val entity = entityType.create(world) ?: return
+        val entity = spawnEntityTypes.random().create(world) ?: return
         entity.setPosition(spawnPositions.random())
         entity.equipStack(EquipmentSlot.MAINHAND, ItemStack(IRON_SWORD))
         entity.equipStack(EquipmentSlot.HEAD, ItemStack(LEATHER_HELMET))

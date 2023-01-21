@@ -334,12 +334,8 @@ internal fun setup() {
                     args.sendError("Cannot manage ghosts for this arena")
                     return@actionWithContext
                 }
-                if (game.getRuleBoolean(Game.RULE_GHOSTS_ENABLED) == true) {
-                    args.sendError("Ghosts are already enabled")
-                    return@actionWithContext
-                }
                 game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, true)
-                args.sendInfo("Ghosts set to enabled")
+                args.sendInfo("Ghosts enabled")
             }
         }
         it.params(argLiteral("disable")) {
@@ -348,12 +344,8 @@ internal fun setup() {
                     args.sendError("Cannot manage ghosts for this arena")
                     return@actionWithContext
                 }
-                if (game.getRuleBoolean(Game.RULE_GHOSTS_ENABLED) == false) {
-                    args.sendError("Ghosts are already disabled")
-                    return@actionWithContext
-                }
                 game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false)
-                args.sendInfo("Ghosts set to disabled")
+                args.sendInfo("Ghosts disabled")
             }
         }
     }

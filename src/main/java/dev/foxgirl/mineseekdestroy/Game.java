@@ -192,7 +192,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     private GameContext context = null;
 
     public @NotNull MinecraftServer getServer() {
-        return server;
+        return Objects.requireNonNull(server, "Expression 'server'");
     }
 
     public @NotNull GameProperties getProperties() {

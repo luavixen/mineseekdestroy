@@ -20,9 +20,11 @@ public final class GamePlayer {
     private final UUID uuid;
     private final String name;
 
+    private final int hash;
+
     @Override
     public int hashCode() {
-        return uuid.hashCode();
+        return hash;
     }
 
     @Override
@@ -52,6 +54,8 @@ public final class GamePlayer {
 
         uuid = Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'");
         name = Objects.requireNonNull(player.getEntityName(), "Expression 'player.getEntityName()'");
+
+        hash = uuid.hashCode();
     }
 
     public @NotNull UUID getUUID() {

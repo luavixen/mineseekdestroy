@@ -44,9 +44,9 @@ public final class Region {
 
     public @NotNull Vec3d getCenter() {
         return new Vec3d(
-            ((double) start.getX() + (double) end.getX()) / 2.0 + 0.5,
-            ((double) start.getY() + (double) end.getY()) / 2.0 + 0.5,
-            ((double) start.getZ() + (double) end.getZ()) / 2.0 + 0.5
+            (double) ((long) start.getX() + (long) end.getX()) / 2.0 + 0.5,
+            (double) ((long) start.getY() + (long) end.getY()) / 2.0 + 0.5,
+            (double) ((long) start.getZ() + (long) end.getZ()) / 2.0 + 0.5
         );
     }
 
