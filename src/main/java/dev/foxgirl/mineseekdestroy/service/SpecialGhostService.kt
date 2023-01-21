@@ -9,6 +9,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.mob.MobEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
@@ -32,18 +33,11 @@ class SpecialGhostService : Service() {
         }
     }
 
-    private val spawnEntityTypes = listOf<EntityType<out MobEntity>>(
-        EntityType.SKELETON,
-        EntityType.HUSK,
-        EntityType.VEX,
-    )
-
     private var spawnPositions = listOf<Vec3d>()
 
-    private fun spawn() {
-        if (!spawnEnabled) return
-        if (!world.isNight) return
-        val entity = spawnEntityTypes.random().create(world) ?: return
+    private fun spawnGhoul() {
+        val entityType = if (Random.nextBoolean()) EntityType.SKELETON else EntityType.HUSK
+        val entity = entityType.create(world) ?: return
         entity.setPosition(spawnPositions.random())
         entity.equipStack(EquipmentSlot.MAINHAND, ItemStack(IRON_SWORD))
         entity.equipStack(EquipmentSlot.HEAD, ItemStack(LEATHER_HELMET))
@@ -51,6 +45,25 @@ class SpecialGhostService : Service() {
         entity.equipStack(EquipmentSlot.LEGS, ItemStack(CHAINMAIL_LEGGINGS).apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) })
         entity.equipStack(EquipmentSlot.FEET, ItemStack(LEATHER_BOOTS))
         world.spawnEntity(entity)
+    }
+
+    private fun spawnGhost() {
+        val entity = EntityType.VEX.create(world) ?: return
+        entity.setPosition(spawnPositions.random())
+        entity.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY)
+        entity.equipStack(EquipmentSlot.OFFHAND, ItemStack.EMPTY)
+        entity.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE)!!.baseValue = 0.0
+        world.spawnEntity(entity)
+    }
+
+    private fun spawn() {
+        if (!spawnEnabled) return
+        if (!world.isNight) return
+        if (Random.nextDouble() < 0.33) {
+            spawnGhost()
+        } else {
+            spawnGhoul()
+        }
     }
 
     override fun setup() {

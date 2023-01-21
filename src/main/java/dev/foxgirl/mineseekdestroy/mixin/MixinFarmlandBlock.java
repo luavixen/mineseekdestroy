@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinFarmlandBlock {
 
     @Inject(method = "onLandedUpon", at = @At("HEAD"), cancellable = true)
-    private void mineseekdestroy$hookOnLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance, CallbackInfo info) {
+    private void mineseekdestroy$hookOnLandedUpon(World world, BlockState blockState, BlockPos blockPos, Entity entity, float fallDistance, CallbackInfo info) {
         entity.handleFallDamage(fallDistance, 1.0F, DamageSource.FALL);
         info.cancel();
     }

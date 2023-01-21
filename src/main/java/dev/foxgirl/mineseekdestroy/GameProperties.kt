@@ -130,8 +130,8 @@ sealed interface GameProperties {
         override val regionLegal = Region(BlockPos(788, 65536, -170), BlockPos(974, -7, 30))
         override val regionPlayable = Region(BlockPos(788, 57, -170), BlockPos(974, -7, 30))
         override val regionBlimp = Region(BlockPos(918, 80, -16), BlockPos(835, 53, -62))
-        override val regionBarrierArenaTarget = Region(BlockPos(919, 16, -52), BlockPos(806, 35, -125))
-        override val regionBarrierArenaTemplate = Region(BlockPos(121, -1, -663), BlockPos(8, 18, -736))
+        override val regionBarrierArenaTarget = Region(BlockPos(919, -1, -52), BlockPos(806, 35, -125))
+        override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
 
