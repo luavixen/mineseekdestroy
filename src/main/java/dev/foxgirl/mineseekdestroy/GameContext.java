@@ -59,6 +59,7 @@ public final class GameContext {
     public final @NotNull PowderService powderService;
     public final @NotNull SnapshotService snapshotService;
     public final @NotNull StormService stormService;
+    public final @NotNull SmokerService smokerService;
     public final @NotNull SpecialTowerService specialTowerService;
     public final @NotNull SpecialGhostService specialGhostService;
 
@@ -127,6 +128,7 @@ public final class GameContext {
         powderService = new PowderService();
         snapshotService = new SnapshotService();
         stormService = new StormService();
+        smokerService = new SmokerService();
         specialTowerService = new SpecialTowerService();
         specialGhostService = new SpecialGhostService();
     }
@@ -161,6 +163,7 @@ public final class GameContext {
         powderService.initialize(this);
         snapshotService.initialize(this);
         stormService.initialize(this);
+        smokerService.initialize(this);
         specialTowerService.initialize(this);
         specialGhostService.initialize(this);
     }

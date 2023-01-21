@@ -11,13 +11,13 @@ import net.minecraft.util.math.Position
 internal fun setup() {
 
     Command.build("game") {
-        it.params(argLiteral("stop")) {
+        it.params(argLiteral("end")) {
             it.action { args ->
                 if (game.context != null) {
                     game.destroy()
-                    args.sendInfo("Stopped game")
+                    args.sendInfo("Ended game")
                 } else {
-                    args.sendError("Cannot stop game, no game running")
+                    args.sendError("Cannot end game, no game running")
                 }
             }
         }
@@ -84,7 +84,7 @@ internal fun setup() {
         }
     }
 
-    Command.build("end") {
+    Command.build("stop") {
         it.action { args ->
             game.state = WaitingGameState()
             args.sendInfo("Reset current game state")
@@ -259,6 +259,19 @@ internal fun setup() {
         it.params(argLiteral("fill")) {
             it.actionWithContext { args, context ->
                 context.lootService.executeFill(args)
+            }
+        }
+    }
+
+    Command.build("smoker") {
+        it.params(argLiteral("clear")) {
+            it.actionWithContext { args, context ->
+                context.smokerService.executeClear(args)
+            }
+        }
+        it.params(argLiteral("fill")) {
+            it.actionWithContext { args, context ->
+                context.smokerService.executeFill(args)
             }
         }
     }

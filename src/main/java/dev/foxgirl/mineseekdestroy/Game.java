@@ -120,6 +120,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.LINGERING_POTION,
         Items.MILK_BUCKET,
         Items.POTATO,
+        Items.BAKED_POTATO,
+        Items.POISONOUS_POTATO,
         Items.BREAD,
     });
 

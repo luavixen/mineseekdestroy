@@ -10,7 +10,6 @@ import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.mob.MobEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.util.math.BlockPos

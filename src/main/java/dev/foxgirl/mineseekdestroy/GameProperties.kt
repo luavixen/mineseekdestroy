@@ -147,6 +147,7 @@ sealed interface GameProperties {
             SPRUCE_DOOR,
             CRIMSON_DOOR,
             WARPED_DOOR,
+            DARK_OAK_TRAPDOOR,
         )
 
     }
@@ -183,6 +184,8 @@ sealed interface GameProperties {
             SPRUCE_DOOR,
             CRIMSON_DOOR,
             WARPED_DOOR,
+            OAK_FENCE_GATE,
+            CRIMSON_FENCE_GATE,
             WARPED_FENCE_GATE,
         )
 
