@@ -192,7 +192,11 @@ internal fun setup() {
 
     Command.build("tp") {
         fun register(literal: String, position: () -> Position, region: () -> Region) {
-            fun teleport(console: Console, players: List<GamePlayer>, filter: (GamePlayer) -> Boolean = { true }) {
+            fun teleport(console: Console, players: List<GamePlayer>, all: Boolean, filter: (GamePlayer) -> Boolean = { true }) {
+                if (all && game.state is RunningGameState) {
+                    console.sendError("Cannot teleport all players while the game is running, use @a to force")
+                    return
+                }
                 players.filter(filter).let {
                     it.forEach { player -> player.teleport(position()) }
                     console.sendInfo("Teleported ${it.size} player(s) to '${literal}'")
@@ -200,25 +204,25 @@ internal fun setup() {
             }
 
             fun isPlaying(player: GamePlayer) = player.isPlaying
-            fun isInRegion(player: GamePlayer) = player.entity?.let(region()::contains) ?: false
+            fun isInRegion(player: GamePlayer) = player.entity.let { if (it != null) region().contains(it) else false }
 
             it.params(argLiteral(literal)) {
                 it.params(argLiteral("area")) {
                     it.params(argPlayers()) {
-                        it.actionWithContext { args, context -> teleport(args, args.players(context), ::isInRegion) }
+                        it.actionWithContext { args, context -> teleport(args, args.players(context), false, ::isInRegion) }
                     }
-                    it.actionWithContext { args, context -> teleport(args, context.players, ::isInRegion) }
+                    it.actionWithContext { args, context -> teleport(args, context.players, true, ::isInRegion) }
                 }
                 it.params(argLiteral("force")) {
                     it.params(argPlayers()) {
-                        it.actionWithContext { args, context -> teleport(args, args.players(context)) }
+                        it.actionWithContext { args, context -> teleport(args, args.players(context), false) }
                     }
-                    it.actionWithContext { args, context -> teleport(args, context.players) }
+                    it.actionWithContext { args, context -> teleport(args, context.players, true) }
                 }
                 it.params(argPlayers()) {
-                    it.actionWithContext { args, context -> teleport(args, args.players(context), ::isPlaying) }
+                    it.actionWithContext { args, context -> teleport(args, args.players(context), false, ::isPlaying) }
                 }
-                it.actionWithContext { args, context -> teleport(args, context.players, ::isPlaying) }
+                it.actionWithContext { args, context -> teleport(args, context.players, true, ::isPlaying) }
             }
         }
         register("blimp", { properties.positionBlimp }, { properties.regionBlimp })

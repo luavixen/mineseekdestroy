@@ -85,10 +85,8 @@ class SpecialGhostService : Service() {
         if (properties != GameProperties.Macander) return
         if (schedule == null && spawnEnabled) {
             schedule = Scheduler.delay(spawnDelay()) {
-                server.execute {
-                    schedule = null
-                    spawn()
-                }
+                schedule = null
+                spawn()
             }
         }
     }

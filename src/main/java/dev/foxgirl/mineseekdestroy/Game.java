@@ -179,7 +179,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     }
 
     public static @NotNull Game getGame() {
-        return Game.INSTANCE;
+        return Objects.requireNonNull(Game.INSTANCE, "Expression 'Game.INSTANCE'");
     }
 
     public static @NotNull GameProperties getGameProperties() {
@@ -198,11 +198,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     }
 
     public @NotNull GameProperties getProperties() {
-        return properties;
+        return Objects.requireNonNull(properties, "Expression 'properties'");
     }
 
     public @NotNull GameState getState() {
-        return state;
+        return Objects.requireNonNull(state, "Expression 'state'");
     }
 
     public void setState(@NotNull GameState state) {
@@ -358,11 +358,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     player.getYaw(),
                     player.getPitch()
                 );
-                player.kill();
+                player.setHealth(1.0F);
             }
             if (player.interactionManager.getGameMode() != GameMode.SURVIVAL && !hasOperator(player)) {
                 player.interactionManager.changeGameMode(GameMode.SURVIVAL);
-                player.kill();
             }
         }
 

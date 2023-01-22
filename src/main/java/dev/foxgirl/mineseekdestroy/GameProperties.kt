@@ -119,8 +119,8 @@ sealed interface GameProperties {
 
         override val positionBlimp = Vec3d(870.5, 55.0, -40.5)
         override val positionArena = Vec3d(870.5, 5.0, -40.5)
-        override val positionDuel1 = Vec3d(837.5, 44.0, 91.5)
-        override val positionDuel2 = Vec3d(901.5, 44.0, 91.5)
+        override val positionDuel1 = Vec3d(837.5, 44.0, -91.5)
+        override val positionDuel2 = Vec3d(901.5, 44.0, -91.5)
         override val positionHell = Vec3d(870.5, -65536.0, -40.5)
 
         override val templateInventory = BlockPos(886, 55, -41)

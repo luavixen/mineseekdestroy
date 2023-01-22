@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.PriorityQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Scheduler {
@@ -12,28 +13,27 @@ public final class Scheduler {
         throw new UnsupportedOperationException();
     }
 
-    @FunctionalInterface
-    public interface Callback {
-        void invoke();
-    }
-
     public interface Schedule {
         boolean cancel();
         long getTime();
         long getPeriod();
-        @NotNull Callback getCallback();
+    }
+
+    @FunctionalInterface
+    public interface Callback {
+        void invoke(@NotNull Schedule schedule);
     }
 
     private static final Object lock = new Object();
     private static final AtomicBoolean running = new AtomicBoolean(true);
 
     private static PriorityQueue<Task> queue = new PriorityQueue<>(16);
-    private static Executor executor = new Executor();
+    private static TaskThread thread = new TaskThread();
 
     static {
-        executor.setName("MnSnD-Scheduler");
-        executor.setDaemon(false);
-        executor.start();
+        thread.setName("MnSnD-Scheduler");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private static final class Task implements Comparable<Task>, Schedule {
@@ -48,10 +48,18 @@ public final class Scheduler {
         }
 
         private void execute() {
+            Executor executor;
             try {
-                this.callback.invoke();
-            } catch (Throwable err) {
-                Game.LOGGER.error("Unhandled exception in scheduled task", err);
+                executor = Game.getGame().getServer();
+            } catch (NullPointerException cause) {
+                Game.LOGGER.error("Scheduler failed to execute task, server not ready", cause);
+                return;
+            }
+            try {
+                executor.execute(new TaskRunnable(this));
+            } catch (Exception cause) {
+                Game.LOGGER.error("Scheduler failed to execute task", cause);
+                return;
             }
         }
 
@@ -74,14 +82,27 @@ public final class Scheduler {
         public long getPeriod() {
             return this.period;
         }
+    }
+
+    private static final class TaskRunnable implements Runnable {
+        private final Task task;
+
+        private TaskRunnable(Task task) {
+            this.task = task;
+        }
 
         @Override
-        public @NotNull Callback getCallback() {
-            return this.callback;
+        public void run() {
+            Task task = this.task;
+            try {
+                task.callback.invoke(task);
+            } catch (Exception cause) {
+                Game.LOGGER.error("Scheduler encountered exception while executing task", cause);
+            }
         }
     }
 
-    private static final class Executor extends Thread {
+    private static final class TaskThread extends Thread {
         @Override
         public void run() {
             try {
@@ -120,12 +141,12 @@ public final class Scheduler {
             return;
         }
         try {
-            executor.interrupt();
-            executor.join();
+            thread.interrupt();
+            thread.join();
         } catch (InterruptedException err) {
             throw new RuntimeException(err);
         } finally {
-            executor = null;
+            thread = null;
             queue.clear();
             queue = null;
         }
@@ -151,38 +172,31 @@ public final class Scheduler {
         }
     }
 
-    public static @NotNull Schedule delay(long ms, @NotNull Callback callback) {
+    private static long convert(double seconds) {
+        if (!Double.isFinite(seconds)) {
+            throw new IllegalArgumentException("Argument 'seconds' is invalid");
+        }
+        long ms = (long) (seconds * 1000.0D);
         if (ms < 0) {
-            throw new IllegalArgumentException("Argument 'ms' is negative");
+            throw new IllegalArgumentException("Argument 'seconds' is negative");
         }
-        if (callback == null) {
-            throw new NullPointerException("Argument 'callback'");
-        }
-        return schedule(new Task(System.currentTimeMillis() + ms, -1, callback));
-    }
-
-    public static @NotNull Schedule interval(long ms, @NotNull Callback callback) {
-        if (ms < 0) {
-            throw new IllegalArgumentException("Argument 'ms' is negative");
-        }
-        if (callback == null) {
-            throw new NullPointerException("Argument 'callback'");
-        }
-        return schedule(new Task(System.currentTimeMillis() + ms, ms, callback));
+        return ms;
     }
 
     public static @NotNull Schedule delay(double seconds, @NotNull Callback callback) {
-        if (seconds < 0.0 || !Double.isFinite(seconds)) {
-            throw new IllegalArgumentException("Argument 'seconds' is negative/invalid");
+        if (callback == null) {
+            throw new NullPointerException("Argument 'callback'");
         }
-        return delay((long) (seconds * 1000.0D), callback);
+        long ms = convert(seconds);
+        return schedule(new Task(System.currentTimeMillis() + ms, -1, callback));
     }
 
     public static @NotNull Schedule interval(double seconds, @NotNull Callback callback) {
-        if (seconds < 0.0 || !Double.isFinite(seconds)) {
-            throw new IllegalArgumentException("Argument 'seconds' is negative/invalid");
+        if (callback == null) {
+            throw new NullPointerException("Argument 'callback'");
         }
-        return interval((long) (seconds * 1000.0D), callback);
+        long ms = convert(seconds);
+        return schedule(new Task(System.currentTimeMillis() + ms, ms, callback));
     }
 
 }
