@@ -29,7 +29,7 @@ public abstract class RunningGameState extends GameState {
             // Update the player's position
             newPlayerEntity.updatePosition(pos.getX(), pos.getY(), pos.getZ());
             // Wait a bit and then double-check that the player was *actually* teleported
-            Scheduler.delay(0.05, (task) -> {
+            Scheduler.now((task) -> {
                 if (!region.contains(newPlayerEntity)) {
                     newPlayerEntity.updatePosition(pos.getX(), pos.getY(), pos.getZ());
                 }

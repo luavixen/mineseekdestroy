@@ -45,6 +45,7 @@ internal fun setup() {
                 context.barrierService.executeArenaOpen(args)
                 context.barrierService.executeBlimpClose(args)
                 context.lootService.executeClear(args)
+                context.smokerService.executeClear(args)
                 context.inventoryService.executeClear(args)
                 context.players.forEach { if (!it.isOperator) it.teleport(properties.positionBlimp) }
             }

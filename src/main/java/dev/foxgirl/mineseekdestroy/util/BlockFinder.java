@@ -87,6 +87,16 @@ public final class BlockFinder {
         }
     }
 
+    /**
+     * Searches the given region for blocks, filtered by the predicate.
+     * @param world World to search in.
+     * @param region Region to search in.
+     * @param predicate Predicate to filter blocks by.
+     * @return
+     *   {@link CompletableFuture} that is resolved with a list of search
+     *   results.
+     * @throws NullPointerException If any of the provided arguments are null.
+     */
     public static @NotNull CompletableFuture<@NotNull List<@NotNull Result>> search(@NotNull World world, @NotNull Region region, @NotNull Predicate predicate) {
         Objects.requireNonNull(world, "Argument 'world'");
         Objects.requireNonNull(region, "Argument 'region'");

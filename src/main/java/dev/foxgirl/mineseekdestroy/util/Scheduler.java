@@ -7,20 +7,41 @@ import java.util.PriorityQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Scheduler provides a facility for scheduling tasks to be run on the main
+ * server thread at a later date. Tasks may be scheduled for one-time
+ * execution, or for repeated execution at regular intervals. It is similar in
+ * functionality to {@link java.util.Timer}.
+ */
 public final class Scheduler {
 
     private Scheduler() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Schedule represents a task that will execute in the future.
+     */
     public interface Schedule {
+        /**
+         * Cancels this schedule.
+         * @return
+         *   True if the schedule was cancelled, false if the schedule was
+         *   already cancelled or completed.
+         */
         boolean cancel();
-        long getTime();
-        long getPeriod();
     }
 
+    /**
+     * Callback represents a task callback to be invoked as part of a task's
+     * execution.
+     */
     @FunctionalInterface
     public interface Callback {
+        /**
+         * Performs the task.
+         * @param schedule Schedule corresponding to the task's execution.
+         */
         void invoke(@NotNull Schedule schedule);
     }
 
@@ -71,16 +92,6 @@ public final class Scheduler {
         @Override
         public boolean cancel() {
             return remove(this);
-        }
-
-        @Override
-        public long getTime() {
-            return this.time;
-        }
-
-        @Override
-        public long getPeriod() {
-            return this.period;
         }
     }
 
@@ -136,6 +147,9 @@ public final class Scheduler {
         }
     }
 
+    /**
+     * Terminates this scheduler, discarding any currently scheduled tasks.
+     */
     public static void stop() {
         if (!running.getAndSet(false)) {
             return;
@@ -172,7 +186,11 @@ public final class Scheduler {
         }
     }
 
-    private static long convert(double seconds) {
+    private static long timeNow() {
+        return System.currentTimeMillis();
+    }
+
+    private static long timeConvert(double seconds) {
         if (!Double.isFinite(seconds)) {
             throw new IllegalArgumentException("Argument 'seconds' is invalid");
         }
@@ -183,20 +201,49 @@ public final class Scheduler {
         return ms;
     }
 
+    /**
+     * Schedules a task to be run (once) as soon as possible.
+     * @param callback Task callback to invoke.
+     * @return Newly created task schedule.
+     * @throws NullPointerException If the provided callback is null.
+     */
+    public static @NotNull Schedule now(@NotNull Callback callback) {
+        if (callback == null) {
+            throw new NullPointerException("Argument 'callback'");
+        }
+        return schedule(new Task(timeNow(), -1, callback));
+    }
+
+    /**
+     * Schedules a task to be run (once) at some time in the future.
+     * @param seconds Delay in seconds to wait before execution.
+     * @param callback Task callback to invoke.
+     * @return Newly created task schedule.
+     * @throws IllegalArgumentException If the provided delay is invalid.
+     * @throws NullPointerException If the provided callback is null.
+     */
     public static @NotNull Schedule delay(double seconds, @NotNull Callback callback) {
         if (callback == null) {
             throw new NullPointerException("Argument 'callback'");
         }
-        long ms = convert(seconds);
-        return schedule(new Task(System.currentTimeMillis() + ms, -1, callback));
+        long ms = timeConvert(seconds);
+        return schedule(new Task(timeNow() + ms, -1, callback));
     }
 
+    /**
+     * Schedules a task to be run multiple times on an interval.
+     * @param seconds Delay in seconds to wait before and between executions.
+     * @param callback Task callback to invoke.
+     * @return Newly created task schedule.
+     * @throws IllegalArgumentException If the provided delay is invalid.
+     * @throws NullPointerException If the provided callback is null.
+     */
     public static @NotNull Schedule interval(double seconds, @NotNull Callback callback) {
         if (callback == null) {
             throw new NullPointerException("Argument 'callback'");
         }
-        long ms = convert(seconds);
-        return schedule(new Task(System.currentTimeMillis() + ms, ms, callback));
+        long ms = timeConvert(seconds);
+        return schedule(new Task(timeNow() + ms, ms, callback));
     }
 
 }

@@ -6,6 +6,10 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 import java.util.Objects;
 
+/**
+ * Fuck provides functionality for side-stepping the JVM and creating instances
+ * of classes without running any constructors.
+ */
 public final class Fuck {
 
     /**
