@@ -11,6 +11,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * MixinFarmlandBlock modifies farmland to disable the trampling mechanic.
+ */
 @Mixin(FarmlandBlock.class)
 public abstract class MixinFarmlandBlock {
 

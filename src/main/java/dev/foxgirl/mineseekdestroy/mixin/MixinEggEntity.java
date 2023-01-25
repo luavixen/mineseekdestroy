@@ -7,6 +7,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+/**
+ * MixinEggEntity modifies thrown eggs so that they never spawn chickens.
+ */
 @Mixin(EggEntity.class)
 public abstract class MixinEggEntity {
 

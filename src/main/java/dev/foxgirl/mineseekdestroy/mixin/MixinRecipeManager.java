@@ -13,6 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
 
+/**
+ * MixinRecipeManager modifies the recipe list to add a new recipe for an egg
+ * block.
+ */
 @Mixin(RecipeManager.class)
 public abstract class MixinRecipeManager {
 

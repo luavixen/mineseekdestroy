@@ -10,6 +10,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * MixinCraftingResultInventory modifies the crafting system so that it renames
+ * all bone blocks to "Egg Block".
+ */
 @Mixin(CraftingResultInventory.class)
 public abstract class MixinCraftingResultInventory {
 

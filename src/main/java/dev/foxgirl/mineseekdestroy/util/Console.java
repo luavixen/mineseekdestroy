@@ -16,7 +16,7 @@ public interface Console {
      *   Message to send as feedback, values will be converted to strings and
      *   joined with spaces.
      */
-    void sendInfo(Object ...values);
+    void sendInfo(Object... values);
 
     /**
      * Sends error feedback to this console.
@@ -25,7 +25,7 @@ public interface Console {
      *   Message to send as feedback, values will be converted to strings and
      *   joined with spaces.
      */
-    void sendError(Object ...values);
+    void sendError(Object... values);
 
     static @NotNull Style STYLE_INFO = Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE);
     static @NotNull Style STYLE_ERROR = Style.EMPTY.withFormatting(Formatting.RED);

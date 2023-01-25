@@ -19,6 +19,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 
+/**
+ * MixinAbstractFurnaceBlockEntity modifies furnaces to always have fuel
+ * (Bamboo) and glow when being used.
+ */
 @Mixin(AbstractFurnaceBlockEntity.class)
 public abstract class MixinAbstractFurnaceBlockEntity {
 
