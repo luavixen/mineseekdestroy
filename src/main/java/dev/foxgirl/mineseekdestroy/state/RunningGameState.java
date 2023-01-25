@@ -20,15 +20,15 @@ public abstract class RunningGameState extends GameState {
         if (player.isPlaying() && !player.isAlive()) {
             var pos = Game.getGameProperties().getPositionBlimp();
             var region = Game.getGameProperties().getRegionBlimp();
-            // Teleport the player normally
+            // 1. Teleport the player normally
             newPlayerEntity.teleport(
                 context.world,
                 pos.getX(), pos.getY(), pos.getZ(),
                 newPlayerEntity.getYaw(), newPlayerEntity.getPitch()
             );
-            // Update the player's position
+            // 2. Update the player's position forcefully
             newPlayerEntity.updatePosition(pos.getX(), pos.getY(), pos.getZ());
-            // Wait a bit and then double-check that the player was *actually* teleported
+            // 3. Wait and double-check that the player was *actually* teleported
             Scheduler.now((task) -> {
                 if (!region.contains(newPlayerEntity)) {
                     newPlayerEntity.updatePosition(pos.getX(), pos.getY(), pos.getZ());

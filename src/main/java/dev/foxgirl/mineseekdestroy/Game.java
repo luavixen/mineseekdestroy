@@ -178,10 +178,18 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         }
     }
 
+    /**
+     * Gets the singleton instance of {@link Game}.
+     * @throws NullPointerException If the mod has not yet been initialized.
+     */
     public static @NotNull Game getGame() {
         return Objects.requireNonNull(Game.INSTANCE, "Expression 'Game.INSTANCE'");
     }
 
+    /**
+     * Gets the game's properties list.
+     * @throws NullPointerException If the mod has not yet been initialized.
+     */
     public static @NotNull GameProperties getGameProperties() {
         return getGame().getProperties();
     }
@@ -193,6 +201,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     private GameState state = new WaitingGameState();
     private GameContext context = null;
 
+    /**
+     * Gets the current {@link MinecraftServer} instance.
+     * @throws NullPointerException If the server is not ready yet.
+     */
     public @NotNull MinecraftServer getServer() {
         return Objects.requireNonNull(server, "Expression 'server'");
     }

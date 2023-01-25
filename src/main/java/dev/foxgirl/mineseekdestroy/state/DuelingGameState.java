@@ -54,7 +54,7 @@ public class DuelingGameState extends RunningGameState {
     private List<ServerPlayerEntity> findPlayers(GameContext context) {
         var list = new ArrayList<ServerPlayerEntity>();
         for (var player : context.getPlayers()) {
-            if (!player.isPlaying() || !player.isAlive()) continue;
+            if (player.getTeam() != GameTeam.PLAYER_DUEL || !player.isAlive()) continue;
             var entity = player.getEntity();
             if (entity == null || !entity.isAlive()) continue;
             if (entity.getWorld() != context.world) continue;

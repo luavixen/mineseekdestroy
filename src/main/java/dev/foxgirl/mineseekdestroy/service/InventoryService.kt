@@ -66,7 +66,9 @@ class InventoryService : Service() {
         }
 
         private fun mirrorReset(player: GamePlayer) {
-            player.inventoryMirror = null
+            if (player.inventoryMirror != null) {
+                player.inventoryMirror = null
+            }
         }
 
     }

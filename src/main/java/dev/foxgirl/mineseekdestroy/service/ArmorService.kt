@@ -103,6 +103,7 @@ class ArmorService : Service() {
 
             loadouts = buildMap(8) {
                 put(NONE, loadoutEmpty())
+                put(SKIP, loadoutEmpty())
                 put(OPERATOR, loadoutEmpty())
                 put(PLAYER_DUEL, loadoutDuel())
                 put(PLAYER_BLACK, loadoutBlack())

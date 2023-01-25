@@ -93,7 +93,7 @@ public final class InvisibilityService extends Service {
     }
     private static boolean isVisibleToActive(GameTeam targetTeam, GameTeam packetTeam, Entity packetEntity) {
         return switch (targetTeam) {
-            case NONE, OPERATOR ->
+            case NONE, SKIP, OPERATOR ->
                 true;
             case PLAYER_BLACK ->
                 packetTeam.isOperator() || packetTeam == GameTeam.PLAYER_BLACK;
@@ -107,7 +107,7 @@ public final class InvisibilityService extends Service {
     }
     private static boolean isVisibleToInactive(GameTeam targetTeam, GameTeam packetTeam, Entity packetEntity) {
         return switch (targetTeam) {
-            case NONE, OPERATOR ->
+            case NONE, SKIP, OPERATOR ->
                 true;
             case PLAYER_BLACK, PLAYER_YELLOW, PLAYER_BLUE, PLAYER_DUEL ->
                 !packetTeam.isSpectator() || Game.getGameProperties().getRegionBlimp().contains(packetEntity);

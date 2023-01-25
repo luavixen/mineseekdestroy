@@ -144,6 +144,7 @@ internal fun setup() {
             }
         }
         register("none", GameTeam.NONE)
+        register("skip", GameTeam.SKIP)
         register("operator", GameTeam.OPERATOR)
         register("black", GameTeam.PLAYER_BLACK)
         register("yellow", GameTeam.PLAYER_YELLOW)

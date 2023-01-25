@@ -36,7 +36,10 @@ public final class GameContext {
     public final @NotNull ScoreboardObjective scoreboardKills;
     public final @NotNull ScoreboardObjective scoreboardHearts;
 
+    public final @NotNull Team teamSkip;
     public final @NotNull Team teamOperator;
+    public final @NotNull Team teamDuel;
+    public final @NotNull Team teamDuelDead;
     public final @NotNull Team teamBlack;
     public final @NotNull Team teamBlackDead;
     public final @NotNull Team teamYellow;
@@ -105,7 +108,10 @@ public final class GameContext {
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 
+        teamSkip = Objects.requireNonNull(GameTeam.PLAYER_SKIP.getAliveTeam(scoreboard));
         teamOperator = Objects.requireNonNull(GameTeam.OPERATOR.getAliveTeam(scoreboard));
+        teamDuel = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getAliveTeam(scoreboard));
+        teamDuelDead = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDeadTeam(scoreboard));
         teamBlack = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getAliveTeam(scoreboard));
         teamBlackDead = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getDeadTeam(scoreboard));
         teamYellow = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getAliveTeam(scoreboard));
