@@ -149,6 +149,10 @@ public final class GamePlayer {
         return currentTeam.isSpectator();
     }
 
+    public boolean isOnScoreboard() {
+        return currentTeam.isOnScoreboard();
+    }
+
     public void teleport(@NotNull Position position) {
         var player = getEntity();
         if (player != null) {
@@ -198,7 +202,7 @@ public final class GamePlayer {
             }
         }
 
-        if (isPlaying()) {
+        if (isOnScoreboard()) {
             var playerKills = getKills();
             var playerScore = scoreboard.getPlayerScore(playerName, scoreboardObjective);
 

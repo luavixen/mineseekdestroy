@@ -108,7 +108,7 @@ public final class GameContext {
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 
-        teamSkip = Objects.requireNonNull(GameTeam.PLAYER_SKIP.getAliveTeam(scoreboard));
+        teamSkip = Objects.requireNonNull(GameTeam.SKIP.getAliveTeam(scoreboard));
         teamOperator = Objects.requireNonNull(GameTeam.OPERATOR.getAliveTeam(scoreboard));
         teamDuel = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getAliveTeam(scoreboard));
         teamDuelDead = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDeadTeam(scoreboard));

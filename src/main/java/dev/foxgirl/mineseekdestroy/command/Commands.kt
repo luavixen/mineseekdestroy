@@ -7,6 +7,7 @@ import dev.foxgirl.mineseekdestroy.util.Region
 import net.minecraft.command.EntitySelector
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.math.Position
+import net.minecraft.world.GameRules
 
 internal fun setup() {
 
@@ -346,25 +347,36 @@ internal fun setup() {
         }
     }
 
-    Command.build("ghosts") {
-        it.params(argLiteral("enable")) {
-            it.actionWithContext { args, context ->
-                if (properties != GameProperties.Macander) {
-                    args.sendError("Cannot manage ghosts for this arena")
-                    return@actionWithContext
+    Command.build("gimmick") {
+        it.params(argLiteral("ghosts")) {
+            it.params(argLiteral("enable")) {
+                it.actionWithContext { args, context ->
+                    if (properties != GameProperties.Macander) {
+                        args.sendError("Cannot manage ghosts for this arena")
+                        return@actionWithContext
+                    }
+                    game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, true)
+                    args.sendInfo("Ghosts enabled")
                 }
-                game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, true)
-                args.sendInfo("Ghosts enabled")
+            }
+            it.params(argLiteral("disable")) {
+                it.actionWithContext { args, context ->
+                    if (properties != GameProperties.Macander) {
+                        args.sendError("Cannot manage ghosts for this arena")
+                        return@actionWithContext
+                    }
+                    game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false)
+                    args.sendInfo("Ghosts disabled")
+                }
             }
         }
-        it.params(argLiteral("disable")) {
-            it.actionWithContext { args, context ->
-                if (properties != GameProperties.Macander) {
-                    args.sendError("Cannot manage ghosts for this arena")
-                    return@actionWithContext
+        it.params(argLiteral("burning")) {
+            it.params(argLiteral("start")) {
+                it.actionWithContext { args, context ->
+                    context.barrierService.executeArenaClose(args)
+                    game.setRuleBoolean(GameRules.DO_FIRE_TICK, true)
+                    args.sendInfo("Burning started")
                 }
-                game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false)
-                args.sendInfo("Ghosts disabled")
             }
         }
     }
