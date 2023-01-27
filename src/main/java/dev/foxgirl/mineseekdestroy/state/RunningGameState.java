@@ -3,7 +3,6 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
-import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -18,22 +17,13 @@ public abstract class RunningGameState extends GameState {
 
         var player = context.getPlayer(newPlayerEntity);
         if (player.isPlaying() && !player.isAlive()) {
-            var pos = Game.getGameProperties().getPositionBlimp();
-            var region = Game.getGameProperties().getRegionBlimp();
-            // 1. Teleport the player normally
+            var position = Game.getGameProperties().getPositionBlimp();
             newPlayerEntity.teleport(
                 context.world,
-                pos.getX(), pos.getY(), pos.getZ(),
+                position.getX(), position.getY(), position.getZ(),
                 newPlayerEntity.getYaw(), newPlayerEntity.getPitch()
             );
-            // 2. Update the player's position forcefully
-            newPlayerEntity.updatePosition(pos.getX(), pos.getY(), pos.getZ());
-            // 3. Wait and double-check that the player was *actually* teleported
-            Scheduler.now((task) -> {
-                if (!region.contains(newPlayerEntity)) {
-                    newPlayerEntity.updatePosition(pos.getX(), pos.getY(), pos.getZ());
-                }
-            });
+            newPlayerEntity.updatePosition(position.getX(), position.getY(), position.getZ());
         }
     }
 

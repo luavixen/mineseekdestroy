@@ -123,23 +123,23 @@ internal fun setup() {
     }
 
     Command.build("team") {
+        it.params(argLiteral("remove"), argString("player")) {
+            it.actionWithContext { args, context ->
+                val player = context.getPlayer(args.get<String>("player"))
+                if (player != null) {
+                    player.team = GameTeam.NONE
+                    args.sendInfo("Specified player removed")
+                } else {
+                    args.sendError("Specified player not found")
+                }
+            }
+        }
         fun register(literal: String, team: GameTeam) {
             it.params(argLiteral(literal)) {
                 it.params(argPlayers()) {
                     it.actionWithContext { args, context ->
                         val players = args.players(context).onEach { it.team = team }
                         args.sendInfo("Updated team for ${players.size} player(s) to", team.nameColored)
-                    }
-                }
-                it.params(argString("player")) {
-                    it.actionWithContext { args, context ->
-                        val player = context.getPlayer(args.get<String>("player"))
-                        if (player != null) {
-                            player.team = team
-                            args.sendInfo("Updated team for specified player to", team.nameColored)
-                        } else {
-                            args.sendError("Specified player not found")
-                        }
                     }
                 }
             }

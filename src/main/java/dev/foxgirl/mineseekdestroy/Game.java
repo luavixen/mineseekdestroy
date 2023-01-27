@@ -358,8 +358,30 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     @Override
     public void onStartTick(MinecraftServer server) {
+        var context = getContext();
+        if (context != null) {
+            context.syncPlayers();
+
+            var state = getState().update(context);
+            if (state != null) setState(state);
+
+            context.inventoryService.handleUpdate();
+            context.armorService.handleUpdate();
+            context.invisibilityService.handleUpdate();
+            context.saturationService.handleUpdate();
+            context.glowService.handleUpdate();
+            context.powderService.handleUpdate();
+            context.specialTowerService.handleUpdate();
+            context.specialGhostService.handleUpdate();
+
+            context.updatePlayers();
+        }
+
         var world = server.getOverworld();
         var players = server.getPlayerManager().getPlayerList();
+
+        var properties = getProperties();
+
         for (var player : players) {
             if ((player.getWorld() != world || !properties.getRegionLegal().contains(player)) && !hasOperator(player)) {
                 player.teleport(
@@ -370,31 +392,13 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     player.getYaw(),
                     player.getPitch()
                 );
-                player.setHealth(1.0F);
+                player.kill();
             }
             if (player.interactionManager.getGameMode() != GameMode.SURVIVAL && !hasOperator(player)) {
                 player.interactionManager.changeGameMode(GameMode.SURVIVAL);
+                player.kill();
             }
         }
-
-        var context = getContext();
-        if (context == null) return;
-
-        context.syncPlayers();
-
-        var state = getState().update(context);
-        if (state != null) setState(state);
-
-        context.inventoryService.handleUpdate();
-        context.armorService.handleUpdate();
-        context.invisibilityService.handleUpdate();
-        context.saturationService.handleUpdate();
-        context.glowService.handleUpdate();
-        context.powderService.handleUpdate();
-        context.specialTowerService.handleUpdate();
-        context.specialGhostService.handleUpdate();
-
-        context.updatePlayers();
     }
 
     public @NotNull GameContext initialize(@NotNull GameProperties properties) {
