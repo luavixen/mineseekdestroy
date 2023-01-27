@@ -42,6 +42,13 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Logger LOGGER = LogManager.getLogger("MnSnD");
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_AUTOMATION_ENABLED =
+        GameRuleRegistry.register("msdAutomationEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_AUTOMATION_DELAY_DURATION =
+        GameRuleRegistry.register("msdAutomationDelayDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(5.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_AUTOMATION_INTERVAL_DURATION =
+        GameRuleRegistry.register("msdAutomationIntervalDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(1.0));
+
     public static final @NotNull GameRules.Key<DoubleRule> RULE_PREPARING_DURATION =
         GameRuleRegistry.register("msdStartingPreparingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(3.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_DURATION =
@@ -55,7 +62,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdStartingPingPitch", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.45));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FINALIZING_DURATION =
-        GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(5.0));
+        GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(10.0));
 
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));

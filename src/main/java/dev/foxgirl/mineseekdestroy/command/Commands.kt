@@ -25,6 +25,17 @@ internal fun setup() {
         it.params(argLiteral("start")) {
             fun register(literal: String, properties: () -> GameProperties) {
                 it.params(argLiteral(literal)) {
+                    it.params(argLiteral("automated")) {
+                        it.action { args ->
+                            if (game.context == null) {
+                                game.initialize(properties())
+                                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true)
+                                args.sendInfo("Started new game with automation")
+                            } else {
+                                args.sendError("Cannot start new game, already running")
+                            }
+                        }
+                    }
                     it.action { args ->
                         if (game.context == null) {
                             game.initialize(properties())
@@ -118,6 +129,21 @@ internal fun setup() {
         it.params(argLiteral("restore")) {
             it.actionWithContext { args, context ->
                 context.snapshotService.executeSnapshotRestore(args)
+            }
+        }
+    }
+
+    Command.build("automation") {
+        it.params(argLiteral("enable")) {
+            it.actionWithContext { args, context ->
+                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true)
+                args.sendInfo("Automation enabled")
+            }
+        }
+        it.params(argLiteral("disable")) {
+            it.actionWithContext { args, context ->
+                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false)
+                args.sendInfo("Automation disabled")
             }
         }
     }

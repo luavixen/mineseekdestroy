@@ -63,6 +63,7 @@ public final class GameContext {
     public final @NotNull SnapshotService snapshotService;
     public final @NotNull StormService stormService;
     public final @NotNull SmokerService smokerService;
+    public final @NotNull AutomationService automationService;
     public final @NotNull SpecialTowerService specialTowerService;
     public final @NotNull SpecialGhostService specialGhostService;
 
@@ -135,6 +136,7 @@ public final class GameContext {
         snapshotService = new SnapshotService();
         stormService = new StormService();
         smokerService = new SmokerService();
+        automationService = new AutomationService();
         specialTowerService = new SpecialTowerService();
         specialGhostService = new SpecialGhostService();
     }
@@ -156,8 +158,9 @@ public final class GameContext {
         game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
         game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
 
-        game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
+        game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false);
         game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false);
+        game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
 
         inventoryService.initialize(this);
         lootService.initialize(this);
@@ -170,6 +173,7 @@ public final class GameContext {
         snapshotService.initialize(this);
         stormService.initialize(this);
         smokerService.initialize(this);
+        automationService.initialize(this);
         specialTowerService.initialize(this);
         specialGhostService.initialize(this);
     }

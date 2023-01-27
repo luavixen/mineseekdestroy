@@ -2,9 +2,13 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameTeam;
+import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 
 public class PlayingGameState extends RunningGameState {
 
@@ -14,6 +18,8 @@ public class PlayingGameState extends RunningGameState {
 
         context.invisibilityService.executeSetDisabled(Game.CONSOLE_OPERATORS);
         context.barrierService.executeBlimpClose(Game.CONSOLE_OPERATORS);
+
+        context.automationService.handleRoundBegin();
 
         return null;
     }
@@ -32,15 +38,17 @@ public class PlayingGameState extends RunningGameState {
         }
 
         if (aliveYellow == 0 && aliveBlue == 0) {
-            Game.getGame().sendInfo("Round over! Both teams died at the exact same time, nobody wins!");
+            context.game.sendInfo("Round over! Both teams died at the exact same time, nobody wins!");
             return new FinalizingGameState();
         }
         if (aliveYellow == 0) {
-            Game.getGame().sendInfo("Round over!", GameTeam.PLAYER_BLUE.getNameColored(), "wins!");
+            context.game.sendInfo("Round over!", GameTeam.PLAYER_BLUE.getNameColored(), "wins!");
+            context.automationService.handleRoundEnd(GameTeam.PLAYER_YELLOW);
             return new FinalizingGameState();
         }
         if (aliveBlue == 0) {
-            Game.getGame().sendInfo("Round over!", GameTeam.PLAYER_YELLOW.getNameColored(), "wins!");
+            context.game.sendInfo("Round over!", GameTeam.PLAYER_YELLOW.getNameColored(), "wins!");
+            context.automationService.handleRoundEnd(GameTeam.PLAYER_BLUE);
             return new FinalizingGameState();
         }
 
