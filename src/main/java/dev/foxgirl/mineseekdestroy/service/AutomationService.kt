@@ -28,12 +28,6 @@ class AutomationService : Service() {
         val players = players
 
         for (player in players) {
-            if (player.team == teamLosers) {
-                tasks.add { player.team = GameTeam.PLAYER_BLACK }
-            }
-        }
-
-        for (player in players) {
             val record = records[player] ?: continue
             if (player.team == GameTeam.PLAYER_BLACK && player.kills <= record.kills) {
                 tasks.add {
@@ -43,6 +37,12 @@ class AutomationService : Service() {
                         Text.literal("has been removed from the game!").formatted(Formatting.RED),
                     )
                 }
+            }
+        }
+
+        for (player in players) {
+            if (player.team == teamLosers) {
+                tasks.add { player.team = GameTeam.PLAYER_BLACK }
             }
         }
 
