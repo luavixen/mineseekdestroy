@@ -44,7 +44,13 @@ class InventoryService : Service() {
     }
 
     fun handleUpdate() {
-        players.forEach(if (state is RunningGameState) ::mirrorUpdate else ::mirrorReset)
+        for (player in players) {
+            if (state is RunningGameState) {
+                mirrorUpdate(player)
+            } else {
+                mirrorReset(player)
+            }
+        }
     }
 
     private companion object {

@@ -60,7 +60,9 @@ public abstract class MixinAbstractFurnaceBlockEntity {
             if (entity != null) {
                 var context = Game.getGame().getContext();
                 if (context != null) {
-                    context.scoreboard.removePlayerFromTeam(entity.getEntityName(), context.teamOperator);
+                    try {
+                        context.scoreboard.removePlayerFromTeam(entity.getEntityName(), context.teamOperator);
+                    } catch (IllegalStateException ignored) {}
                 }
                 entity.remove(Entity.RemovalReason.DISCARDED);
                 self.mineseekdestroy$shulker = null;

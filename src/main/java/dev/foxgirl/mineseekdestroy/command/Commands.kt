@@ -146,6 +146,12 @@ internal fun setup() {
                 args.sendInfo("Automation disabled")
             }
         }
+        it.params(argLiteral("ipad")) {
+            it.actionWithContext { args, context ->
+                context.automationService.executeOpenIpad()
+                args.sendInfo("Opening iPad")
+            }
+        }
     }
 
     Command.build("team") {
