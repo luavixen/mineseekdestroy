@@ -1,13 +1,13 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.GameTeam
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 
 class PowderService : Service() {
 
-    private val powderItemList = arrayOf<Item>(
+    private val powderItemList = ImmutableSet.copyOf(arrayOf(
         YELLOW_CONCRETE_POWDER,
         BLUE_CONCRETE_POWDER,
         BLACK_CONCRETE_POWDER,
@@ -24,7 +24,7 @@ class PowderService : Service() {
         PURPLE_CONCRETE_POWDER,
         GREEN_CONCRETE_POWDER,
         RED_CONCRETE_POWDER,
-    )
+    ))
 
     fun handleUpdate() {
         for (player in players) {
@@ -43,7 +43,7 @@ class PowderService : Service() {
             for (i in 0 until inventory.size()) {
                 val stack = inventory.getStack(i)
                 val item = stack.item
-                if (item !== AIR && item !== powderItem && powderItemList.any { it === item }) {
+                if (item !== AIR && item !== powderItem && powderItemList.contains(item)) {
                     val count = stack.count
                     inventory.removeStack(i)
                     inventory.insertStack(ItemStack(powderItem, count))
