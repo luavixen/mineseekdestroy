@@ -148,8 +148,7 @@ internal fun setup() {
         }
         it.params(argLiteral("ipad")) {
             it.actionWithContext { args, context ->
-                context.automationService.executeOpenIpad()
-                args.sendInfo("Opening iPad")
+                context.automationService.executeOpenIpad(args)
             }
         }
     }

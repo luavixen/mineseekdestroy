@@ -66,9 +66,9 @@ public abstract class RunningGameState extends GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            return player.isPlaying();
+            if (!player.isPlaying()) return false;
         }
-        return true;
+        return super.onItemDropped(context, playerEntity, stack, throwRandomly, retainOwnership);
     }
 
     @Override
@@ -78,9 +78,9 @@ public abstract class RunningGameState extends GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            return player.isPlaying();
+            if (!player.isPlaying()) return false;
         }
-        return true;
+        return super.onItemAcquired(context, playerEntity, inventory, stack, slot);
     }
 
 }

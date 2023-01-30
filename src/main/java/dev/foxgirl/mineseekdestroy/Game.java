@@ -148,6 +148,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.YELLOW_STAINED_GLASS_PANE,
         Items.BLUE_STAINED_GLASS_PANE,
         Items.LIME_STAINED_GLASS_PANE,
+        Items.RED_CONCRETE,
+        Items.LIME_CONCRETE,
     });
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {

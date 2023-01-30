@@ -124,7 +124,6 @@ class ArmorService : Service() {
             var dirty = false
             for (i in list.indices) {
                 val stack = list[i]
-                if (stack.isEmpty) continue
                 if (stack.item !is ArmorItem) continue
                 list[i] = ItemStack.EMPTY
                 dirty = true

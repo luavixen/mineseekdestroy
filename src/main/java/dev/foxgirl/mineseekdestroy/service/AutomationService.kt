@@ -4,10 +4,12 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameContext
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Scheduler
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
@@ -17,6 +19,7 @@ import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.util.concurrent.atomic.AtomicBoolean
 
 class AutomationService : Service() {
 
@@ -79,7 +82,21 @@ class AutomationService : Service() {
         }
     }
 
-    fun executeOpenIpad() {
+    private val cooldownFlag = AtomicBoolean(false)
+
+    fun executeOpenIpad(console: Console) {
+        if (cooldownFlag.getAndSet(true)) {
+            console.sendError("Cannot open iPad, already in progress")
+            return
+        }
+        try {
+            Scheduler.delay(5.0) { cooldownFlag.set(false) }
+        } catch (cause: Exception) {
+            cooldownFlag.set(false)
+            throw cause
+        }
+        console.sendInfo("Opening iPad")
+
         val buttonState = ButtonState()
         val buttonOperators = ButtonInventoryPart(mappingButtons, buttonState, true)
         val buttonPlayers = ButtonInventoryPart(mappingButtons, buttonState, false)
@@ -114,7 +131,10 @@ class AutomationService : Service() {
         fun commit(): Boolean {
             commitSchedule = null
             if (buttonState.ready()) {
-                context.playerManager.playerList.forEach { it.closeHandledScreen() }
+                context.playerManager.playerList.forEach {
+                    it.inventory.let(::illegalRemove)
+                    it.closeHandledScreen()
+                }
                 players.forEach { it.team = GameTeam.SKIP }
                 targetYellow.commit(context, GameTeam.PLAYER_YELLOW)
                 targetBlue.commit(context, GameTeam.PLAYER_BLUE)
@@ -129,10 +149,15 @@ class AutomationService : Service() {
             if (commitSchedule == null && buttonState.ready()) {
                 commitSchedule = Scheduler.delay(3.0) { if (commit()) schedule.cancel() }
             }
-            for (player in players) {
+
+            for (player in context.players) {
                 val entity = player.entity ?: continue
+
+                illegalRemove(entity.inventory)
+
                 if (entity.currentScreenHandler === null) continue
                 if (entity.currentScreenHandler === entity.playerScreenHandler) continue
+
                 if (player.isOperator) {
                     entity.openHandledScreen(factoryOperators)
                 } else if (player.isOnScoreboard && player.team != GameTeam.PLAYER_BLACK) {
@@ -146,14 +171,14 @@ class AutomationService : Service() {
 
     private companion object {
 
-        private val empty = ItemStack.EMPTY!!
-
         private class IpadNamedScreenHandlerFactory(private val inventory: Inventory) : NamedScreenHandlerFactory {
             override fun getDisplayName(): Text = Text.of("child's ipad")
             override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity?): ScreenHandler {
                 return GenericContainerScreenHandler.createGeneric9x6(syncId, playerInventory, inventory)
             }
         }
+
+        private val empty = ItemStack.EMPTY!!
 
         private class LiveInventory(parts: Iterable<InventoryPart>) : Inventory {
             private val mappings = arrayOfNulls<InventoryPart>(size())
@@ -270,8 +295,25 @@ class AutomationService : Service() {
             fun open() = flags.none { it }
         }
 
-        private val itemOpen = ItemStack(Items.LIME_CONCRETE).setCustomName(Text.of("OPEN"))
+        private val illegalItems = arrayOf<Item>(
+            Items.PLAYER_HEAD,
+            Items.YELLOW_STAINED_GLASS_PANE,
+            Items.BLUE_STAINED_GLASS_PANE,
+            Items.LIME_STAINED_GLASS_PANE,
+            Items.RED_CONCRETE,
+            Items.LIME_CONCRETE,
+        )
+        private fun illegalRemove(inventory: Inventory) {
+            for (i in 0 until inventory.size()) {
+                val item = inventory.getStack(i).item
+                if (item !== Items.AIR && illegalItems.any { it === item }) {
+                    inventory.removeStack(i)
+                }
+            }
+        }
+
         private val itemLocked = ItemStack(Items.RED_CONCRETE).setCustomName(Text.of("LOCKED IN"))
+        private val itemOpen = ItemStack(Items.LIME_CONCRETE).setCustomName(Text.of("OPEN"))
 
         private val backgroundYellow: BackgroundInventoryPart
         private val backgroundBlue: BackgroundInventoryPart
