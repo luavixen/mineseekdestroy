@@ -45,7 +45,10 @@ class AutomationService : Service() {
             val record = records[player] ?: continue
             if (player.team == GameTeam.PLAYER_BLACK) {
                 if (player.kills > record.kills) {
-                    tasks.add { player.team = GameTeam.SKIP }
+                    tasks.add {
+                        player.team = GameTeam.SKIP
+                        logger.info("Automation assigned " + player.name + " to skip")
+                    }
                 } else {
                     tasks.add {
                         player.team = GameTeam.NONE
@@ -53,6 +56,7 @@ class AutomationService : Service() {
                             Text.literal(player.name).formatted(Formatting.DARK_RED),
                             Text.literal("has been removed from the game!").formatted(Formatting.RED),
                         )
+                        logger.info("Automation removed " + player.name + " from the game")
                     }
                 }
             }
@@ -60,7 +64,10 @@ class AutomationService : Service() {
 
         for (player in players) {
             if (player.team == teamLosers) {
-                tasks.add { player.team = GameTeam.PLAYER_BLACK }
+                tasks.add {
+                    player.team = GameTeam.PLAYER_BLACK
+                    logger.info("Automation assigned " + player.name + " to black")
+                }
             }
         }
 
@@ -71,6 +78,7 @@ class AutomationService : Service() {
 
         Scheduler.delay(secondsDelay) {
             players.forEach { it.isAlive = true }
+            logger.info("Automation marked all players alive")
 
             Scheduler.interval(secondsInterval) { schedule ->
                 if (iterator.hasNext()) {
@@ -135,6 +143,7 @@ class AutomationService : Service() {
                     it.inventory.let(::illegalRemove)
                     it.closeHandledScreen()
                 }
+                logger.info("Automation iPad commit started, assigning selected players to skip")
                 players.forEach { it.team = GameTeam.SKIP }
                 targetYellow.commit(context, GameTeam.PLAYER_YELLOW)
                 targetBlue.commit(context, GameTeam.PLAYER_BLUE)
@@ -272,6 +281,7 @@ class AutomationService : Service() {
                     val player = context.getPlayer(name)
                     if (player != null) {
                         player.team = team
+                        Game.LOGGER.info("Automation iPad assigned " + player.name + " to team " + team)
                     }
                 }
             }
