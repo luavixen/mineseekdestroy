@@ -24,7 +24,7 @@ class SpecialTowerService : Service() {
     private var entities: List<Pair<ServerPlayerEntity, Region>> = emptyList()
 
     fun handleUpdate() {
-        if (properties != GameProperties.Realm) return
+        if (properties !== GameProperties.Realm) return
 
         val entitiesOld = entities
         val entitiesNew = mutableListOf<Pair<ServerPlayerEntity, Region>>()
