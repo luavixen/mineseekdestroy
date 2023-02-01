@@ -58,7 +58,7 @@ public class DuelingGameState extends RunningGameState {
             var entity = player.getEntity();
             if (entity == null || !entity.isAlive()) continue;
             if (entity.getWorld() != context.world) continue;
-            if (!Game.getGameProperties().getRegionPlayable().contains(entity)) continue;
+            if (Game.getGameProperties().getRegionPlayable().excludes(entity)) continue;
             list.add(entity);
         }
         return list;

@@ -128,7 +128,7 @@ sealed interface GameProperties {
 
         override val regionAll = Region(BlockPos(788, 57, -170), BlockPos(974, -7, 30))
         override val regionLegal = Region(BlockPos(788, 65536, -170), BlockPos(974, -7, 30))
-        override val regionPlayable = Region(BlockPos(788, 57, -170), BlockPos(974, -7, 30))
+        override val regionPlayable = Region(BlockPos(788, 75, -170), BlockPos(974, -7, 30))
         override val regionBlimp = Region(BlockPos(918, 80, -16), BlockPos(835, 53, -62))
         override val regionBarrierArenaTarget = Region(BlockPos(919, -1, -52), BlockPos(806, 35, -125))
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
@@ -163,7 +163,7 @@ sealed interface GameProperties {
         override val templateInventory = BlockPos(-1278, 114, 196)
         override val templateLoottable = BlockPos(-1276, 114, 196)
 
-        override val regionAll = Region(BlockPos(-1600, 112, 591), BlockPos(-945, -8, -192))
+        override val regionAll = Region(BlockPos(-1430, -16, 350), BlockPos(-1125, 165, 15))
         override val regionLegal = Region(BlockPos(-1600, 65536, 591), BlockPos(-945, -64, -192))
         override val regionPlayable = Region(BlockPos(-1600, 112, 591), BlockPos(-945, -8, -192))
         override val regionBlimp = Region(BlockPos(-1326, 133, 177), BlockPos(-1249, 113, 216))

@@ -1,7 +1,10 @@
 package dev.foxgirl.mineseekdestroy.util;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -60,12 +63,20 @@ public final class Region {
         return contains(pos.getX(), pos.getY(), pos.getZ());
     }
 
-    public boolean contains(@NotNull Position pos) {
-        return contains((int) pos.getX(), (int) pos.getY(), (int) pos.getZ());
-    }
-
     public boolean contains(@NotNull Entity entity) {
         return contains(entity.getBlockPos());
+    }
+
+    public boolean excludes(int x, int y, int z) {
+        return !contains(x, y, z);
+    }
+
+    public boolean excludes(@NotNull Vec3i pos) {
+        return !contains(pos);
+    }
+
+    public boolean excludes(@NotNull Entity entity) {
+        return !contains(entity);
     }
 
     @Override

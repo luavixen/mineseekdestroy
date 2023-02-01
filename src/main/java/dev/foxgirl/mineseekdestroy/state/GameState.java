@@ -72,11 +72,13 @@ public abstract class GameState {
             return ActionResult.PASS;
         }
         if (context != null) {
+            var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (
                 player.isPlaying() &&
-                Game.getGameProperties().getRegionPlayable().contains(blockHit.getBlockPos()) &&
-                Game.getGameProperties().getInteractableBlocks().contains(blockState.getBlock())
+                properties.getInteractableBlocks().contains(blockState.getBlock()) &&
+                properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
+                properties.getRegionBlimp().excludes(blockHit.getBlockPos())
             ) {
                 var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
                 if (blockEntity instanceof LootableContainerBlockEntity) {
@@ -93,13 +95,15 @@ public abstract class GameState {
             return ActionResult.PASS;
         }
         if (context != null) {
+            var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
                 var item = stack.getItem();
                 if (item instanceof BlockItem blockItem) {
                     if (
-                        Game.getGameProperties().getRegionPlayable().contains(blockHit.getBlockPos()) &&
-                        Game.PLACABLE_BLOCKS.contains(blockItem.getBlock())
+                        Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
+                        properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
+                        properties.getRegionBlimp().excludes(blockHit.getBlockPos())
                     ) return ActionResult.PASS;
                 }
                 if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;

@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.util.BlockFinder
 import dev.foxgirl.mineseekdestroy.util.Console
@@ -79,7 +80,7 @@ class LootService : Service() {
 
     private companion object {
 
-        private val containerBlocks = setOf(
+        private val containerBlocks = ImmutableSet.copyOf(arrayOf(
             Blocks.CHEST,
             Blocks.BARREL,
             Blocks.SHULKER_BOX,
@@ -99,7 +100,7 @@ class LootService : Service() {
             Blocks.GREEN_SHULKER_BOX,
             Blocks.RED_SHULKER_BOX,
             Blocks.BLACK_SHULKER_BOX,
-        )
+        ))
 
         private fun inventory(entity: BlockEntity?): Inventory? {
             if (entity is ChestBlockEntity) {

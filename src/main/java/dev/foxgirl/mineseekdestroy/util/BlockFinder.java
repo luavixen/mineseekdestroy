@@ -75,7 +75,7 @@ public final class BlockFinder {
                                 int posY = y + offsetY;
                                 int posX = x + offsetX;
                                 int posZ = z + offsetZ;
-                                if (!region.contains(posX, posY, posZ)) continue;
+                                if (region.excludes(posX, posY, posZ)) continue;
                                 results.add(new Result(new BlockPos(posX, posY, posZ), state));
                             }
                         }

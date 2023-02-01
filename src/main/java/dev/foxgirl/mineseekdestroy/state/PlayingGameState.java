@@ -2,13 +2,9 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
-import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameTeam;
-import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
 
 public class PlayingGameState extends RunningGameState {
 

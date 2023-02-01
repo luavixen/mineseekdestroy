@@ -3,7 +3,10 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
 import net.minecraft.enchantment.Enchantments
-import net.minecraft.item.*
+import net.minecraft.item.ArmorItem
+import net.minecraft.item.DyeableItem
+import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.util.DyeColor
 
