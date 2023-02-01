@@ -6,6 +6,7 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Position;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -181,6 +182,10 @@ public final class GamePlayer {
                 ? currentTeam.getAliveTeam(getScoreboard())
                 : currentTeam.getDeadTeam(getScoreboard())
         );
+    }
+
+    public @NotNull Text getDisplayName() {
+        return Team.decorateName(getScoreboardTeam(), Text.literal(getName()));
     }
 
     public void update() {

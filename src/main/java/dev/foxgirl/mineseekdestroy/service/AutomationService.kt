@@ -24,17 +24,28 @@ import java.util.concurrent.atomic.AtomicBoolean
 class AutomationService : Service() {
 
     private class Record(player: GamePlayer) {
+        val team = player.team
         val kills = player.kills
         val deaths = player.deaths
     }
 
     private var records = mapOf<GamePlayer, Record>()
 
-    fun handleRoundBegin() {
+    private fun recordsCreate() {
         records = players.associateWith(::Record)
     }
 
-    fun handleRoundEnd(teamLosers: GameTeam) {
+    private fun recordsTake(): Map<GamePlayer, Record> {
+        return records.also { records = emptyMap() }
+    }
+
+    fun handleRoundBegin() {
+        recordsCreate()
+    }
+
+    fun handleRoundEnd(losingTeam: GameTeam) {
+        val records = recordsTake()
+
         if (!game.getRuleBoolean(Game.RULE_AUTOMATION_ENABLED)) return
 
         val tasks = mutableListOf<() -> Unit>()
@@ -63,7 +74,7 @@ class AutomationService : Service() {
         }
 
         for (player in players) {
-            if (player.team == teamLosers) {
+            if (player.team == losingTeam) {
                 tasks.add {
                     player.team = GameTeam.PLAYER_BLACK
                     logger.info("Automation assigned " + player.name + " to black")
@@ -87,6 +98,30 @@ class AutomationService : Service() {
                     schedule.cancel()
                 }
             }
+        }
+    }
+
+    fun handleDuelPrepare() {
+        recordsCreate()
+    }
+
+    fun handleDuelEnd(winningPlayers: List<GamePlayer>) {
+        val records = recordsTake()
+
+        if (!game.getRuleBoolean(Game.RULE_AUTOMATION_ENABLED)) return
+
+        val players = players.filter { it.team == GameTeam.PLAYER_DUEL }
+
+        val team = players
+            .map { player -> records[player]?.team ?: GameTeam.PLAYER_BLACK }
+            .find { team -> team != GameTeam.PLAYER_BLACK } ?: GameTeam.SKIP
+
+        for (player in players) {
+            player.isAlive = true
+            player.team = GameTeam.PLAYER_BLACK
+        }
+        for (player in winningPlayers) {
+            player.team = team
         }
     }
 

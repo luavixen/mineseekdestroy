@@ -59,7 +59,7 @@ public final class GameContext {
     public final @NotNull BarrierService barrierService;
     public final @NotNull SaturationService saturationService;
     public final @NotNull GlowService glowService;
-    public final @NotNull PowderService powderService;
+    public final @NotNull ItemService itemService;
     public final @NotNull SnapshotService snapshotService;
     public final @NotNull StormService stormService;
     public final @NotNull SmokerService smokerService;
@@ -132,7 +132,7 @@ public final class GameContext {
         barrierService = new BarrierService();
         saturationService = new SaturationService();
         glowService = new GlowService();
-        powderService = new PowderService();
+        itemService = new ItemService();
         snapshotService = new SnapshotService();
         stormService = new StormService();
         smokerService = new SmokerService();
@@ -169,7 +169,7 @@ public final class GameContext {
         barrierService.initialize(this);
         saturationService.initialize(this);
         glowService.initialize(this);
-        powderService.initialize(this);
+        itemService.initialize(this);
         snapshotService.initialize(this);
         stormService.initialize(this);
         smokerService.initialize(this);

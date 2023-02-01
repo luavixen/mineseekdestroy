@@ -383,7 +383,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             context.invisibilityService.handleUpdate();
             context.saturationService.handleUpdate();
             context.glowService.handleUpdate();
-            context.powderService.handleUpdate();
+            context.itemService.handleUpdate();
             context.specialTowerService.handleUpdate();
             context.specialGhostService.handleUpdate();
 

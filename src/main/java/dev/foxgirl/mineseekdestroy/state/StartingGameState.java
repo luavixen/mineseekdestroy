@@ -72,7 +72,7 @@ public class StartingGameState extends GameState {
 
     @Override
     protected @Nullable GameState onSetup(@NotNull GameContext context) {
-        Game.getGame().sendInfo("Round starting...");
+        context.game.sendInfo("Round starting...");
 
         broadcast(context, new TitleFadeS2CPacket(40, 80, 40));
         broadcast(context, new TitleS2CPacket(ScreenTexts.EMPTY));

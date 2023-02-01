@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameTeam;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,9 +23,9 @@ public class DuelingGameState extends RunningGameState {
             var player1 = players.get(0).getDisplayName();
             var player2 = players.get(1).getDisplayName();
             var text = Text.empty().append(player1).append(" VS ").append(player2).append("!");
-            Game.getGame().sendInfo("Duel started!", text);
+            context.game.sendInfo("Duel started!", text);
         } else {
-            Game.getGame().sendInfo("Duel started!");
+            context.game.sendInfo("Duel started!");
         }
 
         context.barrierService.executeArenaClose(Game.CONSOLE_OPERATORS);
@@ -38,11 +39,12 @@ public class DuelingGameState extends RunningGameState {
 
         if (players.size() < 2) {
             if (players.size() == 1) {
-                Game.getGame().sendInfo("Duel over!", players.get(0).getDisplayName(), "wins!");
+                context.game.sendInfo("Duel over!", players.get(0).getDisplayName(), "wins!");
             } else {
-                Game.getGame().sendInfo("Duel over! Both players died at the exact same time, nobody wins!");
+                context.game.sendInfo("Duel over! Both players died at the exact same time, nobody wins!");
             }
 
+            context.automationService.handleDuelEnd(players);
             context.barrierService.executeArenaOpen(Game.CONSOLE_OPERATORS);
 
             return new FinalizingGameState();
@@ -51,15 +53,11 @@ public class DuelingGameState extends RunningGameState {
         return null;
     }
 
-    private List<ServerPlayerEntity> findPlayers(GameContext context) {
-        var list = new ArrayList<ServerPlayerEntity>();
+    private List<GamePlayer> findPlayers(GameContext context) {
+        var list = new ArrayList<GamePlayer>(2);
         for (var player : context.getPlayers()) {
             if (player.getTeam() != GameTeam.PLAYER_DUEL || !player.isAlive()) continue;
-            var entity = player.getEntity();
-            if (entity == null || !entity.isAlive()) continue;
-            if (entity.getWorld() != context.world) continue;
-            if (Game.getGameProperties().getRegionPlayable().excludes(entity)) continue;
-            list.add(entity);
+            list.add(player);
         }
         return list;
     }

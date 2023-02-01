@@ -74,6 +74,8 @@ internal fun setup() {
         it.params(argLiteral("duel")) {
             it.params(argPlayers("aggressor"), argPlayers("victim")) {
                 it.actionWithContext { args, context ->
+                    context.automationService.handleDuelPrepare()
+
                     val player1 = args.player(context, "aggressor")
                     val player2 = args.player(context, "victim")
 

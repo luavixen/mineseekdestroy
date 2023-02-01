@@ -10,7 +10,7 @@ public class PlayingGameState extends RunningGameState {
 
     @Override
     protected @Nullable GameState onSetup(@NotNull GameContext context) {
-        Game.getGame().sendInfo("Round started! KILL!");
+        context.game.sendInfo("Round started! KILL!");
 
         context.invisibilityService.executeSetDisabled(Game.CONSOLE_OPERATORS);
         context.barrierService.executeBlimpClose(Game.CONSOLE_OPERATORS);
