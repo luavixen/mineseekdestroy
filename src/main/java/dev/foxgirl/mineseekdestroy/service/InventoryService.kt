@@ -44,12 +44,10 @@ class InventoryService : Service() {
     }
 
     fun handleUpdate() {
-        for (player in players) {
-            if (state is RunningGameState) {
-                mirrorUpdate(player)
-            } else {
-                mirrorReset(player)
-            }
+        if (state is RunningGameState) {
+            for (player in players) mirrorUpdate(player)
+        } else {
+            for (player in players) mirrorReset(player)
         }
     }
 

@@ -9,7 +9,6 @@ import dev.foxgirl.mineseekdestroy.util.Scheduler
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
@@ -174,10 +173,7 @@ class AutomationService : Service() {
         fun commit(): Boolean {
             commitSchedule = null
             if (buttonState.ready()) {
-                context.playerManager.playerList.forEach {
-                    it.inventory.let(::illegalRemove)
-                    it.closeHandledScreen()
-                }
+                context.playerManager.playerList.forEach { it.closeHandledScreen() }
                 logger.info("Automation iPad commit started, assigning selected players to skip")
                 players.forEach { it.team = GameTeam.SKIP }
                 targetYellow.commit(context, GameTeam.PLAYER_YELLOW)
@@ -191,16 +187,16 @@ class AutomationService : Service() {
 
         Scheduler.interval(1.0) { schedule ->
             if (commitSchedule == null && buttonState.ready()) {
-                commitSchedule = Scheduler.delay(3.0) { if (commit()) schedule.cancel() }
+                commitSchedule = Scheduler.delay(1.0) { if (commit()) schedule.cancel() }
             }
 
             for (player in context.players) {
                 val entity = player.entity ?: continue
 
-                illegalRemove(entity.inventory)
-
-                if (entity.currentScreenHandler === null) continue
-                if (entity.currentScreenHandler === entity.playerScreenHandler) continue
+                if (
+                    entity.currentScreenHandler !== null &&
+                    entity.currentScreenHandler !== entity.playerScreenHandler
+                ) continue
 
                 if (player.isOperator) {
                     entity.openHandledScreen(factoryOperators)
@@ -262,6 +258,7 @@ class AutomationService : Service() {
         }
 
         private class ViewInventory(private val inventory: Inventory) : Inventory by inventory {
+            override fun getStack(slot: Int) = inventory.getStack(slot).copy()
             override fun setStack(slot: Int, stack: ItemStack?) {}
             override fun removeStack(slot: Int, amount: Int) = empty
             override fun removeStack(slot: Int) = empty
@@ -280,7 +277,7 @@ class AutomationService : Service() {
         private class ListingInventoryPart(mapping: IntArray, players: List<GamePlayer>) : InventoryPart(mapping) {
             private val slots = arrayOfNulls<ItemStack>(mapping.size)
             init {
-                for (i in 0 until Math.min(players.lastIndex, slots.lastIndex)) {
+                for (i in 0 until Math.min(mapping.size, players.size)) {
                     val nbt = NbtCompound().also { it.put("SkullOwner", NbtString.of(players[i].name)) }
                     val stack = ItemStack(Items.PLAYER_HEAD).also { it.nbt = nbt }
                     slots[i] = stack
@@ -294,10 +291,16 @@ class AutomationService : Service() {
         private class TargetInventoryPart(mapping: IntArray, private val state: ButtonState) : InventoryPart(mapping) {
             private val slots = arrayOfNulls<ItemStack>(mapping.size)
 
-            override fun get(index: Int) = slots[index] ?: empty
+            override fun get(index: Int): ItemStack {
+                val stack = slots[index] ?: empty
+                return if (state.open()) stack else stack.copy()
+            }
             override fun set(index: Int, stack: ItemStack): ItemStack {
                 return if (state.open()) {
-                    get(index).also { slots[index] = if (stack.item === Items.PLAYER_HEAD) stack else null }
+                    val stackNew = if (stack.item === Items.PLAYER_HEAD) stack.copy() else null
+                    val stackOld = slots[index] ?: empty
+                    slots[index] = stackNew
+                    stackOld
                 } else {
                     empty
                 }
@@ -338,23 +341,6 @@ class AutomationService : Service() {
             val flags = BooleanArray(2)
             fun ready() = flags.all { it }
             fun open() = flags.none { it }
-        }
-
-        private val illegalItems = arrayOf<Item>(
-            Items.PLAYER_HEAD,
-            Items.YELLOW_STAINED_GLASS_PANE,
-            Items.BLUE_STAINED_GLASS_PANE,
-            Items.LIME_STAINED_GLASS_PANE,
-            Items.RED_CONCRETE,
-            Items.LIME_CONCRETE,
-        )
-        private fun illegalRemove(inventory: Inventory) {
-            for (i in 0 until inventory.size()) {
-                val item = inventory.getStack(i).item
-                if (item !== Items.AIR && illegalItems.any { it === item }) {
-                    inventory.removeStack(i)
-                }
-            }
         }
 
         private val itemLocked = ItemStack(Items.RED_CONCRETE).setCustomName(Text.of("LOCKED IN"))

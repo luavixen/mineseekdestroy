@@ -3,14 +3,17 @@ package dev.foxgirl.mineseekdestroy.service
 import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 
 class ItemService : Service() {
 
     fun handleUpdate() {
+        val running = state is RunningGameState
+
         for (player in players) {
-            if (!player.isPlaying) continue
+            if (running && player.isSpectator) continue
 
             val inventory = player.inventory ?: continue
 
