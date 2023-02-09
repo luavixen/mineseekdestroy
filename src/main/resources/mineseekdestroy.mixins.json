@@ -15,6 +15,7 @@
         "MixinFarmlandBlock",
         "MixinItemUsageContext",
         "MixinMinecraftServer",
+        "MixinPlayerEntity",
         "MixinPlayerInventory",
         "MixinProjectileEntity",
         "MixinRecipeManager",
