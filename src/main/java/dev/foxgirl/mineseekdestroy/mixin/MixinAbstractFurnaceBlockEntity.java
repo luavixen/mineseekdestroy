@@ -39,7 +39,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
 
     @Inject(method = "tick", at = @At("RETURN"))
     private static void mineseekdestroy$hookTickTail(World world, BlockPos blockPos, BlockState blockState, AbstractFurnaceBlockEntity blockEntity, CallbackInfo info) {
-        var self = Objects.requireNonNull((MixinAbstractFurnaceBlockEntity) (Object) blockEntity);
+        var self = (MixinAbstractFurnaceBlockEntity) (Object) blockEntity;
         if (blockState.get(AbstractFurnaceBlock.LIT)) {
             var entity = self.mineseekdestroy$shulker;
             if (entity == null) {

@@ -18,6 +18,7 @@ import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.world.GameMode
 import java.util.concurrent.atomic.AtomicBoolean
 
 class AutomationService : Service() {
@@ -139,13 +140,15 @@ class AutomationService : Service() {
         }
         console.sendInfo("Opening iPad")
 
+        players.forEach { if (it.isOperator) it.entity?.changeGameMode(GameMode.CREATIVE) }
+
         val buttonState = ButtonState()
         val buttonOperators = ButtonInventoryPart(mappingButtons, buttonState, true)
         val buttonPlayers = ButtonInventoryPart(mappingButtons, buttonState, false)
 
-        val targetYellow = TargetInventoryPart(mappingTargetYellow, buttonState)
-        val targetBlue = TargetInventoryPart(mappingTargetBlue, buttonState)
-        val targetSkip = TargetInventoryPart(mappingTargetSkip, buttonState)
+        val targetYellow = TargetInventoryPart(mappingTargetYellow)
+        val targetBlue = TargetInventoryPart(mappingTargetBlue)
+        val targetSkip = TargetInventoryPart(mappingTargetSkip)
 
         val players = players.filter { it.team == GameTeam.PLAYER_YELLOW || it.team == GameTeam.PLAYER_BLUE || it.team == GameTeam.SKIP }
 
@@ -161,11 +164,13 @@ class AutomationService : Service() {
             listing,
         )
 
-        val inventoryOperators = LiveInventory(parts + listOf(buttonOperators))
-        val inventoryPlayers = LiveInventory(parts + listOf(buttonPlayers))
-        val inventoryView = ViewInventory(inventoryPlayers)
+        val inventoryLiveOperators = LiveInventory(parts + listOf(buttonOperators))
+        val inventoryLivePlayers = LiveInventory(parts + listOf(buttonPlayers))
 
-        val factoryOperators = IpadNamedScreenHandlerFactory(inventoryOperators)
+        val inventoryPlayers = ViewInventory(inventoryLivePlayers, buttonState::open)
+        val inventoryView = ViewInventory(inventoryLivePlayers)
+
+        val factoryOperators = IpadNamedScreenHandlerFactory(inventoryLiveOperators)
         val factoryPlayers = IpadNamedScreenHandlerFactory(inventoryPlayers)
         val factoryView = IpadNamedScreenHandlerFactory(inventoryView)
 
@@ -257,11 +262,18 @@ class AutomationService : Service() {
             override fun canPlayerUse(player: PlayerEntity?) = true
         }
 
-        private class ViewInventory(private val inventory: Inventory) : Inventory by inventory {
-            override fun getStack(slot: Int) = inventory.getStack(slot).copy()
-            override fun setStack(slot: Int, stack: ItemStack?) {}
-            override fun removeStack(slot: Int, amount: Int) = empty
-            override fun removeStack(slot: Int) = empty
+        private class ViewInventory(private val inventory: Inventory, private val mutable: () -> Boolean = { false }) : Inventory by inventory {
+            override fun getStack(slot: Int): ItemStack {
+                val stack = inventory.getStack(slot)
+                return if (mutable()) stack else stack.copy()
+            }
+            override fun setStack(slot: Int, stack: ItemStack?) {
+                if (mutable()) inventory.setStack(slot, stack)
+            }
+            override fun removeStack(slot: Int, amount: Int) =
+                if (mutable()) inventory.removeStack(slot, amount) else empty
+            override fun removeStack(slot: Int) =
+                if (mutable()) inventory.removeStack(slot) else empty
         }
 
         private abstract class InventoryPart(val mapping: IntArray) {
@@ -288,22 +300,17 @@ class AutomationService : Service() {
             override fun set(index: Int, stack: ItemStack) = get(index)
         }
 
-        private class TargetInventoryPart(mapping: IntArray, private val state: ButtonState) : InventoryPart(mapping) {
+        private class TargetInventoryPart(mapping: IntArray) : InventoryPart(mapping) {
             private val slots = arrayOfNulls<ItemStack>(mapping.size)
 
             override fun get(index: Int): ItemStack {
-                val stack = slots[index] ?: empty
-                return if (state.open()) stack else stack.copy()
+                return slots[index] ?: empty
             }
             override fun set(index: Int, stack: ItemStack): ItemStack {
-                return if (state.open()) {
-                    val stackNew = if (stack.item === Items.PLAYER_HEAD) stack.copy() else null
-                    val stackOld = slots[index] ?: empty
-                    slots[index] = stackNew
-                    stackOld
-                } else {
-                    empty
-                }
+                val stackNew = if (stack.item === Items.PLAYER_HEAD) stack.copy() else null
+                val stackOld = slots[index] ?: empty
+                slots[index] = stackNew
+                return stackOld
             }
 
             fun commit(context: GameContext, team: GameTeam) {

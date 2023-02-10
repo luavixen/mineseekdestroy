@@ -87,6 +87,13 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_SPAWN_DELAY_MAX =
         GameRuleRegistry.register("msdGhostsSpawnDelayMax", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(30.0));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_BOOST_DURATION =
+        GameRuleRegistry.register("msdCarsBoostDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(3.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_KNOCKBACK =
+        GameRuleRegistry.register("msdCarsKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_DAMAGE =
+        GameRuleRegistry.register("msdCarsDamage", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
+
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
