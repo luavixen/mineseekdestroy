@@ -34,10 +34,11 @@ public abstract class MixinPigEntity extends AnimalEntity {
 
     @Override
     public boolean damage(DamageSource source, float amount) {
-        if (amount >= 1.0F && !source.isFromFalling()) {
+        var success = super.damage(source, amount);
+        if (success && amount >= 1.0F && !source.isFromFalling()) {
             removeAllPassengers();
         }
-        return super.damage(source, amount);
+        return success;
     }
 
     @Unique
