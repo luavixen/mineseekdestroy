@@ -14,9 +14,8 @@ public abstract class MixinPlayerInventory {
 
     @Inject(method = "insertStack(ILnet/minecraft/item/ItemStack;)Z", at = @At("HEAD"), cancellable = true)
     private void mineseekdestroy$hookInsertStack(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> info) {
-        var inventory = (PlayerInventory) (Object) this;
-        var player = (ServerPlayerEntity) inventory.player;
-        if (!ExtraEvents.ITEM_ACQUIRED.invoker().handle(player, inventory, stack, slot)) {
+        var self = (PlayerInventory) (Object) this;
+        if (!ExtraEvents.ITEM_ACQUIRED.invoker().handle((ServerPlayerEntity) self.player, self, stack, slot)) {
             info.setReturnValue(false);
         }
     }

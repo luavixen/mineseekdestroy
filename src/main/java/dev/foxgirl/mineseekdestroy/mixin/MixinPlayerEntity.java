@@ -14,11 +14,9 @@ public class MixinPlayerEntity {
 
     @Inject(method = "playSound", at = @At("HEAD"), cancellable = true)
     private void mineseekdestroy$hookPlaySound(SoundEvent sound, float volume, float pitch, CallbackInfo info) {
-        if ((Object) this instanceof ServerPlayerEntity self) {
-            var context = Game.getGame().getContext();
-            if (context != null && context.getPlayer(self).isSpectator()) {
-                info.cancel();
-            }
+        var context = Game.getGame().getContext();
+        if (context != null && context.getPlayer((ServerPlayerEntity) (Object) this).isSpectator()) {
+            info.cancel();
         }
     }
 

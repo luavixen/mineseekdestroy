@@ -71,6 +71,14 @@ public abstract class MixinPigEntity extends AnimalEntity {
     public void tick() {
         super.tick();
 
+        var context = Game.getGame().getContext();
+        if (context != null) {
+            var rider = getFirstPassenger();
+            if (rider instanceof ServerPlayerEntity player && context.getPlayer(player).isSpectator()) {
+                removeAllPassengers();
+            }
+        }
+
         mineseekdestroy$posDiff = mineseekdestroy$posPrev.subtract(getPos());
         mineseekdestroy$posPrev = getPos();
 
@@ -82,8 +90,6 @@ public abstract class MixinPigEntity extends AnimalEntity {
     @Override
     public void onPlayerCollision(PlayerEntity player) {
         super.onPlayerCollision(player);
-
-        if (!(player instanceof ServerPlayerEntity)) return;
 
         var rider = getPrimaryPassenger();
         if (rider == null || rider == player) return;

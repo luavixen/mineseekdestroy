@@ -6,6 +6,7 @@ import dev.foxgirl.mineseekdestroy.state.GameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
+import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -93,6 +94,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdCarsKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_DAMAGE =
         GameRuleRegistry.register("msdCarsDamage", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_SPEED =
+        GameRuleRegistry.register("msdCarsSpeed", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(1.6));
 
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
@@ -126,6 +129,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.BOW,
         Items.CROSSBOW,
         Items.FISHING_ROD,
+        Items.CARROT_ON_A_STICK,
         Items.FIREWORK_ROCKET,
         Items.EGG,
         Items.SNOWBALL,
@@ -415,8 +419,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                 player.kill();
             }
             if (player.interactionManager.getGameMode() != GameMode.SURVIVAL && !hasOperator(player)) {
-                player.interactionManager.changeGameMode(GameMode.SURVIVAL);
-                player.kill();
+                Scheduler.now((schedule) -> {
+                    player.interactionManager.changeGameMode(GameMode.SURVIVAL);
+                    player.setHealth(0.0F);
+                });
             }
         }
     }

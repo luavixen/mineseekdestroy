@@ -56,18 +56,18 @@ public abstract class MixinProjectileEntity {
 
         float pushYaw = self.getYaw() * 0.017453292F;
         float pushX = -MathHelper.sin(pushYaw);
-        float pushY = -MathHelper.cos(pushYaw);
+        float pushZ = -MathHelper.cos(pushYaw);
 
         if (strength <= 0) {
             pushX = 0 - pushX;
-            pushY = 0 - pushY;
+            pushZ = 0 - pushZ;
             strength = Math.abs(strength);
         }
 
         if (target instanceof LivingEntity targetLiving) {
-            targetLiving.takeKnockback(strength, pushX, pushY);
+            targetLiving.takeKnockback(strength, pushX, pushZ);
         } else {
-            target.addVelocity(pushX * strength, 0.1D, pushY * strength);
+            target.addVelocity(pushX * strength, 0.1D, pushZ * strength);
         }
 
         if (target instanceof ServerPlayerEntity targetPlayer) {
