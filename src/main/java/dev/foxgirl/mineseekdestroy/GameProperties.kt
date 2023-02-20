@@ -28,6 +28,7 @@ sealed interface GameProperties {
     val regionBarrierBlimpTemplate: Region
 
     val borderSize: Double
+    val borderCenter: Position
 
     val interactableBlocks: Set<Block>
 
@@ -52,6 +53,7 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
 
         override val borderSize = 0.0
+        override val borderCenter = Vec3d(0.0, 0.0, 0.0)
 
         override val interactableBlocks = setOf<Block>(
             CHEST,
@@ -99,6 +101,7 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
 
         override val borderSize = 200.0
+        override val borderCenter = Vec3d(70.5, 0.0, -55.5)
 
         override val interactableBlocks = Empty.interactableBlocks + setOf(
             ACACIA_DOOR,
@@ -136,6 +139,7 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
 
         override val borderSize = 250.0
+        override val borderCenter = Vec3d(870.0, 0.0, -65.0)
 
         override val interactableBlocks = Empty.interactableBlocks + setOf(
             ACACIA_DOOR,
@@ -173,6 +177,7 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
 
         override val borderSize = 333.0
+        override val borderCenter = Region(BlockPos(-1280, 62, 172), BlockPos(-1309, 62, 145)).center
 
         override val interactableBlocks = Empty.interactableBlocks + setOf(
             ACACIA_DOOR,

@@ -4,10 +4,34 @@ import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
+import net.minecraft.inventory.Inventory
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.server.network.ServerPlayerEntity
 
 class ItemService : Service() {
+
+    private inline fun Inventory.forEach(action: (ItemStack, Item, Int) -> Unit) {
+        for (i in 0 until size()) {
+            val stack: ItemStack = getStack(i)
+            val item: Item = stack.item
+            if (item !== Items.AIR) action(stack, item, i)
+        }
+    }
+
+    fun handleDropInventory(entity: ServerPlayerEntity) {
+        if (!context.getPlayer(entity).isPlaying) return
+
+        val inventory = entity.inventory
+
+        inventory.forEach { stack, item, i ->
+            if (droppedItems.contains(item)) {
+                inventory.setStack(i, ItemStack.EMPTY)
+                entity.dropItem(stack, true, false)
+            }
+        }
+    }
 
     fun handleUpdate() {
         val running = state is RunningGameState
@@ -25,23 +49,22 @@ class ItemService : Service() {
                 else -> continue
             }
 
-            for (i in 0 until inventory.size()) {
-                val stack = inventory.getStack(i)
-                val item = stack.item
-                if (item === Items.AIR) continue
+            inventory.forEach { stack, item, i ->
                 if (powderItems.contains(item) && item !== powderItem) {
                     val count = stack.count
-                    inventory.removeStack(i)
+                    inventory.setStack(i, ItemStack.EMPTY)
                     inventory.insertStack(ItemStack(powderItem, count))
                 }
                 if (illegalItems.contains(item)) {
-                    inventory.removeStack(i)
+                    inventory.setStack(i, ItemStack.EMPTY)
                 }
             }
         }
     }
 
     private companion object {
+
+        private val droppedItems = Game.DROPPED_ITEMS
 
         private val illegalItems = Game.ILLEGAL_ITEMS
 

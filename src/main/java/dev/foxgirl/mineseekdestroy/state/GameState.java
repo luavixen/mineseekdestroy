@@ -2,12 +2,14 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.mixin.MixinPigEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.BlockItem;
@@ -75,7 +77,7 @@ public abstract class GameState {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (
-                player.isPlaying() &&
+                player.isPlaying() && player.isAlive() &&
                 properties.getInteractableBlocks().contains(blockState.getBlock()) &&
                 properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
                 properties.getRegionBlimp().excludes(blockHit.getBlockPos())
@@ -126,7 +128,18 @@ public abstract class GameState {
     }
 
     public ActionResult onUseEntity(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult) {
-        return Game.getGame().isOperator(playerEntity) ? ActionResult.PASS : ActionResult.FAIL;
+        if (Game.getGame().isOperator(playerEntity)) {
+            return ActionResult.PASS;
+        }
+        if (context != null) {
+            var player = context.getPlayer((ServerPlayerEntity) playerEntity);
+            if (player.isPlaying() && player.isAlive()) {
+                if (entity instanceof PigEntity && ((MixinPigEntity) entity).mineseekdestroy$cooldownReady()) {
+                    return ActionResult.PASS;
+                }
+            }
+        }
+        return ActionResult.FAIL;
     }
 
     public ActionResult onAttackBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockPos pos, Direction direction) {

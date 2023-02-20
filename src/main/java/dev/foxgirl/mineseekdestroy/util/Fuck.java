@@ -12,6 +12,9 @@ import java.util.Objects;
  */
 public final class Fuck {
 
+    private Fuck() {
+    }
+
     /**
      * Instance of the internal {@link sun.misc.Unsafe} class.
      */

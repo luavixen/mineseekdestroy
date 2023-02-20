@@ -10,13 +10,21 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntity.class)
-public class MixinPlayerEntity {
+public abstract class MixinPlayerEntity {
 
     @Inject(method = "playSound", at = @At("HEAD"), cancellable = true)
     private void mineseekdestroy$hookPlaySound(SoundEvent sound, float volume, float pitch, CallbackInfo info) {
         var context = Game.getGame().getContext();
         if (context != null && context.getPlayer((ServerPlayerEntity) (Object) this).isSpectator()) {
             info.cancel();
+        }
+    }
+
+    @Inject(method = "dropInventory", at = @At("TAIL"))
+    private void mineseekdestroy$hookDropInventory(CallbackInfo info) {
+        var context = Game.getGame().getContext();
+        if (context != null) {
+            context.itemService.handleDropInventory((ServerPlayerEntity) (Object) this);
         }
     }
 

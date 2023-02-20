@@ -3,7 +3,9 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
+import dev.foxgirl.mineseekdestroy.mixin.MixinPigEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -52,11 +54,22 @@ public abstract class RunningGameState extends GameState {
 
     @Override
     public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
-        if (context != null) {
-            var player = context.getPlayer(playerEntity);
-            return player.isPlaying() && player.isAlive();
+        if (context == null) return false;
+
+        var player = context.getPlayer(playerEntity);
+        if (player.isPlaying() && player.isAlive()) {
+            var vehicle = playerEntity.getVehicle();
+            if (vehicle instanceof PigEntity) {
+                if (damageSource.isFromFalling()) {
+                    return false;
+                } else {
+                    ((MixinPigEntity) vehicle).mineseekdestroy$cooldownActivate();
+                }
+            }
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     @Override

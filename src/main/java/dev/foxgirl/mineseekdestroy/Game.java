@@ -43,6 +43,15 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Logger LOGGER = LogManager.getLogger("MnSnD");
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_MESSAGE_DIRECT_ALLOWED =
+        GameRuleRegistry.register("msdMessageDirectAllowed", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_MESSAGE_DIRECT_BROADCAST =
+        GameRuleRegistry.register("msdMessageDirectBroadcast", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_MESSAGE_TEAM_ALLOWED =
+        GameRuleRegistry.register("msdMessageTeamAllowed", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_MESSAGE_TEAM_BROADCAST =
+        GameRuleRegistry.register("msdMessageTeamBroadcast", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_AUTOMATION_ENABLED =
         GameRuleRegistry.register("msdAutomationEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_AUTOMATION_DELAY_DURATION =
@@ -68,6 +77,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_KILLZONE_BOUNDS_ENABLED =
+        GameRuleRegistry.register("msdKillzoneBoundsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_KILLZONE_BLIMP_ENABLED =
+        GameRuleRegistry.register("msdKillzoneBlimpEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
         GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_EGG =
@@ -88,14 +102,16 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_SPAWN_DELAY_MAX =
         GameRuleRegistry.register("msdGhostsSpawnDelayMax", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(30.0));
 
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_COOLDOWN_DURATION =
+        GameRuleRegistry.register("msdCarsCooldownDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(15.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_BOOST_DURATION =
         GameRuleRegistry.register("msdCarsBoostDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(3.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_KNOCKBACK =
-        GameRuleRegistry.register("msdCarsKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
+        GameRuleRegistry.register("msdCarsKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(3.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_DAMAGE =
         GameRuleRegistry.register("msdCarsDamage", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_SPEED =
-        GameRuleRegistry.register("msdCarsSpeed", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(1.6));
+        GameRuleRegistry.register("msdCarsSpeed", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(1.2));
 
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
@@ -141,6 +157,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.BAKED_POTATO,
         Items.POISONOUS_POTATO,
         Items.BREAD,
+    });
+
+    public static final @NotNull Set<@NotNull Item> DROPPED_ITEMS = ImmutableSet.copyOf(new Item[] {
+        Items.SHIELD,
+        Items.CARROT_ON_A_STICK,
     });
 
     public static final @NotNull Set<@NotNull Item> ILLEGAL_ITEMS = ImmutableSet.copyOf(new Item[] {
@@ -407,7 +428,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         var properties = getProperties();
 
         for (var player : players) {
-            if ((player.getWorld() != world || !properties.getRegionLegal().contains(player)) && !hasOperator(player)) {
+            if (hasOperator(player)) continue;
+            if (
+                player.getWorld() != world ||
+                (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && !properties.getRegionLegal().contains(player))
+            ) {
                 player.teleport(
                     world,
                     properties.getPositionArena().getX(),
@@ -418,7 +443,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                 );
                 player.kill();
             }
-            if (player.interactionManager.getGameMode() != GameMode.SURVIVAL && !hasOperator(player)) {
+            if (getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && properties.getRegionBlimp().contains(player)) {
+                player.kill();
+            }
+            if (player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
                 Scheduler.now((schedule) -> {
                     player.interactionManager.changeGameMode(GameMode.SURVIVAL);
                     player.setHealth(0.0F);

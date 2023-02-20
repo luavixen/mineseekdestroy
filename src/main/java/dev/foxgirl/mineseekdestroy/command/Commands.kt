@@ -381,25 +381,52 @@ internal fun setup() {
     }
 
     Command.build("gimmick") {
+        it.params(argLiteral("cars")) {
+            it.params(argLiteral("spawn")) {
+                it.actionWithContext { args, context ->
+                    val position = args.context.source.position
+                    if (position == null) {
+                        args.sendError("Cannot spawn car from console")
+                    } else {
+                        context.specialCarService.executeSpawnCar(args, position)
+                    }
+                }
+            }
+            it.params(argLiteral("kill")) {
+                it.actionWithContext { args, context ->
+                    context.specialCarService.executeKillCars(args)
+                }
+            }
+            it.params(argLiteral("show")) {
+                it.actionWithContext { args, context ->
+                    context.specialCarService.executeShowCars(args)
+                }
+            }
+            it.params(argLiteral("hide")) {
+                it.actionWithContext { args, context ->
+                    context.specialCarService.executeHideCars(args)
+                }
+            }
+        }
         it.params(argLiteral("ghosts")) {
             it.params(argLiteral("enable")) {
                 it.actionWithContext { args, context ->
                     if (properties != GameProperties.Macander) {
                         args.sendError("Cannot manage ghosts for this arena")
-                        return@actionWithContext
+                    } else {
+                        game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, true)
+                        args.sendInfo("Ghosts enabled")
                     }
-                    game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, true)
-                    args.sendInfo("Ghosts enabled")
                 }
             }
             it.params(argLiteral("disable")) {
                 it.actionWithContext { args, context ->
                     if (properties != GameProperties.Macander) {
                         args.sendError("Cannot manage ghosts for this arena")
-                        return@actionWithContext
+                    } else {
+                        game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false)
+                        args.sendInfo("Ghosts disabled")
                     }
-                    game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false)
-                    args.sendInfo("Ghosts disabled")
                 }
             }
         }

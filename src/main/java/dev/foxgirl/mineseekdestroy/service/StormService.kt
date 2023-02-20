@@ -12,6 +12,8 @@ class StormService : Service() {
     private val sizeMax: Double = WorldBorder.STATIC_AREA_SIZE
     private val sizeCurrent get() = properties.borderSize
 
+    private val center get() = properties.borderCenter
+
     private val time get() = (game.getRuleDouble(Game.RULE_BORDER_CLOSE_DURATION) * 1000.0).toLong()
 
     override fun setup() {
@@ -20,7 +22,7 @@ class StormService : Service() {
         border.warningTime = 15
         border.warningBlocks = 5
         border.size = sizeMax
-        border.setCenter(properties.positionBlimp.x, properties.positionBlimp.z)
+        border.setCenter(center.x, center.z)
     }
 
     fun executeStormClear(console: Console) {

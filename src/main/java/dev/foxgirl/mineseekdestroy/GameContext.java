@@ -66,6 +66,9 @@ public final class GameContext {
     public final @NotNull AutomationService automationService;
     public final @NotNull SpecialTowerService specialTowerService;
     public final @NotNull SpecialGhostService specialGhostService;
+    public final @NotNull SpecialCarService specialCarService;
+
+    private final Service[] services;
 
     GameContext(@NotNull Game game) {
         Objects.requireNonNull(game, "Argument 'game'");
@@ -125,20 +128,23 @@ public final class GameContext {
         playerMap = new HashMap<>();
         playerMapLock = new Object();
 
-        inventoryService = new InventoryService();
-        lootService = new LootService();
-        armorService = new ArmorService();
-        invisibilityService = new InvisibilityService();
-        barrierService = new BarrierService();
-        saturationService = new SaturationService();
-        glowService = new GlowService();
-        itemService = new ItemService();
-        snapshotService = new SnapshotService();
-        stormService = new StormService();
-        smokerService = new SmokerService();
-        automationService = new AutomationService();
-        specialTowerService = new SpecialTowerService();
-        specialGhostService = new SpecialGhostService();
+        services = new Service[] {
+            inventoryService = new InventoryService(),
+            lootService = new LootService(),
+            armorService = new ArmorService(),
+            invisibilityService = new InvisibilityService(),
+            barrierService = new BarrierService(),
+            saturationService = new SaturationService(),
+            glowService = new GlowService(),
+            itemService = new ItemService(),
+            snapshotService = new SnapshotService(),
+            stormService = new StormService(),
+            smokerService = new SmokerService(),
+            automationService = new AutomationService(),
+            specialTowerService = new SpecialTowerService(),
+            specialGhostService = new SpecialGhostService(),
+            specialCarService = new SpecialCarService(),
+        };
     }
 
     public void initialize() {
@@ -162,20 +168,7 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
 
-        inventoryService.initialize(this);
-        lootService.initialize(this);
-        armorService.initialize(this);
-        invisibilityService.initialize(this);
-        barrierService.initialize(this);
-        saturationService.initialize(this);
-        glowService.initialize(this);
-        itemService.initialize(this);
-        snapshotService.initialize(this);
-        stormService.initialize(this);
-        smokerService.initialize(this);
-        automationService.initialize(this);
-        specialTowerService.initialize(this);
-        specialGhostService.initialize(this);
+        for (var service : services) service.initialize(this);
     }
 
     public void destroy() {

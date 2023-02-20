@@ -14,9 +14,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 
@@ -27,18 +24,44 @@ public abstract class MixinPigEntity extends AnimalEntity {
         super(entityType, world);
     }
 
-    @Inject(method = "dropInventory", at = @At("HEAD"), cancellable = true)
-    private void mineseekdestroy$hookDropInventory(CallbackInfo info) {
-        info.cancel();
+    @Override
+    public void tick() {
+        super.tick();
+        mineseekdestroy$handleTick();
+    }
+
+    @Override
+    public void onPlayerCollision(PlayerEntity player) {
+        super.onPlayerCollision(player);
+        mineseekdestroy$handleCollision(player);
     }
 
     @Override
     public boolean damage(DamageSource source, float amount) {
         var success = super.damage(source, amount);
-        if (success && amount >= 1.0F && !source.isFromFalling()) {
-            removeAllPassengers();
-        }
+        if (success) mineseekdestroy$handleDamage(source, amount);
         return success;
+    }
+
+    @Unique
+    private int mineseekdestroy$cooldownAge = 0;
+
+    @Unique
+    public boolean mineseekdestroy$cooldownReady() {
+        return age > mineseekdestroy$cooldownAge;
+    }
+
+    @Unique
+    public void mineseekdestroy$cooldownActivate() {
+        removeAllPassengers();
+        mineseekdestroy$cooldownAge = age + (int) (Game.getGame().getRuleDouble(Game.RULE_CARS_COOLDOWN_DURATION) * 20.0);
+    }
+
+    @Unique
+    private void mineseekdestroy$handleDamage(DamageSource source, float amount) {
+        if (amount >= 1.0F && !source.isFromFalling()) {
+            mineseekdestroy$cooldownActivate();
+        }
     }
 
     @Unique
@@ -50,7 +73,43 @@ public abstract class MixinPigEntity extends AnimalEntity {
     private final ArrayList<Pair<ServerPlayerEntity, Integer>> mineseekdestroy$collisions = new ArrayList<>();
 
     @Unique
-    private void mineseekdestroy$handleCollision(ServerPlayerEntity player, Entity rider) {
+    private void mineseekdestroy$handleTick() {
+        if (mineseekdestroy$shouldRemovePassengers()) removeAllPassengers();
+
+        mineseekdestroy$posDiff = mineseekdestroy$posPrev.subtract(getPos());
+        mineseekdestroy$posPrev = getPos();
+
+        if (mineseekdestroy$collisions.size() > 0) {
+            mineseekdestroy$collisions.removeIf((collision) -> age - collision.getRight() > 20);
+        }
+    }
+
+    @Unique
+    private boolean mineseekdestroy$shouldRemovePassengers() {
+        if (!hasPassengers()) return false;
+        if (!mineseekdestroy$cooldownReady()) return true;
+
+        var context = Game.getGame().getContext();
+        if (context != null) {
+            var rider = getFirstPassenger();
+            return rider instanceof ServerPlayerEntity player && context.getPlayer(player).isSpectator();
+        }
+
+        return false;
+    }
+
+    @Unique
+    private void mineseekdestroy$handleCollision(PlayerEntity player) {
+        var rider = getPrimaryPassenger();
+        if (rider == null || rider == player) return;
+
+        if (mineseekdestroy$posDiff.length() < 0.1) return;
+
+        mineseekdestroy$performCollision((ServerPlayerEntity) player, rider);
+    }
+
+    @Unique
+    private void mineseekdestroy$performCollision(ServerPlayerEntity player, Entity rider) {
         for (var collision : mineseekdestroy$collisions) {
             if (collision.getLeft() == player) return;
         }
@@ -65,38 +124,6 @@ public abstract class MixinPigEntity extends AnimalEntity {
         player.takeKnockback(pushStrength, pushDirection.x, pushDirection.z);
         player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
         player.velocityDirty = false;
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-
-        var context = Game.getGame().getContext();
-        if (context != null) {
-            var rider = getFirstPassenger();
-            if (rider instanceof ServerPlayerEntity player && context.getPlayer(player).isSpectator()) {
-                removeAllPassengers();
-            }
-        }
-
-        mineseekdestroy$posDiff = mineseekdestroy$posPrev.subtract(getPos());
-        mineseekdestroy$posPrev = getPos();
-
-        if (mineseekdestroy$collisions.size() > 0) {
-            mineseekdestroy$collisions.removeIf((collision) -> age - collision.getRight() > 20);
-        }
-    }
-
-    @Override
-    public void onPlayerCollision(PlayerEntity player) {
-        super.onPlayerCollision(player);
-
-        var rider = getPrimaryPassenger();
-        if (rider == null || rider == player) return;
-
-        if (mineseekdestroy$posDiff.length() < 0.1) return;
-
-        mineseekdestroy$handleCollision((ServerPlayerEntity) player, rider);
     }
 
 }
