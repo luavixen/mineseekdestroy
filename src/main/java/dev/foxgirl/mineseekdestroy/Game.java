@@ -420,31 +420,32 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
         for (var player : players) {
             if (hasOperator(player)) continue;
-            if (
-                player.getWorld() != world ||
-                (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && !properties.getRegionLegal().contains(player))
-            ) {
-                player.teleport(
-                    world,
-                    properties.getPositionArena().getX(),
-                    properties.getPositionArena().getY(),
-                    properties.getPositionArena().getZ(),
-                    player.getYaw(),
-                    player.getPitch()
-                );
-                player.kill();
-                LOGGER.info("Player '" + player.getEntityName() + "' entered out of bounds killzone");
-            }
-            if (getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && properties.getRegionBlimp().contains(player)) {
-                player.kill();
-                LOGGER.info("Player '" + player.getEntityName() + "' entered blimp killzone");
-            }
             if (player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
-                Scheduler.now((schedule) -> {
-                    player.interactionManager.changeGameMode(GameMode.SURVIVAL);
-                    player.setHealth(0.0F);
-                });
                 LOGGER.info("Player '" + player.getEntityName() + "' in incorrect gamemode");
+                player.interactionManager.changeGameMode(GameMode.SURVIVAL);
+                player.kill();
+                player.setHealth(0.0F);
+            } else if (player.isAlive()) {
+                if (
+                    player.getWorld() != world ||
+                    (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && !properties.getRegionLegal().contains(player))
+                ) {
+                    LOGGER.info("Player '" + player.getEntityName() + "' entered out of bounds killzone");
+                    player.teleport(
+                        world,
+                        properties.getPositionArena().getX(),
+                        properties.getPositionArena().getY(),
+                        properties.getPositionArena().getZ(),
+                        player.getYaw(),
+                        player.getPitch()
+                    );
+                    player.kill();
+                    player.setHealth(0.0F);
+                } else if (getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && properties.getRegionBlimp().contains(player)) {
+                    LOGGER.info("Player '" + player.getEntityName() + "' entered blimp killzone");
+                    player.kill();
+                    player.setHealth(0.0F);
+                }
             }
         }
     }
