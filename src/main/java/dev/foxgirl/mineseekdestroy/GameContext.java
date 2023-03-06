@@ -168,7 +168,9 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
 
-        for (var service : services) service.initialize(this);
+        for (var service : services) {
+            service.initialize(this);
+        }
     }
 
     public void destroy() {
@@ -183,6 +185,22 @@ public final class GameContext {
         scoreboard.removeTeam(teamBlueDead);
     }
 
+    public void update() {
+        for (var service : services) {
+            service.update();
+        }
+        for (var player : getPlayers()) {
+            player.update();
+        }
+    }
+
+    public void syncPlayers() {
+        var players = playerManager.getPlayerList().toArray();
+        synchronized (playerMapLock) {
+            for (var player : players) getPlayer((ServerPlayerEntity) player);
+        }
+    }
+
     public @NotNull List<@NotNull GamePlayer> getPlayers() {
         Object[] players;
         synchronized (playerMapLock) {
@@ -193,50 +211,14 @@ public final class GameContext {
         return list;
     }
 
-    public @NotNull List<@NotNull GamePlayer> getPlayers(@NotNull Collection<?> values) {
-        Objects.requireNonNull(values, "Argument 'values'");
-        var objects = new ArrayList<>(values);
-        var players = new ArrayList<GamePlayer>(objects.size());
+    public @NotNull List<@NotNull GamePlayer> getPlayers(@NotNull Collection<? extends ServerPlayerEntity> collection) {
+        Objects.requireNonNull(collection, "Argument 'collection'");
+        var entities = new ArrayList<ServerPlayerEntity>(collection);
+        var players = new ArrayList<GamePlayer>(entities.size());
         synchronized (playerMapLock) {
-            for (Object obj : objects) {
-                if (obj == null) {
-                    throw new IllegalArgumentException("Argument 'values' contains null element" );
-                }
-                if (obj instanceof GamePlayer) {
-                    players.add((GamePlayer) obj);
-                } else if (obj instanceof ServerPlayerEntity) {
-                    players.add(getPlayer((ServerPlayerEntity) obj));
-                } else if (obj instanceof Entity) {
-                    players.add(Objects.requireNonNull(getPlayer((Entity) obj), "Expression 'getPlayer((Entity) obj)'"));
-                } else if (obj instanceof UUID) {
-                    players.add(Objects.requireNonNull(getPlayer((UUID) obj), "Expression 'getPlayer((UUID) obj)'"));
-                } else if (obj instanceof String) {
-                    players.add(Objects.requireNonNull(getPlayer((String) obj), "Expression 'getPlayer((String) obj)'"));
-                } else {
-                    throw new IllegalArgumentException(
-                        "Argument 'values' contains element of unexpected type: " + obj.getClass().getName()
-                    );
-                }
-            }
+            for (ServerPlayerEntity entity : entities) players.add(getPlayer(entity));
         }
         return players;
-    }
-
-    public void syncPlayers() {
-        var players = playerManager.getPlayerList().toArray();
-        synchronized (playerMapLock) {
-            for (var player : players) {
-                getPlayer((ServerPlayerEntity) player);
-            }
-        }
-    }
-    public void updatePlayers() {
-        getPlayers().forEach(GamePlayer::update);
-    }
-
-    public @Nullable GamePlayer getPlayer(@NotNull Entity entity) {
-        Objects.requireNonNull(entity, "Argument 'entity'");
-        return getPlayer(entity.getUuid());
     }
 
     public @Nullable GamePlayer getPlayer(@NotNull UUID uuid) {
@@ -258,13 +240,18 @@ public final class GameContext {
         return null;
     }
 
-    public @NotNull GamePlayer getPlayer(@NotNull ServerPlayerEntity player) {
-        Objects.requireNonNull(player, "Argument 'player'");
-        var uuid = Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'");
+    public @Nullable GamePlayer getPlayer(@NotNull Entity entity) {
+        Objects.requireNonNull(entity, "Argument 'entity'");
+        return getPlayer(entity.getUuid());
+    }
+
+    public @NotNull GamePlayer getPlayer(@NotNull ServerPlayerEntity entity) {
+        Objects.requireNonNull(entity, "Argument 'entity'");
+        var uuid = Objects.requireNonNull(entity.getUuid(), "Expression 'entity.getUuid()'");
         synchronized (playerMapLock) {
             var wrapper = playerMap.get(uuid);
             if (wrapper == null) {
-                wrapper = new GamePlayer(this, player);
+                wrapper = new GamePlayer(this, entity);
                 playerMap.put(uuid, wrapper);
             }
             return wrapper;

@@ -4,7 +4,7 @@ import dev.foxgirl.mineseekdestroy.state.RunningGameState
 
 class SaturationService : Service() {
 
-    fun handleUpdate() {
+    override fun update() {
         val running = state is RunningGameState
         for (player in players) {
             if (running && player.isPlaying) continue

@@ -70,7 +70,8 @@ public final class InvisibilityService extends Service {
         }
     }
 
-    public void handleUpdate() {
+    @Override
+    public void update() {
         boolean immediate = false;
         synchronized (lock) {
             if (activePrevious != activeCurrent) {

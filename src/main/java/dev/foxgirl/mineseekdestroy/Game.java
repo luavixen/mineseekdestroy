@@ -410,16 +410,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             var state = getState().update(context);
             if (state != null) setState(state);
 
-            context.inventoryService.handleUpdate();
-            context.armorService.handleUpdate();
-            context.invisibilityService.handleUpdate();
-            context.saturationService.handleUpdate();
-            context.glowService.handleUpdate();
-            context.itemService.handleUpdate();
-            context.specialTowerService.handleUpdate();
-            context.specialGhostService.handleUpdate();
-
-            context.updatePlayers();
+            context.update();
         }
 
         var world = server.getOverworld();
@@ -442,15 +433,18 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     player.getPitch()
                 );
                 player.kill();
+                LOGGER.info("Player '" + player.getEntityName() + "' entered out of bounds killzone");
             }
             if (getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && properties.getRegionBlimp().contains(player)) {
                 player.kill();
+                LOGGER.info("Player '" + player.getEntityName() + "' entered blimp killzone");
             }
             if (player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
                 Scheduler.now((schedule) -> {
                     player.interactionManager.changeGameMode(GameMode.SURVIVAL);
                     player.setHealth(0.0F);
                 });
+                LOGGER.info("Player '" + player.getEntityName() + "' in incorrect gamemode");
             }
         }
     }
@@ -464,6 +458,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             }
             context = new GameContext(this);
             context.initialize();
+            LOGGER.info("Game initialized");
         } else {
             throw new IllegalStateException("Attempted to double-initialize game");
         }
@@ -471,8 +466,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     }
 
     public void destroy() {
-        context.destroy();
-        context = null;
+        if (context != null) {
+            context.destroy();
+            context = null;
+        }
         setState(new WaitingGameState());
     }
 

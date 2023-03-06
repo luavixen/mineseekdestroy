@@ -12,7 +12,7 @@ import net.minecraft.util.DyeColor
 
 class ArmorService : Service() {
 
-    fun handleUpdate() {
+    override fun update() {
         for (player in players) {
             val entity = player.entity
             if (entity == null || game.isOperator(entity)) continue

@@ -23,7 +23,7 @@ class SpecialTowerService : Service() {
 
     private var entities: List<Pair<ServerPlayerEntity, Region>> = emptyList()
 
-    fun handleUpdate() {
+    override fun update() {
         if (properties !== GameProperties.Realm) return
 
         val entitiesOld = entities

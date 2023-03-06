@@ -30,6 +30,9 @@ public abstract class Service {
     protected void setup() {
     }
 
+    public void update() {
+    }
+
     protected final @NotNull GameContext getContext() {
         var context = this.context;
         if (context == null) {

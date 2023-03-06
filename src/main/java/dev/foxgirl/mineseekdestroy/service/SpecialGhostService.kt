@@ -81,7 +81,7 @@ class SpecialGhostService : Service() {
 
     private var schedule: Scheduler.Schedule? = null
 
-    fun handleUpdate() {
+    override fun update() {
         if (properties != GameProperties.Macander) return
         if (schedule == null && spawnEnabled) {
             schedule = Scheduler.delay(spawnDelay()) {

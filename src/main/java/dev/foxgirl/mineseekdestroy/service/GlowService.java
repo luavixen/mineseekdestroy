@@ -77,7 +77,8 @@ public final class GlowService extends Service {
         }
     }
 
-    public void handleUpdate() {
+    @Override
+    public void update() {
         if (broadcastTicks >= 40) {
             broadcastTicks = ThreadLocalRandom.current().nextInt(6);
             broadcast();

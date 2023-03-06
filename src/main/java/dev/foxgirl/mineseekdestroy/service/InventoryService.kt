@@ -43,7 +43,7 @@ class InventoryService : Service() {
         console.sendInfo("Updated inventories of ${count} players")
     }
 
-    fun handleUpdate() {
+    override fun update() {
         if (state is RunningGameState) {
             for (player in players) mirrorUpdate(player)
         } else {

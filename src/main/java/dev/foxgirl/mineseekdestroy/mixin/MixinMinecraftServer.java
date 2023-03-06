@@ -14,6 +14,11 @@ public abstract class MixinMinecraftServer {
     @Inject(method = "shutdown", at = @At("HEAD"))
     private void mineseekdestroy$hookShutdown(CallbackInfo info) {
         try {
+            Game.getGame().destroy();
+        } catch (Exception cause) {
+            Game.LOGGER.error("Game destroy failed", cause);
+        }
+        try {
             Scheduler.stop();
         } catch (Exception cause) {
             Game.LOGGER.error("Scheduler failed to stop", cause);
