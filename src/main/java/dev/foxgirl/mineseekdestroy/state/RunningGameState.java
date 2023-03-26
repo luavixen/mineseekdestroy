@@ -3,8 +3,8 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
-import dev.foxgirl.mineseekdestroy.mixin.MixinPigEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -60,10 +60,10 @@ public abstract class RunningGameState extends GameState {
         if (player.isPlaying() && player.isAlive()) {
             var vehicle = playerEntity.getVehicle();
             if (vehicle instanceof PigEntity) {
-                if (damageSource.isFromFalling()) {
+                if (damageSource.isOf(DamageTypes.FALL)) {
                     return false;
                 } else {
-                    ((MixinPigEntity) vehicle).mineseekdestroy$cooldownActivate();
+                    context.specialCarService.cooldownActivate((PigEntity) vehicle);
                 }
             }
             return true;

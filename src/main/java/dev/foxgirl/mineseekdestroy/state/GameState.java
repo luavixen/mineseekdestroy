@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
-import dev.foxgirl.mineseekdestroy.mixin.MixinPigEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
@@ -134,7 +133,7 @@ public abstract class GameState {
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
-                if (entity instanceof PigEntity && ((MixinPigEntity) entity).mineseekdestroy$cooldownReady()) {
+                if (entity instanceof PigEntity && context.specialCarService.cooldownIsReady((PigEntity) entity)) {
                     return ActionResult.PASS;
                 }
             }

@@ -1,7 +1,7 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -18,7 +18,7 @@ public abstract class MixinServerPlayNetworkHandler {
     private ServerPlayerEntity player;
 
     @ModifyVariable(
-        method = "sendPacket(Lnet/minecraft/network/Packet;Lnet/minecraft/network/PacketCallbacks;)V",
+        method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V",
         at = @At("HEAD"), ordinal = 0
     )
     private Packet<?> mineseekdestroy$hookSendPacket(Packet<?> packet) {

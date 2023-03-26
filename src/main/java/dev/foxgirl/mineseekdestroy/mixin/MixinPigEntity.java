@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -47,7 +48,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
     private int mineseekdestroy$cooldownAge = 0;
 
     @Unique
-    public boolean mineseekdestroy$cooldownReady() {
+    public boolean mineseekdestroy$cooldownIsReady() {
         return age > mineseekdestroy$cooldownAge;
     }
 
@@ -59,7 +60,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
 
     @Unique
     private void mineseekdestroy$handleDamage(DamageSource source, float amount) {
-        if (amount >= 1.0F && !source.isFromFalling()) {
+        if (amount >= 1.0F && !source.isOf(DamageTypes.FALL)) {
             mineseekdestroy$cooldownActivate();
         }
     }
@@ -87,7 +88,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
     @Unique
     private boolean mineseekdestroy$shouldRemovePassengers() {
         if (!hasPassengers()) return false;
-        if (!mineseekdestroy$cooldownReady()) return true;
+        if (!mineseekdestroy$cooldownIsReady()) return true;
 
         var context = Game.getGame().getContext();
         if (context != null) {
@@ -100,7 +101,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
 
     @Unique
     private void mineseekdestroy$handleCollision(PlayerEntity player) {
-        var rider = getPrimaryPassenger();
+        var rider = getControllingPassenger();
         if (rider == null || rider == player) return;
 
         if (mineseekdestroy$posDiff.length() < 0.1) return;
@@ -116,7 +117,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
         mineseekdestroy$collisions.add(new Pair<>(player, age));
 
         var damageAmount = (float) Game.getGame().getRuleDouble(Game.RULE_CARS_DAMAGE);
-        var damageSource = rider instanceof PlayerEntity ? DamageSource.player((PlayerEntity) rider) : DamageSource.OUT_OF_WORLD;
+        var damageSource = rider instanceof PlayerEntity ? getDamageSources().playerAttack((PlayerEntity) rider) : getDamageSources().outOfWorld();
         player.damage(damageSource, damageAmount);
 
         var pushStrength = Game.getGame().getRuleDouble(Game.RULE_CARS_KNOCKBACK);
