@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy;
 import com.google.common.collect.ImmutableSet;
 import dev.foxgirl.mineseekdestroy.command.Command;
 import dev.foxgirl.mineseekdestroy.state.GameState;
+import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
@@ -351,15 +352,15 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public void sendToPlayers(@NotNull Text message) {
         Objects.requireNonNull(message, "Argument 'message'");
-        for (var player : getServer().getPlayerManager().getPlayerList()) {
-            player.sendMessageToClient(message, false);
+        for (var playerEntity : getServer().getPlayerManager().getPlayerList()) {
+            playerEntity.sendMessageToClient(message, false);
         }
     }
 
     public void sendToOperators(@NotNull Text message) {
         Objects.requireNonNull(message, "Argument 'message'");
-        for (var player : getServer().getPlayerManager().getPlayerList()) {
-            if (isOperator(player)) player.sendMessageToClient(message, false);
+        for (var playerEntity : getServer().getPlayerManager().getPlayerList()) {
+            if (isOperator(playerEntity)) playerEntity.sendMessageToClient(message, false);
         }
     }
 
@@ -384,14 +385,14 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         ServerPlayerEvents.ALLOW_DEATH.register((playerEntity, damageSource, damageAmount) -> getState().allowDeath(getContext(), playerEntity, damageSource, damageAmount));
         ExtraEvents.PLAYER_DAMAGED.register((playerEntity, damageSource, damageAmount) -> getState().onTakeDamage(getContext(), playerEntity, damageSource, damageAmount));
         PlayerBlockBreakEvents.BEFORE.register((world, playerEntity, pos, blockState, blockEntity) -> getState().allowBlockBreak(getContext(), playerEntity, world, pos, blockState, blockEntity));
-        ExtraEvents.BLOCK_USED.register((player, world, hand, blockHit, blockState) -> getState().onUseBlock(getContext(), player, world, hand, blockHit, blockState));
-        ExtraEvents.BLOCK_USED_WITH.register((player, world, hand, blockHit, blockItemStack) -> getState().onUseBlockWith(getContext(), player, world, hand, blockHit, blockItemStack));
-        ExtraEvents.ITEM_USED.register((player, world, hand, stack) -> getState().onUseItem(getContext(), player, world, hand, stack));
+        ExtraEvents.BLOCK_USED.register((playerEntity, world, hand, blockHit, blockState) -> getState().onUseBlock(getContext(), playerEntity, world, hand, blockHit, blockState));
+        ExtraEvents.BLOCK_USED_WITH.register((playerEntity, world, hand, blockHit, blockItemStack) -> getState().onUseBlockWith(getContext(), playerEntity, world, hand, blockHit, blockItemStack));
+        ExtraEvents.ITEM_USED.register((playerEntity, world, hand, stack) -> getState().onUseItem(getContext(), playerEntity, world, hand, stack));
         UseEntityCallback.EVENT.register((playerEntity, world, hand, entity, hitResult) -> getState().onUseEntity(getContext(), playerEntity, world, hand, entity, hitResult));
         AttackBlockCallback.EVENT.register((playerEntity, world, hand, pos, direction) -> getState().onAttackBlock(getContext(), playerEntity, world, hand, pos, direction));
         AttackEntityCallback.EVENT.register((playerEntity, world, hand, entity, hitResult) -> getState().onAttackEntity(getContext(), playerEntity, world, hand, entity, hitResult));
-        ExtraEvents.ITEM_DROPPED.register((player, stack, throwRandomly, retainOwnership) -> getState().onItemDropped(getContext(), player, stack, throwRandomly, retainOwnership));
-        ExtraEvents.ITEM_ACQUIRED.register((player, inventory, stack, slot) -> getState().onItemAcquired(getContext(), player, inventory, stack, slot));
+        ExtraEvents.ITEM_DROPPED.register((playerEntity, stack, throwRandomly, retainOwnership) -> getState().onItemDropped(getContext(), playerEntity, stack, throwRandomly, retainOwnership));
+        ExtraEvents.ITEM_ACQUIRED.register((playerEntity, inventory, stack, slot) -> getState().onItemAcquired(getContext(), playerEntity, inventory, stack, slot));
     }
 
     @Override
@@ -413,37 +414,44 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         }
 
         var world = server.getOverworld();
-        var players = server.getPlayerManager().getPlayerList();
+        var playerEntities = server.getPlayerManager().getPlayerList();
 
         var properties = getProperties();
 
-        for (var player : players) {
-            if (hasOperator(player)) continue;
-            if (player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
-                LOGGER.info("Player '" + player.getEntityName() + "' in incorrect gamemode");
-                player.interactionManager.changeGameMode(GameMode.SURVIVAL);
-                player.kill();
-                player.setHealth(0.0F);
-            } else if (player.isAlive()) {
+        for (var playerEntity : playerEntities) {
+            if (hasOperator(playerEntity)) continue;
+            if (playerEntity.interactionManager.getGameMode() != GameMode.SURVIVAL) {
+                LOGGER.info("Player '" + playerEntity.getEntityName() + "' in incorrect gamemode");
+                playerEntity.interactionManager.changeGameMode(GameMode.SURVIVAL);
+                playerEntity.kill();
+                playerEntity.setHealth(0.0F);
+            } else if (playerEntity.isAlive()) {
                 if (
-                    player.getWorld() != world ||
-                    (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && !properties.getRegionLegal().contains(player))
+                    (playerEntity.getWorld() != world) ||
+                    (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && !properties.getRegionLegal().contains(playerEntity))
                 ) {
-                    LOGGER.info("Player '" + player.getEntityName() + "' entered out of bounds killzone");
-                    player.teleport(
+                    LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered out of bounds killzone");
+                    playerEntity.teleport(
                         world,
                         properties.getPositionArena().getX(),
                         properties.getPositionArena().getY(),
                         properties.getPositionArena().getZ(),
-                        player.getYaw(),
-                        player.getPitch()
+                        playerEntity.getYaw(),
+                        playerEntity.getPitch()
                     );
-                    player.kill();
-                    player.setHealth(0.0F);
-                } else if (getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && properties.getRegionBlimp().contains(player)) {
-                    LOGGER.info("Player '" + player.getEntityName() + "' entered blimp killzone");
-                    player.kill();
-                    player.setHealth(0.0F);
+                    playerEntity.kill();
+                    playerEntity.setHealth(0.0F);
+                } else if (context != null && getState() instanceof PlayingGameState) {
+                    var player = context.getPlayer(playerEntity);
+                    if (
+                        player.isPlaying() && player.isAlive() &&
+                        getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) &&
+                        properties.getRegionBlimp().contains(playerEntity)
+                    ) {
+                        LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered blimp killzone and is elegible");
+                        playerEntity.kill();
+                        playerEntity.setHealth(0.0F);
+                    }
                 }
             }
         }

@@ -128,6 +128,10 @@ class AutomationService : Service() {
     private val cooldownFlag = AtomicBoolean(false)
 
     fun executeOpenIpad(console: Console) {
+        if (players.none { it.isOperator }) {
+            console.sendError("Cannot open iPad, nobody on team", GameTeam.OPERATOR.nameColored)
+        }
+
         if (cooldownFlag.getAndSet(true)) {
             console.sendError("Cannot open iPad, already in progress")
             return
@@ -138,6 +142,7 @@ class AutomationService : Service() {
             cooldownFlag.set(false)
             throw cause
         }
+
         console.sendInfo("Opening iPad")
 
         players.forEach { if (it.isOperator) it.entity?.changeGameMode(GameMode.CREATIVE) }

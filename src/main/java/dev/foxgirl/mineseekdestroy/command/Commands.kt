@@ -240,14 +240,14 @@ internal fun setup() {
             }
 
             fun isPlaying(player: GamePlayer) = player.isPlaying
-            fun isInRegion(player: GamePlayer) = player.entity.let { if (it != null) region().contains(it) else false }
+            fun isRegion(player: GamePlayer) = player.entity.let { if (it != null) !region().contains(it) else false }
 
             it.params(argLiteral(literal)) {
                 it.params(argLiteral("area")) {
                     it.params(argPlayers()) {
-                        it.actionWithContext { args, context -> teleport(args, args.players(context), false, ::isInRegion) }
+                        it.actionWithContext { args, context -> teleport(args, args.players(context), false, ::isRegion) }
                     }
-                    it.actionWithContext { args, context -> teleport(args, context.players, true, ::isInRegion) }
+                    it.actionWithContext { args, context -> teleport(args, context.players, true, ::isRegion) }
                 }
                 it.params(argLiteral("force")) {
                     it.params(argPlayers()) {

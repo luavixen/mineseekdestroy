@@ -1,14 +1,17 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
+import com.google.common.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Vec3d;
@@ -17,6 +20,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(PigEntity.class)
 public abstract class MixinPigEntity extends AnimalEntity {
@@ -45,22 +49,42 @@ public abstract class MixinPigEntity extends AnimalEntity {
     }
 
     @Unique
+    @SuppressWarnings("unchecked")
+    private static final List<RegistryKey<DamageType>> mineseekdestroy$cooldownDamageTypes = ImmutableList.copyOf(new RegistryKey[] {
+        DamageTypes.GENERIC,
+        DamageTypes.MAGIC,
+        DamageTypes.INDIRECT_MAGIC,
+        DamageTypes.MOB_ATTACK,
+        DamageTypes.MOB_ATTACK_NO_AGGRO,
+        DamageTypes.MOB_PROJECTILE,
+        DamageTypes.ARROW,
+        DamageTypes.TRIDENT,
+        DamageTypes.LIGHTNING_BOLT,
+        DamageTypes.FIREWORKS,
+        DamageTypes.FIREBALL,
+        DamageTypes.UNATTRIBUTED_FIREBALL,
+        DamageTypes.PLAYER_ATTACK,
+        DamageTypes.PLAYER_EXPLOSION,
+        DamageTypes.EXPLOSION,
+    });
+
+    @Unique
     private int mineseekdestroy$cooldownAge = 0;
 
     @Unique
-    public boolean mineseekdestroy$cooldownIsReady() {
+    private boolean mineseekdestroy$cooldownIsReady() {
         return age > mineseekdestroy$cooldownAge;
     }
 
     @Unique
-    public void mineseekdestroy$cooldownActivate() {
+    private void mineseekdestroy$cooldownActivate() {
         removeAllPassengers();
         mineseekdestroy$cooldownAge = age + (int) (Game.getGame().getRuleDouble(Game.RULE_CARS_COOLDOWN_DURATION) * 20.0);
     }
 
     @Unique
     private void mineseekdestroy$handleDamage(DamageSource source, float amount) {
-        if (amount >= 1.0F && !source.isOf(DamageTypes.FALL)) {
+        if (amount >= 1.0F && mineseekdestroy$cooldownDamageTypes.stream().anyMatch(source::isOf)) {
             mineseekdestroy$cooldownActivate();
         }
     }
