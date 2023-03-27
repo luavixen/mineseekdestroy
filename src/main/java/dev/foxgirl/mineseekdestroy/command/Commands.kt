@@ -7,6 +7,7 @@ import dev.foxgirl.mineseekdestroy.util.Region
 import net.minecraft.command.EntitySelector
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.math.Position
+import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 
 internal fun setup() {
@@ -439,6 +440,27 @@ internal fun setup() {
                 }
             }
         }
+    }
+
+    Command.build("gm") {
+        fun register(literal: String, mode: GameMode) {
+            it.params(argLiteral(literal)) {
+                it.params(argPlayers()) {
+                    it.actionWithContext { args, context ->
+                        val players = args.players(context).onEach { it.entity?.changeGameMode(mode) }
+                        args.sendInfo("Set game mode for ${players.size} players to ${literal}")
+                    }
+                }
+                it.actionWithContext { args, context ->
+                    val players = context.players.filter { it.isOperator }.onEach { it.entity?.changeGameMode(mode) }
+                    args.sendInfo("Set game mode for ${players.size} players to ${literal}")
+                }
+            }
+        }
+        register("survival", GameMode.SURVIVAL)
+        register("creative", GameMode.CREATIVE)
+        register("spectator", GameMode.SPECTATOR)
+        register("adventure", GameMode.ADVENTURE)
     }
 
 }

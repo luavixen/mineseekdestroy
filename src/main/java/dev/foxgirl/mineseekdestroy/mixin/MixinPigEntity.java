@@ -72,12 +72,12 @@ public abstract class MixinPigEntity extends AnimalEntity {
     private int mineseekdestroy$cooldownAge = 0;
 
     @Unique
-    private boolean mineseekdestroy$cooldownIsReady() {
+    public boolean mineseekdestroy$cooldownIsReady() {
         return age > mineseekdestroy$cooldownAge;
     }
 
     @Unique
-    private void mineseekdestroy$cooldownActivate() {
+    public void mineseekdestroy$cooldownActivate() {
         removeAllPassengers();
         mineseekdestroy$cooldownAge = age + (int) (Game.getGame().getRuleDouble(Game.RULE_CARS_COOLDOWN_DURATION) * 20.0);
     }
