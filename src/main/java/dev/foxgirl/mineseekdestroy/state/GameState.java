@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LootableContainerBlockEntity;
 import net.minecraft.entity.Entity;
@@ -72,7 +73,7 @@ public abstract class GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
-        if (context != null) {
+        if (context != null && context.world == world) {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (
@@ -85,6 +86,9 @@ public abstract class GameState {
                 if (blockEntity instanceof LootableContainerBlockEntity) {
                     return context.lootService.handleContainerOpen(blockEntity);
                 }
+                if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
+                    return context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                }
                 return ActionResult.PASS;
             }
         }
@@ -95,7 +99,7 @@ public abstract class GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
-        if (context != null) {
+        if (context != null && context.world == world) {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {

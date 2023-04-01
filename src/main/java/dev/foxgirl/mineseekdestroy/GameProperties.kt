@@ -76,6 +76,7 @@ sealed interface GameProperties {
             GREEN_SHULKER_BOX,
             RED_SHULKER_BOX,
             BLACK_SHULKER_BOX,
+            FLETCHING_TABLE,
         )
 
     }

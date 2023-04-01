@@ -11,6 +11,7 @@ import net.minecraft.block.entity.BarrelBlockEntity
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.block.entity.ShulkerBoxBlockEntity
+import net.minecraft.inventory.DoubleInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
@@ -47,16 +48,26 @@ class LootService : Service() {
     }
 
     fun executeFill(console: Console) {
-        val template = inventory(world.getBlockEntity(properties.templateLoottable))
-        if (template == null) {
-            console.sendError("Failed to read template chest at ${properties.templateLoottable}")
+        val template: Inventory
+
+        val template1 = inventory(world.getBlockEntity(properties.templateLoottable))
+        if (template1 == null) {
+            console.sendError("Failed to find bottom template chest at ${properties.templateLoottable}")
             return
         }
 
+        val template2 = inventory(world.getBlockEntity(properties.templateLoottable.up()))
+        if (template2 == null) {
+            console.sendInfo("Failed to find top template chest at ${properties.templateLoottable.up()}")
+            template = template1
+        } else {
+            template = DoubleInventory(template1, template2)
+        }
+
         val lootCount = game.getRuleInt(Game.RULE_LOOT_COUNT)
-        val lootTable = Inventories.list(template)
+        val lootTable = Inventories.list(template).toMutableList()
         if (lootTable.isEmpty()) {
-            console.sendError("Cannot create loot table, template chest at ${properties.templateLoottable} is empty")
+            console.sendError("Cannot create loot table, template chest(s) at ${properties.templateLoottable} are empty")
             return
         }
 

@@ -66,7 +66,7 @@ public final class Inventories {
         if (size < 0) {
             throw new IllegalArgumentException("Argument 'size' is negative");
         }
-        return new InventoryImpl(size);
+        return new ArrayInventory(size);
     }
 
     private static final class InventoryList extends AbstractList<ItemStack> implements RandomAccess {
@@ -98,13 +98,13 @@ public final class Inventories {
         }
     }
 
-    private static final class InventoryImpl implements Inventory {
+    private static final class ArrayInventory implements Inventory {
         private static final ItemStack EMPTY_STACK = ItemStack.EMPTY;
         private static final int MAX_COUNT_PER_STACK = Inventory.MAX_COUNT_PER_STACK;
 
         private final ItemStack[] stacks;
 
-        private InventoryImpl(int size) {
+        private ArrayInventory(int size) {
             stacks = new ItemStack[size];
             clear();
         }
