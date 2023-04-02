@@ -120,6 +120,10 @@ public class ArrayMap<K, V> implements Map<K, V> {
         return null;
     }
 
+    public final void putUnsafe(K key, V value) {
+        entries.add(new Entry<>(key, value));
+    }
+
     @Override public boolean containsKey(Object key) { return findByKey(key) != null; }
     @Override public boolean containsValue(Object value) { return findByValue(value) != null; }
 
@@ -141,7 +145,7 @@ public class ArrayMap<K, V> implements Map<K, V> {
         if (entry != null) {
             return entry.setValue(value);
         }
-        entries.add(new Entry<>(key, value));
+        putUnsafe(key, value);
         return null;
     }
 
@@ -163,6 +167,11 @@ public class ArrayMap<K, V> implements Map<K, V> {
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean remove(Object key, Object value) {
+        return entries.remove(new Entry<>(key, value));
     }
 
     @Override public int size() { return entries.size(); }

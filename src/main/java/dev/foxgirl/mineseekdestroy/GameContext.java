@@ -257,7 +257,7 @@ public final class GameContext {
         var results = new ArrayMap<GamePlayer, ServerPlayerEntity>(players.size());
         for (var player : players) {
             var entity = player.getEntity();
-            if (entity != null) results.put(player, entity);
+            if (entity != null) results.putUnsafe(player, entity);
         }
         return results;
     }
