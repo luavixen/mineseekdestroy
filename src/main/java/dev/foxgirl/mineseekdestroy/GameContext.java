@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.service.*;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
+import dev.foxgirl.mineseekdestroy.util.ArrayMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
@@ -126,7 +127,7 @@ public final class GameContext {
 
         playerManager = server.getPlayerManager();
 
-        playerMap = new HashMap<>();
+        playerMap = new HashMap<>(32);
         playerMapLock = new Object();
 
         services = new Service[] {
@@ -221,6 +222,57 @@ public final class GameContext {
             for (ServerPlayerEntity entity : entities) players.add(getPlayer(entity));
         }
         return players;
+    }
+
+    @FunctionalInterface
+    private interface PlayerPredicate {
+        boolean test(GamePlayer player);
+    }
+
+    private static final PlayerPredicate isPlayerNormal =
+        (player) -> (!player.isOperator());
+    private static final PlayerPredicate isPlayerIn =
+        (player) -> (player.isPlaying() && player.isAlive());
+    private static final PlayerPredicate isPlayerOut =
+        (player) -> (!player.isOperator() && (!player.isPlaying() || !player.isAlive()));
+
+    private List<GamePlayer> getPlayersFiltered(PlayerPredicate predicate) {
+        var players = getPlayers();
+        var results = new ArrayList<GamePlayer>(players.size());
+        for (var player : players) if (predicate.test(player)) results.add(player);
+        return results;
+    }
+
+    public @NotNull List<@NotNull GamePlayer> getPlayersNormal() {
+        return getPlayersFiltered(isPlayerNormal);
+    }
+    public @NotNull List<@NotNull GamePlayer> getPlayersIn() {
+        return getPlayersFiltered(isPlayerIn);
+    }
+    public @NotNull List<@NotNull GamePlayer> getPlayersOut() {
+        return getPlayersFiltered(isPlayerOut);
+    }
+
+    private Map<GamePlayer, ServerPlayerEntity> associatePlayersWithEntities(Collection<GamePlayer> players) {
+        var results = new ArrayMap<GamePlayer, ServerPlayerEntity>(players.size());
+        for (var player : players) {
+            var entity = player.getEntity();
+            if (entity != null) results.put(player, entity);
+        }
+        return results;
+    }
+
+    public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntities() {
+        return associatePlayersWithEntities(getPlayers());
+    }
+    public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesNormal() {
+        return associatePlayersWithEntities(getPlayersNormal());
+    }
+    public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesIn() {
+        return associatePlayersWithEntities(getPlayersIn());
+    }
+    public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesOut() {
+        return associatePlayersWithEntities(getPlayersOut());
     }
 
     public @Nullable GamePlayer getPlayer(@NotNull UUID uuid) {

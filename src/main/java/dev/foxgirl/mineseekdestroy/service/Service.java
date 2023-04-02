@@ -6,11 +6,13 @@ import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameProperties;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public abstract class Service {
@@ -51,6 +53,27 @@ public abstract class Service {
 
     protected final @NotNull List<@NotNull GamePlayer> getPlayers() {
         return getContext().getPlayers();
+    }
+    protected final @NotNull List<@NotNull GamePlayer> getPlayersNormal() {
+        return getContext().getPlayersNormal();
+    }
+    protected final @NotNull List<@NotNull GamePlayer> getPlayersIn() {
+        return getContext().getPlayersIn();
+    }
+    protected final @NotNull List<@NotNull GamePlayer> getPlayersOut() {
+        return getContext().getPlayersOut();
+    }
+    protected final @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntities() {
+        return getContext().getPlayerEntities();
+    }
+    protected final @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesNormal() {
+        return getContext().getPlayerEntitiesNormal();
+    }
+    protected final @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesIn() {
+        return getContext().getPlayerEntitiesIn();
+    }
+    protected final @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesOut() {
+        return getContext().getPlayerEntitiesOut();
     }
 
     protected final @NotNull Game getGame() {

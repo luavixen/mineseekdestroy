@@ -29,14 +29,11 @@ class SpecialTowerService : Service() {
         val entitiesOld = entities
         val entitiesNew = mutableListOf<Pair<ServerPlayerEntity, Region>>()
 
-        for (player in players) {
-            if (player.isPlaying && player.isAlive) {
-                val entity = player.entity ?: continue
-                val region = regions.firstOrNull { it.contains(entity) }
-                if (region != null) {
-                    entitiesNew.add(entity to region)
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, duration))
-                }
+        for ((player, entity) in playerEntitiesIn) {
+            val region = regions.firstOrNull { it.contains(entity) }
+            if (region != null) {
+                entitiesNew.add(entity to region)
+                entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, duration))
             }
         }
 

@@ -6,9 +6,8 @@ class SaturationService : Service() {
 
     override fun update() {
         val running = state is RunningGameState
-        for (player in players) {
+        for ((player, entity) in playerEntities) {
             if (running && player.isPlaying) continue
-            val entity = player.entity ?: continue
             if (entity.isDead || entity.isRemoved) continue
             entity.health = entity.maxHealth
             entity.hungerManager.apply {

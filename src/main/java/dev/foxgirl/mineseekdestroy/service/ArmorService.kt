@@ -13,9 +13,8 @@ import net.minecraft.util.DyeColor
 class ArmorService : Service() {
 
     override fun update() {
-        for (player in players) {
-            val entity = player.entity
-            if (entity == null || game.isOperator(entity)) continue
+        for ((player, entity) in playerEntities) {
+            if (game.isOperator(entity)) continue
 
             val inventory = entity.inventory!!
             var inventoryDirty = false

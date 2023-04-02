@@ -25,8 +25,7 @@ public class PlayingGameState extends RunningGameState {
         int aliveYellow = 0;
         int aliveBlue = 0;
 
-        for (var player : context.getPlayers()) {
-            if (!player.isPlaying() || !player.isAlive()) continue;
+        for (var player : context.getPlayersIn()) {
             switch (player.getTeam()) {
                 case PLAYER_YELLOW -> aliveYellow++;
                 case PLAYER_BLUE -> aliveBlue++;
