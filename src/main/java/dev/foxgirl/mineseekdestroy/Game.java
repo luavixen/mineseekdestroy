@@ -428,7 +428,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             } else if (playerEntity.isAlive()) {
                 if (
                     (playerEntity.getWorld() != world) ||
-                    (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && !properties.getRegionLegal().contains(playerEntity))
+                    (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && properties.getRegionLegal().excludes(playerEntity))
                 ) {
                     LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered out of bounds killzone");
                     playerEntity.teleport(
@@ -448,7 +448,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) &&
                         properties.getRegionBlimp().contains(playerEntity)
                     ) {
-                        LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered blimp killzone and is elegible");
+                        LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered blimp killzone and is eligible");
                         playerEntity.kill();
                         playerEntity.setHealth(0.0F);
                     }

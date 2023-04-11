@@ -34,20 +34,19 @@ public class PlayingGameState extends RunningGameState {
 
         if (aliveYellow == 0 && aliveBlue == 0) {
             context.game.sendInfo("Round over! Both teams died at the exact same time, nobody wins!");
-            return new FinalizingGameState();
-        }
-        if (aliveYellow == 0) {
+        } else if (aliveYellow == 0) {
             context.game.sendInfo("Round over!", GameTeam.PLAYER_BLUE.getNameColored(), "wins!");
             context.automationService.handleRoundEnd(GameTeam.PLAYER_YELLOW);
-            return new FinalizingGameState();
-        }
-        if (aliveBlue == 0) {
+        } else if (aliveBlue == 0) {
             context.game.sendInfo("Round over!", GameTeam.PLAYER_YELLOW.getNameColored(), "wins!");
             context.automationService.handleRoundEnd(GameTeam.PLAYER_BLUE);
-            return new FinalizingGameState();
+        } else {
+            return null;
         }
 
-        return null;
+        context.specialSummonsService.handleRoundEnd();
+
+        return new FinalizingGameState();
     }
 
 }

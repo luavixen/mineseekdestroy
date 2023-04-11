@@ -46,6 +46,13 @@ public abstract class GameState {
     }
 
     public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {
+        var position = Game.getGameProperties().getPositionArena();
+        newPlayerEntity.teleport(
+            context != null ? context.world : newPlayerEntity.getWorld(),
+            position.getX(), position.getY(), position.getZ(),
+            newPlayerEntity.getYaw(), newPlayerEntity.getPitch()
+        );
+        newPlayerEntity.updatePosition(position.getX(), position.getY(), position.getZ());
     }
 
     public boolean allowDeath(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
@@ -146,6 +153,10 @@ public abstract class GameState {
     }
 
     public ActionResult onAttackBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockPos pos, Direction direction) {
+        if (context != null && world.getBlockState(pos).getBlock() == Blocks.QUARTZ_SLAB) {
+            var success = context.specialPianoService.handleInteract(context.getPlayer((ServerPlayerEntity) playerEntity), pos);
+            if (success) return ActionResult.FAIL;
+        }
         return ActionResult.PASS;
     }
 

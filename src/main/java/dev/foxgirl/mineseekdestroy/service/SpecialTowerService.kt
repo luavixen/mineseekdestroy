@@ -29,7 +29,7 @@ class SpecialTowerService : Service() {
         val entitiesOld = entities
         val entitiesNew = mutableListOf<Pair<ServerPlayerEntity, Region>>()
 
-        for ((player, entity) in playerEntitiesIn) {
+        for ((_, entity) in playerEntitiesIn) {
             val region = regions.firstOrNull { it.contains(entity) }
             if (region != null) {
                 entitiesNew.add(entity to region)

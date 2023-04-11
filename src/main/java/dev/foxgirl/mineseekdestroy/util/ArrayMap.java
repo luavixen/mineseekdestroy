@@ -204,7 +204,7 @@ public class ArrayMap<K, V> implements Map<K, V> {
 
     @Override
     public String toString() {
-        if (entries.isEmpty()) return "{}";
+        if (isEmpty()) return "{}";
 
         var iter = entries.iterator();
         var builder = new StringBuilder();

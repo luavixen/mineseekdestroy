@@ -83,9 +83,8 @@ public final class Inventories {
 
         @Override
         public ItemStack get(int index) {
-            int size = inventory.size();
-            if (index < 0 || index >= size) {
-                throw new IndexOutOfBoundsException("Index " + index + " out of bounds for size " + size);
+            if (index < 0 || index >= size()) {
+                throw new IndexOutOfBoundsException("Index " + index + " out of bounds");
             }
             return getStack(inventory, index);
         }
