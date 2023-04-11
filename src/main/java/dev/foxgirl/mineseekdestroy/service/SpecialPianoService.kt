@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import com.google.common.collect.ImmutableList
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
@@ -75,10 +74,10 @@ class SpecialPianoService : Service() {
         }
     }
 
-    private val pianos = mutableMapOf<BlockPos, Piano>()
+    private val pianos = HashMap<BlockPos, Piano>()
 
     fun handleInteract(player: GamePlayer, pos: BlockPos): Boolean {
-        val piano1 = pianos.get(pos)
+        val piano1 = pianos[pos]
         if (piano1 != null) {
             piano1.play(player, pos)
             return true
@@ -109,7 +108,7 @@ class SpecialPianoService : Service() {
 
         if (positions.size != 4) return false
 
-        val piano2 = Piano(ImmutableList.copyOf(positions))
+        val piano2 = Piano(positions.map(BlockPos::toImmutable))
         piano2.positions.forEach { pianos[it] = piano2 }
         piano2.play(player, pos)
 
