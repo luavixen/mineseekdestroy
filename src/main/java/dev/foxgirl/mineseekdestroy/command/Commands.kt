@@ -262,6 +262,7 @@ internal fun setup() {
                 it.actionWithContext { args, context -> teleport(args, context.players, true, ::isPlaying) }
             }
         }
+        register("spawn", { properties.positionSpawn.toCenterPos() }, { properties.regionAll })
         register("blimp", { properties.positionBlimp }, { properties.regionBlimp })
         register("arena", { properties.positionArena }, { properties.regionPlayable })
         register("duel1", { properties.positionDuel1 }, { properties.regionPlayable })

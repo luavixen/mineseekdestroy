@@ -7,6 +7,7 @@ import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
+import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -431,16 +432,16 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && properties.getRegionLegal().excludes(playerEntity))
                 ) {
                     LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered out of bounds killzone");
+                    var position = properties.getPositionSpawn().toCenterPos();
                     playerEntity.teleport(
                         world,
-                        properties.getPositionArena().getX(),
-                        properties.getPositionArena().getY(),
-                        properties.getPositionArena().getZ(),
-                        playerEntity.getYaw(),
-                        playerEntity.getPitch()
+                        position.getX(), position.getY(), position.getZ(),
+                        playerEntity.getYaw(), playerEntity.getPitch()
                     );
-                    playerEntity.kill();
-                    playerEntity.setHealth(0.0F);
+                    Scheduler.now((schedule) -> {
+                        playerEntity.kill();
+                        playerEntity.setHealth(0.0F);
+                    });
                 } else if (context != null && getState() instanceof PlayingGameState) {
                     var player = context.getPlayer(playerEntity);
                     if (

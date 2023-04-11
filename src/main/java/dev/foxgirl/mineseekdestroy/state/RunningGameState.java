@@ -9,24 +9,33 @@ import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.Position;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class RunningGameState extends GameState {
 
     @Override
     public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {
-        if (context == null) return;
+        if (context == null) {
+            super.onRespawn(context, oldPlayerEntity, newPlayerEntity, alive);
+            return;
+        }
+
+        Position position;
 
         var player = context.getPlayer(newPlayerEntity);
         if (player.isPlaying() && !player.isAlive()) {
-            var position = Game.getGameProperties().getPositionBlimp();
-            newPlayerEntity.teleport(
-                context.world,
-                position.getX(), position.getY(), position.getZ(),
-                newPlayerEntity.getYaw(), newPlayerEntity.getPitch()
-            );
-            newPlayerEntity.updatePosition(position.getX(), position.getY(), position.getZ());
+            position = Game.getGameProperties().getPositionBlimp();
+        } else {
+            position = Game.getGameProperties().getPositionSpawn().toCenterPos();
         }
+
+        newPlayerEntity.teleport(
+            context.world,
+            position.getX(), position.getY(), position.getZ(),
+            newPlayerEntity.getYaw(), newPlayerEntity.getPitch()
+        );
+        newPlayerEntity.updatePosition(position.getX(), position.getY(), position.getZ());
     }
 
     @Override

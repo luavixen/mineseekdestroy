@@ -83,6 +83,8 @@ public final class GameContext {
         server = Objects.requireNonNull(game.getServer());
         world = Objects.requireNonNull(game.getServer().getOverworld());
 
+        world.setSpawnPos(game.getProperties().getPositionSpawn(), 0.0F);
+
         scoreboard = server.getScoreboard();
 
         var scoreboardKillsOld = scoreboard.getObjective(scoreboardKillsName);
