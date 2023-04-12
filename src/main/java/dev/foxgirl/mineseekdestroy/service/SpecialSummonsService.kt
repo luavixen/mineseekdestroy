@@ -4,7 +4,6 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
-import dev.foxgirl.mineseekdestroy.util.ArrayMap
 import dev.foxgirl.mineseekdestroy.util.BlockFinder
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
@@ -151,10 +150,8 @@ class SpecialSummonsService : Service() {
                 addEnchantment(Enchantments.SHARPNESS, 50)
                 setDamage(32)
             }
-            for ((player, entity) in playerEntitiesNormal) {
-                if (player.team === team) {
-                    entity.giveItem(item.copy())
-                }
+            for ((player, entity) in playerEntitiesIn) {
+                if (player.team === team) entity.giveItem(item.copy())
             }
         }
         override fun stop() {
@@ -172,20 +169,38 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    private val summons = ArrayMap<TheologyPair, (Options) -> Summon>(16).apply {
-        putUnsafe(TheologyPair(DEEP, FLAME), ::DeepFlameSummon)
-        putUnsafe(TheologyPair(OCCULT, OCCULT), ::OccultOccultSummon)
-        putUnsafe(TheologyPair(OCCULT, COSMOS), ::OccultCosmosSummon)
-        putUnsafe(TheologyPair(OCCULT, BARTER), ::OccultBarterSummon)
-        putUnsafe(TheologyPair(OCCULT, FLAME), ::OccultFlameSummon)
+    private inner class CosmosBarterSummon(options: Options) : Summon(options) {
+        override fun perform() {
+            for ((player, entity) in playerEntitiesNormal) {
+                if (player.team === team) entity.giveItem(ItemStack(Items.COOKED_BEEF, 8))
+            }
+        }
     }
+
+    private inner class CosmosFlameSummon(options: Options) : Summon(options) {
+        override fun perform() {
+            for ((player, entity) in playerEntitiesNormal) {
+                if (player.team === team) entity.absorptionAmount += 2.0F
+            }
+        }
+    }
+
+    private val summons = mapOf<TheologyPair, (Options) -> Summon>(
+        TheologyPair(DEEP, FLAME) to ::DeepFlameSummon,
+        TheologyPair(OCCULT, OCCULT) to ::OccultOccultSummon,
+        TheologyPair(OCCULT, COSMOS) to ::OccultCosmosSummon,
+        TheologyPair(OCCULT, BARTER) to ::OccultBarterSummon,
+        TheologyPair(OCCULT, FLAME) to ::OccultFlameSummon,
+        TheologyPair(COSMOS, BARTER) to ::CosmosBarterSummon,
+        TheologyPair(COSMOS, FLAME) to ::CosmosFlameSummon,
+    )
 
     private val summonListGame = mutableListOf<Summon>()
     private val summonListRound = mutableListOf<Summon>()
 
-    private var timeout = Instant.now()
-
     private var altars = mapOf<BlockPos, Altar>()
+
+    private var timeout = Instant.now()
 
     override fun setup() {
         fun findTheologyAt(pos: BlockPos): Theology? {
