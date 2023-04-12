@@ -117,6 +117,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
+        UUID.fromString("53489b5d-d23a-4758-9374-2d8151fba31a"), // ReachOutLaz
         UUID.fromString("01dc40cd-2dba-4063-b2c5-bc333e864e0c"), // Karma_Dragon
     });
 
@@ -139,6 +140,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.BLACK_CONCRETE_POWDER,
         Blocks.SNOW_BLOCK,
         Blocks.BONE_BLOCK,
+        Blocks.ANVIL,
+        Blocks.CHIPPED_ANVIL,
+        Blocks.DAMAGED_ANVIL,
     });
 
     public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
@@ -148,6 +152,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.FISHING_ROD,
         Items.CARROT_ON_A_STICK,
         Items.FIREWORK_ROCKET,
+        Items.FLINT_AND_STEEL,
         Items.EGG,
         Items.SNOWBALL,
         Items.POTION,

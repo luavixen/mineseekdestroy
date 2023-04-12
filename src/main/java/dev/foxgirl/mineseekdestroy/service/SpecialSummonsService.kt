@@ -4,8 +4,8 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
+import dev.foxgirl.mineseekdestroy.util.ArrayMap
 import dev.foxgirl.mineseekdestroy.util.BlockFinder
-import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
@@ -24,76 +24,86 @@ import java.time.Instant
 
 class SpecialSummonsService : Service() {
 
-    private fun ServerPlayerEntity.give(stack: ItemStack) {
-        if (!this.giveItemStack(stack)) this.dropItem(stack, false)?.let { it.resetPickupDelay(); it.setOwner(this.uuid) }
-    }
-
     private enum class Theology {
-        DEEP, OCCULT, COSMOS, BARTER, FLAME,
+        DEEP, OCCULT, COSMOS, BARTER, FLAME;
     }
 
-    private data class Altar(
-        val pos: BlockPos,
-        val theology: Theology,
-    )
-
-    private class SummonKind(theology1: Theology, theology2: Theology) {
+    private class TheologyPair(theology1: Theology, theology2: Theology) {
         val theology1 = minOf(theology1, theology2)
         val theology2 = maxOf(theology1, theology2)
 
         val isDouble get() = theology1 === theology2
+        val isOnce get() = once.contains(this)
 
-        fun isTheology(theology: Theology) = theology1 === theology || theology2 === theology
-
-        override fun toString() = "SummonKind(theology1=${theology1}, theology2=${theology2})"
         override fun hashCode() = 31 * theology1.hashCode() + theology2.hashCode()
         override fun equals(other: Any?) =
-            other === this || (other is SummonKind && other.theology1 === theology1 && other.theology2 === theology2)
+            other === this || (other is TheologyPair && other.theology1 === theology1 && other.theology2 === theology2)
+
+        private companion object {
+            val once = setOf(
+                TheologyPair(DEEP, OCCULT),
+                TheologyPair(DEEP, COSMOS),
+                TheologyPair(DEEP, BARTER),
+                TheologyPair(OCCULT, BARTER),
+            )
+        }
     }
 
-    private data class SummonOptions(
-        val kind: SummonKind,
+    private class Altar(
+        val pos: BlockPos,
+        val theology: Theology,
+    )
+
+    private class Options(
+        val kind: TheologyPair,
         val altar: Altar,
+
         val player: GamePlayer,
-        val team: GameTeam,
-        val time: Instant = Instant.now(),
+        val team: GameTeam = player.team,
     ) {
         val pos: BlockPos get() = player.entity?.blockPos ?: altar.pos
     }
 
-    private abstract inner class Summon(private val options: SummonOptions) : Comparable<Summon> {
+    private abstract inner class Summon(protected val options: Options) {
         val kind get() = options.kind
         val altar get() = options.altar
         val player get() = options.player
         val team get() = options.team
-        val time get() = options.time
         val pos get() = options.pos
 
         open fun timeout(): Duration = Duration.ZERO
-        val expires = time.plus(timeout())
 
         open fun perform() {}
         open fun update() {}
-
-        override fun compareTo(other: Summon) = time.compareTo(other.time)
     }
 
     private interface Stoppable {
         fun stop()
     }
 
-    private inner class DeepFlameSummon(options: SummonOptions) : Summon(options) {
+    private fun ServerPlayerEntity.giveItem(stack: ItemStack) {
+        if (!giveItemStack(stack)) dropItem(stack, false)?.let { it.resetPickupDelay(); it.setOwner(uuid) }
+    }
+
+    private fun ServerPlayerEntity.removeItem(predicate: (ItemStack) -> Boolean) {
+        val inventory = inventory
+        for (i in 0 until inventory.size()) {
+            if (predicate(inventory.getStack(i))) inventory.setStack(i, ItemStack.EMPTY)
+        }
+    }
+
+    private inner class DeepFlameSummon(options: Options) : Summon(options) {
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
-                    entity.give(ItemStack(Items.FLINT_AND_STEEL).apply { addEnchantment(Enchantments.UNBREAKING, 3) })
-                    entity.give(ItemStack(Items.ANVIL))
+                    entity.giveItem(ItemStack(Items.FLINT_AND_STEEL).apply { addEnchantment(Enchantments.UNBREAKING, 3) })
+                    entity.giveItem(ItemStack(Items.ANVIL))
                 }
             }
         }
     }
 
-    private inner class OccultOccultSummon(options: SummonOptions) : Summon(options) {
+    private inner class OccultOccultSummon(options: Options) : Summon(options) {
         override fun perform() {
             for (player in players) {
                 if (player.team === GameTeam.PLAYER_BLACK) player.kills += 2
@@ -104,7 +114,7 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    private inner class OccultCosmosSummon(options: SummonOptions) : Summon(options), Stoppable {
+    private inner class OccultCosmosSummon(options: Options) : Summon(options), Stoppable {
         override fun perform() {
             for ((player, entity) in playerEntitiesIn) {
                 if (player.team === GameTeam.PLAYER_BLACK) {
@@ -128,51 +138,62 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    private inner class OccultBarterSummon(options: SummonOptions) : Summon(options), Stoppable {
+    private inner class OccultBarterSummon(options: Options) : Summon(options), Stoppable {
         override fun perform() {
             val item = ItemStack(Items.GOLDEN_SWORD).apply {
-                addEnchantment(Enchantments.SHARPNESS, 666)
+                addEnchantment(Enchantments.SHARPNESS, 50)
                 setDamage(32)
             }
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
-                    entity.give(item.copy())
+                    entity.giveItem(item.copy())
                 }
             }
         }
         override fun stop() {
             for ((_, entity) in playerEntitiesNormal) {
-                Inventories.list(entity.inventory).let { list ->
-                    list.forEachIndexed { i, stack ->
-                        if (stack.item === Items.GOLDEN_SWORD) list[i] = ItemStack.EMPTY
-                    }
-                }
+                entity.removeItem { it.item === Items.GOLDEN_SWORD }
             }
         }
     }
 
-    private inner class OccultFlameSummon(options: SummonOptions) : Summon(options) {
+    private inner class OccultFlameSummon(options: Options) : Summon(options) {
         override fun perform() {
             val region = properties.regionBlimp
-            val position = BlockPos(region.center.x.toInt(), region.end.y - 5, region.center.z.toInt())
+            val position = BlockPos(region.center.x.toInt(), region.start.y - 7, region.center.z.toInt())
             EntityType.GHAST.spawn(world, position, SpawnReason.COMMAND)
         }
     }
 
-    private val summons = mapOf<SummonKind, (SummonOptions) -> Summon>(
-        SummonKind(DEEP, FLAME) to ::DeepFlameSummon,
-        SummonKind(OCCULT, OCCULT) to ::OccultOccultSummon,
-        SummonKind(OCCULT, COSMOS) to ::OccultCosmosSummon,
-        SummonKind(OCCULT, BARTER) to ::OccultBarterSummon,
-        SummonKind(OCCULT, FLAME) to ::OccultFlameSummon,
-    )
+    private val summons = ArrayMap<TheologyPair, (Options) -> Summon>(16).apply {
+        putUnsafe(TheologyPair(DEEP, FLAME), ::DeepFlameSummon)
+        putUnsafe(TheologyPair(OCCULT, OCCULT), ::OccultOccultSummon)
+        putUnsafe(TheologyPair(OCCULT, COSMOS), ::OccultCosmosSummon)
+        putUnsafe(TheologyPair(OCCULT, BARTER), ::OccultBarterSummon)
+        putUnsafe(TheologyPair(OCCULT, FLAME), ::OccultFlameSummon)
+    }
 
-    private val summonSetGame = sortedSetOf<Summon>()
-    private val summonSetRound = sortedSetOf<Summon>()
+    private val summonListGame = mutableListOf<Summon>()
+    private val summonListRound = mutableListOf<Summon>()
+
+    private var timeout = Instant.now()
 
     private var altars = mapOf<BlockPos, Altar>()
 
     override fun setup() {
+        fun findTheologyAt(pos: BlockPos): Theology? {
+            return when (world.getBlockState(pos).block) {
+                Blocks.DARK_PRISMARINE -> DEEP
+                Blocks.DARK_OAK_TRAPDOOR -> OCCULT
+                Blocks.OBSIDIAN -> COSMOS
+                Blocks.WAXED_CUT_COPPER -> BARTER
+                Blocks.NETHER_BRICKS -> FLAME
+                else -> null
+            }
+        }
+        fun findTheology(pos: BlockPos): Theology? =
+            findTheologyAt(pos.up()) ?: findTheologyAt(pos.down())
+
         BlockFinder
             .search(world, properties.regionAll) {
                 it.block === Blocks.FLETCHING_TABLE
@@ -183,23 +204,25 @@ class SpecialSummonsService : Service() {
                 } else {
                     logger.info("SpecialSummonService search for altars returned ${results.size} result(s)")
                     altars = results
-                        .mapNotNull {
-                            val theology = when (world.getBlockState(it.pos.down()).block) {
-                                Blocks.DARK_PRISMARINE -> DEEP
-                                Blocks.DARK_OAK_TRAPDOOR -> OCCULT
-                                Blocks.OBSIDIAN -> COSMOS
-                                Blocks.WAXED_CUT_COPPER -> BARTER
-                                Blocks.NETHER_BRICKS -> FLAME
-                                else -> return@mapNotNull null
-                            }
-                            Altar(it.pos, theology)
-                        }
+                        .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
                         .associateBy { it.pos }
                 }
             }
     }
 
-    private fun fail(options: SummonOptions) {
+    private fun timeoutReset() {
+        timeout = Instant.now()
+    }
+
+    private fun timeoutSet(duration: Duration) {
+        timeout = Instant.now().plus(duration)
+    }
+
+    private fun timeoutCheck(): Boolean {
+        return timeout.isAfter(Instant.now())
+    }
+
+    private fun failPerform(options: Options) {
         for (player in players) {
             if (player.team === options.team) {
                 player.entity?.addStatusEffect(StatusEffectInstance(StatusEffects.GLOWING, 80))
@@ -222,47 +245,78 @@ class SpecialSummonsService : Service() {
                 for (i in 0..2) EntityType.BLAZE.spawn(world, options.pos, SpawnReason.COMMAND)
             }
         }
-        world.playSoundAtBlockCenter(options.pos, SoundEvents.ENTITY_HORSE_DEATH, SoundCategory.PLAYERS, 0.5F, 0.5F, true)
+        world.playSound(
+            null,
+            options.pos,
+            SoundEvents.ENTITY_HORSE_DEATH,
+            SoundCategory.PLAYERS,
+            3.0F, 0.5F,
+        )
     }
 
-    private fun willFail(kind: SummonKind): Boolean {
-        if (summonSetGame.last()?.kind == kind) return true
+    private fun failCheck(options: Options): Boolean {
+        if (timeoutCheck()) return true
+
+        val kind = options.kind
+        if (kind.isDouble && summonListGame.any { it.kind == kind }) return true
+        if (kind.isOnce && summonListRound.any { it.kind == kind }) return true
+        if (kind == summonListRound.lastOrNull()?.kind) return true
+
         return false
     }
 
-    private fun summon(options: SummonOptions) {
-        val failure = (if (options.kind.isDouble) summonSetGame else summonSetRound).any { it.kind == options.kind }
-        if (failure) {
-            fail(options)
+    private fun summonPerform(options: Options) {
+        val summon = summons[options.kind]!!.invoke(options)
+        summonListGame.add(summon)
+        summonListRound.add(summon)
+        summon.perform()
+        timeoutSet(summon.timeout())
+    }
+
+    private fun summonEffects(options: Options) {
+        EntityType.LIGHTNING_BOLT.spawn(world, options.pos, SpawnReason.COMMAND)
+    }
+
+    private fun summon(options: Options) {
+        if (failCheck(options)) {
+            failPerform(options)
         } else {
-            val summon = summons[options.kind]?.invoke(options) ?: return
-            summonSetGame.add(summon)
-            summonSetRound.add(summon)
-            summon.perform()
+            summonPerform(options)
         }
+        summonEffects(options)
     }
 
     override fun update() {
-        summonSetGame.forEach { it.update() }
+        summonListGame.forEach { it.update() }
     }
 
     fun handleRoundEnd() {
-        summonSetRound.forEach {
+        summonListRound.forEach {
             if (it is Stoppable) {
                 it.stop()
-                summonSetGame.remove(it)
+                summonListGame.remove(it)
             }
         }
-        summonSetRound.clear()
+        summonListRound.clear()
+        timeoutReset()
     }
 
+    // TODO: THIS IS A HACK !! JUST FOR TESTING !!
+    var debounce = Instant.now()
+
     fun handleAltarOpen(player: GamePlayer, pos: BlockPos): ActionResult {
+        // TODO: THIS IS A HACK !! JUST FOR TESTING !!
+        if (debounce.isAfter(Instant.now())) return ActionResult.FAIL
+        else debounce = Instant.now().plusSeconds(3)
+
         val altar: Altar? = altars[pos]
         if (altar != null) {
             Game.CONSOLE_OPERATORS.sendInfo("Player", player.displayName, "opened altar at", pos, "with theology", altar.theology.name)
+            summon(Options(summons.keys.random(), altar, player))
         } else {
             Game.CONSOLE_OPERATORS.sendInfo("Player", player.displayName, "tried to open invalid altar at", pos)
         }
+
         return ActionResult.FAIL
     }
 
