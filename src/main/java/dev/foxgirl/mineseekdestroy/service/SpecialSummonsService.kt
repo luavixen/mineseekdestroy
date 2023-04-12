@@ -33,14 +33,21 @@ class SpecialSummonsService : Service() {
         val theology2 = maxOf(theology1, theology2)
 
         val isDouble get() = theology1 === theology2
-        val isOnce get() = once.contains(this)
+        val isOnce get() = pairsOnce.contains(this)
 
         override fun hashCode() = 31 * theology1.hashCode() + theology2.hashCode()
         override fun equals(other: Any?) =
             other === this || (other is TheologyPair && other.theology1 === theology1 && other.theology2 === theology2)
 
-        private companion object {
-            val once = setOf(
+        companion object {
+            val pairsDouble = setOf(
+                TheologyPair(DEEP, DEEP),
+                TheologyPair(OCCULT, OCCULT),
+                TheologyPair(COSMOS, COSMOS),
+                TheologyPair(BARTER, BARTER),
+                TheologyPair(FLAME, FLAME),
+            )
+            val pairsOnce = setOf(
                 TheologyPair(DEEP, OCCULT),
                 TheologyPair(DEEP, COSMOS),
                 TheologyPair(DEEP, BARTER),

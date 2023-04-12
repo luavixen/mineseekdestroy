@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
-import dev.foxgirl.mineseekdestroy.util.ArrayMap
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
