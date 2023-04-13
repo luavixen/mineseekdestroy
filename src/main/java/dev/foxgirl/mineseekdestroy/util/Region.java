@@ -29,6 +29,12 @@ public final class Region {
         );
     }
 
+    public long size() {
+        return ((long) (end.getX() - start.getX()))
+             * ((long) (end.getY() - start.getY()))
+             * ((long) (end.getZ() - start.getZ()));
+    }
+
     public @NotNull BlockPos getStart() {
         return start;
     }

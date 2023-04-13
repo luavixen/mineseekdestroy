@@ -153,22 +153,31 @@ public final class BlockFinder {
      * Performs all enqueued search operations.
      */
     public static void update() {
-        ArrayMap<Target, ArrayList<Query>> queriesCopy;
+        ArrayList<Searcher> searches;
 
         synchronized (queriesLock) {
             if (queries.isEmpty()) {
                 return;
             }
-            queriesCopy = new ArrayMap<>(queries);
+
+            searches = new ArrayList<>(queries.size());
+
+            for (var entry : queries.entrySet()) {
+                var target = entry.getKey();
+                var queries = entry.getValue().toArray(new Query[0]);
+                searches.add(new Searcher(target, queries));
+            }
+
             queries.clear();
         }
 
+        searches.sort(Comparator.comparingLong((searcher) -> searcher.target.region.size()));
+
         var server = Game.getGame().getServer();
 
-        for (var entry : queriesCopy.entrySet()) {
-            var target = entry.getKey();
-            var queries = entry.getValue().toArray(new Query[0]);
-            server.execute(new Searcher(target, queries));
+        for (var searcher : searches) {
+            server.execute(searcher);
+            Game.LOGGER.info("BlockFinder executing search for " + searcher.queries.length + " queries");
         }
     }
 
