@@ -11,8 +11,9 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
+import net.minecraft.item.Items.*
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -102,8 +103,8 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
-                    entity.giveItem(ItemStack(Items.FLINT_AND_STEEL).apply { addEnchantment(Enchantments.UNBREAKING, 3) })
-                    entity.giveItem(ItemStack(Items.ANVIL))
+                    entity.giveItem(ItemStack(FLINT_AND_STEEL).apply { addEnchantment(Enchantments.UNBREAKING, 3) })
+                    entity.giveItem(ItemStack(ANVIL))
                 }
             }
         }
@@ -146,7 +147,7 @@ class SpecialSummonsService : Service() {
 
     private inner class OccultBarterSummon(options: Options) : Summon(options), Stoppable {
         override fun perform() {
-            val item = ItemStack(Items.GOLDEN_SWORD).apply {
+            val item = ItemStack(GOLDEN_SWORD).apply {
                 addEnchantment(Enchantments.SHARPNESS, 50)
                 setDamage(32)
             }
@@ -156,7 +157,7 @@ class SpecialSummonsService : Service() {
         }
         override fun stop() {
             for ((_, entity) in playerEntitiesNormal) {
-                entity.removeItem { it.item === Items.GOLDEN_SWORD }
+                entity.removeItem { it.item === GOLDEN_SWORD }
             }
         }
     }
@@ -169,10 +170,23 @@ class SpecialSummonsService : Service() {
         }
     }
 
+    private inner class CosmosCosmosSummon(options: Options) : Summon(options) {
+        override fun update() {
+            for ((_, entity) in playerEntitiesNormal) {
+                if (!entity.hasStatusEffect(StatusEffects.SLOW_FALLING)) {
+                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, 20000000))
+                }
+                if (!entity.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
+                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.JUMP_BOOST, 20000000))
+                }
+            }
+        }
+    }
+
     private inner class CosmosBarterSummon(options: Options) : Summon(options) {
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
-                if (player.team === team) entity.giveItem(ItemStack(Items.COOKED_BEEF, 8))
+                if (player.team === team) entity.giveItem(ItemStack(COOKED_BEEF, 8))
             }
         }
     }
@@ -185,14 +199,44 @@ class SpecialSummonsService : Service() {
         }
     }
 
+    private inner class BarterBarterSummon(options: Options) : Summon(options) {
+        override fun perform() {
+            val items = setOf<Item>(
+                SHIELD, CARROT_ON_A_STICK, FISHING_ROD, TIPPED_ARROW,
+                COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL,
+                ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
+            )
+            for ((_, entity) in playerEntitiesNormal) {
+                entity.removeItem { items.contains(it.item) }
+            }
+        }
+    }
+
+    private inner class BarterFlameSummon(options: Options) : Summon(options) {
+        override fun perform() {
+            for ((player, entity) in playerEntitiesNormal) {
+                if (player.team === team) entity.giveItem(ItemStack(SNOW_BLOCK, 64))
+            }
+        }
+    }
+
+    private inner class FlameFlameSummon(options: Options) : Summon(options) {
+        override fun perform() {
+            // TODO: GRAHHHHHH Replace Many Blocks! Ough.
+        }
+    }
+
     private val summons = mapOf<TheologyPair, (Options) -> Summon>(
         TheologyPair(DEEP, FLAME) to ::DeepFlameSummon,
         TheologyPair(OCCULT, OCCULT) to ::OccultOccultSummon,
         TheologyPair(OCCULT, COSMOS) to ::OccultCosmosSummon,
         TheologyPair(OCCULT, BARTER) to ::OccultBarterSummon,
         TheologyPair(OCCULT, FLAME) to ::OccultFlameSummon,
+        TheologyPair(COSMOS, COSMOS) to ::CosmosCosmosSummon,
         TheologyPair(COSMOS, BARTER) to ::CosmosBarterSummon,
         TheologyPair(COSMOS, FLAME) to ::CosmosFlameSummon,
+        TheologyPair(BARTER, BARTER) to ::BarterBarterSummon,
+        TheologyPair(BARTER, FLAME) to :: BarterFlameSummon,
     )
 
     private val summonListGame = mutableListOf<Summon>()
@@ -333,10 +377,10 @@ class SpecialSummonsService : Service() {
 
         val altar: Altar? = altars[pos]
         if (altar != null) {
-            Game.CONSOLE_OPERATORS.sendInfo("Player", player.displayName, "opened altar at", pos, "with theology", altar.theology.name)
+            Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "opened altar at", pos, "with theology", altar.theology.name)
             summon(Options(summons.keys.random(), altar, player))
         } else {
-            Game.CONSOLE_OPERATORS.sendInfo("Player", player.displayName, "tried to open invalid altar at", pos)
+            Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "tried to open invalid altar at", pos)
         }
 
         return ActionResult.FAIL

@@ -17,41 +17,41 @@ class SpecialPianoService : Service() {
     private class Note(val index: Int, val time: Instant)
 
     private inner class Piano(val positions: List<BlockPos>) {
-        private val notes = ArrayDeque<Note>(4)
+        private val notes = ArrayDeque<Note>(16)
 
         private fun notesAdd(index: Int) {
-            while (notes.size >= 4) notes.removeFirst()
+            while (notes.size >= 16) notes.removeFirst()
             notes.add(Note(index, Instant.now()))
         }
 
-        private fun notesCheck(player: GamePlayer) {
-            if (notes.size < 4) return
-
-            val n1 = notes[notes.size - 4]
-            val n2 = notes[notes.size - 3]
-            val n3 = notes[notes.size - 2]
-            val n4 = notes[notes.size - 1]
-
-            if (n1.time.isBefore(Instant.now().minusSeconds(5))) return
-
-            if (
-                n1.index == 0 &&
-                n2.index == 0 &&
-                n3.index == 3 &&
-                n4.index == 2
-            ) {
-                player.entity?.let { entity ->
-                    entity.damage(entity.damageSources.outOfWorld(), Float.MAX_VALUE)
-                    EntityType.LIGHTNING_BOLT.spawn(world, entity.blockPos, SpawnReason.COMMAND)
-                }
+        private fun notesCheck(song: IntArray): Boolean {
+            if (notes.size < song.size) {
+                return false
             }
+            val time = notes[notes.size - song.size].time
+            if (time.isBefore(Instant.now().minusSeconds(song.size.toLong() + 1))) {
+                return false
+            }
+            for (i in song.indices) {
+                if (notes[notes.lastIndex - i].index != song[i]) return false
+            }
+            return true
         }
 
         fun play(player: GamePlayer, pos: BlockPos) {
             val index = positions.indexOf(pos)
 
             notesAdd(index)
-            notesCheck(player)
+
+            if (notesCheck(songAllStar)) {
+                // TODO: whatever jo wants :3c
+                server.stop(true)
+            } else if (notesCheck(songMegalovania) || notesCheck(songSongOfStorms)) {
+                player.entity?.let { entity ->
+                    entity.damage(entity.damageSources.outOfWorld(), Float.MAX_VALUE)
+                    EntityType.LIGHTNING_BOLT.spawn(world, entity.blockPos, SpawnReason.COMMAND)
+                }
+            }
 
             val pitch = tuning[index]
 
@@ -121,6 +121,10 @@ class SpecialPianoService : Service() {
     private companion object {
 
         private val tuning = listOf(8, 11, 15, 20).map { Math.pow(2.0, (it - 12).toDouble() / 12.0).toFloat() }.toFloatArray()
+
+        private val songAllStar = intArrayOf(2, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 2)
+        private val songMegalovania = intArrayOf(0, 0, 3, 2)
+        private val songSongOfStorms = intArrayOf(0, 1, 3, 0, 1, 3)
 
     }
 
