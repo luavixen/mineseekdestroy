@@ -2,7 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameProperties
-import dev.foxgirl.mineseekdestroy.util.BlockFinder
+import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Region
 import dev.foxgirl.mineseekdestroy.util.Scheduler
 import net.minecraft.block.Blocks
@@ -67,7 +67,7 @@ class SpecialGhostService : Service() {
 
     override fun setup() {
         if (properties != GameProperties.Macander) return
-        BlockFinder
+        Editor
             .search(world, region) { it.block === Blocks.OCHRE_FROGLIGHT }
             .handle { results, err ->
                 if (err != null) {

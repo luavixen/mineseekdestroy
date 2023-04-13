@@ -5,10 +5,7 @@ import dev.foxgirl.mineseekdestroy.command.Command;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
-import dev.foxgirl.mineseekdestroy.util.BlockFinder;
-import dev.foxgirl.mineseekdestroy.util.Console;
-import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
-import dev.foxgirl.mineseekdestroy.util.Scheduler;
+import dev.foxgirl.mineseekdestroy.util.*;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -413,7 +410,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         updateContext();
         updateBounds();
 
-        BlockFinder.update();
+        Editor.update();
     }
 
     private void updateContext() {

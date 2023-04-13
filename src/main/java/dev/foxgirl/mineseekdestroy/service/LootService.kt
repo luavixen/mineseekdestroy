@@ -2,8 +2,8 @@ package dev.foxgirl.mineseekdestroy.service
 
 import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
-import dev.foxgirl.mineseekdestroy.util.BlockFinder
 import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.block.Blocks
 import net.minecraft.block.ChestBlock
@@ -28,7 +28,7 @@ class LootService : Service() {
     }
 
     override fun setup() {
-        BlockFinder
+        Editor
             .search(world, properties.regionAll) {
                 containerBlocks.contains(it.block)
             }

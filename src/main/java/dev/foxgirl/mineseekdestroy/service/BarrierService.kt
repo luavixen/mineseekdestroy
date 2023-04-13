@@ -1,7 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.util.BlockFinder
 import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Region
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -16,7 +16,7 @@ class BarrierService : Service() {
     private var targetsBlimp = listOf<Target>()
 
     private fun search(name: String, region: Region, offset: BlockPos): CompletableFuture<List<Target>> {
-        return BlockFinder
+        return Editor
             .search(world, region) {
                 !it.isAir && it.block !== Blocks.MAGENTA_WOOL
             }

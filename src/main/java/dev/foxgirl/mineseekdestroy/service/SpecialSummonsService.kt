@@ -4,7 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
-import dev.foxgirl.mineseekdestroy.util.BlockFinder
+import dev.foxgirl.mineseekdestroy.util.Editor
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
@@ -260,7 +260,7 @@ class SpecialSummonsService : Service() {
         fun findTheology(pos: BlockPos): Theology? =
             findTheologyAt(pos.up()) ?: findTheologyAt(pos.down())
 
-        BlockFinder
+        Editor
             .search(world, properties.regionAll) {
                 it.block === Blocks.FLETCHING_TABLE
             }

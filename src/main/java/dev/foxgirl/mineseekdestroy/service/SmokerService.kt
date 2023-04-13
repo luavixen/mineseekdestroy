@@ -1,7 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.util.BlockFinder
 import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity
@@ -21,7 +21,7 @@ class SmokerService : Service() {
     }
 
     override fun setup() {
-        BlockFinder
+        Editor
             .search(world, properties.regionAll) { it.block === Blocks.SMOKER }
             .handle { results, err ->
                 if (err != null) {
