@@ -8,11 +8,8 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public final class BlockFinder {
 
@@ -26,19 +23,65 @@ public final class BlockFinder {
         boolean test(@NotNull BlockState state);
     }
 
-    private final static class Searcher implements Supplier<List<Result>> {
+    private final static class Target {
         private final World world;
         private final Region region;
-        private final Predicate predicate;
 
-        private Searcher(World world, Region region, Predicate predicate) {
+        private Target(World world, Region region) {
             this.world = world;
             this.region = region;
-            this.predicate = predicate;
         }
 
         @Override
-        public List<Result> get() {
+        public boolean equals(Object other) {
+            if (this == other){
+                return true;
+            }
+            return other instanceof Target otherTarget
+                && world == otherTarget.world
+                && region.equals(otherTarget.region);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * System.identityHashCode(world) + region.hashCode();
+        }
+    }
+
+    private final static class Query {
+        private final Predicate predicate;
+        private final ArrayList<Result> results;
+
+        private final CompletableFuture<List<Result>> promise;
+
+        private Query(Predicate predicate, CompletableFuture<List<Result>> promise) {
+            this.predicate = predicate;
+            this.results = new ArrayList<>(64);
+
+            this.promise = promise;
+        }
+
+        private void complete() {
+            promise.complete(results);
+        }
+    }
+
+    private final static class Searcher implements Runnable {
+        private final Target target;
+        private final Query[] queries;
+
+        private Searcher(Target target, Query[] queries) {
+            this.target = target;
+            this.queries = queries;
+        }
+
+        private void perform() {
+            var target = this.target;
+            var queries = this.queries;
+
+            var world = target.world;
+            var region = target.region;
+
             var manager = world.getChunkManager();
 
             var posMin = region.getChunkStart();
@@ -55,11 +98,6 @@ public final class BlockFinder {
                 }
             }
 
-            var results = new ArrayList<Result>(64);
-
-            var predicate = this.predicate;
-            var region = this.region;
-
             for (var chunk : chunks) {
                 var chunkPos = chunk.getPos();
                 int offsetX = chunkPos.x << 4;
@@ -71,24 +109,71 @@ public final class BlockFinder {
                         for (int x = 0; x < 16; x++) {
                             for (int z = 0; z < 16; z++) {
                                 var state = section.getBlockState(x, y, z);
-                                if (state == null || state.isAir() || !predicate.test(state)) continue;
+                                if (state == null || state.isAir()) continue;
                                 int posY = y + offsetY;
                                 int posX = x + offsetX;
                                 int posZ = z + offsetZ;
                                 if (region.excludes(posX, posY, posZ)) continue;
-                                results.add(new Result(new BlockPos(posX, posY, posZ), state));
+                                for (var query : queries) {
+                                    if (query.predicate.test(state)) {
+                                        query.results.add(new Result(new BlockPos(posX, posY, posZ), state));
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            return results;
+            for (var query : queries) {
+                query.complete();
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                perform();
+            } catch (Throwable cause) {
+                for (var query : queries) {
+                    try {
+                        query.promise.completeExceptionally(cause);
+                    } catch (Throwable ignored) {
+                    }
+                }
+                throw cause;
+            }
+        }
+    }
+
+    private static final LinkedHashMap<Target, ArrayList<Query>> queries = new LinkedHashMap<>();
+    private static final Object queriesLock = new Object();
+
+    /**
+     * Performs all enqueued search operations.
+     */
+    public static void update() {
+        ArrayMap<Target, ArrayList<Query>> queriesCopy;
+
+        synchronized (queriesLock) {
+            if (queries.isEmpty()) {
+                return;
+            }
+            queriesCopy = new ArrayMap<>(queries);
+            queries.clear();
+        }
+
+        var server = Game.getGame().getServer();
+
+        for (var entry : queriesCopy.entrySet()) {
+            var target = entry.getKey();
+            var queries = entry.getValue().toArray(new Query[0]);
+            server.execute(new Searcher(target, queries));
         }
     }
 
     /**
-     * Searches the given region for blocks, filtered by the predicate.
+     * Enqueues a search operation in the given region for blocks, filtered by the predicate.
      * @param world World to search in.
      * @param region Region to search in.
      * @param predicate Predicate to filter blocks by.
@@ -101,7 +186,17 @@ public final class BlockFinder {
         Objects.requireNonNull(world, "Argument 'world'");
         Objects.requireNonNull(region, "Argument 'region'");
         Objects.requireNonNull(predicate, "Argument 'predicate'");
-        return CompletableFuture.supplyAsync(new Searcher(world, region, predicate), Game.getGame().getServer());
+
+        var target = new Target(world, region);
+        var promise = new CompletableFuture<List<Result>>();
+
+        synchronized (queriesLock) {
+            queries
+                .computeIfAbsent(target, (key) -> new ArrayList<>())
+                .add(new Query(predicate, promise));
+        }
+
+        return promise;
     }
 
 }

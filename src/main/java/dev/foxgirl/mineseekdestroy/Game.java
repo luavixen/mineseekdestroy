@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.command.Command;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
+import dev.foxgirl.mineseekdestroy.util.BlockFinder;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
 import dev.foxgirl.mineseekdestroy.util.Scheduler;
@@ -409,6 +410,13 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     @Override
     public void onStartTick(MinecraftServer server) {
+        updateContext();
+        updateBounds();
+
+        BlockFinder.update();
+    }
+
+    private void updateContext() {
         var context = getContext();
         if (context != null) {
             context.syncPlayers();
@@ -418,7 +426,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
             context.update();
         }
+    }
 
+    private void updateBounds() {
         var world = server.getOverworld();
         var playerEntities = server.getPlayerManager().getPlayerList();
 

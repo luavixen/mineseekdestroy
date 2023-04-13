@@ -104,7 +104,9 @@ public class ArrayMap<K, V> implements Map<K, V> {
 
     public ArrayMap(@NotNull Map<? extends K, ? extends V> map) {
         this(map.size());
-        putAll(map);
+        for (Map.Entry<? extends K, ? extends V> entry : map.entrySet()) {
+            putUnsafe(entry.getKey(), entry.getValue());
+        }
     }
 
     private Entry<K, V> findByKey(Object key) {
