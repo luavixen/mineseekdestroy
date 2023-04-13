@@ -5,9 +5,12 @@ import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import java.time.Instant
@@ -28,13 +31,18 @@ class SpecialPianoService : Service() {
             if (notes.size < song.size) {
                 return false
             }
-            val time = notes[notes.size - song.size].time
+
+            val notes = notes.takeLast(song.size)
+
+            val time = notes.first().time
             if (time.isBefore(Instant.now().minusSeconds(song.size.toLong() + 1))) {
                 return false
             }
+
             for (i in song.indices) {
-                if (notes[notes.lastIndex - i].index != song[i]) return false
+                if (notes[i].index != song[i]) return false
             }
+
             return true
         }
 
@@ -44,8 +52,9 @@ class SpecialPianoService : Service() {
             notesAdd(index)
 
             if (notesCheck(songAllStar)) {
-                // TODO: whatever jo wants :3c
-                server.stop(true)
+                player.entity?.networkHandler?.disconnect(Text.of("get out"))
+            } else if (notesCheck(songSongOfTime)) {
+                player.entity?.giveItemStack(ItemStack(Items.CLOCK))
             } else if (notesCheck(songMegalovania) || notesCheck(songSongOfStorms)) {
                 player.entity?.let { entity ->
                     entity.damage(entity.damageSources.outOfWorld(), Float.MAX_VALUE)
@@ -125,6 +134,7 @@ class SpecialPianoService : Service() {
         private val songAllStar = intArrayOf(2, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 2)
         private val songMegalovania = intArrayOf(0, 0, 3, 2)
         private val songSongOfStorms = intArrayOf(0, 1, 3, 0, 1, 3)
+        private val songSongOfTime = intArrayOf(2, 0, 1, 2, 0, 1)
 
     }
 
