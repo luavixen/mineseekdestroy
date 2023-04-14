@@ -13,6 +13,7 @@
         "MixinEntityPositionS2CPacket",
         "MixinEntityTrackerUpdateS2CPacket",
         "MixinFarmlandBlock",
+        "MixinFireBlock",
         "MixinItemUsageContext",
         "MixinMessageCommand",
         "MixinMinecraftServer",

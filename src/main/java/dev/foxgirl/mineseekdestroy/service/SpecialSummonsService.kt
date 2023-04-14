@@ -1,10 +1,12 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.Editor
+import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
@@ -13,12 +15,21 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.item.Items.*
+import net.minecraft.nbt.NbtByte
+import net.minecraft.nbt.NbtCompound
+import net.minecraft.nbt.NbtHelper
+import net.minecraft.nbt.NbtOps
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.state.property.Properties
+import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
+import net.minecraft.world.World
 import java.time.Duration
 import java.time.Instant
 
@@ -96,6 +107,79 @@ class SpecialSummonsService : Service() {
         val inventory = inventory
         for (i in 0 until inventory.size()) {
             if (predicate(inventory.getStack(i))) inventory.setStack(i, ItemStack.EMPTY)
+        }
+    }
+
+    private inner class DeepOccultSummon(options: Options) : Summon(options), Stoppable {
+        override fun perform() {
+            val targets = playersIn.filter { it.team !== team }
+            val targetsPool = targets.toMutableList().apply { shuffle() }
+
+            fun target() = targetsPool.removeLastOrNull() ?: targets.random()
+
+            val nbtSpawn = NbtHelper.fromBlockPos(properties.positionSpawn)
+            val nbtDimension = World.CODEC.encodeStart(NbtOps.INSTANCE, world.registryKey).result().get()
+
+            for ((player, entity) in playerEntitiesIn) {
+                if (player.team !== team) continue
+
+                val target = target()
+
+                val nameText = Text.literal("Sound of ").formatted(Formatting.GREEN).append(target.displayName)
+                val nameJSON = Text.Serializer.toJson(nameText)
+
+                val stack = ItemStack(COMPASS)
+
+                stack.getOrCreateNbt().also {
+                    it.put("LodestonePos", nbtSpawn)
+                    it.put("LodestoneDimension", nbtDimension)
+                    it.put("LodestoneTracked", NbtByte.ONE)
+                    it.putUuid("MsdTargetPlayer", target.uuid)
+                }
+                stack.getOrCreateSubNbt("display").putString("Name", nameJSON)
+
+                entity.giveItem(stack)
+            }
+        }
+        override fun update() {
+            for ((_, entity) in playerEntitiesNormal) {
+                for (stack in Inventories.list(entity.inventory)) {
+                    if (stack.item !== COMPASS) continue
+
+                    val nbt = stack.nbt
+                    if (nbt == null || !nbt.containsUuid("MsdTargetPlayer")) continue
+
+                    val target = context.getPlayer(nbt.getUuid("MsdTargetPlayer")) ?: continue
+                    val targetEntity = target.entity ?: continue
+
+                    nbt.put("LodestonePos", NbtHelper.fromBlockPos(targetEntity.blockPos))
+                }
+            }
+        }
+        override fun stop() {
+            for ((_, entity) in playerEntitiesNormal) {
+                entity.removeItem { it.item === COMPASS }
+            }
+        }
+    }
+
+    private inner class DeepCosmosSummon(options: Options) : Summon(options) {
+        override fun update() {
+            for ((_, entity) in playerEntitiesIn) {
+                if (entity.isBeingRainedOn && !entity.hasStatusEffect(StatusEffects.POISON)) {
+                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.POISON, 40))
+                }
+            }
+        }
+    }
+
+    private inner class DeepBarterSummon(options: Options) : Summon(options) {
+        override fun update() {
+            for ((_, entity) in playerEntitiesIn) {
+                if (entity.isTouchingWater && !entity.hasStatusEffect(StatusEffects.POISON)) {
+                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.POISON, 60))
+                }
+            }
         }
     }
 
@@ -222,11 +306,23 @@ class SpecialSummonsService : Service() {
 
     private inner class FlameFlameSummon(options: Options) : Summon(options) {
         override fun perform() {
-            // TODO: GRAHHHHHH Replace Many Blocks! Ough.
+            Editor
+                .edit(world, properties.regionPlayable) { state, _, _, _ ->
+                    if (state.get(Properties.WATERLOGGED)) {
+                        return@edit state.with(Properties.WATERLOGGED, false)
+                    }
+                    if (state.block === Blocks.WATER) {
+                        return@edit Blocks.AIR.defaultState
+                    }
+                    return@edit null
+                }
         }
     }
 
     private val summons = mapOf<TheologyPair, (Options) -> Summon>(
+        TheologyPair(DEEP, OCCULT) to ::DeepOccultSummon,
+        TheologyPair(DEEP, COSMOS) to ::DeepCosmosSummon,
+        TheologyPair(DEEP, BARTER) to ::DeepBarterSummon,
         TheologyPair(DEEP, FLAME) to ::DeepFlameSummon,
         TheologyPair(OCCULT, OCCULT) to ::OccultOccultSummon,
         TheologyPair(OCCULT, COSMOS) to ::OccultCosmosSummon,
@@ -237,6 +333,7 @@ class SpecialSummonsService : Service() {
         TheologyPair(COSMOS, FLAME) to ::CosmosFlameSummon,
         TheologyPair(BARTER, BARTER) to ::BarterBarterSummon,
         TheologyPair(BARTER, FLAME) to :: BarterFlameSummon,
+        TheologyPair(FLAME, FLAME) to ::FlameFlameSummon,
     )
 
     private val summonListGame = mutableListOf<Summon>()
@@ -245,6 +342,11 @@ class SpecialSummonsService : Service() {
     private var altars = mapOf<BlockPos, Altar>()
 
     private var timeout = Instant.now()
+
+    var isScaldingEarth = false; private set
+    var isPollutedWater = false; private set
+    var isAcidRain = false; private set
+    var isTracking = false; private set
 
     override fun setup() {
         fun findTheologyAt(pos: BlockPos): Theology? {
@@ -264,15 +366,11 @@ class SpecialSummonsService : Service() {
             .search(world, properties.regionAll) {
                 it.block === Blocks.FLETCHING_TABLE
             }
-            .handle { results, err ->
-                if (err != null) {
-                    logger.error("SpecialSummonService search for altars failed")
-                } else {
-                    logger.info("SpecialSummonService search for altars returned ${results.size} result(s)")
-                    altars = results
-                        .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
-                        .associateBy { it.pos }
-                }
+            .thenAccept { results ->
+                logger.info("SpecialSummonService search for altars returned ${results.size} result(s)")
+                altars = results
+                    .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
+                    .associateBy { it.pos }
             }
     }
 
@@ -354,6 +452,12 @@ class SpecialSummonsService : Service() {
 
     override fun update() {
         summonListGame.forEach { it.update() }
+
+        val active = summonListGame.map { it.kind }.toSet()
+        isScaldingEarth = active.contains(TheologyPair(FLAME, FLAME))
+        isPollutedWater = active.contains(TheologyPair(DEEP, BARTER))
+        isAcidRain = active.contains(TheologyPair(DEEP, COSMOS))
+        isTracking = active.contains(TheologyPair(DEEP, OCCULT))
     }
 
     fun handleRoundEnd() {

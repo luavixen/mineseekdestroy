@@ -34,6 +34,8 @@ sealed interface GameProperties {
 
     val interactableBlocks: Set<Block>
 
+    val inflammableBlocks: Set<Block>
+
     object Empty : GameProperties {
 
         override val positionSpawn = BlockPos(0, 0, 0)
@@ -84,6 +86,48 @@ sealed interface GameProperties {
             QUARTZ_SLAB,
         )
 
+        override val inflammableBlocks = setOf<Block>(
+            ACACIA_TRAPDOOR,
+            BLACKSTONE_WALL,
+            CHISELED_NETHER_BRICKS,
+            COARSE_DIRT,
+            CRYING_OBSIDIAN,
+            DARK_OAK_FENCE,
+            DARK_OAK_SLAB,
+            DARK_OAK_STAIRS,
+            DARK_OAK_TRAPDOOR,
+            DIRT,
+            DIRT_PATH,
+            FARMLAND,
+            FLETCHING_TABLE,
+            GOLD_BLOCK,
+            GRASS_BLOCK,
+            GRAVEL,
+            IRON_BARS,
+            LOOM,
+            NETHER_BRICKS,
+            NETHER_BRICK_FENCE,
+            NETHER_BRICK_WALL,
+            OBSIDIAN,
+            PODZOL,
+            PRISMARINE_STAIRS,
+            PRISMARINE_WALL,
+            QUARTZ_SLAB,
+            RAW_GOLD_BLOCK,
+            REDSTONE_BLOCK,
+            REDSTONE_LAMP,
+            ROOTED_DIRT,
+            SAND,
+            SANDSTONE_WALL,
+            SMOKER,
+            STONE,
+            WARPED_FENCE,
+            WARPED_PLANKS,
+            WARPED_STAIRS,
+            WAXED_CUT_COPPER,
+            WAXED_CUT_COPPER_STAIRS,
+        )
+
     }
 
     object Macander : GameProperties {
@@ -122,6 +166,11 @@ sealed interface GameProperties {
             WARPED_DOOR,
             MANGROVE_FENCE_GATE,
             BIRCH_TRAPDOOR,
+        )
+
+        override val inflammableBlocks = Empty.inflammableBlocks + setOf(
+            BARREL,
+            BRICKS,
         )
 
     }
@@ -164,6 +213,10 @@ sealed interface GameProperties {
             DARK_OAK_TRAPDOOR,
         )
 
+        override val inflammableBlocks = Empty.inflammableBlocks + setOf(
+            DEEPSLATE_TILE_SLAB,
+        )
+
     }
 
     object Realm : GameProperties {
@@ -204,6 +257,14 @@ sealed interface GameProperties {
             OAK_FENCE_GATE,
             CRIMSON_FENCE_GATE,
             WARPED_FENCE_GATE,
+        )
+
+        override val inflammableBlocks = Empty.inflammableBlocks + setOf(
+            ANDESITE,
+            CAMPFIRE,
+            COBBLESTONE,
+            NETHERRACK,
+            OAK_LOG,
         )
 
     }

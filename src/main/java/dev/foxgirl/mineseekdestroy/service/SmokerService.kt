@@ -23,13 +23,9 @@ class SmokerService : Service() {
     override fun setup() {
         Editor
             .search(world, properties.regionAll) { it.block === Blocks.SMOKER }
-            .handle { results, err ->
-                if (err != null) {
-                    logger.error("SmokerService search for smokers failed", err)
-                } else {
-                    logger.info("SmokerService search for smokers returned ${results.size} result(s)")
-                    positions = results.map { it.pos }
-                }
+            .thenApply { results ->
+                logger.info("SmokerService search for smokers returned ${results.size} result(s)")
+                positions = results.map { it.pos }
             }
     }
 

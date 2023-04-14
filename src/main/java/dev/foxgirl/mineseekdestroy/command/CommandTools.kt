@@ -83,11 +83,11 @@ fun <S : ServerCommandSource, T : ArgumentBuilder<S, *>> T.action(callback: (Com
         } else {
             try {
                 callback(args)
-            } catch (err : CommandSyntaxException) {
-                throw err
-            } catch (err : Exception) {
-                Game.LOGGER.error(err)
-                args.context.source.sendError(Text.literal("[msd] $err").formatted(Formatting.RED))
+            } catch (cause : CommandSyntaxException) {
+                throw cause
+            } catch (cause : Exception) {
+                Game.LOGGER.error(cause)
+                args.context.source.sendError(Text.literal("[msd] $cause").formatted(Formatting.RED))
                 args.result = -1
             }
         }

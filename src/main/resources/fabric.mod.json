@@ -35,5 +35,7 @@
             "config": "mineseekdestroy.mixins.json",
             "environment": "server"
         }
-    ]
+    ],
+
+    "accessWidener": "mineseekdestroy.accesswidener"
 }

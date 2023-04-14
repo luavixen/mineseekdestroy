@@ -32,13 +32,9 @@ class LootService : Service() {
             .search(world, properties.regionAll) {
                 containerBlocks.contains(it.block)
             }
-            .handle { results, err ->
-                if (err != null) {
-                    logger.error("LootService search for containers failed", err)
-                } else {
-                    logger.info("LootService search for containers returned ${results.size} result(s)")
-                    positions = results.map { it.pos }
-                }
+            .thenApply { results ->
+                logger.info("LootService search for containers returned ${results.size} result(s)")
+                positions = results.map { it.pos }
             }
     }
 

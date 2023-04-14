@@ -155,7 +155,6 @@ public final class Editor {
                             if (bPosMinX > posX || bPosMaxX < posX) continue;
                             if (bPosMinZ > posZ || bPosMaxZ < posZ) continue;
                             var stateOld = section.getBlockState(x, y, z);
-                            if (stateOld == null || stateOld.isAir()) continue;
                             for (var action : actions) {
                                 var stateNew = action.apply(stateOld, posY, posX, posZ);
                                 if (stateNew != null) {

@@ -69,13 +69,9 @@ class SpecialGhostService : Service() {
         if (properties != GameProperties.Macander) return
         Editor
             .search(world, region) { it.block === Blocks.OCHRE_FROGLIGHT }
-            .handle { results, err ->
-                if (err != null) {
-                    logger.error("SpecialGhostService search for spawn positions failed", err)
-                } else {
-                    logger.info("SpecialGhostService search for spawn positions returned ${results.size} result(s)")
-                    spawnPositions = results.map { it.pos.let { Vec3d(it.x + 0.5, it.y + 1.0, it.z + 0.5) } }
-                }
+            .thenApply { results ->
+                logger.info("SpecialGhostService search for spawn positions returned ${results.size} result(s)")
+                spawnPositions = results.map { it.pos.let { Vec3d(it.x + 0.5, it.y + 1.0, it.z + 0.5) } }
             }
     }
 

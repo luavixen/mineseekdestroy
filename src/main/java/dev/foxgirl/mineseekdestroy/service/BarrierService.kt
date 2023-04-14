@@ -20,14 +20,9 @@ class BarrierService : Service() {
             .search(world, region) {
                 !it.isAir && it.block !== Blocks.MAGENTA_WOOL
             }
-            .handle { results, err ->
-                if (err != null) {
-                    logger.error("BarrierService search in barrier template \"${name}\" failed", err)
-                    listOf()
-                } else {
-                    logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
-                    results.map { Target(it.pos.add(offset), it.state) }
-                }
+            .thenApply { results ->
+                logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
+                results.map { Target(it.pos.add(offset), it.state) }
             }
     }
 

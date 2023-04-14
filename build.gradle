@@ -8,6 +8,10 @@ archivesBaseName = project.mod_name
 
 version = project.mod_version
 
+loom {
+    accessWidenerPath = file 'src/main/resources/mineseekdestroy.accesswidener'
+}
+
 repositories {
     mavenCentral()
 }
