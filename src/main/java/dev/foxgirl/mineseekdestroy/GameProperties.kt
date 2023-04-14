@@ -28,6 +28,7 @@ sealed interface GameProperties {
     val regionBarrierArenaTemplate: Region
     val regionBarrierBlimpTarget: Region
     val regionBarrierBlimpTemplate: Region
+    val regionFlood: Region
 
     val borderSize: Double
     val borderCenter: Position
@@ -57,6 +58,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
 
         override val borderSize = 0.0
         override val borderCenter = Vec3d(0.0, 0.0, 0.0)
@@ -87,6 +89,7 @@ sealed interface GameProperties {
         )
 
         override val inflammableBlocks = setOf<Block>(
+            FIRE, AIR, CAVE_AIR,
             ACACIA_TRAPDOOR,
             BLACKSTONE_WALL,
             CHISELED_NETHER_BRICKS,
@@ -104,6 +107,7 @@ sealed interface GameProperties {
             GRASS_BLOCK,
             GRAVEL,
             IRON_BARS,
+            LIME_STAINED_GLASS,
             LOOM,
             NETHER_BRICKS,
             NETHER_BRICK_FENCE,
@@ -151,6 +155,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(48, -30, -605), BlockPos(92, -47, -539))
         override val regionBarrierBlimpTarget = Region(BlockPos(63, 7, -42), BlockPos(77, -1, -67))
         override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
+        override val regionFlood = Region(BlockPos(-24, -50, 51), BlockPos(175, -30, -169))
 
         override val borderSize = 200.0
         override val borderCenter = Vec3d(70.5, 0.0, -55.5)
@@ -196,6 +201,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+        override val regionFlood = Region(BlockPos(788, -4, -170), BlockPos(974, 13, 30))
 
         override val borderSize = 250.0
         override val borderCenter = Vec3d(870.0, 0.0, -65.0)
@@ -240,6 +246,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+        override val regionFlood = Region(BlockPos(-1600, -4, 591), BlockPos(-945, 67, -192))
 
         override val borderSize = 333.0
         override val borderCenter = Region(BlockPos(-1280, 62, 172), BlockPos(-1309, 62, 145)).center

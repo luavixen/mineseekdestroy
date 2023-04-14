@@ -7,12 +7,19 @@ import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories
+import dev.foxgirl.mineseekdestroy.util.Region
+import dev.foxgirl.mineseekdestroy.util.Scheduler
+import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
+import net.minecraft.entity.boss.CommandBossBar
+import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -21,6 +28,13 @@ import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtHelper
 import net.minecraft.nbt.NbtOps
+import net.minecraft.potion.Potion
+import net.minecraft.potion.PotionUtil
+import net.minecraft.potion.Potions
+import net.minecraft.screen.AnvilScreenHandler
+import net.minecraft.screen.NamedScreenHandlerFactory
+import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -28,8 +42,10 @@ import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import java.lang.Exception
 import java.time.Duration
 import java.time.Instant
 
@@ -45,6 +61,8 @@ class SpecialSummonsService : Service() {
 
         val isDouble get() = theology1 === theology2
         val isOnce get() = pairsOnce.contains(this)
+
+        override fun toString() = "TheologyPair(theology1=$theology1, theology2=$theology2)"
 
         override fun hashCode() = 31 * theology1.hashCode() + theology2.hashCode()
         override fun equals(other: Any?) =
@@ -107,6 +125,35 @@ class SpecialSummonsService : Service() {
         val inventory = inventory
         for (i in 0 until inventory.size()) {
             if (predicate(inventory.getStack(i))) inventory.setStack(i, ItemStack.EMPTY)
+        }
+    }
+
+    private inner class DeepDeepSummon(options: Options) : Summon(options) {
+        override fun perform() {
+            val slices = iterator {
+                val (start, end) = properties.regionFlood
+                for (y in start.y..end.y) {
+                    yield(Region(
+                        BlockPos(start.x, y, start.z),
+                        BlockPos(end.x, y, end.z),
+                    ))
+                }
+            }
+            Scheduler.interval(0.5) { schedule ->
+                if (slices.hasNext()) {
+                    Editor.edit(world, slices.next()) { state, _, _, _ ->
+                        if (state.contains(Properties.WATERLOGGED)) {
+                            state.with(Properties.WATERLOGGED, true)
+                        } else if (state.isAir) {
+                            Blocks.WATER.defaultState
+                        } else {
+                            null
+                        }
+                    }
+                } else {
+                    schedule.cancel()
+                }
+            }
         }
     }
 
@@ -208,7 +255,7 @@ class SpecialSummonsService : Service() {
     private inner class OccultCosmosSummon(options: Options) : Summon(options), Stoppable {
         override fun perform() {
             for ((player, entity) in playerEntitiesIn) {
-                if (player.team === GameTeam.PLAYER_BLACK) {
+                if (player.team === team) {
                     entity.addStatusEffect(StatusEffectInstance(StatusEffects.NIGHT_VISION, 20000000))
                 } else {
                     entity.addStatusEffect(StatusEffectInstance(StatusEffects.BLINDNESS, 30 * 20))
@@ -308,7 +355,7 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             Editor
                 .edit(world, properties.regionPlayable) { state, _, _, _ ->
-                    if (state.get(Properties.WATERLOGGED)) {
+                    if (state.contains(Properties.WATERLOGGED)) {
                         return@edit state.with(Properties.WATERLOGGED, false)
                     }
                     if (state.block === Blocks.WATER) {
@@ -320,6 +367,7 @@ class SpecialSummonsService : Service() {
     }
 
     private val summons = mapOf<TheologyPair, (Options) -> Summon>(
+        TheologyPair(DEEP, DEEP) to ::DeepDeepSummon,
         TheologyPair(DEEP, OCCULT) to ::DeepOccultSummon,
         TheologyPair(DEEP, COSMOS) to ::DeepCosmosSummon,
         TheologyPair(DEEP, BARTER) to ::DeepBarterSummon,
@@ -351,7 +399,7 @@ class SpecialSummonsService : Service() {
     override fun setup() {
         fun findTheologyAt(pos: BlockPos): Theology? {
             return when (world.getBlockState(pos).block) {
-                Blocks.DARK_PRISMARINE -> DEEP
+                Blocks.WARPED_PLANKS -> DEEP
                 Blocks.DARK_OAK_TRAPDOOR -> OCCULT
                 Blocks.OBSIDIAN -> COSMOS
                 Blocks.WAXED_CUT_COPPER -> BARTER
@@ -419,12 +467,28 @@ class SpecialSummonsService : Service() {
     }
 
     private fun failCheck(options: Options): Boolean {
-        if (timeoutCheck()) return true
+        if (timeoutCheck()) {
+            Game.CONSOLE_PLAYERS.sendError("Summon failed due to timeout")
+            return true
+        }
 
         val kind = options.kind
-        if (kind.isDouble && summonListGame.any { it.kind == kind }) return true
-        if (kind.isOnce && summonListRound.any { it.kind == kind }) return true
-        if (kind == summonListRound.lastOrNull()?.kind) return true
+        if (kind.theology1 !== options.altar.theology && kind.theology2 !== options.altar.theology) {
+            Game.CONSOLE_PLAYERS.sendError("Summon failed due to unmatched theology")
+            return true
+        }
+        if (kind.isDouble && summonListGame.any { it.kind == kind }) {
+            Game.CONSOLE_PLAYERS.sendError("Summon failed due to repeated double")
+            return true
+        }
+        if (kind.isOnce && summonListRound.any { it.kind == kind }) {
+            Game.CONSOLE_PLAYERS.sendError("Summon failed due to repeated once")
+            return true
+        }
+        if (kind == summonListRound.lastOrNull()?.kind) {
+            Game.CONSOLE_PLAYERS.sendError("Summon failed due to repeated back-to-back")
+            return true
+        }
 
         return false
     }
@@ -442,9 +506,12 @@ class SpecialSummonsService : Service() {
     }
 
     private fun summon(options: Options) {
+        Game.CONSOLE_PLAYERS.sendInfo("Player", options.player.displayName, "attempting summon of type", options.kind, "with altar at", options.altar.theology, "with theology", options.altar.theology)
         if (failCheck(options)) {
+            Game.CONSOLE_PLAYERS.sendError("Summon failed!")
             failPerform(options)
         } else {
+            Game.CONSOLE_PLAYERS.sendError("Summon success!")
             summonPerform(options)
         }
         summonEffects(options)
@@ -463,6 +530,7 @@ class SpecialSummonsService : Service() {
     fun handleRoundEnd() {
         summonListRound.forEach {
             if (it is Stoppable) {
+                Game.CONSOLE_PLAYERS.sendInfo("Stopping summon", it)
                 it.stop()
                 summonListGame.remove(it)
             }
@@ -471,21 +539,86 @@ class SpecialSummonsService : Service() {
         timeoutReset()
     }
 
-    // TODO: THIS IS A HACK !! JUST FOR TESTING !!
-    var debounce = Instant.now()
-
     fun handleAltarOpen(player: GamePlayer, pos: BlockPos): ActionResult {
-        // TODO: THIS IS A HACK !! JUST FOR TESTING !!
-        if (debounce.isAfter(Instant.now())) return ActionResult.FAIL
-        else debounce = Instant.now().plusSeconds(3)
+        // TODO: these are all horrible hacks
 
         val altar: Altar? = altars[pos]
-        if (altar != null) {
-            Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "opened altar at", pos, "with theology", altar.theology.name)
-            summon(Options(summons.keys.random(), altar, player))
-        } else {
-            Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "tried to open invalid altar at", pos)
+        if (altar == null) {
+            Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "failed to open invalid altar at", pos)
+            return ActionResult.PASS
         }
+
+        Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "opened altar at", pos, "with theology", altar.theology)
+
+        player.entity!!.openHandledScreen(object : NamedScreenHandlerFactory {
+
+            override fun getDisplayName() = Text.of("Altar of ${altar.theology}")
+
+            override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity): ScreenHandler {
+                return object : AnvilScreenHandler(syncId, playerInventory) {
+
+                    private fun pair(): TheologyPair {
+                        val a1 = input.getStack(0)
+                        val a2 = input.getStack(1)
+                        val p1 = PotionUtil.getPotion(a1)
+                        val p2 = PotionUtil.getPotion(a2)
+                        val e1 = p1.effects
+                        val e2 = p2.effects
+                        val ee1 = e1.first().effectType
+                        val ee2 = e2.first().effectType
+                        val t1 = effectToTheologyMap[ee1]!!
+                        val t2 = effectToTheologyMap[ee2]!!
+                        return TheologyPair(t1, t2)
+                    }
+
+                    override fun updateResult() {
+                        output.setStack(0,
+                            try {
+                                ItemStack(STONE).setCustomName(Text.of(pair().toString()))
+                            } catch (ignored : Exception) {
+                                ItemStack.EMPTY
+                            }
+                        )
+                    }
+
+                    override fun onTakeOutput(playerEntity: PlayerEntity, stack: ItemStack) {
+                        summon(Options(pair(), altar, player))
+                        input.setStack(0, ItemStack.EMPTY)
+                        input.setStack(1, ItemStack.EMPTY)
+                    }
+
+                    override fun canTakeOutput(playerEntity: PlayerEntity, present: Boolean): Boolean {
+                        val a1 = input.getStack(0)
+                        val a2 = input.getStack(1)
+                        if (a1.item !== TIPPED_ARROW || a2.item !== TIPPED_ARROW) return false
+                        val p1 = PotionUtil.getPotionEffects(a1).firstOrNull()
+                        val p2 = PotionUtil.getPotionEffects(a2).firstOrNull()
+                        if (!effectToTheologyMap.keys.contains(p1?.effectType)) return false
+                        if (!effectToTheologyMap.keys.contains(p2?.effectType)) return false
+                        return true
+                    }
+
+                    override fun canUse(player: PlayerEntity?) = true
+                    override fun canUse(state: BlockState?) = true
+
+                    override fun canInsertIntoSlot(slot: Slot?) = true
+                    override fun canInsertIntoSlot(stack: ItemStack?, slot: Slot?) = true
+
+                    override fun setNewItemName(newItemName: String?) {
+                    }
+
+                    private val effectToTheologyMap = mapOf<StatusEffect, Theology>(
+                        StatusEffects.WATER_BREATHING to DEEP,
+                        StatusEffects.INSTANT_HEALTH to OCCULT,
+                        StatusEffects.INVISIBILITY to COSMOS,
+                        StatusEffects.STRENGTH to BARTER,
+                        StatusEffects.FIRE_RESISTANCE to FLAME,
+                    )
+
+                }
+            }
+
+        })
 
         return ActionResult.FAIL
     }

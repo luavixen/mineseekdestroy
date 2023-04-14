@@ -35,6 +35,14 @@ public final class Region {
              * ((long) (end.getZ() - start.getZ()));
     }
 
+    public @NotNull BlockPos component1() {
+        return start;
+    }
+
+    public @NotNull BlockPos component2() {
+        return end;
+    }
+
     public @NotNull BlockPos getStart() {
         return start;
     }
