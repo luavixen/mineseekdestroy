@@ -1,7 +1,9 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
-import net.minecraft.block.*;
+import net.minecraft.block.AbstractFireBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.FireBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

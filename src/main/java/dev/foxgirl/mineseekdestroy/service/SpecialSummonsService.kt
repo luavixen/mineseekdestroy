@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
@@ -14,7 +13,6 @@ import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
-import net.minecraft.entity.boss.CommandBossBar
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -22,48 +20,41 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
 import net.minecraft.item.Items.*
 import net.minecraft.nbt.NbtByte
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtHelper
 import net.minecraft.nbt.NbtOps
-import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionUtil
-import net.minecraft.potion.Potions
 import net.minecraft.screen.AnvilScreenHandler
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.state.property.Properties
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
-import java.lang.Exception
 import java.time.Duration
 import java.time.Instant
 
 class SpecialSummonsService : Service() {
 
-    private enum class Theology {
+    enum class Theology {
         DEEP, OCCULT, COSMOS, BARTER, FLAME;
     }
 
-    private class TheologyPair(theology1: Theology, theology2: Theology) {
+    class TheologyPair(theology1: Theology, theology2: Theology) {
         val theology1 = minOf(theology1, theology2)
         val theology2 = maxOf(theology1, theology2)
 
         val isDouble get() = theology1 === theology2
         val isOnce get() = pairsOnce.contains(this)
 
-        override fun toString() = "TheologyPair(theology1=$theology1, theology2=$theology2)"
+        override fun toString() = "TheologyPair(theology1=${theology1}, theology2=${theology2})"
 
         override fun hashCode() = 31 * theology1.hashCode() + theology2.hashCode()
         override fun equals(other: Any?) =

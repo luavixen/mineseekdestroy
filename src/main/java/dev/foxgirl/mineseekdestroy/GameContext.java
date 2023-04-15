@@ -2,7 +2,7 @@ package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.service.*;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
-import dev.foxgirl.mineseekdestroy.util.ArrayMap;
+import dev.foxgirl.mineseekdestroy.util.collect.ArrayMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;

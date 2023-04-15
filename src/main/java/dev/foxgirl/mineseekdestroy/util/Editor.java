@@ -3,15 +3,12 @@ package dev.foxgirl.mineseekdestroy.util;
 import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
-import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +33,7 @@ public final class Editor {
         @Nullable BlockState apply(@NotNull BlockState state, int y, int x, int z);
     }
 
-    private final static class Target {
+    private static final class Target {
         private final ServerWorld world;
         private final Region region;
 
@@ -67,7 +64,7 @@ public final class Editor {
         void completeExceptionally(Throwable cause);
     }
 
-    private final static class EditOperation implements Operation {
+    private static final class EditOperation implements Operation {
         private final CompletableFuture<Void> promise;
         private final Action action;
 
@@ -92,7 +89,7 @@ public final class Editor {
         }
     }
 
-    private final static class SearchOperation implements Operation, Action {
+    private static final class SearchOperation implements Operation, Action {
         private final CompletableFuture<List<Result>> promise;
 
         private final Predicate predicate;
@@ -128,7 +125,7 @@ public final class Editor {
         }
     }
 
-    private final static class Task implements Runnable {
+    private static final class Task implements Runnable {
         private final Target target;
         private final Operation[] operations;
 

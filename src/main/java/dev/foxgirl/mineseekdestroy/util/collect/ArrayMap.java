@@ -1,10 +1,10 @@
-package dev.foxgirl.mineseekdestroy.util;
+package dev.foxgirl.mineseekdestroy.util.collect;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class ArrayMap<K, V> implements Map<K, V> {
+public final class ArrayMap<K, V> implements Map<K, V> {
 
     private static final class Entry<K, V> implements Map.Entry<K, V> {
         private final K key;
@@ -28,7 +28,7 @@ public class ArrayMap<K, V> implements Map<K, V> {
 
         @Override
         public int hashCode() {
-            return 31 * Objects.hashCode(value) + Objects.hashCode(key);
+            return Objects.hashCode(value) ^ Objects.hashCode(key);
         }
 
         @Override
@@ -48,7 +48,7 @@ public class ArrayMap<K, V> implements Map<K, V> {
         }
 
         public boolean hasNext() { return delegate.hasNext(); }
-        public void remove() { delegate.remove();  }
+        public void remove() { delegate.remove(); }
     }
 
     private static final class KeyIterator<K, V> extends WrappedIterator<K, V> implements Iterator<K> {
