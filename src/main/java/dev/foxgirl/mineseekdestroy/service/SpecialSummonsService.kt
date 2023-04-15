@@ -36,6 +36,7 @@ import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.state.property.Properties
@@ -129,6 +130,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class DeepDeepSummon(options: Options) : Summon(options) {
+        override fun timeout(): Duration = Duration.ofSeconds(30)
         override fun perform() {
             val slices = iterator {
                 val (start, end) = properties.regionFlood
@@ -139,7 +141,7 @@ class SpecialSummonsService : Service() {
                     ))
                 }
             }
-            Scheduler.interval(0.5) { schedule ->
+            Scheduler.interval(1.0) { schedule ->
                 if (slices.hasNext()) {
                     Editor.edit(world, slices.next()) { state, _, _, _ ->
                         if (state.contains(Properties.WATERLOGGED)) {
@@ -154,10 +156,13 @@ class SpecialSummonsService : Service() {
                     schedule.cancel()
                 }
             }
+
+            world.setWeather(0, 24000 * 10, true, false)
         }
     }
 
     private inner class DeepOccultSummon(options: Options) : Summon(options), Stoppable {
+        override fun timeout(): Duration = Duration.ofSeconds(60)
         override fun perform() {
             val targets = playersIn.filter { it.team !== team }
             val targetsPool = targets.toMutableList().apply { shuffle() }
@@ -221,6 +226,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class DeepBarterSummon(options: Options) : Summon(options) {
+        override fun timeout(): Duration = Duration.ofSeconds(30)
         override fun update() {
             for ((_, entity) in playerEntitiesIn) {
                 if (entity.isTouchingWater && !entity.hasStatusEffect(StatusEffects.POISON)) {
@@ -231,6 +237,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class DeepFlameSummon(options: Options) : Summon(options) {
+        override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
@@ -253,6 +260,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class OccultCosmosSummon(options: Options) : Summon(options), Stoppable {
+        override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesIn) {
                 if (player.team === team) {
@@ -277,6 +285,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class OccultBarterSummon(options: Options) : Summon(options), Stoppable {
+        override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             val item = ItemStack(GOLDEN_SWORD).apply {
                 addEnchantment(Enchantments.SHARPNESS, 50)
@@ -294,6 +303,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class OccultFlameSummon(options: Options) : Summon(options) {
+        override fun timeout(): Duration = Duration.ofSeconds(30)
         override fun perform() {
             val region = properties.regionBlimp
             val position = BlockPos(region.center.x.toInt(), region.start.y - 7, region.center.z.toInt())
@@ -308,13 +318,14 @@ class SpecialSummonsService : Service() {
                     entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, 20000000))
                 }
                 if (!entity.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.JUMP_BOOST, 20000000))
+                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.JUMP_BOOST, 20000000, 5))
                 }
             }
         }
     }
 
     private inner class CosmosBarterSummon(options: Options) : Summon(options) {
+        override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) entity.giveItem(ItemStack(COOKED_BEEF, 8))
@@ -323,6 +334,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class CosmosFlameSummon(options: Options) : Summon(options) {
+        override fun timeout(): Duration = Duration.ofSeconds(60)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) entity.absorptionAmount += 2.0F
@@ -344,6 +356,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class BarterFlameSummon(options: Options) : Summon(options) {
+        override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) entity.giveItem(ItemStack(SNOW_BLOCK, 64))
@@ -363,6 +376,8 @@ class SpecialSummonsService : Service() {
                     }
                     return@edit null
                 }
+
+            world.setWeather(24000 * 10, 0, true, false)
         }
     }
 

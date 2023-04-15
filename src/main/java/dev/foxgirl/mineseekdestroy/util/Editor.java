@@ -2,10 +2,16 @@ package dev.foxgirl.mineseekdestroy.util;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.block.BlockState;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.WorldChunk;
+import org.apache.logging.log4j.core.jmx.Server;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,10 +37,10 @@ public final class Editor {
     }
 
     private final static class Target {
-        private final World world;
+        private final ServerWorld world;
         private final Region region;
 
-        private Target(World world, Region region) {
+        private Target(ServerWorld world, Region region) {
             this.world = world;
             this.region = region;
         }
@@ -131,7 +137,7 @@ public final class Editor {
             this.operations = operations;
         }
 
-        private void performChunk(Chunk chunk, Region region, Action[] actions) {
+        private boolean performChunk(WorldChunk chunk, Region region, Action[] actions) {
             var cPos = chunk.getPos();
             int offsetX = cPos.x << 4;
             int offsetZ = cPos.z << 4;
@@ -142,8 +148,9 @@ public final class Editor {
             int bPosMinX = bPosMin.getX(), bPosMaxX = bPosMax.getX();
             int bPosMinZ = bPosMin.getZ(), bPosMaxZ = bPosMax.getZ();
 
+            boolean mutated = false;
+
             for (var section : chunk.getSectionArray()) {
-                if (section.isEmpty()) continue;
                 int offsetY = section.getYOffset();
                 for (int y = 0; y < 16; y++) {
                     for (int x = 0; x < 16; x++) {
@@ -158,34 +165,40 @@ public final class Editor {
                             for (var action : actions) {
                                 var stateNew = action.apply(stateOld, posY, posX, posZ);
                                 if (stateNew != null) {
-                                    stateOld = stateNew;
                                     section.setBlockState(x, y, z, stateNew);
+                                    stateOld = stateNew;
+                                    mutated = true;
                                 }
                             }
                         }
                     }
                 }
             }
+
+            return mutated;
         }
 
         private void perform() {
-            var target = this.target;
-            var operations = this.operations;
+            Target target = this.target;
+            Operation[] operations = this.operations;
 
-            var region = target.region;
-            var manager = target.world.getChunkManager();
+            Region region = target.region;
+            ServerChunkManager manager = target.world.getChunkManager();
 
             var cPosMin = region.getChunkStart();
             var cPosMax = region.getChunkEnd();
             int cPosMinX = cPosMin.x, cPosMaxX = cPosMax.x;
             int cPosMinZ = cPosMin.z, cPosMaxZ = cPosMax.z;
 
-            var chunks = new ArrayList<Chunk>((cPosMaxX - cPosMinX + 1) * (cPosMaxZ - cPosMinZ + 1));
+            int chunksCount = (cPosMaxX - cPosMinX + 1) * (cPosMaxZ - cPosMinZ + 1);
+
+            var chunks = new ArrayList<WorldChunk>(chunksCount);
+            var chunksMutated = new ArrayList<WorldChunk>(chunksCount);
 
             for (int x = cPosMinX; x <= cPosMaxX; x++) {
                 for (int z = cPosMinZ; z <= cPosMaxZ; z++) {
                     var chunk = manager.getChunk(x, z, ChunkStatus.FULL, true);
-                    if (chunk != null) chunks.add(chunk);
+                    if (chunk != null) chunks.add((WorldChunk) chunk);
                 }
             }
 
@@ -194,11 +207,20 @@ public final class Editor {
                 actions[i] = operations[i].action();
             }
 
-            for (var chunk : chunks) {
-                performChunk(chunk, region, actions);
+            for (WorldChunk chunk : chunks) {
+                var mutated = performChunk(chunk, region, actions);
+                if (mutated) chunksMutated.add(chunk);
             }
 
-            for (var operation : operations) {
+            for (WorldChunk chunk : chunksMutated) {
+                var packet = new ChunkDataS2CPacket(chunk, manager.getLightingProvider(), null, null, true);
+                var players = manager.threadedAnvilChunkStorage.getPlayersWatchingChunk(chunk.getPos());
+                for (var player : players) {
+                    player.networkHandler.sendPacket(packet);
+                }
+            }
+
+            for (Operation operation : operations) {
                 operation.complete();
             }
         }
@@ -208,7 +230,7 @@ public final class Editor {
             try {
                 perform();
             } catch (Throwable cause) {
-                for (var operation : operations) {
+                for (Operation operation : operations) {
                     try {
                         operation.completeExceptionally(cause);
                     } catch (Throwable ignored) {
@@ -222,7 +244,7 @@ public final class Editor {
     private static final LinkedHashMap<Target, ArrayList<Operation>> operations = new LinkedHashMap<>();
     private static final Object operationsLock = new Object();
 
-    private static void enqueue(World world, Region region, Operation operation) {
+    private static void enqueue(ServerWorld world, Region region, Operation operation) {
         synchronized (operationsLock) {
             operations
                 .computeIfAbsent(new Target(world, region), (key) -> new ArrayList<>())
@@ -278,7 +300,7 @@ public final class Editor {
         Objects.requireNonNull(action, "Argument 'action'");
 
         CompletableFuture<Void> promise = new CompletableFuture<>();
-        enqueue(world, region, new EditOperation(promise, action));
+        enqueue((ServerWorld) world, region, new EditOperation(promise, action));
         return promise;
     }
 
@@ -298,7 +320,7 @@ public final class Editor {
         Objects.requireNonNull(predicate, "Argument 'predicate'");
 
         CompletableFuture<List<Result>> promise = new CompletableFuture<>();
-        enqueue(world, region, new SearchOperation(promise, predicate));
+        enqueue((ServerWorld) world, region, new SearchOperation(promise, predicate));
         return promise;
     }
 

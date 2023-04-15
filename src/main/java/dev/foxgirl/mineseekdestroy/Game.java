@@ -141,6 +141,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.ANVIL,
         Blocks.CHIPPED_ANVIL,
         Blocks.DAMAGED_ANVIL,
+        Blocks.FIRE,
     });
 
     public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
