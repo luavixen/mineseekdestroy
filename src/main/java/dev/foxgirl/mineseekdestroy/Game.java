@@ -141,7 +141,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.BLACK_CONCRETE_POWDER,
         Blocks.SNOW_BLOCK,
         Blocks.BONE_BLOCK,
-        Blocks.ANVIL,
         Blocks.CHIPPED_ANVIL,
         Blocks.DAMAGED_ANVIL,
         Blocks.FIRE,

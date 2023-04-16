@@ -12,6 +12,9 @@ class ArrayBuilder<E> {
         this.elements = (E[]) new Object[capacity];
     }
 
+    public int size() { return size; }
+    public boolean isEmpty() { return size == 0; }
+
     void add(E element) {
         var elements = this.elements;
         if (elements.length <= size) {

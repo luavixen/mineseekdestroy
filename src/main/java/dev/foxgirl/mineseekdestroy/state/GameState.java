@@ -176,11 +176,11 @@ public abstract class GameState {
     }
 
     public boolean onItemDropped(@Nullable GameContext context, ServerPlayerEntity playerEntity, ItemStack stack, boolean throwRandomly, boolean retainOwnership) {
-        return !Game.ILLEGAL_ITEMS.contains(stack.getItem());
+        return Game.getGame().isOperator(playerEntity) || !Game.ILLEGAL_ITEMS.contains(stack.getItem());
     }
 
     public boolean onItemAcquired(@Nullable GameContext context, ServerPlayerEntity playerEntity, PlayerInventory inventory, ItemStack stack, int slot) {
-        return !Game.ILLEGAL_ITEMS.contains(stack.getItem());
+        return Game.getGame().isOperator(playerEntity) || !Game.ILLEGAL_ITEMS.contains(stack.getItem());
     }
 
 }

@@ -21,9 +21,7 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
-import net.minecraft.nbt.NbtByte
-import net.minecraft.nbt.NbtHelper
-import net.minecraft.nbt.NbtOps
+import net.minecraft.nbt.*
 import net.minecraft.potion.PotionUtil
 import net.minecraft.screen.AnvilScreenHandler
 import net.minecraft.screen.NamedScreenHandlerFactory
@@ -43,11 +41,11 @@ import java.time.Instant
 
 class SpecialSummonsService : Service() {
 
-    enum class Theology {
+    private enum class Theology {
         DEEP, OCCULT, COSMOS, BARTER, FLAME;
     }
 
-    class TheologyPair(theology1: Theology, theology2: Theology) {
+    private class TheologyPair(theology1: Theology, theology2: Theology) {
         val theology1 = minOf(theology1, theology2)
         val theology2 = maxOf(theology1, theology2)
 
@@ -233,7 +231,7 @@ class SpecialSummonsService : Service() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
                     entity.giveItem(ItemStack(FLINT_AND_STEEL).apply { addEnchantment(Enchantments.UNBREAKING, 3) })
-                    entity.giveItem(ItemStack(ANVIL))
+                    entity.giveItem(ItemStack(CHIPPED_ANVIL))
                 }
             }
         }
@@ -599,8 +597,8 @@ class SpecialSummonsService : Service() {
                         if (a1.item !== TIPPED_ARROW || a2.item !== TIPPED_ARROW) return false
                         val p1 = PotionUtil.getPotionEffects(a1).firstOrNull()
                         val p2 = PotionUtil.getPotionEffects(a2).firstOrNull()
-                        if (!effectToTheologyMap.keys.contains(p1?.effectType)) return false
-                        if (!effectToTheologyMap.keys.contains(p2?.effectType)) return false
+                        if (!effectToTheologyMap.containsKey(p1?.effectType)) return false
+                        if (!effectToTheologyMap.containsKey(p2?.effectType)) return false
                         return true
                     }
 

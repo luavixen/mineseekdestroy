@@ -10,55 +10,58 @@ import java.util.function.UnaryOperator;
 public final class ImmutableList<E> extends ImmutableCollection<E> implements List<E>, RandomAccess, Serializable {
 
     @SuppressWarnings("unchecked")
-    public static <E> ImmutableList<E> of() {
+    public static <E> @NotNull ImmutableList<E> of() {
         return (ImmutableList<E>) EMPTY_LIST;
     }
 
-    @SuppressWarnings("unchecked")
-    public static <E> ImmutableList<E> of(E... elements) {
+    @SafeVarargs
+    public static <E> @NotNull ImmutableList<E> of(E @NotNull ... elements) {
+        Objects.requireNonNull(elements, "Argument 'elements'");
+
         if (elements.length == 0) {
-            return (ImmutableList<E>) EMPTY_LIST;
+            return of();
         } else {
             return new ImmutableList<>(toElements(elements));
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <E> ImmutableList<E> of(Collection<? extends E> collection) {
+    public static <E> @NotNull ImmutableList<E> of(@NotNull Collection<? extends E> collection) {
+        Objects.requireNonNull(collection, "Argument 'collection'");
+
         if (collection.isEmpty()) {
-            return (ImmutableList<E>) EMPTY_LIST;
+            return of();
         } else {
             return new ImmutableList<>(toElements(collection.toArray()));
         }
     }
 
-    public static <E> ImmutableList<E> copyOf(E[] elements) {
+    public static <E> @NotNull ImmutableList<E> copyOf(E @NotNull [] elements) {
         return of(elements);
     }
-    public static <E> ImmutableList<E> copyOf(Collection<? extends E> collection) {
+    public static <E> @NotNull ImmutableList<E> copyOf(@NotNull Collection<? extends E> collection) {
         return of(collection);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <E> ImmutableList<E> wrap(E[] elements) {
+    public static <E> @NotNull ImmutableList<E> wrap(E @NotNull [] elements) {
+        Objects.requireNonNull(elements, "Argument 'elements'");
+
         if (elements.length == 0) {
-            return (ImmutableList<E>) EMPTY_LIST;
+            return of();
         } else {
             return new ImmutableList<>(elements);
         }
     }
 
     public static final class Builder<E> extends ArrayBuilder<E> {
-
-        public Builder() {
+        private Builder() {
             super(10);
         }
 
-        public Builder(int capacity) {
+        private Builder(int capacity) {
             super(capacity);
         }
 
-        public ImmutableList<E> build() {
+        public @NotNull ImmutableList<E> build() {
             return ImmutableList.wrap(collect());
         }
 
@@ -66,13 +69,12 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         public void add(E element) {
             super.add(element);
         }
-
     }
 
-    public static <E> Builder<E> builder() {
+    public static <E> @NotNull Builder<E> builder() {
         return new Builder<>();
     }
-    public static <E> Builder<E> builder(int capacity) {
+    public static <E> @NotNull Builder<E> builder(int capacity) {
         return new Builder<>(capacity);
     }
 
@@ -98,8 +100,10 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         return toArray(array, elements);
     }
 
-    @Override public int size() { return elements.length; }
-    @Override public boolean isEmpty() { return elements.length == 0; }
+    @Override
+    public int size() {
+        return elements.length;
+    }
 
     @Override
     public E get(int index) {

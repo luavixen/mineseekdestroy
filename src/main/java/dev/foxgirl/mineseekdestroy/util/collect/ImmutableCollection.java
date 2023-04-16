@@ -2,11 +2,12 @@ package dev.foxgirl.mineseekdestroy.util.collect;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.AbstractCollection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Predicate;
 
-public abstract class ImmutableCollection<E> implements Collection<E> {
+public abstract class ImmutableCollection<E> extends AbstractCollection<E> implements Collection<E> {
 
     @Override
     public final boolean add(E value) {
