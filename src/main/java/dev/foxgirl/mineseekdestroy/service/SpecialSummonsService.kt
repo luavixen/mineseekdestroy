@@ -5,12 +5,7 @@ import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
-import dev.foxgirl.mineseekdestroy.util.Broadcast
-import dev.foxgirl.mineseekdestroy.util.Console
-import dev.foxgirl.mineseekdestroy.util.Editor
-import dev.foxgirl.mineseekdestroy.util.Inventories
-import dev.foxgirl.mineseekdestroy.util.Region
-import dev.foxgirl.mineseekdestroy.util.Scheduler
+import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
@@ -25,6 +20,10 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.nbt.*
+import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket
+import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
+import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket
+import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.potion.PotionUtil
 import net.minecraft.screen.AnvilScreenHandler
 import net.minecraft.screen.NamedScreenHandlerFactory
@@ -41,10 +40,8 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.GameRules
 import net.minecraft.world.World
-import java.lang.NullPointerException
 import java.time.Duration
 import java.time.Instant
-import java.util.NoSuchElementException
 
 class SpecialSummonsService : Service() {
 
@@ -198,7 +195,7 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    private inner class DeepCosmosSummon(options: Options) : Summon(options) {
+    private inner class DeepCosmosSummon(options: Options) : Summon(options), Stoppable {
         override fun perform() {
             world.setWeather(0, 24000 * 10, true, false)
         }
@@ -208,6 +205,9 @@ class SpecialSummonsService : Service() {
                     entity.addStatusEffect(StatusEffectInstance(StatusEffects.POISON, 40))
                 }
             }
+        }
+        override fun stop() {
+            world.setWeather(24000 * 10, 0, false, false)
         }
     }
 
@@ -400,6 +400,9 @@ class SpecialSummonsService : Service() {
     private var timeout = Instant.now()
     private var timeoutDuration = Duration.ZERO
 
+    private var textProvider: TextProvider? = null
+    private var textLastUpdate = Instant.now()
+
     var isScaldingEarth = false; private set
     var isPollutedWater = false; private set
     var isAcidRain = false; private set
@@ -447,6 +450,37 @@ class SpecialSummonsService : Service() {
 
     private fun timeoutCheck(): Boolean {
         return timeout.isAfter(Instant.now())
+    }
+
+    private fun textUpdateFull() {
+        val textProvider = textProvider
+        if (textProvider != null) {
+            Broadcast.send(TitleFadeS2CPacket(20, 80, 20))
+            Broadcast.send(TitleS2CPacket(textProvider.title))
+            Broadcast.send(SubtitleS2CPacket(textProvider.subtitle))
+            Broadcast.send(OverlayMessageS2CPacket(textProvider.tooltip))
+        }
+        textTimeUpdate()
+    }
+
+    private fun textUpdateTooltip() {
+        val textProvider = textProvider
+        if (textProvider != null) {
+            Broadcast.send(OverlayMessageS2CPacket(textProvider.tooltip))
+        }
+        textTimeUpdate()
+    }
+
+    private fun textClear() {
+        textProvider = null
+    }
+
+    private fun textTimeUpdate() {
+        textLastUpdate = Instant.now()
+    }
+
+    private fun textTimeCheck(): Boolean {
+        return Duration.between(textLastUpdate, Instant.now()).toMillis() >= 500
     }
 
     private enum class Failure {
@@ -533,12 +567,17 @@ class SpecialSummonsService : Service() {
         val failure = failCheck(options)
         if (failure != null) {
             Game.CONSOLE_OPERATORS.sendInfo("Summon", options.kind.displayName, "failed:", failure)
+
+            textProvider = textProvidersFailure[failure]!!(options)
             failPerform(options)
         } else {
             Game.CONSOLE_OPERATORS.sendInfo("Summon", options.kind.displayName, "success!")
+
+            textProvider = textProvidersSuccess[options.kind]!!(options)
             summonPerform(options)
         }
 
+        textUpdateFull()
         summonEffects(options)
     }
 
@@ -556,29 +595,45 @@ class SpecialSummonsService : Service() {
             Text.empty().append(options.team.displayName).append(" failed to summon.")
     }
 
-    override fun update() {
-        summonListGame.forEach { it.update() }
-
+    private fun updateActive() {
         val active = summonListGame.map { it.kind }.toSet()
         isScaldingEarth = active.contains(TheologyPair(FLAME, FLAME))
         isPollutedWater = active.contains(TheologyPair(DEEP, BARTER))
         isAcidRain = active.contains(TheologyPair(DEEP, COSMOS))
         isTracking = active.contains(TheologyPair(DEEP, OCCULT))
+    }
 
-        val barManager = server.bossBarManager
+    private fun updateBar() {
+        val manager = server.bossBarManager
+
         val bar =
-            barManager.get(Identifier("msd_timeout")) ?:
-            barManager.add(Identifier("msd_timeout"), Text.literal("Summon Cooldown").formatted(Formatting.RED)).apply { color = BossBar.Color.RED }
+            manager.get(Identifier("msd_timeout")) ?:
+            manager.add(Identifier("msd_timeout"), Text.literal("Summon Cooldown").formatted(Formatting.RED)).apply { color = BossBar.Color.RED }
 
         context.playerManager.playerList.forEach { bar.addPlayer(it) }
 
         val timeTotal = timeoutDuration
         val timeRemaining = timeoutRemaining()
 
-        bar.isVisible = timeRemaining.seconds > 0
+        val isVisible = timeRemaining.seconds > 0
+        if (isVisible != bar.isVisible) bar.isVisible = isVisible
 
-        bar.value = timeRemaining.seconds.toInt()
-        bar.maxValue = timeTotal.seconds.toInt()
+        val value = timeRemaining.seconds.toInt()
+        if (value != bar.value) bar.value = value
+
+        val maxValue = timeTotal.seconds.toInt()
+        if (maxValue != bar.maxValue) bar.maxValue = maxValue
+    }
+
+    override fun update() {
+        summonListGame.forEach { it.update() }
+
+        updateActive()
+        updateBar()
+
+        if (textTimeCheck()) {
+            textUpdateTooltip()
+        }
     }
 
     fun handleRoundEnd() {
@@ -592,6 +647,7 @@ class SpecialSummonsService : Service() {
 
         summonListRound.clear()
         timeoutReset()
+        textClear()
     }
 
     private inner class AltarScreenHandler(val altar: Altar, syncId: Int, playerInventory: PlayerInventory) : AnvilScreenHandler(syncId, playerInventory) {
@@ -857,7 +913,7 @@ class SpecialSummonsService : Service() {
             )
         )
 
-        private val providersSuccess = mapOf<TheologyPair, (Options) -> TextProvider>(
+        private val textProvidersSuccess = mapOf<TheologyPair, (Options) -> TextProvider>(
             TheologyPair(DEEP, OCCULT) to { options -> object : TextProvider {
                 override val title get() =
                     Text.of("Star and compass, map and sextant;")
@@ -1016,7 +1072,7 @@ class SpecialSummonsService : Service() {
             } },
         )
 
-        private val providersFailure = mapOf<Failure, (Options) -> TextProvider>(
+        private val textProvidersFailure = mapOf<Failure, (Options) -> TextProvider>(
             Failure.TIMEOUT to { object : FailureTextProvider(it) {
                 override val subtitle get() =
                     Text.of("Let the cooldown complete first!")
