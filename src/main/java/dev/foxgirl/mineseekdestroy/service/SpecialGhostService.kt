@@ -37,7 +37,8 @@ class SpecialGhostService : Service() {
     private fun spawnGhoul() {
         val entityType = if (Random.nextBoolean()) EntityType.SKELETON else EntityType.HUSK
         val entity = entityType.create(world) ?: return
-        entity.setPosition(spawnPositions.random())
+        val pos = spawnPositions.random()
+        entity.refreshPositionAndAngles(pos.x, pos.y, pos.z, 0F, 0F)
         entity.equipStack(EquipmentSlot.MAINHAND, ItemStack(IRON_SWORD))
         entity.equipStack(EquipmentSlot.HEAD, ItemStack(LEATHER_HELMET))
         entity.equipStack(EquipmentSlot.CHEST, ItemStack(CHAINMAIL_CHESTPLATE))

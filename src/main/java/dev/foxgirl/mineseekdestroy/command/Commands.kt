@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.command
 
 import dev.foxgirl.mineseekdestroy.*
+import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Region
@@ -9,6 +10,8 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.math.Position
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
+import java.lang.IllegalArgumentException
+import java.util.*
 
 internal fun setup() {
 
@@ -438,6 +441,43 @@ internal fun setup() {
                     context.barrierService.executeArenaClose(args)
                     game.setRuleBoolean(GameRules.DO_FIRE_TICK, true)
                     args.sendInfo("Burning started")
+                }
+            }
+        }
+    }
+
+    Command.build("summon") {
+        it.params(argLiteral("perform"), argString("theology1"), argString("theology2")) {
+            it.actionWithContext { args, context ->
+                fun theologyOf(string: String) =
+                    try {
+                        SpecialSummonsService.Theology.valueOf(string.trim().uppercase(Locale.ROOT))
+                    } catch (cause : IllegalArgumentException) {
+                        args.sendError("Invalid theology:", string)
+                        null
+                    }
+
+                val kind = SpecialSummonsService.TheologyPair(
+                    theologyOf(args["theology1"]) ?: return@actionWithContext,
+                    theologyOf(args["theology2"]) ?: return@actionWithContext,
+                )
+                context.specialSummonsService.executeSummon(args, kind)
+            }
+        }
+        it.params(argLiteral("cleartimeout")) {
+            it.actionWithContext { args, context ->
+                context.specialSummonsService.executeClearTimeout(args)
+            }
+        }
+        it.params(argLiteral("state")) {
+            it.params(argLiteral("debug")) {
+                it.actionWithContext { args, context ->
+                    context.specialSummonsService.executeStateDebug(args)
+                }
+            }
+            it.params(argLiteral("reset")) {
+                it.actionWithContext { args, context ->
+                    context.specialSummonsService.executeStateReset(args)
                 }
             }
         }

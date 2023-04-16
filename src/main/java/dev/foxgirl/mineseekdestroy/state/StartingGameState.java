@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.util.Broadcast;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.Packet;
@@ -38,28 +39,14 @@ public class StartingGameState extends GameState {
         return ((double) ticks + ThreadLocalRandom.current().nextDouble()) / 20.0;
     }
 
-    private static void broadcast(GameContext context, Function<ServerPlayerEntity, Packet<?>> provider) {
-        for (var player : context.playerManager.getPlayerList()) {
-            player.networkHandler.sendPacket(provider.apply(player));
-        }
+    private static void broadcast(Packet<?> packet) {
+        Broadcast.send(packet);
     }
-    private static void broadcast(GameContext context, Packet<?> packet) {
-        broadcast(context, (player) -> packet);
+    private static void broadcastText(Text text) {
+        Broadcast.send(new OverlayMessageS2CPacket(text));
     }
-
-    private static void broadcastText(GameContext context, Text text) {
-        broadcast(context, new OverlayMessageS2CPacket(text));
-    }
-    private static void broadcastPing(GameContext context) {
-        var volume = (float) Game.getGame().getRuleDouble(Game.RULE_STARTING_PING_VOLUME);
-        var pitch = (float) Game.getGame().getRuleDouble(Game.RULE_STARTING_PING_PITCH);
-        var sound = Registries.SOUND_EVENT.getEntry(SoundEvents.ENTITY_ARROW_HIT_PLAYER);
-        broadcast(context, (player) ->
-            new PlaySoundS2CPacket(
-                sound, SoundCategory.PLAYERS, player.getX(), player.getEyeY(), player.getZ(),
-                volume, pitch, 0L
-            )
-        );
+    private static void broadcastPing() {
+        Broadcast.sendSoundPing();
     }
 
     private final int ticksPreparing = (int) (Game.getGame().getRuleDouble(Game.RULE_PREPARING_DURATION) * 20.0);
@@ -67,17 +54,17 @@ public class StartingGameState extends GameState {
     private final int ticksEffect = (int) (Game.getGame().getRuleDouble(Game.RULE_STARTING_EFFECT_DURATION) * 20.0);
 
     private int ticks = 0;
-    private boolean flag0 = false;
-    private boolean flag1 = true;
+    private boolean flagBlink = false;
+    private boolean flagReady = true;
 
     @Override
     protected @Nullable GameState onSetup(@NotNull GameContext context) {
         context.game.sendInfo("Round starting...");
 
-        broadcast(context, new TitleFadeS2CPacket(40, 80, 40));
-        broadcast(context, new TitleS2CPacket(ScreenTexts.EMPTY));
-        broadcast(context, new SubtitleS2CPacket(ScreenTexts.EMPTY));
-        broadcastText(context, ScreenTexts.EMPTY);
+        broadcast(new TitleFadeS2CPacket(40, 80, 40));
+        broadcast(new TitleS2CPacket(ScreenTexts.EMPTY));
+        broadcast(new SubtitleS2CPacket(ScreenTexts.EMPTY));
+        broadcastText(ScreenTexts.EMPTY);
 
         return null;
     }
@@ -89,14 +76,14 @@ public class StartingGameState extends GameState {
         if (ticks < ticksPreparing) {
             var time = toTime(ticksStarting);
             var text = formatRoundStarting(time, false);
-            broadcastText(context, text);
+            broadcastText(text);
 
             return null;
         }
 
         if (ticks < ticksPreparing + ticksStarting) {
-            if (flag1) {
-                flag1 = false;
+            if (flagReady) {
+                flagReady = false;
 
                 context.invisibilityService.executeSetEnabled(Game.CONSOLE_OPERATORS);
                 context.barrierService.executeBlimpOpen(Game.CONSOLE_OPERATORS);
@@ -110,19 +97,19 @@ public class StartingGameState extends GameState {
             }
 
             if (ticks % 20 == 0) {
-                flag0 = !flag0;
-                broadcastPing(context);
+                flagBlink = !flagBlink;
+                broadcastPing();
             }
 
             var time = toTimeRandomized((ticksPreparing + ticksStarting) - ticks);
-            var text = formatRoundStarting(time, flag0);
-            broadcastText(context, text);
+            var text = formatRoundStarting(time, flagBlink);
+            broadcastText(text);
 
             return null;
         }
 
-        broadcastText(context, formatRoundStarted());
-        broadcastPing(context);
+        broadcastText(formatRoundStarted());
+        broadcastPing();
 
         return new PlayingGameState();
     }

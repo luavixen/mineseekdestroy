@@ -68,10 +68,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_EFFECT_DURATION =
         GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
 
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_PING_VOLUME =
-        GameRuleRegistry.register("msdStartingPingVolume", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.2));
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_PING_PITCH =
-        GameRuleRegistry.register("msdStartingPingPitch", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.45));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_PING_VOLUME =
+        GameRuleRegistry.register("msdPingVolume", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.2));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_PING_PITCH =
+        GameRuleRegistry.register("msdPingPitch", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.45));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FINALIZING_DURATION =
         GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(10.0));
@@ -114,6 +114,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdCarsDamage", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_SPEED =
         GameRuleRegistry.register("msdCarsSpeed", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(1.2));
+
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SUMMONS_ENABLED =
+        GameRuleRegistry.register("msdSummonsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen

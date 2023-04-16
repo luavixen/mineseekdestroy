@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
+import dev.foxgirl.mineseekdestroy.util.Broadcast
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
@@ -11,6 +12,7 @@ import net.minecraft.particle.ParticleTypes
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
+import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import java.time.Instant
@@ -73,29 +75,27 @@ class SpecialPianoService : Service() {
                 0.0, 0.0, 0.0,
                 pitch.toDouble() / 24.0,
             )
-            world.playSound(
-                null,
-                pos,
+            Broadcast.sendSound(
                 SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(),
                 SoundCategory.RECORDS,
-                3.0F,
-                tuning[index],
+                3.0F, tuning[index],
+                world, pos.toCenterPos(),
             )
         }
     }
 
     private val pianos = HashMap<BlockPos, Piano>()
 
-    fun handleInteract(player: GamePlayer, pos: BlockPos): Boolean {
-        if (state is RunningGameState && !(player.isAlive && player.isPlaying)) return false
+    fun handleInteract(player: GamePlayer, pos: BlockPos): ActionResult {
+        if (state is RunningGameState && !(player.isAlive && player.isPlaying)) return ActionResult.PASS
 
         val piano1 = pianos[pos]
         if (piano1 != null) {
             piano1.play(player, pos)
-            return true
+            return ActionResult.SUCCESS
         }
 
-        if (world.getBlockState(pos.down()).block !== Blocks.DARK_OAK_TRAPDOOR) return false
+        if (world.getBlockState(pos.down()).block !== Blocks.DARK_OAK_TRAPDOOR) return ActionResult.PASS
 
         val forward = arrayOf(
             Direction.NORTH,
@@ -103,7 +103,7 @@ class SpecialPianoService : Service() {
             Direction.WEST,
             Direction.EAST,
         )
-            .find { world.getBlockState(pos.offset(it)).isAir } ?: return false
+            .find { world.getBlockState(pos.offset(it)).isAir } ?: return ActionResult.PASS
 
         val positions = ArrayDeque<BlockPos>(4).apply { add(pos) }
 
@@ -118,13 +118,13 @@ class SpecialPianoService : Service() {
         collect(pos, forward.rotateYClockwise(), positions::addFirst)
         collect(pos, forward.rotateYCounterclockwise(), positions::addLast)
 
-        if (positions.size != 4) return false
+        if (positions.size != 4) return ActionResult.PASS
 
         val piano2 = Piano(positions.map(BlockPos::toImmutable))
         piano2.positions.forEach { pianos[it] = piano2 }
         piano2.play(player, pos)
 
-        return true
+        return ActionResult.SUCCESS
     }
 
     private companion object {

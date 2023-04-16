@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
+import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories

@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameContext
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.util.Broadcast
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Scheduler
 import net.minecraft.entity.player.PlayerEntity
@@ -189,6 +190,7 @@ class AutomationService : Service() {
                 targetYellow.commit(context, GameTeam.PLAYER_YELLOW)
                 targetBlue.commit(context, GameTeam.PLAYER_BLUE)
                 targetSkip.commit(context, GameTeam.SKIP)
+                Broadcast.sendSoundPing()
                 return true
             } else {
                 return false

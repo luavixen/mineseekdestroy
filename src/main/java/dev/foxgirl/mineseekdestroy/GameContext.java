@@ -174,6 +174,8 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false);
         game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
+        game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);
+        game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, true);
 
         for (var service : services) {
             service.initialize(this);

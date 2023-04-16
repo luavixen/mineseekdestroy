@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.util;
 import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -180,7 +181,9 @@ public final class Editor {
             Operation[] operations = this.operations;
 
             Region region = target.region;
-            ServerChunkManager manager = target.world.getChunkManager();
+            ServerWorld world = target.world;
+
+            ServerChunkManager manager = world.getChunkManager();
 
             var cPosMin = region.getChunkStart();
             var cPosMax = region.getChunkEnd();
@@ -211,8 +214,7 @@ public final class Editor {
 
             for (WorldChunk chunk : chunksMutated) {
                 var packet = new ChunkDataS2CPacket(chunk, manager.getLightingProvider(), null, null, true);
-                var players = manager.threadedAnvilChunkStorage.getPlayersWatchingChunk(chunk.getPos());
-                for (var player : players) {
+                for (ServerPlayerEntity player : world.getPlayers()) {
                     player.networkHandler.sendPacket(packet);
                 }
             }

@@ -78,6 +78,13 @@ public abstract class GameState {
 
     public ActionResult onUseBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHit, BlockState blockState) {
         if (Game.getGame().isOperator(playerEntity)) {
+            if (context != null && context.world == world) {
+                if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
+                    var player = context.getPlayer((ServerPlayerEntity) playerEntity);
+                    var result = context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                    if (result != ActionResult.PASS) return result;
+                }
+            }
             return ActionResult.PASS;
         }
         if (context != null && context.world == world) {
@@ -91,10 +98,12 @@ public abstract class GameState {
             ) {
                 var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
                 if (blockEntity instanceof LootableContainerBlockEntity) {
-                    return context.lootService.handleContainerOpen(blockEntity);
+                    var result = context.lootService.handleContainerOpen(blockEntity);
+                    if (result != ActionResult.PASS) return result;
                 }
                 if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
-                    return context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                    var result = context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                    if (result != ActionResult.PASS) return result;
                 }
                 return ActionResult.PASS;
             }
@@ -153,9 +162,11 @@ public abstract class GameState {
     }
 
     public ActionResult onAttackBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockPos pos, Direction direction) {
-        if (context != null && world.getBlockState(pos).getBlock() == Blocks.QUARTZ_SLAB) {
-            var success = context.specialPianoService.handleInteract(context.getPlayer((ServerPlayerEntity) playerEntity), pos);
-            if (success) return ActionResult.FAIL;
+        if (context != null && context.world == world) {
+            if (world.getBlockState(pos).getBlock() == Blocks.QUARTZ_SLAB) {
+                var result = context.specialPianoService.handleInteract(context.getPlayer((ServerPlayerEntity) playerEntity), pos);
+                if (result != ActionResult.PASS) return result;
+            }
         }
         return ActionResult.PASS;
     }

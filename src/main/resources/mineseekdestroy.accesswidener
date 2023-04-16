@@ -1,5 +1,3 @@
 accessWidener v1 named
 
 accessible method net/minecraft/entity/Entity isBeingRainedOn ()Z
-
-accessible field net/minecraft/screen/AnvilScreenHandler newItemName Ljava/lang/String;

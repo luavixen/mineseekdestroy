@@ -122,7 +122,6 @@ sealed interface GameProperties {
             REDSTONE_LAMP,
             ROOTED_DIRT,
             SAND,
-            SANDSTONE_WALL,
             SMOKER,
             STONE,
             WARPED_FENCE,
@@ -176,6 +175,7 @@ sealed interface GameProperties {
         override val inflammableBlocks = Empty.inflammableBlocks + setOf(
             BARREL,
             BRICKS,
+            SANDSTONE_WALL,
         )
 
     }
