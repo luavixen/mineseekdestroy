@@ -20,6 +20,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.item.Items.*
 import net.minecraft.nbt.*
 import net.minecraft.potion.PotionUtil
@@ -42,7 +43,24 @@ import java.time.Instant
 class SpecialSummonsService : Service() {
 
     private enum class Theology {
-        DEEP, OCCULT, COSMOS, BARTER, FLAME;
+        DEEP {
+            override val color = Formatting.DARK_AQUA
+        },
+        OCCULT {
+            override val color = Formatting.LIGHT_PURPLE
+        },
+        COSMOS {
+            override val color = Formatting.BLUE
+        },
+        BARTER {
+            override val color = Formatting.GOLD
+        },
+        FLAME {
+            override val color = Formatting.RED
+        };
+
+        abstract val color: Formatting
+        val displayName: Text get() = Text.literal(name).formatted(color)
     }
 
     private class TheologyPair(theology1: Theology, theology2: Theology) {
@@ -50,29 +68,19 @@ class SpecialSummonsService : Service() {
         val theology2 = maxOf(theology1, theology2)
 
         val isDouble get() = theology1 === theology2
-        val isOnce get() = pairsOnce.contains(this)
+        val isOnce get() = theologyPairsOnce.contains(this)
+
+        val displayName: Text get() =
+            Text.empty()
+                .append(theology1.displayName)
+                .append(Text.literal(" X ").formatted(Formatting.GREEN))
+                .append(theology2.displayName)
 
         override fun toString() = "TheologyPair(theology1=${theology1}, theology2=${theology2})"
 
         override fun hashCode() = 31 * theology1.hashCode() + theology2.hashCode()
         override fun equals(other: Any?) =
             other === this || (other is TheologyPair && other.theology1 === theology1 && other.theology2 === theology2)
-
-        companion object {
-            val pairsDouble = setOf(
-                TheologyPair(DEEP, DEEP),
-                TheologyPair(OCCULT, OCCULT),
-                TheologyPair(COSMOS, COSMOS),
-                TheologyPair(BARTER, BARTER),
-                TheologyPair(FLAME, FLAME),
-            )
-            val pairsOnce = setOf(
-                TheologyPair(DEEP, OCCULT),
-                TheologyPair(DEEP, COSMOS),
-                TheologyPair(DEEP, BARTER),
-                TheologyPair(OCCULT, BARTER),
-            )
-        }
     }
 
     private class Altar(
@@ -166,8 +174,8 @@ class SpecialSummonsService : Service() {
 
                 val target = target()
 
-                val nameText = Text.literal("Sound of ").formatted(Formatting.GREEN).append(target.displayName)
-                val nameJSON = Text.Serializer.toJson(nameText)
+                val name = Text.literal("Sound of ").formatted(Formatting.GREEN).append(target.displayName)
+                val nameJSON = Text.Serializer.toJson(name)
 
                 val stack = ItemStack(COMPASS)
 
@@ -438,6 +446,30 @@ class SpecialSummonsService : Service() {
         return timeout.isAfter(Instant.now())
     }
 
+    private enum class Failure {
+        TIMEOUT, MISMATCH, REPEATED_DOUBLE, REPEATED_ONCE, REPEATED_SEQUENCE
+    }
+
+    private fun failCheck(options: Options): Failure? {
+        val kind = options.kind
+        if (timeoutCheck()) {
+            return Failure.TIMEOUT
+        }
+        if (kind.theology1 !== options.altar.theology && kind.theology2 !== options.altar.theology) {
+            return Failure.MISMATCH
+        }
+        if (kind.isDouble && summonListGame.any { it.kind == kind }) {
+            return Failure.REPEATED_DOUBLE
+        }
+        if (kind.isOnce && summonListRound.any { it.kind == kind }) {
+            return Failure.REPEATED_ONCE
+        }
+        if (kind == summonListRound.lastOrNull()?.kind) {
+            return Failure.REPEATED_SEQUENCE
+        }
+        return null
+    }
+
     private fun failPerform(options: Options) {
         for (player in players) {
             if (player.team === options.team) {
@@ -470,33 +502,6 @@ class SpecialSummonsService : Service() {
         )
     }
 
-    private fun failCheck(options: Options): Boolean {
-        if (timeoutCheck()) {
-            Game.CONSOLE_PLAYERS.sendError("Summon failed due to timeout")
-            return true
-        }
-
-        val kind = options.kind
-        if (kind.theology1 !== options.altar.theology && kind.theology2 !== options.altar.theology) {
-            Game.CONSOLE_PLAYERS.sendError("Summon failed due to unmatched theology")
-            return true
-        }
-        if (kind.isDouble && summonListGame.any { it.kind == kind }) {
-            Game.CONSOLE_PLAYERS.sendError("Summon failed due to repeated double")
-            return true
-        }
-        if (kind.isOnce && summonListRound.any { it.kind == kind }) {
-            Game.CONSOLE_PLAYERS.sendError("Summon failed due to repeated once")
-            return true
-        }
-        if (kind == summonListRound.lastOrNull()?.kind) {
-            Game.CONSOLE_PLAYERS.sendError("Summon failed due to repeated back-to-back")
-            return true
-        }
-
-        return false
-    }
-
     private fun summonPerform(options: Options) {
         val summon = summons[options.kind]!!.invoke(options)
         summonListGame.add(summon)
@@ -510,14 +515,22 @@ class SpecialSummonsService : Service() {
     }
 
     private fun summon(options: Options) {
-        Game.CONSOLE_PLAYERS.sendInfo("Player", options.player.displayName, "attempting summon of type", options.kind, "with altar at", options.altar.theology, "with theology", options.altar.theology)
-        if (failCheck(options)) {
-            Game.CONSOLE_PLAYERS.sendError("Summon failed!")
+        Game.CONSOLE_OPERATORS.sendInfo(
+            "Player", options.player.displayName,
+            "attempting summon of type", options.kind.displayName,
+            "with theology", options.altar.theology.displayName,
+            "with altar at", options.altar.pos,
+        )
+
+        val failure = failCheck(options)
+        if (failure != null) {
+            Game.CONSOLE_OPERATORS.sendError("Summon", options.kind, "failed:", failure)
             failPerform(options)
         } else {
-            Game.CONSOLE_PLAYERS.sendError("Summon success!")
+            Game.CONSOLE_OPERATORS.sendError("Summon", options.kind, "success!")
             summonPerform(options)
         }
+
         summonEffects(options)
     }
 
@@ -534,97 +547,202 @@ class SpecialSummonsService : Service() {
     fun handleRoundEnd() {
         summonListRound.forEach {
             if (it is Stoppable) {
-                Game.CONSOLE_PLAYERS.sendInfo("Stopping summon", it)
-                it.stop()
+                Game.CONSOLE_OPERATORS.sendInfo("Summon stopping:", it.javaClass.simpleName)
+
                 summonListGame.remove(it)
+                it.stop()
             }
         }
+
         summonListRound.clear()
         timeoutReset()
     }
 
+    private inner class AltarScreenHandler(
+        val altar: Altar,
+        syncId: Int,
+        val playerInventory: PlayerInventory,
+        val playerEntity: ServerPlayerEntity,
+    ) : AnvilScreenHandler(syncId, playerInventory) {
+        private fun player(): GamePlayer =
+            this@SpecialSummonsService.context.getPlayer(playerEntity)
+
+        private fun theologies(): TheologyPair? {
+            fun theologyFor(stack: ItemStack): Theology? {
+                if (stack.item !== TIPPED_ARROW) return null
+
+                for (effect in PotionUtil.getPotion(stack).effects) {
+                    val theology: Theology? = when (effect.effectType) {
+                        StatusEffects.WATER_BREATHING -> DEEP
+                        StatusEffects.INSTANT_HEALTH -> OCCULT
+                        StatusEffects.INVISIBILITY -> COSMOS
+                        StatusEffects.STRENGTH -> BARTER
+                        StatusEffects.FIRE_RESISTANCE -> FLAME
+                        else -> null
+                    }
+                    if (theology != null) return theology
+                }
+
+                return null
+            }
+
+            return TheologyPair(
+                theologyFor(input.getStack(0)) ?: return null,
+                theologyFor(input.getStack(1)) ?: return null,
+            )
+        }
+
+        override fun updateResult() {
+            val pair = theologies()
+            if (pair != null) {
+                output.setStack(0, summonItems[pair]!!.copy())
+                val failure = failCheck(Options(pair, altar, player()))
+                if (failure != null) {
+                    newItemName = "SUMMON WILL FAIL: " + failure.name
+                } else {
+                    newItemName = "SUMMON IS READY!"
+                }
+            } else {
+                output.setStack(0, ItemStack.EMPTY)
+                newItemName = "SUMMON INVALID."
+            }
+        }
+
+        override fun onTakeOutput(playerEntity: PlayerEntity, stack: ItemStack) {
+            stack.count = 0
+            input.removeStack(0, 1)
+            input.removeStack(0, 1)
+
+            val pair = theologies()
+            if (pair != null) {
+                summon(Options(pair, altar, player()))
+            }
+        }
+
+        override fun canTakeOutput(playerEntity: PlayerEntity, present: Boolean): Boolean {
+            return theologies() != null
+        }
+
+        override fun canUse(player: PlayerEntity?) = true
+        override fun canUse(state: BlockState?) = true
+
+        override fun canInsertIntoSlot(slot: Slot?) = true
+        override fun canInsertIntoSlot(stack: ItemStack?, slot: Slot?) = true
+
+        override fun setNewItemName(newItemName: String?) {
+            updateResult()
+        }
+    }
+
+    private inner class AltarNamedScreenHandlerFactory(val altar: Altar) : NamedScreenHandlerFactory {
+        override fun getDisplayName(): Text =
+            Text.literal("Altar of the ").append(altar.theology.displayName)
+        override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity): ScreenHandler =
+            AltarScreenHandler(altar, syncId, playerInventory, playerEntity as ServerPlayerEntity)
+    }
+
     fun handleAltarOpen(player: GamePlayer, pos: BlockPos): ActionResult {
-        // TODO: these are all horrible hacks
+        // TODO: this code sucks!! fix it. make it so that it doesnt also use your item.
 
         val altar: Altar? = altars[pos]
         if (altar == null) {
-            Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "failed to open invalid altar at", pos)
+            Game.LOGGER.info("Player ${player.name} failed to open invalid altar at ${pos}")
             return ActionResult.PASS
+        } else {
+            Game.LOGGER.info("Player ${player.name} opened altar at ${pos} with theology ${altar.theology}")
+            player.entity?.openHandledScreen(AltarNamedScreenHandlerFactory(altar))
+            return ActionResult.FAIL
+        }
+    }
+
+    private companion object {
+
+        private val theologyPairsDouble = setOf(
+            TheologyPair(DEEP, DEEP),
+            TheologyPair(OCCULT, OCCULT),
+            TheologyPair(COSMOS, COSMOS),
+            TheologyPair(BARTER, BARTER),
+            TheologyPair(FLAME, FLAME),
+        )
+        private val theologyPairsOnce = setOf(
+            TheologyPair(DEEP, OCCULT),
+            TheologyPair(DEEP, COSMOS),
+            TheologyPair(DEEP, BARTER),
+            TheologyPair(OCCULT, BARTER),
+        )
+
+        private fun summonItem(kind: TheologyPair, item: Item, vararg lore: Text): Pair<TheologyPair, ItemStack> {
+            val stack = ItemStack(item)
+
+            val display = stack.getOrCreateSubNbt("display")
+            display.putString("Name", Text.Serializer.toJson(kind.displayName))
+            display.put("Lore", NbtList().also { list ->
+                lore.forEach { list.add(NbtString.of(Text.Serializer.toJson(it))) }
+            })
+
+            return kind to stack
         }
 
-        Game.CONSOLE_PLAYERS.sendInfo("Player", player.displayName, "opened altar at", pos, "with theology", altar.theology)
+        private val summonItems = mapOf<TheologyPair, ItemStack>(
+            summonItem(
+                TheologyPair(DEEP, DEEP), WATER_BUCKET,
+                Text.of("Flood the entire map?"),
+            ),
+            summonItem(
+                TheologyPair(BARTER, BARTER), BARRIER,
+                Text.of("Destroy all special items?"),
+            ),
+            summonItem(
+                TheologyPair(FLAME, FLAME), FIRE_CHARGE,
+                Text.of("All blocks become flammable?"),
+            ),
+            summonItem(
+                TheologyPair(COSMOS, COSMOS), RABBIT_FOOT,
+                Text.of("Gravity greatly reduced?"),
+            ),
+            summonItem(
+                TheologyPair(OCCULT, OCCULT), WITHER_SKELETON_SKULL,
+                Text.of("Black team wins?"),
+            ),
+            summonItem(
+                TheologyPair(DEEP, BARTER), POTION,
+                Text.of("Water blocks deal poison damage"),
+            ),
+            summonItem(
+                TheologyPair(BARTER, FLAME), MAGMA_BLOCK,
+                Text.of("Receive some really hot blocks"),
+            ),
+            summonItem(
+                TheologyPair(FLAME, COSMOS), GOLDEN_APPLE,
+                Text.of("Bonus absorption heart"),
+            ),
+            summonItem(
+                TheologyPair(COSMOS, OCCULT), SCULK,
+                Text.of("Night vision for your team"),
+                Text.of("(Blindness for others)"),
+            ),
+            summonItem(
+                TheologyPair(DEEP, FLAME), FLINT_AND_STEEL,
+                Text.of("Receive some firestarters and anvils"),
+            ),
+            summonItem(
+                TheologyPair(BARTER, COSMOS), COOKED_BEEF,
+                Text.of("Receive some steak"),
+            ),
+            summonItem(
+                TheologyPair(FLAME, OCCULT), GHAST_SPAWN_EGG,
+                Text.of("Spawn a Ghast in the arena"),
+            ),
+            summonItem(
+                TheologyPair(DEEP, COSMOS), PRISMARINE_SHARD,
+                Text.of("Acid rain starts pouring down"),
+            ),
+            summonItem(
+                TheologyPair(BARTER, OCCULT), GOLDEN_SWORD,
+                Text.of("Receive some instant-kill swords"),
+            ),
+        )
 
-        player.entity!!.openHandledScreen(object : NamedScreenHandlerFactory {
-
-            override fun getDisplayName() = Text.of("Altar of ${altar.theology}")
-
-            override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity): ScreenHandler {
-                return object : AnvilScreenHandler(syncId, playerInventory) {
-
-                    private fun pair(): TheologyPair {
-                        val a1 = input.getStack(0)
-                        val a2 = input.getStack(1)
-                        val p1 = PotionUtil.getPotion(a1)
-                        val p2 = PotionUtil.getPotion(a2)
-                        val e1 = p1.effects
-                        val e2 = p2.effects
-                        val ee1 = e1.first().effectType
-                        val ee2 = e2.first().effectType
-                        val t1 = effectToTheologyMap[ee1]!!
-                        val t2 = effectToTheologyMap[ee2]!!
-                        return TheologyPair(t1, t2)
-                    }
-
-                    override fun updateResult() {
-                        output.setStack(0,
-                            try {
-                                ItemStack(STONE).setCustomName(Text.of(pair().toString()))
-                            } catch (ignored : Exception) {
-                                ItemStack.EMPTY
-                            }
-                        )
-                    }
-
-                    override fun onTakeOutput(playerEntity: PlayerEntity, stack: ItemStack) {
-                        summon(Options(pair(), altar, player))
-                        input.setStack(0, ItemStack.EMPTY)
-                        input.setStack(1, ItemStack.EMPTY)
-                    }
-
-                    override fun canTakeOutput(playerEntity: PlayerEntity, present: Boolean): Boolean {
-                        val a1 = input.getStack(0)
-                        val a2 = input.getStack(1)
-                        if (a1.item !== TIPPED_ARROW || a2.item !== TIPPED_ARROW) return false
-                        val p1 = PotionUtil.getPotionEffects(a1).firstOrNull()
-                        val p2 = PotionUtil.getPotionEffects(a2).firstOrNull()
-                        if (!effectToTheologyMap.containsKey(p1?.effectType)) return false
-                        if (!effectToTheologyMap.containsKey(p2?.effectType)) return false
-                        return true
-                    }
-
-                    override fun canUse(player: PlayerEntity?) = true
-                    override fun canUse(state: BlockState?) = true
-
-                    override fun canInsertIntoSlot(slot: Slot?) = true
-                    override fun canInsertIntoSlot(stack: ItemStack?, slot: Slot?) = true
-
-                    override fun setNewItemName(newItemName: String?) {
-                    }
-
-                    private val effectToTheologyMap = mapOf<StatusEffect, Theology>(
-                        StatusEffects.WATER_BREATHING to DEEP,
-                        StatusEffects.INSTANT_HEALTH to OCCULT,
-                        StatusEffects.INVISIBILITY to COSMOS,
-                        StatusEffects.STRENGTH to BARTER,
-                        StatusEffects.FIRE_RESISTANCE to FLAME,
-                    )
-
-                }
-            }
-
-        })
-
-        return ActionResult.FAIL
     }
 
 }

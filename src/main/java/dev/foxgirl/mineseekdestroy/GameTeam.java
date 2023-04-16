@@ -54,12 +54,8 @@ public enum GameTeam {
         return colorAlive != null ? colorAlive : Formatting.WHITE;
     }
 
-    public @NotNull Text getName() {
-        return displayName != null ? displayName : ScreenTexts.EMPTY;
-    }
-
-    public @NotNull Text getNameColored() {
-        return getName().copy().formatted(getColor());
+    public @NotNull Text getDisplayName() {
+        return displayName != null ? displayName.copy().formatted(getColor()) : ScreenTexts.EMPTY;
     }
 
     private static Team getOrCreateTeam(Scoreboard scoreboard, String name, Consumer<Team> initializer) {

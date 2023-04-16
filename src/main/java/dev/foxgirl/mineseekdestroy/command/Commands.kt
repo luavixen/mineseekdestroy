@@ -173,7 +173,7 @@ internal fun setup() {
                 it.params(argPlayers()) {
                     it.actionWithContext { args, context ->
                         val players = args.players(context).onEach { it.team = team }
-                        args.sendInfo("Updated team for ${players.size} player(s) to", team.nameColored)
+                        args.sendInfo("Updated team for ${players.size} player(s) to", team.displayName)
                     }
                 }
             }

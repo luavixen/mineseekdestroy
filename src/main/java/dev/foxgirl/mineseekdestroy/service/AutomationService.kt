@@ -129,7 +129,7 @@ class AutomationService : Service() {
 
     fun executeOpenIpad(console: Console) {
         if (players.none { it.isOperator }) {
-            console.sendError("Cannot open iPad, nobody on team", GameTeam.OPERATOR.nameColored)
+            console.sendError("Cannot open iPad, nobody on team", GameTeam.OPERATOR.displayName)
         }
 
         if (cooldownFlag.getAndSet(true)) {
