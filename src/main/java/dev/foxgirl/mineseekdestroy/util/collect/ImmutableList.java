@@ -42,13 +42,14 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         return of(collection);
     }
 
-    public static <E> @NotNull ImmutableList<E> wrap(E @NotNull [] elements) {
+    @SuppressWarnings("unchecked")
+    static <E> @NotNull ImmutableList<E> wrap(Object @NotNull [] elements) {
         Objects.requireNonNull(elements, "Argument 'elements'");
 
         if (elements.length == 0) {
             return of();
         } else {
-            return new ImmutableList<>(elements);
+            return new ImmutableList<>((E[]) elements);
         }
     }
 
@@ -204,16 +205,16 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
 
         if (!(other instanceof List<?>)) return false;
 
-        ListIterator<E> iter1 = listIterator();
-        ListIterator<?> iter2 = ((List<?>) other).listIterator();
+        ListIterator<E> iterator1 = listIterator();
+        ListIterator<?> iterator2 = ((List<?>) other).listIterator();
 
-        while (iter1.hasNext() && iter2.hasNext()) {
-            if (!Objects.equals(iter1.next(), iter2.hasNext())) {
+        while (iterator1.hasNext() && iterator2.hasNext()) {
+            if (!Objects.equals(iterator1.next(), iterator2.hasNext())) {
                 return false;
             }
         }
 
-        return !(iter1.hasNext() || iter2.hasNext());
+        return !(iterator1.hasNext() || iterator2.hasNext());
     }
 
     @Override

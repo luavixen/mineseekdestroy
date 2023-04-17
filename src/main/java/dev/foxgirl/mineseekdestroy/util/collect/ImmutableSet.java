@@ -66,7 +66,6 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
     }
 
     private static final class Entry<E> {
-
         private final int hash;
         private final E value;
 
@@ -81,7 +80,6 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
         private boolean matches(int hash, Object value) {
             return this.hash == hash && Objects.equals(this.value, value);
         }
-
     }
 
     private static <E> Entry<E> traverse(Entry<E> entry, int hash, Object value) {

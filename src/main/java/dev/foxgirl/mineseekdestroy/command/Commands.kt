@@ -10,7 +10,6 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.math.Position
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
-import java.lang.IllegalArgumentException
 import java.util.*
 
 internal fun setup() {
@@ -453,7 +452,7 @@ internal fun setup() {
                     try {
                         SpecialSummonsService.Theology.valueOf(string.trim().uppercase(Locale.ROOT))
                     } catch (cause : IllegalArgumentException) {
-                        args.sendError("Invalid theology:", string)
+                        args.sendError("Invalid theology '${string}'")
                         null
                     }
 

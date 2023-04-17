@@ -30,6 +30,7 @@ import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.state.property.Properties
@@ -112,6 +113,31 @@ class SpecialSummonsService : Service() {
     private inner class DeepDeepSummon(options: Options) : Summon(options) {
         override fun timeout(): Duration = Duration.ofSeconds(30)
         override fun perform() {
+            val blocks = setOf(
+                Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING, Blocks.BIRCH_SAPLING,
+                Blocks.JUNGLE_SAPLING, Blocks.ACACIA_SAPLING, Blocks.DARK_OAK_SAPLING,
+                Blocks.MANGROVE_PROPAGULE, Blocks.GRASS, Blocks.TALL_GRASS,
+                Blocks.FERN, Blocks.LARGE_FERN, Blocks.DEAD_BUSH,
+                Blocks.DANDELION, Blocks.POPPY, Blocks.BLUE_ORCHID, Blocks.ALLIUM,
+                Blocks.AZURE_BLUET, Blocks.RED_TULIP, Blocks.ORANGE_TULIP,
+                Blocks.WHITE_TULIP, Blocks.PINK_TULIP, Blocks.OXEYE_DAISY,
+                Blocks.CORNFLOWER, Blocks.LILY_OF_THE_VALLEY, Blocks.WITHER_ROSE,
+                Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.CRIMSON_FUNGUS,
+                Blocks.WARPED_FUNGUS, Blocks.CRIMSON_ROOTS, Blocks.WARPED_ROOTS,
+                Blocks.NETHER_SPROUTS, Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT,
+                Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.SUGAR_CANE,
+                Blocks.TORCH, Blocks.WALL_TORCH, Blocks.REDSTONE_TORCH, Blocks.REDSTONE_WALL_TORCH,
+                Blocks.SOUL_TORCH, Blocks.SOUL_WALL_TORCH, Blocks.VINE,
+                Blocks.GLOW_LICHEN, Blocks.LILY_PAD, Blocks.SCULK_VEIN,
+                Blocks.SUNFLOWER, Blocks.LILAC, Blocks.ROSE_BUSH, Blocks.PEONY,
+                Blocks.WHITE_CARPET, Blocks.ORANGE_CARPET, Blocks.MAGENTA_CARPET,
+                Blocks.LIGHT_BLUE_CARPET, Blocks.YELLOW_CARPET, Blocks.LIME_CARPET,
+                Blocks.PINK_CARPET, Blocks.GRAY_CARPET, Blocks.LIGHT_GRAY_CARPET,
+                Blocks.CYAN_CARPET, Blocks.PURPLE_CARPET, Blocks.BLUE_CARPET,
+                Blocks.BROWN_CARPET, Blocks.GREEN_CARPET, Blocks.RED_CARPET, Blocks.BLACK_CARPET,
+                Blocks.RAIL, Blocks.ACTIVATOR_RAIL, Blocks.DETECTOR_RAIL, Blocks.POWERED_RAIL,
+            )
+
             val slices = iterator {
                 val (start, end) = properties.regionFlood
                 for (y in start.y..end.y) {
@@ -121,10 +147,11 @@ class SpecialSummonsService : Service() {
                     ))
                 }
             }
+
             Scheduler.interval(1.0) { schedule ->
                 if (slices.hasNext()) {
                     Editor.edit(world, slices.next()) { state, _, _, _ ->
-                        if (state.isAir) {
+                        if (state.isAir || blocks.contains(state.block)) {
                             Blocks.WATER.defaultState
                         } else if (state.contains(Properties.WATERLOGGED)) {
                             state.with(Properties.WATERLOGGED, true)
@@ -137,7 +164,7 @@ class SpecialSummonsService : Service() {
                 }
             }
 
-            world.setWeather(0, 24000 * 10, true, false)
+            world.setWeatherRain()
         }
     }
 
@@ -146,6 +173,8 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             val targets = playersIn.filter { it.team !== team }
             val targetsPool = targets.toMutableList().apply { shuffle() }
+
+            if (targets.isEmpty()) return
 
             fun target() = targetsPool.removeLastOrNull() ?: targets.random()
 
@@ -197,7 +226,7 @@ class SpecialSummonsService : Service() {
 
     private inner class DeepCosmosSummon(options: Options) : Summon(options), Stoppable {
         override fun perform() {
-            world.setWeather(0, 24000 * 10, true, false)
+            world.setWeatherRain()
         }
         override fun update() {
             for ((_, entity) in playerEntitiesIn) {
@@ -207,7 +236,7 @@ class SpecialSummonsService : Service() {
             }
         }
         override fun stop() {
-            world.setWeather(24000 * 10, 0, false, false)
+            world.setWeatherClear()
         }
     }
 
@@ -332,7 +361,7 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             val items = setOf<Item>(
                 SHIELD, CARROT_ON_A_STICK, FISHING_ROD, TIPPED_ARROW,
-                COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL,
+                COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, COMPASS,
                 ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
             )
             for ((_, entity) in playerEntitiesNormal) {
@@ -370,7 +399,7 @@ class SpecialSummonsService : Service() {
                 }
 
             game.setRuleBoolean(GameRules.DO_FIRE_TICK, true)
-            world.setWeather(24000 * 10, 0, false, false)
+            world.setWeatherClear()
         }
     }
 
@@ -584,14 +613,13 @@ class SpecialSummonsService : Service() {
     private interface TextProvider {
         val title: Text
         val subtitle: Text
-
         val tooltip: Text
     }
 
     private abstract class FailureTextProvider(val options: Options) : TextProvider {
-        override val title: Text get() =
+        override val title: Text =
             Text.of("A summon has failed!")
-        override val tooltip: Text get() =
+        override val tooltip: Text =
             Text.empty().append(options.team.displayName).append(" failed to summon.")
     }
 
@@ -692,6 +720,7 @@ class SpecialSummonsService : Service() {
                 summon(Options(pair, altar, player))
             }
 
+            // TODO: more robust removal of "display items" from player inventories
             playerEntity.removeItem { ItemStack.areEqual(it, stack) }
 
             stack.count = 0
@@ -729,13 +758,13 @@ class SpecialSummonsService : Service() {
         }
 
         val altar: Altar? = altars[pos]
-        if (altar == null) {
+        if (altar != null) {
+            player.entity?.openHandledScreen(AltarNamedScreenHandlerFactory(altar))
+            Game.LOGGER.info("Player ${player.name} opened altar at ${pos} with theology ${altar.theology}")
+            return ActionResult.SUCCESS
+        } else {
             Game.LOGGER.info("Player ${player.name} failed to open invalid altar at ${pos}")
             return ActionResult.PASS
-        } else {
-            Game.LOGGER.info("Player ${player.name} opened altar at ${pos} with theology ${altar.theology}")
-            player.entity?.openHandledScreen(AltarNamedScreenHandlerFactory(altar))
-            return ActionResult.SUCCESS
         }
     }
 
@@ -815,12 +844,18 @@ class SpecialSummonsService : Service() {
         private fun PlayerEntity.giveItem(stack: ItemStack) {
             if (!giveItemStack(stack)) dropItem(stack, false)?.let { it.resetPickupDelay(); it.setOwner(uuid) }
         }
-
         private fun PlayerEntity.removeItem(predicate: (ItemStack) -> Boolean) {
             val inventory = inventory
             for (i in 0 until inventory.size()) {
                 if (predicate(inventory.getStack(i))) inventory.setStack(i, ItemStack.EMPTY)
             }
+        }
+
+        private fun ServerWorld.setWeatherRain() {
+            setWeather(0, 24000 * 10, true, false)
+        }
+        private fun ServerWorld.setWeatherClear() {
+            setWeather(24000 * 10, 0, false, false)
         }
 
         private val theologyPairsDouble = setOf(
@@ -841,6 +876,7 @@ class SpecialSummonsService : Service() {
             val stack = ItemStack(item)
 
             val display = stack.getOrCreateSubNbt("display")
+
             display.putString("Name", Text.Serializer.toJson(kind.displayName))
             display.put("Lore", NbtList().also { list ->
                 lore.forEach { list.add(NbtString.of(Text.Serializer.toJson(it))) }
@@ -915,170 +951,170 @@ class SpecialSummonsService : Service() {
 
         private val textProvidersSuccess = mapOf<TheologyPair, (Options) -> TextProvider>(
             TheologyPair(DEEP, OCCULT) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("Star and compass, map and sextant;")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" received trackers to hunt their enemies.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" received trackers for enemy players.")
             } },
             TheologyPair(DEEP, COSMOS) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("Whirling clouds cast a stinging spittle!")
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("Acid rain! Stay indoors.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" summoned stinging rain.")
             } },
             TheologyPair(DEEP, BARTER) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("Flowing waters boil and bubble, you feel a bath would bring you trouble...")
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("Bodies of water are now harmful!")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" poisoned the water.")
             } },
             TheologyPair(DEEP, FLAME) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("From the heart of the forge,")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" has summoned flint, steel, and anvils.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" summoned flint, steel, and anvils.")
             } },
             TheologyPair(OCCULT, COSMOS) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("Shining stars avert their gaze, a creeping void floods the maze...")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" has gained fullbright and blinded everyone else.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" has fullbright visibility.")
             } },
             TheologyPair(OCCULT, BARTER) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("You only have one shot.")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" has gained powerful single-use swords.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" was granted powerful swords.")
             } },
             TheologyPair(OCCULT, FLAME) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("Horrifying screams come from the darkness below!")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" has summoned a ghast!")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" summoned a ghast!")
             } },
             TheologyPair(COSMOS, BARTER) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("Tis' a good season; A feast fit for royals!")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" has received a bounty of steaks.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" summoned a steak feast.")
             } },
             TheologyPair(COSMOS, FLAME) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("A lingering flame burns inside!")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" has gained additional health.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" gained a health bonus.")
             } },
             TheologyPair(BARTER, FLAME) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.of("Oh, the weather outside is frightful...")
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" gained a full stack of snow blocks.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
                         .append(" gained blocks of snow.")
             } },
             TheologyPair(DEEP, DEEP) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.literal("FLASH FLOOD").formatted(DEEP.color)
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("The map is filling with water!")
-                override val tooltip get() =
+                override val tooltip =
                     Text.of("The map is flooding.")
             } },
             TheologyPair(OCCULT, OCCULT) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.literal("DESPERATION").formatted(OCCULT.color)
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("The health of the main teams has been halved, and each black team member has gained two kills!")
-                override val tooltip get() =
+                override val tooltip =
                     Text.of("Team health has been halved, and all of black gained two kills.")
             } },
             TheologyPair(COSMOS, COSMOS) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.literal("FINAL FRONTIER").formatted(COSMOS.color)
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("Gravity has been significantly reduced!")
-                override val tooltip get() =
+                override val tooltip =
                     Text.of("Gravity is significantly reduced.")
             } },
             TheologyPair(BARTER, BARTER) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.literal("MARKET CRASH").formatted(BARTER.color)
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("All special items have been lost!")
-                override val tooltip get() =
+                override val tooltip =
                     Text.of("All special items have been lost.")
             } },
             TheologyPair(FLAME, FLAME) to { options -> object : TextProvider {
-                override val title get() =
+                override val title =
                     Text.literal("INFERNO").formatted(FLAME.color)
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("Most blocks are now flammable.")
-                override val tooltip get() =
+                override val tooltip =
                     Text.of("Most blocks are now flammable.")
             } },
         )
 
         private val textProvidersFailure = mapOf<Failure, (Options) -> TextProvider>(
             Failure.TIMEOUT to { object : FailureTextProvider(it) {
-                override val subtitle get() =
+                override val subtitle =
                     Text.of("Let the cooldown complete first!")
             } },
             Failure.MISMATCH to { object : FailureTextProvider(it) {
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.kind.displayName)
                         .append(" can only be performed at a ")
@@ -1088,22 +1124,22 @@ class SpecialSummonsService : Service() {
                         .append(" altar!")
             } },
             Failure.REPEATED_DOUBLE to { object : FailureTextProvider(it) {
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.kind.displayName)
                         .append(" can only be performed once per game!")
             } },
             Failure.REPEATED_ONCE to { object : FailureTextProvider(it) {
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.kind.displayName)
                         .append(" can only be performed once per round!")
             } },
             Failure.REPEATED_SEQUENCE to { object : FailureTextProvider(it) {
-                override val subtitle get() =
+                override val subtitle =
                     Text.empty()
                         .append(options.kind.displayName)
-                        .append(" cannot be performed twice in a row!")
+                        .append(" can't be performed twice in a row!")
             } },
         )
 
