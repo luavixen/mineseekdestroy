@@ -446,7 +446,7 @@ internal fun setup() {
     }
 
     Command.build("summon") {
-        it.params(argLiteral("perform"), argString("theology1"), argString("theology2")) {
+        it.params(argLiteral("perform"), argPlayer("player"), argString("theology1"), argString("theology2")) {
             it.actionWithContext { args, context ->
                 fun theologyOf(string: String) =
                     try {
@@ -460,7 +460,7 @@ internal fun setup() {
                     theologyOf(args["theology1"]) ?: return@actionWithContext,
                     theologyOf(args["theology2"]) ?: return@actionWithContext,
                 )
-                context.specialSummonsService.executeSummon(args, kind)
+                context.specialSummonsService.executeSummon(args, kind, args.player(context))
             }
         }
         it.params(argLiteral("cleartimeout")) {

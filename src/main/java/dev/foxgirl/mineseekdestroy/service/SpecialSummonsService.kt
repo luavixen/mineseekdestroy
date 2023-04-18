@@ -136,6 +136,10 @@ class SpecialSummonsService : Service() {
                 Blocks.CYAN_CARPET, Blocks.PURPLE_CARPET, Blocks.BLUE_CARPET,
                 Blocks.BROWN_CARPET, Blocks.GREEN_CARPET, Blocks.RED_CARPET, Blocks.BLACK_CARPET,
                 Blocks.RAIL, Blocks.ACTIVATOR_RAIL, Blocks.DETECTOR_RAIL, Blocks.POWERED_RAIL,
+                Blocks.WHEAT, Blocks.PUMPKIN_STEM, Blocks.MELON_STEM,
+                Blocks.ATTACHED_MELON_STEM, Blocks.ATTACHED_PUMPKIN_STEM,
+                Blocks.BEETROOTS, Blocks.POTATOES, Blocks.SUGAR_CANE, Blocks.COCOA,
+                Blocks.TRIPWIRE,
             )
 
             val slices = iterator {
@@ -192,12 +196,12 @@ class SpecialSummonsService : Service() {
                 val stack = ItemStack(COMPASS)
 
                 stack.getOrCreateNbt().also {
+                    it.put("display", NbtCompound().also { it.putString("Name", nameJSON) })
                     it.put("LodestonePos", nbtSpawn)
                     it.put("LodestoneDimension", nbtDimension)
                     it.put("LodestoneTracked", NbtByte.ONE)
                     it.putUuid("MsdTargetPlayer", target.uuid)
                 }
-                stack.getOrCreateSubNbt("display").putString("Name", nameJSON)
 
                 entity.giveItem(stack)
             }
@@ -576,8 +580,13 @@ class SpecialSummonsService : Service() {
         val summon = summons[options.kind]!!.invoke(options)
         summonListGame.add(summon)
         summonListRound.add(summon)
-        summon.perform()
         timeoutSet(summon.timeout())
+        try {
+            summon.perform()
+        } catch (cause : Exception) {
+            Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while performing:", summon.javaClass.simpleName)
+            Game.LOGGER.error("SpecialSummonsService exception while performing ${summon.javaClass.simpleName}", cause)
+        }
     }
 
     private fun summonEffects(options: Options) {
@@ -654,7 +663,17 @@ class SpecialSummonsService : Service() {
     }
 
     override fun update() {
-        summonListGame.forEach { it.update() }
+        val iterator = summonListGame.iterator()
+        while (iterator.hasNext()) {
+            val summon = iterator.next()
+            try {
+                summon.update()
+            } catch (cause : Exception) {
+                iterator.remove()
+                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while updating:", summon.javaClass.simpleName)
+                Game.LOGGER.error("SpecialSummonsService exception while updating ${summon.javaClass.simpleName}", cause)
+            }
+        }
 
         updateActive()
         updateBar()
@@ -665,11 +684,16 @@ class SpecialSummonsService : Service() {
     }
 
     fun handleRoundEnd() {
-        summonListRound.forEach {
-            if (it is Stoppable) {
-                it.stop()
-                summonListGame.remove(it)
-                Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", it.javaClass.simpleName)
+        for (summon in summonListRound) {
+            if (summon is Stoppable) {
+                summonListGame.remove(summon)
+                try {
+                    summon.stop()
+                    Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", summon.javaClass.simpleName)
+                } catch (cause : Exception) {
+                    Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while stopping:", summon.javaClass.simpleName)
+                    Game.LOGGER.error("SpecialSummonsService exception while stopping ${summon.javaClass.simpleName}", cause)
+                }
             }
         }
 
@@ -719,9 +743,6 @@ class SpecialSummonsService : Service() {
                 val player = this@SpecialSummonsService.context.getPlayer(playerEntity as ServerPlayerEntity)
                 summon(Options(pair, altar, player))
             }
-
-            // TODO: more robust removal of "display items" from player inventories
-            playerEntity.removeItem { ItemStack.areEqual(it, stack) }
 
             stack.count = 0
             input.removeStack(0, 1)
@@ -789,6 +810,9 @@ class SpecialSummonsService : Service() {
         console.sendInfo("timeout:", timeoutRemaining().seconds, "seconds")
         console.sendInfo("timeoutDuration:", timeoutDuration.seconds, "seconds")
 
+        console.sendInfo("textProvider:", textProvider)
+        console.sendInfo("textLastUpdate:", Duration.between(textLastUpdate, Instant.now()).seconds, "seconds")
+
         console.sendInfo("isScaldingEarth:", isScaldingEarth)
         console.sendInfo("isPollutedWater:", isPollutedWater)
         console.sendInfo("isAcidRain:", isAcidRain)
@@ -803,13 +827,14 @@ class SpecialSummonsService : Service() {
         summonListGame.forEach {
             if (it is Stoppable) {
                 it.stop()
-                Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", it.javaClass.simpleName)
+                Game.CONSOLE_OPERATORS.sendInfo("Summon stopped due to reset:", it.javaClass.simpleName)
             }
         }
         summonListGame.clear()
         summonListRound.clear()
 
         timeoutReset()
+        textClear()
     }
 
     fun executeClearTimeout(console: Console) {
@@ -817,20 +842,13 @@ class SpecialSummonsService : Service() {
         timeoutReset()
     }
 
-    fun executeSummon(console: Console, kind: TheologyPair) {
+    fun executeSummon(console: Console, kind: TheologyPair, player: GamePlayer) {
         console.sendInfo("Performing summon", kind.displayName, "manually")
 
         val altar: Altar = try {
             altars.values.random()
         } catch (cause : NoSuchElementException) {
             console.sendError("Failed, no altars available")
-            return
-        }
-
-        val player: GamePlayer = try {
-            players.find { it.isOperator }!!
-        } catch (cause : NullPointerException) {
-            console.sendError("Failed, no operators available")
             return
         }
 
@@ -875,12 +893,16 @@ class SpecialSummonsService : Service() {
         private fun summonItem(kind: TheologyPair, item: Item, vararg lore: Text): Pair<TheologyPair, ItemStack> {
             val stack = ItemStack(item)
 
-            val display = stack.getOrCreateSubNbt("display")
-
-            display.putString("Name", Text.Serializer.toJson(kind.displayName))
-            display.put("Lore", NbtList().also { list ->
-                lore.forEach { list.add(NbtString.of(Text.Serializer.toJson(it))) }
-            })
+            stack.getOrCreateNbt().also {
+                it.put("display", NbtCompound().also {
+                    it.putString("Name", Text.Serializer.toJson(kind.displayName))
+                    it.put("Lore", NbtList().also { list ->
+                        lore.forEach { list.add(NbtString.of(Text.Serializer.toJson(it))) }
+                    })
+                })
+                it.put("MsdIllegal", NbtByte.ONE)
+                it.put("MsdSummonItem", NbtByte.ONE)
+            }
 
             return kind to stack
         }

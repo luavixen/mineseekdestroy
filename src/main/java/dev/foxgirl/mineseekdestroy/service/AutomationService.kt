@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtString
 import net.minecraft.screen.GenericContainerScreenHandler
@@ -130,7 +131,7 @@ class AutomationService : Service() {
 
     fun executeOpenIpad(console: Console) {
         if (players.none { it.isOperator }) {
-            console.sendError("Cannot open iPad, nobody on team", GameTeam.OPERATOR.displayName)
+            console.sendError("Cannot open iPad, no operators available")
         }
 
         if (cooldownFlag.getAndSet(true)) {
@@ -297,9 +298,11 @@ class AutomationService : Service() {
             private val slots = arrayOfNulls<ItemStack>(mapping.size)
             init {
                 for (i in 0 until Math.min(mapping.size, players.size)) {
-                    val nbt = NbtCompound().also { it.put("SkullOwner", NbtString.of(players[i].name)) }
-                    val stack = ItemStack(Items.PLAYER_HEAD).also { it.nbt = nbt }
-                    slots[i] = stack
+                    val nbt = NbtCompound().also {
+                        it.put("SkullOwner", NbtString.of(players[i].name))
+                        it.put("MsdIllegal", NbtByte.ONE)
+                    }
+                    slots[i] = ItemStack(Items.PLAYER_HEAD).also { it.nbt = nbt }
                 }
             }
 
@@ -357,8 +360,13 @@ class AutomationService : Service() {
             fun open() = flags.none { it }
         }
 
-        private val itemLocked = ItemStack(Items.RED_CONCRETE).setCustomName(Text.of("LOCKED IN"))
-        private val itemOpen = ItemStack(Items.LIME_CONCRETE).setCustomName(Text.of("OPEN"))
+        private fun ItemStack.setIllegal(): ItemStack {
+            setSubNbt("MsdIllegal", NbtByte.ONE)
+            return this
+        }
+
+        private val itemLocked = ItemStack(Items.RED_CONCRETE).setCustomName(Text.of("LOCKED IN")).setIllegal()
+        private val itemOpen = ItemStack(Items.LIME_CONCRETE).setCustomName(Text.of("OPEN")).setIllegal()
 
         private val backgroundYellow: BackgroundInventoryPart
         private val backgroundBlue: BackgroundInventoryPart
@@ -371,9 +379,9 @@ class AutomationService : Service() {
         private val mappingButtons: IntArray
 
         init {
-            val itemYellow = ItemStack(Items.YELLOW_STAINED_GLASS_PANE).setCustomName(Text.of("TEAM YELLOW"))
-            val itemBlue = ItemStack(Items.BLUE_STAINED_GLASS_PANE).setCustomName(Text.of("TEAM BLUE"))
-            val itemSkip = ItemStack(Items.LIME_STAINED_GLASS_PANE).setCustomName(Text.of("SKIP!"))
+            val itemYellow = ItemStack(Items.YELLOW_STAINED_GLASS_PANE).setCustomName(Text.of("TEAM YELLOW")).setIllegal()
+            val itemBlue = ItemStack(Items.BLUE_STAINED_GLASS_PANE).setCustomName(Text.of("TEAM BLUE")).setIllegal()
+            val itemSkip = ItemStack(Items.LIME_STAINED_GLASS_PANE).setCustomName(Text.of("SKIP!")).setIllegal()
 
             val mappingYellow = buildList {
                 addAll(9..11)

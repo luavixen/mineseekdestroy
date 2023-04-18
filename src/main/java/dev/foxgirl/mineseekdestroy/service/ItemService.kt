@@ -8,6 +8,7 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
 
 class ItemService : Service() {
@@ -56,6 +57,10 @@ class ItemService : Service() {
                     inventory.insertStack(ItemStack(powderItem, count))
                 }
                 if (illegalItems.contains(item)) {
+                    inventory.setStack(i, ItemStack.EMPTY)
+                }
+                val nbt: NbtCompound? = stack.nbt
+                if (nbt != null && nbt.contains("MsdIllegal")) {
                     inventory.setStack(i, ItemStack.EMPTY)
                 }
             }
