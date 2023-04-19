@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.service.*;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
-import dev.foxgirl.mineseekdestroy.util.collect.ArrayMap;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableMap;
 import net.minecraft.entity.Entity;
