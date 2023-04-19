@@ -221,7 +221,7 @@ public final class GameContext {
     private static final PlayerPredicate isPlayerNormal =
         (player) -> (!player.isOperator());
     private static final PlayerPredicate isPlayerIn =
-        (player) -> (player.isPlaying() && player.isAlive());
+        (player) -> (!player.isOperator() && (player.isPlaying() && player.isAlive()));
     private static final PlayerPredicate isPlayerOut =
         (player) -> (!player.isOperator() && (!player.isPlaying() || !player.isAlive()));
 
