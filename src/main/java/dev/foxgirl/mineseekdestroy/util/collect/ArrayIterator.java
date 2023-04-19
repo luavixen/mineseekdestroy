@@ -12,7 +12,7 @@ final class ArrayIterator<E> implements ListIterator<E> {
         this.index = index;
     }
 
-    @Override public boolean hasNext() { return index == elements.length; }
+    @Override public boolean hasNext() { return index != elements.length; }
     @Override public boolean hasPrevious() { return index != 0; }
 
     @Override public int nextIndex() { return index; }

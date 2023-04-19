@@ -1,7 +1,7 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
-import com.google.common.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.Game;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;

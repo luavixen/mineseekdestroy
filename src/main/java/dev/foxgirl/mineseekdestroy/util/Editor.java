@@ -278,7 +278,7 @@ public final class Editor {
         var server = Game.getGame().getServer();
 
         for (var task : tasks) {
-            Game.LOGGER.info("Editor executing task for " + task.operations.length + " operations");
+            Game.LOGGER.info("Editor executing task for " + task.operations.length + " operation(s)");
             server.execute(task);
         }
     }

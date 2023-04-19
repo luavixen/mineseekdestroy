@@ -1,6 +1,8 @@
 package dev.foxgirl.mineseekdestroy
 
 import dev.foxgirl.mineseekdestroy.util.Region
+import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
+import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks.*
 import net.minecraft.util.math.BlockPos
@@ -63,7 +65,7 @@ sealed interface GameProperties {
         override val borderSize = 0.0
         override val borderCenter = Vec3d(0.0, 0.0, 0.0)
 
-        override val interactableBlocks = setOf<Block>(
+        override val interactableBlocks = immutableSetOf<Block>(
             CHEST,
             BARREL,
             SMOKER,
@@ -88,7 +90,7 @@ sealed interface GameProperties {
             QUARTZ_SLAB,
         )
 
-        override val inflammableBlocks = setOf<Block>(
+        override val inflammableBlocks = immutableSetOf<Block>(
             FIRE, AIR, CAVE_AIR,
             ACACIA_TRAPDOOR,
             BLACKSTONE_WALL,
@@ -159,7 +161,7 @@ sealed interface GameProperties {
         override val borderSize = 200.0
         override val borderCenter = Vec3d(70.5, 0.0, -55.5)
 
-        override val interactableBlocks = Empty.interactableBlocks + setOf(
+        override val interactableBlocks = (Empty.interactableBlocks + setOf(
             ACACIA_DOOR,
             BIRCH_DOOR,
             DARK_OAK_DOOR,
@@ -170,13 +172,13 @@ sealed interface GameProperties {
             WARPED_DOOR,
             MANGROVE_FENCE_GATE,
             BIRCH_TRAPDOOR,
-        )
+        )).toImmutableSet()
 
-        override val inflammableBlocks = Empty.inflammableBlocks + setOf(
+        override val inflammableBlocks = (Empty.inflammableBlocks + setOf(
             BARREL,
             BRICKS,
             SANDSTONE_WALL,
-        )
+        )).toImmutableSet()
 
     }
 
@@ -206,7 +208,7 @@ sealed interface GameProperties {
         override val borderSize = 250.0
         override val borderCenter = Vec3d(870.0, 0.0, -65.0)
 
-        override val interactableBlocks = Empty.interactableBlocks + setOf(
+        override val interactableBlocks = (Empty.interactableBlocks + setOf(
             ACACIA_DOOR,
             BIRCH_DOOR,
             DARK_OAK_DOOR,
@@ -217,11 +219,11 @@ sealed interface GameProperties {
             CRIMSON_DOOR,
             WARPED_DOOR,
             DARK_OAK_TRAPDOOR,
-        )
+        )).toImmutableSet()
 
-        override val inflammableBlocks = Empty.inflammableBlocks + setOf(
+        override val inflammableBlocks = (Empty.inflammableBlocks + setOf(
             DEEPSLATE_TILE_SLAB,
-        )
+        )).toImmutableSet()
 
     }
 
@@ -251,7 +253,7 @@ sealed interface GameProperties {
         override val borderSize = 333.0
         override val borderCenter = Region(BlockPos(-1280, 62, 172), BlockPos(-1309, 62, 145)).center
 
-        override val interactableBlocks = Empty.interactableBlocks + setOf(
+        override val interactableBlocks = (Empty.interactableBlocks + setOf(
             ACACIA_DOOR,
             BIRCH_DOOR,
             DARK_OAK_DOOR,
@@ -264,15 +266,15 @@ sealed interface GameProperties {
             OAK_FENCE_GATE,
             CRIMSON_FENCE_GATE,
             WARPED_FENCE_GATE,
-        )
+        )).toImmutableSet()
 
-        override val inflammableBlocks = Empty.inflammableBlocks + setOf(
+        override val inflammableBlocks = (Empty.inflammableBlocks + setOf(
             ANDESITE,
             CAMPFIRE,
             COBBLESTONE,
             NETHERRACK,
             OAK_LOG,
-        )
+        )).toImmutableSet()
 
     }
 

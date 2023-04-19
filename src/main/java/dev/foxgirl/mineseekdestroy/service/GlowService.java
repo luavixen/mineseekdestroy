@@ -1,9 +1,9 @@
 package dev.foxgirl.mineseekdestroy.service;
 
-import com.google.common.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntity;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityTrackerUpdateS2CPacket;
 import dev.foxgirl.mineseekdestroy.util.Fuck;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;

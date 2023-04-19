@@ -6,13 +6,13 @@ import dev.foxgirl.mineseekdestroy.mixin.MixinEntityPositionS2CPacket;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Fuck;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -58,7 +58,7 @@ public final class InvisibilityService extends Service {
 
     private void broadcast() {
         var context = getContext();
-        var players = new ArrayList<>(context.playerManager.getPlayerList());
+        var players = ImmutableList.copyOf(context.playerManager.getPlayerList());
         for (var target : players) {
             for (var other : players) {
                 if (!other.isAlive()) continue;

@@ -298,7 +298,7 @@ public final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K
         this.entries = entries;
         this.shift = shift;
 
-        this.elements = elements.collect();
+        this.elements = elements.collect(Entry[].class);
     }
 
     private Entry<K, V> findEntry(Object key) {

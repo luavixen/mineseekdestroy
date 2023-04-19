@@ -1,10 +1,11 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories
+import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
+import dev.foxgirl.mineseekdestroy.util.collect.toImmutableList
 import net.minecraft.block.Blocks
 import net.minecraft.block.ChestBlock
 import net.minecraft.block.entity.BarrelBlockEntity
@@ -61,7 +62,7 @@ class LootService : Service() {
         }
 
         val lootCount = game.getRuleInt(Game.RULE_LOOT_COUNT)
-        val lootTable = Inventories.list(template).toMutableList()
+        val lootTable = Inventories.list(template).toImmutableList()
         if (lootTable.isEmpty()) {
             console.sendError("Cannot create loot table, template chest(s) at ${properties.templateLoottable} are empty")
             return
@@ -87,7 +88,7 @@ class LootService : Service() {
 
     private companion object {
 
-        private val containerBlocks = ImmutableSet.copyOf(arrayOf(
+        private val containerBlocks = immutableSetOf(
             Blocks.CHEST,
             Blocks.BARREL,
             Blocks.SHULKER_BOX,
@@ -107,7 +108,7 @@ class LootService : Service() {
             Blocks.GREEN_SHULKER_BOX,
             Blocks.RED_SHULKER_BOX,
             Blocks.BLACK_SHULKER_BOX,
-        ))
+        )
 
         private fun inventory(entity: BlockEntity?): Inventory? {
             if (entity is ChestBlockEntity) {

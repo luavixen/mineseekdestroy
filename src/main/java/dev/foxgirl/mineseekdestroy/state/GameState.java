@@ -108,7 +108,10 @@ public abstract class GameState {
                 return ActionResult.PASS;
             }
         } else {
-            if (blockState.getBlock() == Blocks.CRIMSON_BUTTON) {
+            if (
+                blockState.getBlock() == Blocks.LEVER &&
+                world.getBlockState(blockHit.getBlockPos().down()).getBlock() == Blocks.OBSERVER
+            ) {
                 return ActionResult.PASS;
             }
         }

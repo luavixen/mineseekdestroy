@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
+import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ArmorItem
 import net.minecraft.item.DyeableItem
@@ -100,15 +101,15 @@ class ArmorService : Service() {
                 )
             }
 
-            loadouts = buildMap(8) {
-                put(NONE, loadoutEmpty())
-                put(SKIP, loadoutEmpty())
-                put(OPERATOR, loadoutEmpty())
-                put(PLAYER_DUEL, loadoutDuel())
-                put(PLAYER_BLACK, loadoutBlack())
-                put(PLAYER_YELLOW, loadoutNormal(colorYellow))
-                put(PLAYER_BLUE, loadoutNormal(colorBlue))
-            }
+            loadouts = immutableMapOf(
+                NONE to loadoutEmpty(),
+                SKIP to loadoutEmpty(),
+                OPERATOR to loadoutEmpty(),
+                PLAYER_DUEL to loadoutDuel(),
+                PLAYER_BLACK to loadoutBlack(),
+                PLAYER_YELLOW to loadoutNormal(colorYellow),
+                PLAYER_BLUE to loadoutNormal(colorBlue),
+            )
         }
 
         private fun armorSet(list: MutableList<ItemStack>, team: GameTeam): Boolean {

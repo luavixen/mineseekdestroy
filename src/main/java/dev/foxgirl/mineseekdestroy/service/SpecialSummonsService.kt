@@ -6,6 +6,10 @@ import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
+import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
+import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
+import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
@@ -113,7 +117,7 @@ class SpecialSummonsService : Service() {
     private inner class DeepDeepSummon(options: Options) : Summon(options) {
         override fun timeout(): Duration = Duration.ofSeconds(30)
         override fun perform() {
-            val blocks = setOf(
+            val blocks = immutableSetOf<Block>(
                 Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING, Blocks.BIRCH_SAPLING,
                 Blocks.JUNGLE_SAPLING, Blocks.ACACIA_SAPLING, Blocks.DARK_OAK_SAPLING,
                 Blocks.MANGROVE_PROPAGULE, Blocks.GRASS, Blocks.TALL_GRASS,
@@ -363,11 +367,12 @@ class SpecialSummonsService : Service() {
 
     private inner class BarterBarterSummon(options: Options) : Summon(options) {
         override fun perform() {
-            val items = setOf<Item>(
+            val items = immutableSetOf<Item>(
                 SHIELD, CARROT_ON_A_STICK, FISHING_ROD, TIPPED_ARROW,
                 COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, COMPASS,
                 ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
             )
+
             for ((_, entity) in playerEntitiesNormal) {
                 entity.removeItem { items.contains(it.item) }
             }
@@ -385,7 +390,7 @@ class SpecialSummonsService : Service() {
 
     private inner class FlameFlameSummon(options: Options) : Summon(options) {
         override fun perform() {
-            val blocks = setOf(
+            val blocks = immutableSetOf<Block>(
                 Blocks.WATER,
                 Blocks.SEAGRASS, Blocks.TALL_SEAGRASS,
                 Blocks.KELP, Blocks.KELP_PLANT,
@@ -407,7 +412,7 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    private val summons = mapOf<TheologyPair, (Options) -> Summon>(
+    private val summons = immutableMapOf<TheologyPair, (Options) -> Summon>(
         TheologyPair(DEEP, DEEP) to ::DeepDeepSummon,
         TheologyPair(DEEP, OCCULT) to ::DeepOccultSummon,
         TheologyPair(DEEP, COSMOS) to ::DeepCosmosSummon,
@@ -633,7 +638,7 @@ class SpecialSummonsService : Service() {
     }
 
     private fun updateActive() {
-        val active = summonListGame.map { it.kind }.toSet()
+        val active = summonListGame.map { it.kind }.toImmutableSet()
         isScaldingEarth = active.contains(TheologyPair(FLAME, FLAME))
         isPollutedWater = active.contains(TheologyPair(DEEP, BARTER))
         isAcidRain = active.contains(TheologyPair(DEEP, COSMOS))
@@ -876,14 +881,14 @@ class SpecialSummonsService : Service() {
             setWeather(24000 * 10, 0, false, false)
         }
 
-        private val theologyPairsDouble = setOf(
+        private val theologyPairsDouble = immutableSetOf<TheologyPair>(
             TheologyPair(DEEP, DEEP),
             TheologyPair(OCCULT, OCCULT),
             TheologyPair(COSMOS, COSMOS),
             TheologyPair(BARTER, BARTER),
             TheologyPair(FLAME, FLAME),
         )
-        private val theologyPairsOnce = setOf(
+        private val theologyPairsOnce = immutableSetOf<TheologyPair>(
             TheologyPair(DEEP, OCCULT),
             TheologyPair(DEEP, COSMOS),
             TheologyPair(DEEP, BARTER),
@@ -907,7 +912,7 @@ class SpecialSummonsService : Service() {
             return kind to stack
         }
 
-        private val summonItems = mapOf<TheologyPair, ItemStack>(
+        private val summonItems = immutableMapOf<TheologyPair, ItemStack>(
             summonItem(
                 TheologyPair(DEEP, DEEP), WATER_BUCKET,
                 Text.of("Flood the entire map?"),
@@ -971,7 +976,7 @@ class SpecialSummonsService : Service() {
             )
         )
 
-        private val textProvidersSuccess = mapOf<TheologyPair, (Options) -> TextProvider>(
+        private val textProvidersSuccess = immutableMapOf<TheologyPair, (Options) -> TextProvider>(
             TheologyPair(DEEP, OCCULT) to { options -> object : TextProvider {
                 override val title =
                     Text.of("Star and compass, map and sextant;")
@@ -1130,7 +1135,7 @@ class SpecialSummonsService : Service() {
             } },
         )
 
-        private val textProvidersFailure = mapOf<Failure, (Options) -> TextProvider>(
+        private val textProvidersFailure = immutableMapOf<Failure, (Options) -> TextProvider>(
             Failure.TIMEOUT to { object : FailureTextProvider(it) {
                 override val subtitle =
                     Text.of("Let the cooldown complete first!")

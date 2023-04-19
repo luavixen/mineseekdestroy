@@ -24,7 +24,11 @@ class ArrayBuilder<E> {
     }
 
     final E[] collect() {
-        return Arrays.copyOf(elements, size);
+        return elements.length == size ? elements : Arrays.copyOf(elements, size);
+    }
+
+    final <T> T[] collect(Class<T[]> clazz) {
+        return Arrays.copyOf(elements, size, clazz);
     }
 
 }

@@ -1,9 +1,9 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import com.google.common.collect.ImmutableSet
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
+import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -73,7 +73,7 @@ class ItemService : Service() {
 
         private val illegalItems = Game.ILLEGAL_ITEMS
 
-        private val powderItems = ImmutableSet.copyOf(arrayOf(
+        private val powderItems = immutableSetOf(
             Items.YELLOW_CONCRETE_POWDER,
             Items.BLUE_CONCRETE_POWDER,
             Items.BLACK_CONCRETE_POWDER,
@@ -90,7 +90,7 @@ class ItemService : Service() {
             Items.PURPLE_CONCRETE_POWDER,
             Items.GREEN_CONCRETE_POWDER,
             Items.RED_CONCRETE_POWDER,
-        ))
+        )
 
     }
 

@@ -3,6 +3,8 @@ package dev.foxgirl.mineseekdestroy;
 import dev.foxgirl.mineseekdestroy.service.*;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.collect.ArrayMap;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableMap;
 import net.minecraft.entity.Entity;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
@@ -50,7 +52,7 @@ public final class GameContext {
 
     public final @NotNull PlayerManager playerManager;
 
-    private final Map<UUID, GamePlayer> playerMap;
+    private final HashMap<UUID, GamePlayer> playerMap;
     private final Object playerMapLock;
 
     public final @NotNull InventoryService inventoryService;
@@ -72,6 +74,15 @@ public final class GameContext {
     public final @NotNull SpecialPianoService specialPianoService;
 
     private final Service[] services;
+
+    private List<GamePlayer> cachePlayers;
+    private List<GamePlayer> cachePlayersNormal;
+    private List<GamePlayer> cachePlayersIn;
+    private List<GamePlayer> cachePlayersOut;
+    private Map<GamePlayer, ServerPlayerEntity> cachePlayerEntities;
+    private Map<GamePlayer, ServerPlayerEntity> cachePlayerEntitiesNormal;
+    private Map<GamePlayer, ServerPlayerEntity> cachePlayerEntitiesIn;
+    private Map<GamePlayer, ServerPlayerEntity> cachePlayerEntitiesOut;
 
     GameContext(@NotNull Game game) {
         Objects.requireNonNull(game, "Argument 'game'");
@@ -203,33 +214,6 @@ public final class GameContext {
         }
     }
 
-    public void syncPlayers() {
-        var players = playerManager.getPlayerList().toArray();
-        synchronized (playerMapLock) {
-            for (var player : players) getPlayer((ServerPlayerEntity) player);
-        }
-    }
-
-    public @NotNull List<@NotNull GamePlayer> getPlayers() {
-        Object[] players;
-        synchronized (playerMapLock) {
-            players = playerMap.values().toArray();
-        }
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        List<GamePlayer> list = (List) Arrays.asList(players);
-        return list;
-    }
-
-    public @NotNull List<@NotNull GamePlayer> getPlayers(@NotNull Collection<? extends ServerPlayerEntity> collection) {
-        Objects.requireNonNull(collection, "Argument 'collection'");
-        var entities = new ArrayList<ServerPlayerEntity>(collection);
-        var players = new ArrayList<GamePlayer>(entities.size());
-        synchronized (playerMapLock) {
-            for (ServerPlayerEntity entity : entities) players.add(getPlayer(entity));
-        }
-        return players;
-    }
-
     @FunctionalInterface
     private interface PlayerPredicate {
         boolean test(GamePlayer player);
@@ -242,43 +226,87 @@ public final class GameContext {
     private static final PlayerPredicate isPlayerOut =
         (player) -> (!player.isOperator() && (!player.isPlaying() || !player.isAlive()));
 
-    private List<GamePlayer> getPlayersFiltered(PlayerPredicate predicate) {
-        var players = getPlayers();
-        var results = new ArrayList<GamePlayer>(players.size());
-        for (var player : players) if (predicate.test(player)) results.add(player);
-        return results;
+    private List<GamePlayer> filterPlayers(List<GamePlayer> playerList, PlayerPredicate predicate) {
+        var builder = ImmutableList.<GamePlayer>builder(playerList.size());
+        for (var player : playerList) {
+            if (predicate.test(player)) {
+                builder.add(player);
+            }
+        }
+        return builder.build();
+    }
+    private Map<GamePlayer, ServerPlayerEntity> filterPlayerEntities(Map<GamePlayer, ServerPlayerEntity> playerMap, PlayerPredicate predicate) {
+        var builder = ImmutableMap.<GamePlayer, ServerPlayerEntity>builder(playerMap.size());
+        for (var entry : playerMap.entrySet()) {
+            if (predicate.test(entry.getKey())) {
+                builder.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder.build();
     }
 
+    public void syncPlayers() {
+        var entities = playerManager.getPlayerList().toArray();
+
+        ImmutableMap.Builder<GamePlayer, ServerPlayerEntity> playerEntitiesBuilder = ImmutableMap.builder(entities.length);
+        ImmutableMap<GamePlayer, ServerPlayerEntity> playerEntities;
+
+        ImmutableList<GamePlayer> playerList;
+
+        synchronized (playerMapLock) {
+            for (int i = 0, length = entities.length; i < length; i++) {
+                var playerEntity = (ServerPlayerEntity) entities[i];
+                var player = getPlayer(playerEntity);
+                playerEntitiesBuilder.put(player, playerEntity);
+            }
+            playerList = ImmutableList.copyOf(playerMap.values());
+        }
+
+        playerEntities = playerEntitiesBuilder.build();
+
+        cachePlayers = playerList;
+        cachePlayersNormal = filterPlayers(playerList, isPlayerNormal);
+        cachePlayersIn = filterPlayers(playerList, isPlayerIn);
+        cachePlayersOut = filterPlayers(playerList, isPlayerOut);
+        cachePlayerEntities = playerEntities;
+        cachePlayerEntitiesNormal = filterPlayerEntities(playerEntities, isPlayerNormal);
+        cachePlayerEntitiesIn = filterPlayerEntities(playerEntities, isPlayerIn);
+        cachePlayerEntitiesOut = filterPlayerEntities(playerEntities, isPlayerOut);
+    }
+
+    public @NotNull List<@NotNull GamePlayer> getPlayers(@NotNull Collection<? extends ServerPlayerEntity> collection) {
+        Objects.requireNonNull(collection, "Argument 'collection'");
+        var entities = ImmutableList.<ServerPlayerEntity>copyOf(collection);
+        var players = ImmutableList.<GamePlayer>builder(entities.size());
+        synchronized (playerMapLock) {
+            for (ServerPlayerEntity entity : entities) players.add(getPlayer(entity));
+        }
+        return players.build();
+    }
+
+    public @NotNull List<@NotNull GamePlayer> getPlayers() {
+        return Objects.requireNonNull(cachePlayers, "Expression 'cachePlayers'");
+    }
     public @NotNull List<@NotNull GamePlayer> getPlayersNormal() {
-        return getPlayersFiltered(isPlayerNormal);
+        return Objects.requireNonNull(cachePlayersNormal, "Expression 'cachePlayersNormal'");
     }
     public @NotNull List<@NotNull GamePlayer> getPlayersIn() {
-        return getPlayersFiltered(isPlayerIn);
+        return Objects.requireNonNull(cachePlayersIn, "Expression 'cachePlayersIn'");
     }
     public @NotNull List<@NotNull GamePlayer> getPlayersOut() {
-        return getPlayersFiltered(isPlayerOut);
+        return Objects.requireNonNull(cachePlayersOut, "Expression 'cachePlayersOut'");
     }
-
-    private Map<GamePlayer, ServerPlayerEntity> associatePlayersWithEntities(Collection<GamePlayer> players) {
-        var results = new ArrayMap<GamePlayer, ServerPlayerEntity>(players.size());
-        for (var player : players) {
-            var entity = player.getEntity();
-            if (entity != null) results.putUnsafe(player, entity);
-        }
-        return results;
-    }
-
     public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntities() {
-        return associatePlayersWithEntities(getPlayers());
+        return Objects.requireNonNull(cachePlayerEntities, "Expression 'cachePlayerEntities'");
     }
     public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesNormal() {
-        return associatePlayersWithEntities(getPlayersNormal());
+        return Objects.requireNonNull(cachePlayerEntitiesNormal, "Expression 'cachePlayerEntitiesNormal'");
     }
     public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesIn() {
-        return associatePlayersWithEntities(getPlayersIn());
+        return Objects.requireNonNull(cachePlayerEntitiesIn, "Expression 'cachePlayerEntitiesIn'");
     }
     public @NotNull Map<@NotNull GamePlayer, @NotNull ServerPlayerEntity> getPlayerEntitiesOut() {
-        return associatePlayersWithEntities(getPlayersOut());
+        return Objects.requireNonNull(cachePlayerEntitiesOut, "Expression 'cachePlayerEntitiesOut'");
     }
 
     public @Nullable GamePlayer getPlayer(@NotNull UUID uuid) {

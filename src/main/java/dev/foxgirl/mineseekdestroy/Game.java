@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy;
 
-import com.google.common.collect.ImmutableSet;
 import dev.foxgirl.mineseekdestroy.command.Command;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
@@ -9,6 +8,7 @@ import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Editor;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
 import dev.foxgirl.mineseekdestroy.util.Scheduler;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
