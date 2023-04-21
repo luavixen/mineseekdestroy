@@ -55,7 +55,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdMessageTeamBroadcast", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_AUTOMATION_ENABLED =
-        GameRuleRegistry.register("msdAutomationEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+        GameRuleRegistry.register("msdAutomationEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_AUTOMATION_DELAY_DURATION =
         GameRuleRegistry.register("msdAutomationDelayDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(5.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_AUTOMATION_INTERVAL_DURATION =

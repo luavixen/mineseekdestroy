@@ -176,12 +176,14 @@ public final class GameContext {
 
         server.setDifficulty(Difficulty.NORMAL, true);
 
+        game.setRuleInt(GameRules.RANDOM_TICK_SPEED, GameRules.DEFAULT_RANDOM_TICK_SPEED);
         game.setRuleInt(GameRules.PLAYERS_SLEEPING_PERCENTAGE, 200);
         game.setRuleBoolean(GameRules.KEEP_INVENTORY, true);
         game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
         game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
 
-        game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false);
+        game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true);
+        game.setRuleBoolean(Game.RULE_SUMMONS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);

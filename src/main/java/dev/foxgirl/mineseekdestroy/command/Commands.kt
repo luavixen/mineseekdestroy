@@ -28,12 +28,12 @@ internal fun setup() {
         it.params(argLiteral("start")) {
             fun register(literal: String, properties: () -> GameProperties) {
                 it.params(argLiteral(literal)) {
-                    it.params(argLiteral("automated")) {
+                    it.params(argLiteral("noauto")) {
                         it.action { args ->
                             if (game.context == null) {
                                 game.initialize(properties())
-                                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true)
-                                args.sendInfo("Started new game with automation")
+                                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false)
+                                args.sendInfo("Started new game WITHOUT automation")
                             } else {
                                 args.sendError("Cannot start new game, already running")
                             }
@@ -42,7 +42,7 @@ internal fun setup() {
                     it.action { args ->
                         if (game.context == null) {
                             game.initialize(properties())
-                            args.sendInfo("Started new game")
+                            args.sendInfo("Started new game with automation")
                         } else {
                             args.sendError("Cannot start new game, already running")
                         }
