@@ -468,15 +468,20 @@ internal fun setup() {
                 context.specialSummonsService.executeClearTimeout(args)
             }
         }
-        it.params(argLiteral("state")) {
-            it.params(argLiteral("debug")) {
+        it.params(argLiteral("debug")) {
+            it.params(argLiteral("print")) {
                 it.actionWithContext { args, context ->
-                    context.specialSummonsService.executeStateDebug(args)
+                    context.specialSummonsService.executeDebugPrint(args)
                 }
             }
             it.params(argLiteral("reset")) {
                 it.actionWithContext { args, context ->
-                    context.specialSummonsService.executeStateReset(args)
+                    context.specialSummonsService.executeDebugReset(args)
+                }
+            }
+            it.params(argLiteral("showtext")) {
+                it.actionWithContext { args, context ->
+                    context.specialSummonsService.executeDebugShowText(args)
                 }
             }
         }

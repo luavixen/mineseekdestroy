@@ -609,11 +609,13 @@ class SpecialSummonsService : Service() {
 
         val failure = failCheck(options)
         if (failure != null) {
+            Game.CONSOLE_PLAYERS.sendInfo(options.team.displayName, "failed a summon")
             Game.CONSOLE_OPERATORS.sendInfo("Summon", options.kind.displayName, "failed:", failure)
 
             textProvider = textProvidersFailure[failure]!!(options)
             failPerform(options)
         } else {
+            Game.CONSOLE_PLAYERS.sendInfo(options.team.displayName, "summoned", options.kind.displayName)
             Game.CONSOLE_OPERATORS.sendInfo("Summon", options.kind.displayName, "success!")
 
             textProvider = textProvidersSuccess[options.kind]!!(options)
@@ -630,9 +632,10 @@ class SpecialSummonsService : Service() {
         val tooltip: Text
     }
 
+    private abstract class DefaultTextProvider(val options: Options) : TextProvider
     private abstract class FailureTextProvider(val options: Options) : TextProvider {
         override val title: Text =
-            Text.of("A summon has failed!")
+            Text.of("Summon failed!")
         override val tooltip: Text =
             Text.empty().append(options.team.displayName).append(" failed to summon.")
     }
@@ -794,7 +797,7 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    fun executeStateDebug(console: Console) {
+    fun executeDebugPrint(console: Console) {
         console.sendInfo("--- SUMMON SYSTEM STATE")
 
         fun sendSummons(summons: List<Summon>) {
@@ -826,7 +829,7 @@ class SpecialSummonsService : Service() {
         console.sendInfo("---")
     }
 
-    fun executeStateReset(console: Console) {
+    fun executeDebugReset(console: Console) {
         console.sendInfo("Resetting summon system state")
 
         summonListGame.forEach {
@@ -840,6 +843,38 @@ class SpecialSummonsService : Service() {
 
         timeoutReset()
         textClear()
+    }
+
+    fun executeDebugShowText(console: Console) {
+        console.sendInfo("Displaying all summon TextProviders")
+
+        val iterator = iterator {
+            fun options() = Options(TheologyPair(DEEP, FLAME), altars.values.random(), players.random())
+
+            for ((key, provider) in textProvidersSuccess) {
+                yield(key.displayName to provider(options()))
+            }
+
+            for ((key, provider) in textProvidersFailure) {
+                yield(Text.of(key.toString()) to provider(options()))
+            }
+        }
+
+        Scheduler.interval(3.0) { schedule ->
+            if (iterator.hasNext()) {
+                val (name, provider) = iterator.next()
+
+                console.sendInfo("Displaying TextProvider for", name)
+
+                textProvider = provider
+                textUpdateFull()
+            } else {
+                console.sendInfo("Finished displaying TextProviders")
+
+                textClear()
+                schedule.cancel()
+            }
+        }
     }
 
     fun executeClearTimeout(console: Console) {
@@ -977,7 +1012,7 @@ class SpecialSummonsService : Service() {
         )
 
         private val textProvidersSuccess = immutableMapOf<TheologyPair, (Options) -> TextProvider>(
-            TheologyPair(DEEP, OCCULT) to { options -> object : TextProvider {
+            TheologyPair(DEEP, OCCULT) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.of("Star and compass, map and sextant;")
                 override val subtitle =
@@ -989,7 +1024,7 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" received trackers for enemy players.")
             } },
-            TheologyPair(DEEP, COSMOS) to { options -> object : TextProvider {
+            TheologyPair(DEEP, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.of("Whirling clouds cast a stinging spittle!")
                 override val subtitle =
@@ -999,9 +1034,9 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" summoned stinging rain.")
             } },
-            TheologyPair(DEEP, BARTER) to { options -> object : TextProvider {
+            TheologyPair(DEEP, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Flowing waters boil and bubble, you feel a bath would bring you trouble...")
+                    Text.of("Flowing waters boil and bubble...")
                 override val subtitle =
                     Text.of("Bodies of water are now harmful!")
                 override val tooltip =
@@ -1009,7 +1044,7 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" poisoned the water.")
             } },
-            TheologyPair(DEEP, FLAME) to { options -> object : TextProvider {
+            TheologyPair(DEEP, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.of("From the heart of the forge,")
                 override val subtitle =
@@ -1021,9 +1056,9 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" summoned flint, steel, and anvils.")
             } },
-            TheologyPair(OCCULT, COSMOS) to { options -> object : TextProvider {
+            TheologyPair(OCCULT, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Shining stars avert their gaze, a creeping void floods the maze...")
+                    Text.of("A creeping void floods the maze...")
                 override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
@@ -1033,7 +1068,7 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" has fullbright visibility.")
             } },
-            TheologyPair(OCCULT, BARTER) to { options -> object : TextProvider {
+            TheologyPair(OCCULT, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.of("You only have one shot.")
                 override val subtitle =
@@ -1045,9 +1080,9 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" was granted powerful swords.")
             } },
-            TheologyPair(OCCULT, FLAME) to { options -> object : TextProvider {
+            TheologyPair(OCCULT, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Horrifying screams come from the darkness below!")
+                    Text.of("Horrifying screams come from below!")
                 override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
@@ -1057,9 +1092,9 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" summoned a ghast!")
             } },
-            TheologyPair(COSMOS, BARTER) to { options -> object : TextProvider {
+            TheologyPair(COSMOS, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Tis' a good season; A feast fit for royals!")
+                    Text.of("A feast fit for royals!")
                 override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
@@ -1069,7 +1104,7 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" summoned a steak feast.")
             } },
-            TheologyPair(COSMOS, FLAME) to { options -> object : TextProvider {
+            TheologyPair(COSMOS, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.of("A lingering flame burns inside!")
                 override val subtitle =
@@ -1081,7 +1116,7 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" gained a health bonus.")
             } },
-            TheologyPair(BARTER, FLAME) to { options -> object : TextProvider {
+            TheologyPair(BARTER, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.of("Oh, the weather outside is frightful...")
                 override val subtitle =
@@ -1093,7 +1128,7 @@ class SpecialSummonsService : Service() {
                         .append(options.team.displayName)
                         .append(" gained blocks of snow.")
             } },
-            TheologyPair(DEEP, DEEP) to { options -> object : TextProvider {
+            TheologyPair(DEEP, DEEP) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.literal("FLASH FLOOD").formatted(DEEP.color)
                 override val subtitle =
@@ -1101,15 +1136,19 @@ class SpecialSummonsService : Service() {
                 override val tooltip =
                     Text.of("The map is flooding.")
             } },
-            TheologyPair(OCCULT, OCCULT) to { options -> object : TextProvider {
+            TheologyPair(OCCULT, OCCULT) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.literal("DESPERATION").formatted(OCCULT.color)
                 override val subtitle =
-                    Text.of("The health of the main teams has been halved, and each black team member has gained two kills!")
+                    Text.empty()
+                        .append(GameTeam.PLAYER_BLACK.displayName)
+                        .append(" gains many kills, halving everyone's health.")
                 override val tooltip =
-                    Text.of("Team health has been halved, and all of black gained two kills.")
+                    Text.empty()
+                        .append(GameTeam.PLAYER_BLACK.displayName)
+                        .append(" players gained two kills.")
             } },
-            TheologyPair(COSMOS, COSMOS) to { options -> object : TextProvider {
+            TheologyPair(COSMOS, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.literal("FINAL FRONTIER").formatted(COSMOS.color)
                 override val subtitle =
@@ -1117,7 +1156,7 @@ class SpecialSummonsService : Service() {
                 override val tooltip =
                     Text.of("Gravity is significantly reduced.")
             } },
-            TheologyPair(BARTER, BARTER) to { options -> object : TextProvider {
+            TheologyPair(BARTER, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.literal("MARKET CRASH").formatted(BARTER.color)
                 override val subtitle =
@@ -1125,7 +1164,7 @@ class SpecialSummonsService : Service() {
                 override val tooltip =
                     Text.of("All special items have been lost.")
             } },
-            TheologyPair(FLAME, FLAME) to { options -> object : TextProvider {
+            TheologyPair(FLAME, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     Text.literal("INFERNO").formatted(FLAME.color)
                 override val subtitle =
@@ -1141,14 +1180,22 @@ class SpecialSummonsService : Service() {
                     Text.of("Let the cooldown complete first!")
             } },
             Failure.MISMATCH to { object : FailureTextProvider(it) {
-                override val subtitle =
-                    Text.empty()
-                        .append(options.kind.displayName)
-                        .append(" can only be performed at a ")
-                        .append(options.kind.theology1.displayName)
-                        .append(" or ")
-                        .append(options.kind.theology2.displayName)
-                        .append(" altar!")
+                override val subtitle: Text =
+                    if (options.kind.isDouble) {
+                        Text.empty()
+                            .append(options.kind.displayName)
+                            .append(" can only be performed at a ")
+                            .append(options.kind.theology1.displayName)
+                            .append(" altar!")
+                    } else {
+                        Text.empty()
+                            .append(options.kind.displayName)
+                            .append(" can only be performed at a ")
+                            .append(options.kind.theology1.displayName)
+                            .append(" or ")
+                            .append(options.kind.theology2.displayName)
+                            .append(" altar!")
+                    }
             } },
             Failure.REPEATED_DOUBLE to { object : FailureTextProvider(it) {
                 override val subtitle =
