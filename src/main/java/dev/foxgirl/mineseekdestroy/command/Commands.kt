@@ -60,8 +60,10 @@ internal fun setup() {
                 context.barrierService.executeArenaOpen(args)
                 context.barrierService.executeBlimpClose(args)
                 context.lootService.executeClear(args)
+                context.lootService.executeFill(args)
                 context.smokerService.executeClear(args)
                 context.inventoryService.executeClear(args)
+                context.inventoryService.executeFill(args)
                 context.players.forEach { if (!it.isOperator) it.teleport(properties.positionBlimp) }
             }
         }
@@ -242,8 +244,8 @@ internal fun setup() {
                 }
             }
 
-            fun isPlaying(player: GamePlayer) = player.isPlaying
-            fun isRegion(player: GamePlayer) = player.entity.let { if (it != null) !region().contains(it) else false }
+            fun isPlaying(player: GamePlayer) = !player.isOperator && player.isPlaying
+            fun isRegion(player: GamePlayer) = !player.isOperator && player.entity.let { if (it != null) !region().contains(it) else false }
 
             it.params(argLiteral(literal)) {
                 it.params(argLiteral("area")) {

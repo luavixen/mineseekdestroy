@@ -140,7 +140,7 @@ class SpecialSummonsService : Service() {
                 Blocks.CYAN_CARPET, Blocks.PURPLE_CARPET, Blocks.BLUE_CARPET,
                 Blocks.BROWN_CARPET, Blocks.GREEN_CARPET, Blocks.RED_CARPET, Blocks.BLACK_CARPET,
                 Blocks.RAIL, Blocks.ACTIVATOR_RAIL, Blocks.DETECTOR_RAIL, Blocks.POWERED_RAIL,
-                Blocks.WHEAT, Blocks.PUMPKIN_STEM, Blocks.MELON_STEM,
+                Blocks.WHEAT, Blocks.CARROTS, Blocks.PUMPKIN_STEM, Blocks.MELON_STEM,
                 Blocks.ATTACHED_MELON_STEM, Blocks.ATTACHED_PUMPKIN_STEM,
                 Blocks.BEETROOTS, Blocks.POTATOES, Blocks.SUGAR_CANE, Blocks.COCOA,
                 Blocks.TRIPWIRE,
