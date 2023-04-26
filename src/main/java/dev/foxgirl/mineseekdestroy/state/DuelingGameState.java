@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameTeam;
+import dev.foxgirl.mineseekdestroy.util.Broadcast;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -27,6 +28,8 @@ public class DuelingGameState extends RunningGameState {
         } else {
             context.game.sendInfo("Duel started!");
         }
+
+        Broadcast.sendSoundPing();
 
         context.barrierService.executeArenaClose(Game.CONSOLE_OPERATORS);
 

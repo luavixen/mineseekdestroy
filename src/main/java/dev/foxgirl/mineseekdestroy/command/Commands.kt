@@ -52,6 +52,7 @@ internal fun setup() {
             register("macander") { GameProperties.Macander }
             register("radiator") { GameProperties.Radiator }
             register("realm") { GameProperties.Realm }
+            register("lights") { GameProperties.Lights }
         }
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->

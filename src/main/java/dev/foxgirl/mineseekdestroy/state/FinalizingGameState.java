@@ -18,6 +18,10 @@ public class FinalizingGameState extends RunningGameState {
         if (ticks < ticksFinalizing) {
             ticks++;
         } else {
+            for (var player : context.getPlayersIn()) {
+                player.teleport(Game.getGameProperties().getPositionBlimp());
+            }
+
             return new WaitingGameState();
         }
 

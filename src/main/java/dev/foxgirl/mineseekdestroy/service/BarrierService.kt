@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture
 
 class BarrierService : Service() {
 
-    private class Target(val pos: BlockPos, val state: BlockState)
+    private class Target(val pos: BlockPos, val stateClosed: BlockState, val stateOpen: BlockState)
 
     private var targetsArena = listOf<Target>()
     private var targetsBlimp = listOf<Target>()
@@ -22,7 +22,15 @@ class BarrierService : Service() {
             }
             .thenApply { results ->
                 logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
-                results.map { Target(it.pos.add(offset), it.state) }
+
+                results.map {
+                    val pos = it.pos.add(offset)
+
+                    val stateClosed = if (it.state.block !== Blocks.ORANGE_WOOL) it.state else Blocks.AIR.defaultState!!
+                    val stateOpen = world.getBlockState(pos)
+
+                    Target(pos, stateClosed, stateOpen)
+                }
             }
     }
 
@@ -37,28 +45,30 @@ class BarrierService : Service() {
         search("blimp", template, target.start.subtract(template.start)).thenAccept { targetsBlimp = it }
     }
 
+    private inline fun apply(targets: List<Target>, provider: (Target) -> BlockState) {
+        targets.forEach { world.setBlockState(it.pos, provider(it)) }
+    }
+
     override fun setup() {
         setupArena()
         setupBlimp()
     }
 
-    private val nothing: BlockState = Blocks.AIR.defaultState
-
     fun executeArenaOpen(console: Console) {
-        targetsArena.forEach { world.setBlockState(it.pos, nothing) }
+        apply(targetsArena, Target::stateOpen)
         console.sendInfo("Arena barriers opened")
     }
     fun executeArenaClose(console: Console) {
-        targetsArena.forEach { world.setBlockState(it.pos, it.state) }
+        apply(targetsArena, Target::stateClosed)
         console.sendInfo("Arena barriers closed")
     }
 
     fun executeBlimpOpen(console: Console) {
-        targetsBlimp.forEach { world.setBlockState(it.pos, nothing) }
+        apply(targetsBlimp, Target::stateOpen)
         console.sendInfo("Blimp barriers opened")
     }
     fun executeBlimpClose(console: Console) {
-        targetsBlimp.forEach { world.setBlockState(it.pos, it.state) }
+        apply(targetsBlimp, Target::stateClosed)
         console.sendInfo("Blimp barriers closed")
     }
 

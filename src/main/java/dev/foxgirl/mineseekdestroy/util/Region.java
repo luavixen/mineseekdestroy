@@ -11,6 +11,8 @@ import java.util.Objects;
 
 public final class Region {
 
+    public static final @NotNull Region EMPTY = new Region(new BlockPos(0, 0, 0), new BlockPos(0, 0 ,0));
+
     private final BlockPos start;
     private final BlockPos end;
 

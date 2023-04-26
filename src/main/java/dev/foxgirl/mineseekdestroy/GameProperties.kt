@@ -93,6 +93,7 @@ sealed interface GameProperties {
         override val inflammableBlocks = immutableSetOf<Block>(
             FIRE, AIR, CAVE_AIR,
             ACACIA_TRAPDOOR,
+            BEDROCK,
             BLACKSTONE_WALL,
             CHISELED_NETHER_BRICKS,
             COARSE_DIRT,
@@ -274,6 +275,55 @@ sealed interface GameProperties {
             COBBLESTONE,
             NETHERRACK,
             OAK_LOG,
+        )).toImmutableSet()
+
+    }
+
+    object Lights : GameProperties {
+
+        override val positionSpawn = BlockPos(-110, -56, 760)
+
+        override val positionBlimp = Vec3d(-111.5, -15.0, 774.5)
+        override val positionArena = Vec3d(-111.5, -56.0, 774.5)
+        override val positionDuel1 = Vec3d(-125.5, -52.0, 851.5)
+        override val positionDuel2 = Vec3d(-100.5, -52.0, 851.5)
+        override val positionHell = Vec3d(-111.5, -65536.0, 774.5)
+
+        override val templateInventory = BlockPos(-96, -15, 773)
+        override val templateLoottable = BlockPos(-94, -15, 773)
+
+        override val regionAll = Region(BlockPos(-46, -66, 734), BlockPos(-181, -26, 897))
+        override val regionLegal = Region(BlockPos(-46, -66, 734), BlockPos(-181, 65536, 897))
+        override val regionPlayable = Region(BlockPos(-46, -66, 734), BlockPos(-181, -26, 897))
+        override val regionBlimp = Region(BlockPos(-67, 4, 754), BlockPos(-144, -16, 794))
+        override val regionBarrierArenaTarget = Region(BlockPos(-96, -43, 840), BlockPos(-129, -54, 862))
+        override val regionBarrierArenaTemplate = Region(BlockPos(41, 8, -574), BlockPos(8, -3, -552))
+        override val regionBarrierBlimpTarget = Region(BlockPos(-101, -17, 767), BlockPos(-126, -9, 781))
+        override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+        override val regionFlood = Region(BlockPos(-18, -64, 701), BlockPos(-206, -52, 913))
+
+        override val borderSize = 200.0
+        override val borderCenter = Vec3d(-112.0, -52.0, 828.5)
+
+        override val interactableBlocks = (Empty.interactableBlocks + setOf(
+            ACACIA_DOOR,
+            BIRCH_DOOR,
+            DARK_OAK_DOOR,
+            JUNGLE_DOOR,
+            MANGROVE_DOOR,
+            OAK_DOOR,
+            SPRUCE_DOOR,
+            CRIMSON_DOOR,
+            WARPED_DOOR,
+            OAK_FENCE_GATE,
+            CRIMSON_FENCE_GATE,
+            WARPED_FENCE_GATE,
+        )).toImmutableSet()
+
+        override val inflammableBlocks = (Empty.inflammableBlocks + setOf(
+            GRAVEL, COARSE_DIRT, PODZOL,
+            STONE, STONE_SLAB, STONE_STAIRS,
+            ANDESITE, ANDESITE_SLAB, ANDESITE_STAIRS,
         )).toImmutableSet()
 
     }

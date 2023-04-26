@@ -757,6 +757,14 @@ class SpecialSummonsService : Service() {
             input.removeStack(1, 1)
         }
 
+        override fun onClosed(player: PlayerEntity) {
+            player.giveItem(cursorStack)
+            cursorStack = ItemStack.EMPTY
+
+            player.giveItem(input.removeStack(0))
+            player.giveItem(input.removeStack(1))
+        }
+
         override fun canTakeOutput(playerEntity: PlayerEntity, present: Boolean): Boolean {
             return theologies() != null
         }
@@ -900,12 +908,15 @@ class SpecialSummonsService : Service() {
     private companion object {
 
         private fun PlayerEntity.giveItem(stack: ItemStack) {
+            if (stack.isEmpty) return
             if (!giveItemStack(stack)) dropItem(stack, false)?.let { it.resetPickupDelay(); it.setOwner(uuid) }
         }
         private fun PlayerEntity.removeItem(predicate: (ItemStack) -> Boolean) {
             val inventory = inventory
             for (i in 0 until inventory.size()) {
-                if (predicate(inventory.getStack(i))) inventory.setStack(i, ItemStack.EMPTY)
+                val stack = inventory.getStack(i)
+                if (stack.isEmpty) continue
+                if (predicate(stack)) inventory.setStack(i, ItemStack.EMPTY)
             }
         }
 
