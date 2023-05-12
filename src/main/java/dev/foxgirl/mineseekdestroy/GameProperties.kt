@@ -249,7 +249,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionFlood = Region(BlockPos(-1600, -4, 591), BlockPos(-945, 67, -192))
+        override val regionFlood = Region(BlockPos(-1125, -16, 20), BlockPos(-1440, 67, 355))
 
         override val borderSize = 333.0
         override val borderCenter = Region(BlockPos(-1280, 62, 172), BlockPos(-1309, 62, 145)).center

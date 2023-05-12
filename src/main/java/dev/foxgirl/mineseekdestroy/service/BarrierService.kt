@@ -23,11 +23,13 @@ class BarrierService : Service() {
             .thenApply { results ->
                 logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
 
+                val air = Blocks.AIR.defaultState!!
+
                 results.map {
                     val pos = it.pos.add(offset)
 
-                    val stateClosed = if (it.state.block !== Blocks.ORANGE_WOOL) it.state else Blocks.AIR.defaultState!!
-                    val stateOpen = world.getBlockState(pos)
+                    val stateClosed = world.getBlockState(pos).let { if (it.block !== Blocks.ORANGE_WOOL) it else air }
+                    val stateOpen = air
 
                     Target(pos, stateClosed, stateOpen)
                 }
