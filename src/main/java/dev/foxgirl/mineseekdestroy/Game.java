@@ -452,10 +452,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                 playerEntity.setHealth(0.0F);
             } else if (playerEntity.isAlive()) {
                 if (
-                    (playerEntity.getWorld() != world) ||
+                    (playerEntity.getWorld() != world) || (playerEntity.getY() < -128.0) ||
                     (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && properties.getRegionLegal().excludes(playerEntity))
                 ) {
-                    LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered out of bounds killzone");
+                    LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered out of bounds killzone or is out of the world");
                     var position = properties.getPositionSpawn().toCenterPos();
                     playerEntity.teleport(
                         world,
