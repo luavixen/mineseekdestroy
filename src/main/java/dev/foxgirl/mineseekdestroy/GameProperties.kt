@@ -39,6 +39,8 @@ sealed interface GameProperties {
 
     val inflammableBlocks: Set<Block>
 
+    open fun setup(context: GameContext) {}
+
     object Empty : GameProperties {
 
         override val positionSpawn = BlockPos(0, 0, 0)
@@ -276,6 +278,10 @@ sealed interface GameProperties {
             NETHERRACK,
             OAK_LOG,
         )).toImmutableSet()
+
+        override fun setup(context: GameContext) {
+            context.game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, false)
+        }
 
     }
 

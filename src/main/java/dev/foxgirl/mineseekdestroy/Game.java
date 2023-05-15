@@ -80,9 +80,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_KILLZONE_BOUNDS_ENABLED =
-        GameRuleRegistry.register("msdKillzoneBoundsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+        GameRuleRegistry.register("msdKillzoneBoundsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_KILLZONE_BLIMP_ENABLED =
-        GameRuleRegistry.register("msdKillzoneBlimpEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+        GameRuleRegistry.register("msdKillzoneBlimpEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_KNOCKBACK_SNOWBALL =
         GameRuleRegistry.register("msdKnockbackSnowball", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0, -Double.MAX_VALUE, Double.MAX_VALUE));
@@ -168,6 +168,12 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.BAKED_POTATO,
         Items.POISONOUS_POTATO,
         Items.BREAD,
+        Items.BEEF,
+        Items.COOKED_BEEF,
+        Items.PORKCHOP,
+        Items.COOKED_PORKCHOP,
+        Items.CHICKEN,
+        Items.COOKED_CHICKEN,
         Items.BOOK,
         Items.WRITTEN_BOOK,
         Items.WRITABLE_BOOK,
@@ -452,7 +458,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                 playerEntity.setHealth(0.0F);
             } else if (playerEntity.isAlive()) {
                 if (
-                    (playerEntity.getWorld() != world) || (playerEntity.getY() < -128.0) ||
+                    (playerEntity.getWorld() != world) || (playerEntity.getY() < -256.0) ||
                     (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && properties.getRegionLegal().excludes(playerEntity))
                 ) {
                     LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered out of bounds killzone or is out of the world");

@@ -189,6 +189,8 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, true);
 
+        game.getProperties().setup(this);
+
         for (var service : services) {
             service.initialize(this);
         }

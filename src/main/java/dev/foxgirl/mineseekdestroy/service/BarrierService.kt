@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture
 
 class BarrierService : Service() {
 
-    private class Target(val pos: BlockPos, val stateClosed: BlockState, val stateOpen: BlockState)
+    private class Target(val pos: BlockPos, val stateOpen: BlockState, val stateClosed: BlockState)
 
     private var targetsArena = listOf<Target>()
     private var targetsBlimp = listOf<Target>()
@@ -23,15 +23,9 @@ class BarrierService : Service() {
             .thenApply { results ->
                 logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
 
-                val air = Blocks.AIR.defaultState!!
-
                 results.map {
                     val pos = it.pos.add(offset)
-
-                    val stateClosed = world.getBlockState(pos).let { if (it.block !== Blocks.ORANGE_WOOL) it else air }
-                    val stateOpen = air
-
-                    Target(pos, stateClosed, stateOpen)
+                    Target(pos, world.getBlockState(pos), if (it.state.block !== Blocks.ORANGE_WOOL) it.state else air)
                 }
             }
     }
@@ -47,7 +41,7 @@ class BarrierService : Service() {
         search("blimp", template, target.start.subtract(template.start)).thenAccept { targetsBlimp = it }
     }
 
-    private inline fun apply(targets: List<Target>, provider: (Target) -> BlockState) {
+    private fun apply(targets: List<Target>, provider: (Target) -> BlockState) {
         targets.forEach { world.setBlockState(it.pos, provider(it)) }
     }
 
@@ -66,12 +60,19 @@ class BarrierService : Service() {
     }
 
     fun executeBlimpOpen(console: Console) {
-        apply(targetsBlimp, Target::stateOpen)
+        apply(targetsBlimp) { air }
         console.sendInfo("Blimp barriers opened")
     }
     fun executeBlimpClose(console: Console) {
         apply(targetsBlimp, Target::stateClosed)
         console.sendInfo("Blimp barriers closed")
+    }
+
+    private companion object {
+
+        @JvmStatic
+        val air = Blocks.AIR.defaultState!!
+
     }
 
 }

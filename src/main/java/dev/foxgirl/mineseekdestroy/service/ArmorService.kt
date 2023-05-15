@@ -85,7 +85,7 @@ class ArmorService : Service() {
                     armorDyed(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
                     armorDyed(LEATHER_CHESTPLATE)
-                        .apply { addEnchantment(Enchantments.THORNS, 1) },
+                        .apply { addEnchantment(Enchantments.THORNS, 3) },
                     armorDyed(LEATHER_HELMET),
                 )
             }
