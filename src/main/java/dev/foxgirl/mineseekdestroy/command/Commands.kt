@@ -187,10 +187,11 @@ internal fun setup() {
         register("none", GameTeam.NONE)
         register("skip", GameTeam.SKIP)
         register("operator", GameTeam.OPERATOR)
+        register("duel", GameTeam.PLAYER_DUEL)
+        register("warden", GameTeam.PLAYER_WARDEN)
         register("black", GameTeam.PLAYER_BLACK)
         register("yellow", GameTeam.PLAYER_YELLOW)
         register("blue", GameTeam.PLAYER_BLUE)
-        register("duel", GameTeam.PLAYER_DUEL)
     }
 
     Command.build("score") {

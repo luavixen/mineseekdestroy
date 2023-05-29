@@ -68,20 +68,35 @@ class ArmorService : Service() {
                 return Array(4) { ItemStack.EMPTY }
             }
             fun loadoutDuel(): Array<ItemStack> {
-                fun armor(item: Item) = ItemStack(item)
                 return arrayOf(
-                    armor(LEATHER_BOOTS),
-                    armor(CHAINMAIL_LEGGINGS)
+                    ItemStack(LEATHER_BOOTS)
+                        .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) },
+                    ItemStack(CHAINMAIL_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
-                    armor(CHAINMAIL_CHESTPLATE),
-                    armor(LEATHER_HELMET),
+                    ItemStack(CHAINMAIL_CHESTPLATE),
+                    ItemStack(LEATHER_HELMET),
+                )
+            }
+            fun loadoutWarden(): Array<ItemStack> {
+                return arrayOf(
+                    ItemStack(NETHERITE_BOOTS)
+                        .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) }
+                        .apply { addEnchantment(Enchantments.FROST_WALKER, 2) },
+                    ItemStack(NETHERITE_LEGGINGS)
+                        .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
+                    ItemStack(NETHERITE_CHESTPLATE)
+                        .apply { addEnchantment(Enchantments.THORNS, 3) },
+                    ItemStack(NETHERITE_HELMET)
+                        .apply { addEnchantment(Enchantments.RESPIRATION, 3) }
+                        .apply { addEnchantment(Enchantments.THORNS, 3) },
                 )
             }
             fun loadoutBlack(): Array<ItemStack> {
                 fun armorDyed(item: Item) =
                     ItemStack(item).also { (item as DyeableItem).setColor(it, colorBlack) }
                 return arrayOf(
-                    armorDyed(LEATHER_BOOTS),
+                    armorDyed(LEATHER_BOOTS)
+                        .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) },
                     armorDyed(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
                     armorDyed(LEATHER_CHESTPLATE)
@@ -93,7 +108,8 @@ class ArmorService : Service() {
                 fun armorDyed(item: Item) =
                     ItemStack(item).also { (item as DyeableItem).setColor(it, color) }
                 return arrayOf(
-                    armorDyed(LEATHER_BOOTS),
+                    armorDyed(LEATHER_BOOTS)
+                        .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) },
                     armorDyed(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
                     armorDyed(LEATHER_CHESTPLATE),
@@ -106,6 +122,7 @@ class ArmorService : Service() {
                 SKIP to loadoutEmpty(),
                 OPERATOR to loadoutEmpty(),
                 PLAYER_DUEL to loadoutDuel(),
+                PLAYER_WARDEN to loadoutWarden(),
                 PLAYER_BLACK to loadoutBlack(),
                 PLAYER_YELLOW to loadoutNormal(colorYellow),
                 PLAYER_BLUE to loadoutNormal(colorBlue),

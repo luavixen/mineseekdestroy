@@ -43,10 +43,11 @@ class ItemService : Service() {
             val inventory = player.inventory ?: continue
 
             val powderItem = when (player.team) {
+                GameTeam.PLAYER_DUEL -> Items.BROWN_CONCRETE_POWDER
+                GameTeam.PLAYER_WARDEN -> Items.BLACK_CONCRETE_POWDER
                 GameTeam.PLAYER_BLACK -> Items.BLACK_CONCRETE_POWDER
                 GameTeam.PLAYER_YELLOW -> Items.YELLOW_CONCRETE_POWDER
                 GameTeam.PLAYER_BLUE -> Items.BLUE_CONCRETE_POWDER
-                GameTeam.PLAYER_DUEL -> Items.BROWN_CONCRETE_POWDER
                 else -> continue
             }
 

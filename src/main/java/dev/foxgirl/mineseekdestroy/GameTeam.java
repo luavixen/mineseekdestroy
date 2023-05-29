@@ -16,6 +16,7 @@ public enum GameTeam {
     SKIP(Text.of("SKIP"), "msd_skip", null, Formatting.GREEN, null),
     OPERATOR(Text.of("ADMIN"), "msd_operator", null, Formatting.GREEN, null),
     PLAYER_DUEL(Text.of("DUEL"), "msd_duel", "msd_duel_dead", Formatting.RED, Formatting.DARK_GRAY),
+    PLAYER_WARDEN(Text.of("WARDEN"), "msd_warden", "msd_warden_dead", Formatting.RED, Formatting.DARK_RED),
     PLAYER_BLACK(Text.of("BLACK"), "msd_black", "msd_black_dead", Formatting.DARK_PURPLE, Formatting.DARK_GRAY),
     PLAYER_YELLOW(Text.of("YELLOW"), "msd_yellow", "msd_yellow_dead", Formatting.YELLOW, Formatting.GOLD),
     PLAYER_BLUE(Text.of("BLUE"), "msd_blue", "msd_blue_dead", Formatting.AQUA, Formatting.BLUE);

@@ -8,6 +8,7 @@ import net.minecraft.block.Blocks.*
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.GameRules
 
 sealed interface GameProperties {
 
@@ -281,6 +282,8 @@ sealed interface GameProperties {
 
         override fun setup(context: GameContext) {
             context.game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, false)
+            context.game.setRuleBoolean(GameRules.DO_DAYLIGHT_CYCLE, false)
+            context.world.timeOfDay = 13500
         }
 
     }
@@ -331,6 +334,11 @@ sealed interface GameProperties {
             STONE, STONE_SLAB, STONE_STAIRS,
             ANDESITE, ANDESITE_SLAB, ANDESITE_STAIRS,
         )).toImmutableSet()
+
+        override fun setup(context: GameContext) {
+            context.game.setRuleBoolean(GameRules.DO_DAYLIGHT_CYCLE, false)
+            context.world.timeOfDay = 16000
+        }
 
     }
 

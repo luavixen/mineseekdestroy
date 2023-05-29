@@ -42,6 +42,8 @@ public final class GameContext {
     public final @NotNull Team teamOperator;
     public final @NotNull Team teamDuel;
     public final @NotNull Team teamDuelDead;
+    public final @NotNull Team teamWarden;
+    public final @NotNull Team teamWardenDead;
     public final @NotNull Team teamBlack;
     public final @NotNull Team teamBlackDead;
     public final @NotNull Team teamYellow;
@@ -131,6 +133,8 @@ public final class GameContext {
         teamOperator = Objects.requireNonNull(GameTeam.OPERATOR.getAliveTeam(scoreboard));
         teamDuel = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getAliveTeam(scoreboard));
         teamDuelDead = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDeadTeam(scoreboard));
+        teamWarden = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getAliveTeam(scoreboard));
+        teamWardenDead = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getDeadTeam(scoreboard));
         teamBlack = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getAliveTeam(scoreboard));
         teamBlackDead = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getDeadTeam(scoreboard));
         teamYellow = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getAliveTeam(scoreboard));
@@ -181,6 +185,7 @@ public final class GameContext {
         game.setRuleBoolean(GameRules.KEEP_INVENTORY, true);
         game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
         game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
+        game.setRuleBoolean(GameRules.DO_DAYLIGHT_CYCLE, true);
 
         game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true);
         game.setRuleBoolean(Game.RULE_SUMMONS_ENABLED, true);
