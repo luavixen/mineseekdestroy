@@ -40,7 +40,7 @@ sealed interface GameProperties {
 
     val inflammableBlocks: Set<Block>
 
-    open fun setup(context: GameContext) {}
+    fun setup(context: GameContext) {}
 
     object Empty : GameProperties {
 
@@ -91,6 +91,7 @@ sealed interface GameProperties {
             BLACK_SHULKER_BOX,
             FLETCHING_TABLE,
             QUARTZ_SLAB,
+            LEVER,
         )
 
         override val inflammableBlocks = immutableSetOf<Block>(
@@ -282,8 +283,6 @@ sealed interface GameProperties {
 
         override fun setup(context: GameContext) {
             context.game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, false)
-            context.game.setRuleBoolean(GameRules.DO_DAYLIGHT_CYCLE, false)
-            context.world.timeOfDay = 13500
         }
 
     }
@@ -334,11 +333,6 @@ sealed interface GameProperties {
             STONE, STONE_SLAB, STONE_STAIRS,
             ANDESITE, ANDESITE_SLAB, ANDESITE_STAIRS,
         )).toImmutableSet()
-
-        override fun setup(context: GameContext) {
-            context.game.setRuleBoolean(GameRules.DO_DAYLIGHT_CYCLE, false)
-            context.world.timeOfDay = 16000
-        }
 
     }
 

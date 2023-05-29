@@ -64,13 +64,15 @@ class ArmorService : Service() {
             val colorYellow = convertColor(DyeColor.YELLOW)
             val colorBlue = convertColor(DyeColor.BLUE)
 
+            fun armorColorer(color: Int): (Item) -> ItemStack =
+                { item -> ItemStack(item).also { (item as DyeableItem).setColor(it, color) } }
+
             fun loadoutEmpty(): Array<ItemStack> {
                 return Array(4) { ItemStack.EMPTY }
             }
             fun loadoutDuel(): Array<ItemStack> {
                 return arrayOf(
-                    ItemStack(LEATHER_BOOTS)
-                        .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) },
+                    ItemStack(LEATHER_BOOTS),
                     ItemStack(CHAINMAIL_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
                     ItemStack(CHAINMAIL_CHESTPLATE),
@@ -92,28 +94,34 @@ class ArmorService : Service() {
                 )
             }
             fun loadoutBlack(): Array<ItemStack> {
-                fun armorDyed(item: Item) =
-                    ItemStack(item).also { (item as DyeableItem).setColor(it, colorBlack) }
+                val armor = armorColorer(colorBlack)
                 return arrayOf(
-                    armorDyed(LEATHER_BOOTS)
-                        .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) },
-                    armorDyed(LEATHER_LEGGINGS)
+                    armor(LEATHER_BOOTS),
+                    armor(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
-                    armorDyed(LEATHER_CHESTPLATE)
+                    armor(LEATHER_CHESTPLATE)
                         .apply { addEnchantment(Enchantments.THORNS, 3) },
-                    armorDyed(LEATHER_HELMET),
+                    armor(LEATHER_HELMET),
                 )
             }
-            fun loadoutNormal(color: Int): Array<ItemStack> {
-                fun armorDyed(item: Item) =
-                    ItemStack(item).also { (item as DyeableItem).setColor(it, color) }
+            fun loadoutYellow(): Array<ItemStack> {
+                val armor = armorColorer(colorYellow)
                 return arrayOf(
-                    armorDyed(LEATHER_BOOTS)
-                        .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) },
-                    armorDyed(LEATHER_LEGGINGS)
+                    armor(LEATHER_BOOTS),
+                    armor(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
-                    armorDyed(LEATHER_CHESTPLATE),
-                    armorDyed(LEATHER_HELMET),
+                    armor(LEATHER_CHESTPLATE),
+                    armor(LEATHER_HELMET),
+                )
+            }
+            fun loadoutBlue(): Array<ItemStack> {
+                val armor = armorColorer(colorBlue)
+                return arrayOf(
+                    armor(LEATHER_BOOTS),
+                    armor(LEATHER_LEGGINGS)
+                        .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
+                    ItemStack(ELYTRA),
+                    armor(LEATHER_HELMET),
                 )
             }
 
@@ -124,8 +132,8 @@ class ArmorService : Service() {
                 PLAYER_DUEL to loadoutDuel(),
                 PLAYER_WARDEN to loadoutWarden(),
                 PLAYER_BLACK to loadoutBlack(),
-                PLAYER_YELLOW to loadoutNormal(colorYellow),
-                PLAYER_BLUE to loadoutNormal(colorBlue),
+                PLAYER_YELLOW to loadoutYellow(),
+                PLAYER_BLUE to loadoutBlue(),
             )
         }
 

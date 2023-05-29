@@ -95,6 +95,12 @@ public final class Region {
         return !contains(entity);
     }
 
+    public @NotNull Region offset(int x, int y, int z) {
+        return new Region(start.add(x, y, z), end.add(x, y, z));
+    }
+
+    public @NotNull Region offset(@NotNull Vec3i pos) { return offset(pos.getX(), pos.getY(), pos.getZ()); }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

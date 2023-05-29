@@ -264,7 +264,7 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
-                    entity.giveItem(ItemStack(FLINT_AND_STEEL).apply { addEnchantment(Enchantments.UNBREAKING, 3) })
+                    entity.giveItem(ItemStack(WATER_BUCKET))
                     entity.giveItem(ItemStack(CHIPPED_ANVIL))
                 }
             }
@@ -311,7 +311,7 @@ class SpecialSummonsService : Service() {
         override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             val item = ItemStack(GOLDEN_SWORD).apply {
-                addEnchantment(Enchantments.SHARPNESS, 50)
+                addEnchantment(Enchantments.SHARPNESS, 12)
                 setDamage(32)
             }
             for ((player, entity) in playerEntitiesIn) {
@@ -330,7 +330,7 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             val region = properties.regionBlimp
             val position = BlockPos(region.center.x.toInt(), region.start.y - 7, region.center.z.toInt())
-            EntityType.GHAST.spawn(world, position, SpawnReason.COMMAND)
+            for (i in 0..3) EntityType.GHAST.spawn(world, position, SpawnReason.COMMAND)
         }
     }
 
@@ -369,7 +369,8 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             val items = immutableSetOf<Item>(
                 SHIELD, CARROT_ON_A_STICK, FISHING_ROD, TIPPED_ARROW,
-                COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, COMPASS,
+                COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, WATER_BUCKET,
+                COMPASS, TARGET, FIREWORK_ROCKET,
                 ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
             )
 
@@ -560,16 +561,16 @@ class SpecialSummonsService : Service() {
                 EntityType.GUARDIAN.spawn(world, options.pos, SpawnReason.COMMAND)
             }
             OCCULT -> {
-                for (i in 0..5) EntityType.ZOMBIE.spawn(world, options.pos, SpawnReason.COMMAND)
+                for (i in 1..5) EntityType.ZOMBIE.spawn(world, options.pos, SpawnReason.COMMAND)
             }
             COSMOS -> {
-                for (i in 0..2) EntityType.PHANTOM.spawn(world, options.pos, SpawnReason.COMMAND)
+                for (i in 1..2) EntityType.PHANTOM.spawn(world, options.pos, SpawnReason.COMMAND)
             }
             BARTER -> {
                 EntityType.ILLUSIONER.spawn(world, options.pos, SpawnReason.COMMAND)
             }
             FLAME -> {
-                for (i in 0..2) EntityType.BLAZE.spawn(world, options.pos, SpawnReason.COMMAND)
+                for (i in 1..2) EntityType.BLAZE.spawn(world, options.pos, SpawnReason.COMMAND)
             }
         }
 

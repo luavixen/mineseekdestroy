@@ -127,12 +127,16 @@ public abstract class GameState {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
                 var item = stack.getItem();
-                if (item instanceof BlockItem blockItem) {
-                    if (
-                        Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
-                        properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
-                        properties.getRegionBlimp().excludes(blockHit.getBlockPos())
-                    ) return ActionResult.PASS;
+                if (
+                    item instanceof BlockItem blockItem &&
+                    Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
+                    properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
+                    properties.getRegionBlimp().excludes(blockHit.getBlockPos())
+                ) {
+                    if (blockItem.getBlock() == Blocks.TARGET) {
+                        context.specialFamilyGuyService.handleFamilyGuyBlockPlaced(player, blockHit);
+                    }
+                    return ActionResult.PASS;
                 }
                 if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
             }

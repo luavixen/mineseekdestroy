@@ -73,6 +73,7 @@ public final class GameContext {
     public final @NotNull SpecialCarService specialCarService;
     public final @NotNull SpecialSummonsService specialSummonsService;
     public final @NotNull SpecialPianoService specialPianoService;
+    public final @NotNull SpecialFamilyGuyService specialFamilyGuyService;
 
     private final Service[] services;
 
@@ -165,6 +166,7 @@ public final class GameContext {
             specialCarService = new SpecialCarService(),
             specialSummonsService = new SpecialSummonsService(),
             specialPianoService = new SpecialPianoService(),
+            specialFamilyGuyService = new SpecialFamilyGuyService(),
         };
     }
 

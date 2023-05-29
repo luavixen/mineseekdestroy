@@ -143,6 +143,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.GREEN_CONCRETE_POWDER, Blocks.GREEN_CONCRETE,
         Blocks.RED_CONCRETE_POWDER, Blocks.RED_CONCRETE,
         Blocks.BLACK_CONCRETE_POWDER, Blocks.BLACK_CONCRETE,
+        Blocks.WHITE_TERRACOTTA, Blocks.LIGHT_GRAY_TERRACOTTA,
+        Blocks.TARGET, Blocks.TNT,
         Blocks.SNOW_BLOCK,
         Blocks.BONE_BLOCK,
         Blocks.CHIPPED_ANVIL,
@@ -164,6 +166,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.SPLASH_POTION,
         Items.LINGERING_POTION,
         Items.MILK_BUCKET,
+        Items.WATER_BUCKET,
         Items.POTATO,
         Items.BAKED_POTATO,
         Items.POISONOUS_POTATO,
@@ -183,6 +186,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Set<@NotNull Item> DROPPED_ITEMS = ImmutableSet.copyOf(new Item[] {
         Items.SHIELD,
+        Items.FIREWORK_ROCKET,
         Items.CARROT_ON_A_STICK,
     });
 
