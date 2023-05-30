@@ -16,13 +16,10 @@ internal fun setup() {
 
     Command.build("game") {
         it.params(argLiteral("end")) {
-            it.action { args ->
-                if (game.context != null) {
-                    game.destroy()
-                    args.sendInfo("Ended game")
-                } else {
-                    args.sendError("Cannot end game, no game running")
-                }
+            it.actionWithContext { args, context ->
+                context.barrierService.executeArenaOpen(args)
+                context.barrierService.executeBlimpOpen(args)
+                game.destroy()
             }
         }
         it.params(argLiteral("start")) {

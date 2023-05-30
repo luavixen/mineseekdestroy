@@ -25,7 +25,7 @@ class BarrierService : Service() {
 
                 results.map {
                     val pos = it.pos.add(offset)
-                    Target(pos, world.getBlockState(pos), if (it.state.block !== Blocks.ORANGE_WOOL) it.state else air)
+                    Target(pos, world.getBlockState(pos), if (it.state.block !== Blocks.ORANGE_WOOL) it.state else blockAir)
                 }
             }
     }
@@ -60,18 +60,20 @@ class BarrierService : Service() {
     }
 
     fun executeBlimpOpen(console: Console) {
-        apply(targetsBlimp) { air }
+        properties.regionBarrierBlimpAdditions.forEach { Editor.edit(world, it) { _, _, _, _ -> blockAir } }
+        apply(targetsBlimp) { blockAir }
         console.sendInfo("Blimp barriers opened")
     }
     fun executeBlimpClose(console: Console) {
+        properties.regionBarrierBlimpAdditions.forEach { Editor.edit(world, it) { _, _, _, _ -> blockBarrier } }
         apply(targetsBlimp, Target::stateClosed)
         console.sendInfo("Blimp barriers closed")
     }
 
     private companion object {
 
-        @JvmStatic
-        val air = Blocks.AIR.defaultState!!
+        val blockAir = Blocks.AIR.defaultState!!
+        val blockBarrier = Blocks.RED_STAINED_GLASS.defaultState!!
 
     }
 

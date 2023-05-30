@@ -42,14 +42,21 @@ public final class GameContext {
     public final @NotNull Team teamOperator;
     public final @NotNull Team teamDuel;
     public final @NotNull Team teamDuelDead;
+    public final @NotNull Team teamDuelDamaged;
     public final @NotNull Team teamWarden;
     public final @NotNull Team teamWardenDead;
+    public final @NotNull Team teamWardenDamaged;
     public final @NotNull Team teamBlack;
     public final @NotNull Team teamBlackDead;
+    public final @NotNull Team teamBlackDamaged;
     public final @NotNull Team teamYellow;
     public final @NotNull Team teamYellowDead;
+    public final @NotNull Team teamYellowDamaged;
     public final @NotNull Team teamBlue;
     public final @NotNull Team teamBlueDead;
+    public final @NotNull Team teamBlueDamaged;
+
+    private final Team[] teams;
 
     public final @NotNull PlayerManager playerManager;
 
@@ -130,18 +137,25 @@ public final class GameContext {
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 
-        teamSkip = Objects.requireNonNull(GameTeam.SKIP.getAliveTeam(scoreboard));
-        teamOperator = Objects.requireNonNull(GameTeam.OPERATOR.getAliveTeam(scoreboard));
-        teamDuel = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getAliveTeam(scoreboard));
-        teamDuelDead = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDeadTeam(scoreboard));
-        teamWarden = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getAliveTeam(scoreboard));
-        teamWardenDead = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getDeadTeam(scoreboard));
-        teamBlack = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getAliveTeam(scoreboard));
-        teamBlackDead = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getDeadTeam(scoreboard));
-        teamYellow = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getAliveTeam(scoreboard));
-        teamYellowDead = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getDeadTeam(scoreboard));
-        teamBlue = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getAliveTeam(scoreboard));
-        teamBlueDead = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getDeadTeam(scoreboard));
+        teams = new Team[] {
+            teamSkip = Objects.requireNonNull(GameTeam.SKIP.getAliveTeam(scoreboard)),
+            teamOperator = Objects.requireNonNull(GameTeam.OPERATOR.getAliveTeam(scoreboard)),
+            teamDuel = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getAliveTeam(scoreboard)),
+            teamDuelDead = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDeadTeam(scoreboard)),
+            teamDuelDamaged = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDamagedTeam(scoreboard)),
+            teamWarden = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getAliveTeam(scoreboard)),
+            teamWardenDead = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getDeadTeam(scoreboard)),
+            teamWardenDamaged = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getDamagedTeam(scoreboard)),
+            teamBlack = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getAliveTeam(scoreboard)),
+            teamBlackDead = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getDeadTeam(scoreboard)),
+            teamBlackDamaged = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getDamagedTeam(scoreboard)),
+            teamYellow = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getAliveTeam(scoreboard)),
+            teamYellowDead = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getDeadTeam(scoreboard)),
+            teamYellowDamaged = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getDamagedTeam(scoreboard)),
+            teamBlue = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getAliveTeam(scoreboard)),
+            teamBlueDead = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getDeadTeam(scoreboard)),
+            teamBlueDamaged = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getDamagedTeam(scoreboard)),
+        };
 
         playerManager = server.getPlayerManager();
 
@@ -206,13 +220,10 @@ public final class GameContext {
     public void destroy() {
         scoreboard.removeObjective(scoreboardKills);
         scoreboard.removeObjective(scoreboardHearts);
-        scoreboard.removeTeam(teamOperator);
-        scoreboard.removeTeam(teamBlack);
-        scoreboard.removeTeam(teamBlackDead);
-        scoreboard.removeTeam(teamYellow);
-        scoreboard.removeTeam(teamYellowDead);
-        scoreboard.removeTeam(teamBlue);
-        scoreboard.removeTeam(teamBlueDead);
+
+        for (var team : teams) {
+            scoreboard.removeTeam(team);
+        }
     }
 
     public void update() {

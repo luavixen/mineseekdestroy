@@ -1,8 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam.*
-import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ArmorItem
 import net.minecraft.item.DyeableItem
@@ -27,9 +26,8 @@ class ArmorService : Service() {
                 inventoryDirty = true
             }
 
-            val team = player.team
-            if (team.isPlaying) {
-                if (armorSet(inventory.armor, team)) {
+            if (player.team.isPlaying) {
+                if (armorSet(inventory.armor, player)) {
                     inventoryDirty = true
                 }
             } else {
@@ -46,7 +44,7 @@ class ArmorService : Service() {
 
     private companion object {
 
-        private val loadouts: Map<GameTeam, Array<ItemStack>>
+        private val loadoutFor: (GamePlayer) -> Array<ItemStack>
 
         init {
             fun convertComponent(component: Float): Int {
@@ -67,11 +65,11 @@ class ArmorService : Service() {
             fun armorColorer(color: Int): (Item) -> ItemStack =
                 { item -> ItemStack(item).also { (item as DyeableItem).setColor(it, color) } }
 
-            fun loadoutEmpty(): Array<ItemStack> {
-                return Array(4) { ItemStack.EMPTY }
+            val loadoutEmpty: Array<ItemStack> = run {
+                Array(4) { ItemStack.EMPTY }
             }
-            fun loadoutDuel(): Array<ItemStack> {
-                return arrayOf(
+            val loadoutDuel: Array<ItemStack> = run {
+                arrayOf(
                     ItemStack(LEATHER_BOOTS),
                     ItemStack(CHAINMAIL_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
@@ -79,8 +77,8 @@ class ArmorService : Service() {
                     ItemStack(LEATHER_HELMET),
                 )
             }
-            fun loadoutWarden(): Array<ItemStack> {
-                return arrayOf(
+            val loadoutWarden: Array<ItemStack> = run {
+                arrayOf(
                     ItemStack(NETHERITE_BOOTS)
                         .apply { addEnchantment(Enchantments.FEATHER_FALLING, 4) }
                         .apply { addEnchantment(Enchantments.FROST_WALKER, 2) },
@@ -93,20 +91,31 @@ class ArmorService : Service() {
                         .apply { addEnchantment(Enchantments.THORNS, 3) },
                 )
             }
-            fun loadoutBlack(): Array<ItemStack> {
+            val loadoutBlackYellow: Array<ItemStack> = run {
                 val armor = armorColorer(colorBlack)
-                return arrayOf(
-                    armor(LEATHER_BOOTS),
+                arrayOf(
+                    armor(LEATHER_BOOTS)
+                        .apply { addEnchantment(Enchantments.THORNS, 3) },
                     armor(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
-                    armor(LEATHER_CHESTPLATE)
-                        .apply { addEnchantment(Enchantments.THORNS, 3) },
+                    armor(LEATHER_CHESTPLATE),
                     armor(LEATHER_HELMET),
                 )
             }
-            fun loadoutYellow(): Array<ItemStack> {
+            val loadoutBlackBlue: Array<ItemStack> = run {
+                val armor = armorColorer(colorBlack)
+                arrayOf(
+                    armor(LEATHER_BOOTS)
+                        .apply { addEnchantment(Enchantments.THORNS, 3) },
+                    armor(LEATHER_LEGGINGS)
+                        .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
+                    ItemStack(ELYTRA),
+                    armor(LEATHER_HELMET),
+                )
+            }
+            val loadoutYellow: Array<ItemStack> = run {
                 val armor = armorColorer(colorYellow)
-                return arrayOf(
+                arrayOf(
                     armor(LEATHER_BOOTS),
                     armor(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
@@ -114,9 +123,9 @@ class ArmorService : Service() {
                     armor(LEATHER_HELMET),
                 )
             }
-            fun loadoutBlue(): Array<ItemStack> {
+            val loadoutBlue: Array<ItemStack> = run {
                 val armor = armorColorer(colorBlue)
-                return arrayOf(
+                arrayOf(
                     armor(LEATHER_BOOTS),
                     armor(LEATHER_LEGGINGS)
                         .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
@@ -125,20 +134,23 @@ class ArmorService : Service() {
                 )
             }
 
-            loadouts = immutableMapOf(
-                NONE to loadoutEmpty(),
-                SKIP to loadoutEmpty(),
-                OPERATOR to loadoutEmpty(),
-                PLAYER_DUEL to loadoutDuel(),
-                PLAYER_WARDEN to loadoutWarden(),
-                PLAYER_BLACK to loadoutBlack(),
-                PLAYER_YELLOW to loadoutYellow(),
-                PLAYER_BLUE to loadoutBlue(),
-            )
+            loadoutFor = { player ->
+                when (player.team) {
+                    NONE -> loadoutEmpty
+                    SKIP -> loadoutEmpty
+                    OPERATOR -> loadoutEmpty
+                    PLAYER_DUEL -> loadoutDuel
+                    PLAYER_WARDEN -> loadoutWarden
+                    PLAYER_YELLOW -> loadoutYellow
+                    PLAYER_BLUE -> loadoutBlue
+                    PLAYER_BLACK ->
+                        if (player.mainTeam == PLAYER_BLUE) loadoutBlackBlue else loadoutBlackYellow
+                }
+            }
         }
 
-        private fun armorSet(list: MutableList<ItemStack>, team: GameTeam): Boolean {
-            val loadout = loadouts[team]!!
+        private fun armorSet(list: MutableList<ItemStack>, player: GamePlayer): Boolean {
+            val loadout = loadoutFor(player)
             var dirty = false
             for (i in list.indices) {
                 if (ItemStack.areEqual(list[i], loadout[i])) continue

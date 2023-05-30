@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy
 
 import dev.foxgirl.mineseekdestroy.util.Region
+import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
 import net.minecraft.block.Block
@@ -8,7 +9,6 @@ import net.minecraft.block.Blocks.*
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
-import net.minecraft.world.GameRules
 
 sealed interface GameProperties {
 
@@ -31,6 +31,7 @@ sealed interface GameProperties {
     val regionBarrierArenaTemplate: Region
     val regionBarrierBlimpTarget: Region
     val regionBarrierBlimpTemplate: Region
+    val regionBarrierBlimpAdditions: List<Region>
     val regionFlood: Region
 
     val borderSize: Double
@@ -63,6 +64,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpAdditions = listOf<Region>()
         override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
 
         override val borderSize = 0.0
@@ -161,6 +163,10 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(48, -30, -605), BlockPos(92, -47, -539))
         override val regionBarrierBlimpTarget = Region(BlockPos(63, 7, -42), BlockPos(77, -1, -67))
         override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
+        override val regionBarrierBlimpAdditions = immutableListOf(
+            Region(BlockPos(35, 3, -7), BlockPos(33, 3, -9)),
+            Region(BlockPos(130, 3, -81), BlockPos(128, 3, -79)),
+        )
         override val regionFlood = Region(BlockPos(-24, -50, 51), BlockPos(175, -30, -169))
 
         override val borderSize = 200.0
@@ -208,6 +214,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+        override val regionBarrierBlimpAdditions = listOf<Region>()
         override val regionFlood = Region(BlockPos(788, -4, -170), BlockPos(974, 13, 30))
 
         override val borderSize = 250.0
@@ -253,6 +260,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+        override val regionBarrierBlimpAdditions = listOf<Region>()
         override val regionFlood = Region(BlockPos(-1125, -16, 20), BlockPos(-1440, 67, 355))
 
         override val borderSize = 333.0
@@ -308,6 +316,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(41, 12, -574), BlockPos(8, -3, -552))
         override val regionBarrierBlimpTarget = Region(BlockPos(-101, -17, 767), BlockPos(-126, -9, 781))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+        override val regionBarrierBlimpAdditions = listOf<Region>()
         override val regionFlood = Region(BlockPos(-18, -64, 701), BlockPos(-206, -52, 913))
 
         override val borderSize = 200.0

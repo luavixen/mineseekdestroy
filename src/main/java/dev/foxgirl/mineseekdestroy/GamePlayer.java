@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
+import dev.foxgirl.mineseekdestroy.mixin.MixinLivingEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.scoreboard.Scoreboard;
@@ -40,6 +41,8 @@ public final class GamePlayer {
     }
 
     private GameTeam currentTeam = GameTeam.NONE;
+    private GameTeam previousTeam = GameTeam.NONE;
+
     private boolean currentAlive = true;
 
     private int statsKills = 0;
@@ -71,9 +74,28 @@ public final class GamePlayer {
         return currentTeam;
     }
 
+    public @NotNull GameTeam getPreviousTeam() {
+        return previousTeam;
+    }
+
+    public @Nullable GameTeam getMainTeam() {
+        switch (currentTeam) {
+            case PLAYER_YELLOW -> { return GameTeam.PLAYER_YELLOW; }
+            case PLAYER_BLUE -> { return GameTeam.PLAYER_BLUE; }
+        }
+        switch (previousTeam) {
+            case PLAYER_YELLOW -> { return GameTeam.PLAYER_YELLOW; }
+            case PLAYER_BLUE -> { return GameTeam.PLAYER_BLUE; }
+        }
+        return null;
+    }
+
     public void setTeam(@NotNull GameTeam team) {
         Objects.requireNonNull(team, "Argument 'team'");
-        currentTeam = team;
+        if (currentTeam != team) {
+            previousTeam = currentTeam;
+            currentTeam = team;
+        }
     }
 
     public void setAlive(boolean alive) {
@@ -133,7 +155,7 @@ public final class GamePlayer {
     public boolean isLiving() {
         if (currentAlive) {
             var player = getEntity();
-            return player != null && player.isAlive();
+            return player != null && player.isAlive() && player.networkHandler.isConnectionOpen();
         }
         return false;
     }
@@ -177,11 +199,15 @@ public final class GamePlayer {
     }
 
     private @Nullable Team getScoreboardTeam() {
-        return (
-            isLiving()
-                ? currentTeam.getAliveTeam(getScoreboard())
-                : currentTeam.getDeadTeam(getScoreboard())
-        );
+        var player = getEntity();
+        if (player != null && player.isAlive() && player.networkHandler.isConnectionOpen()) {
+            return (
+                player.getWorld().getTime() - ((MixinLivingEntity) player).mineseekdestroy$getLastDamageTime() > 10L
+                    ? currentTeam.getDamagedTeam(getScoreboard())
+                    : currentTeam.getAliveTeam(getScoreboard())
+            );
+        }
+        return currentTeam.getDeadTeam(getScoreboard());
     }
 
     public @NotNull Text getDisplayName() {

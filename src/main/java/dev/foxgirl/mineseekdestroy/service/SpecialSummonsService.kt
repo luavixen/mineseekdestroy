@@ -370,7 +370,7 @@ class SpecialSummonsService : Service() {
             val items = immutableSetOf<Item>(
                 SHIELD, CARROT_ON_A_STICK, FISHING_ROD, TIPPED_ARROW,
                 COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, WATER_BUCKET,
-                COMPASS, TARGET, FIREWORK_ROCKET,
+                COMPASS, TARGET, FIREWORK_ROCKET, ENDER_PEARL, BLUE_ICE,
                 ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
             )
 
@@ -384,7 +384,7 @@ class SpecialSummonsService : Service() {
         override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
-                if (player.team === team) entity.giveItem(ItemStack(SNOW_BLOCK, 64))
+                if (player.team === team) entity.giveItem(ItemStack(BLUE_ICE, 64))
             }
         }
     }

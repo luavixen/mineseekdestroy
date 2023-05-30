@@ -25,7 +25,7 @@ import java.util.List;
 @Mixin(PigEntity.class)
 public abstract class MixinPigEntity extends AnimalEntity {
 
-    protected MixinPigEntity(EntityType<? extends AnimalEntity> entityType, World world) {
+    private MixinPigEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
     }
 

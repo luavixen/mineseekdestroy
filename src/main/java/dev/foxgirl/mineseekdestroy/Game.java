@@ -144,7 +144,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.RED_CONCRETE_POWDER, Blocks.RED_CONCRETE,
         Blocks.BLACK_CONCRETE_POWDER, Blocks.BLACK_CONCRETE,
         Blocks.WHITE_TERRACOTTA, Blocks.LIGHT_GRAY_TERRACOTTA,
-        Blocks.TARGET, Blocks.TNT,
+        Blocks.TARGET, Blocks.TNT, Blocks.LADDER,
+        Blocks.BLUE_ICE,
         Blocks.SNOW_BLOCK,
         Blocks.BONE_BLOCK,
         Blocks.CHIPPED_ANVIL,
@@ -160,6 +161,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.CARROT_ON_A_STICK,
         Items.FIREWORK_ROCKET,
         Items.FLINT_AND_STEEL,
+        Items.ENDER_PEARL,
         Items.EGG,
         Items.SNOWBALL,
         Items.POTION,
@@ -188,6 +190,16 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.SHIELD,
         Items.FIREWORK_ROCKET,
         Items.CARROT_ON_A_STICK,
+        Items.TARGET,
+    });
+
+    public static final @NotNull Set<@NotNull Item> UNDROPPABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
+        Items.IRON_SWORD, Items.IRON_PICKAXE, Items.IRON_AXE, Items.IRON_SHOVEL, Items.IRON_HOE,
+        Items.BOW, Items.CROSSBOW,
+        Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
+        Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
+        Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS,
+        Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
     });
 
     public static final @NotNull Set<@NotNull Item> ILLEGAL_ITEMS = ImmutableSet.copyOf(new Item[] {

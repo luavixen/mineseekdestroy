@@ -12,25 +12,27 @@ import java.util.function.Consumer;
 
 public enum GameTeam {
 
-    NONE(Text.of("NONE"), null, null, Formatting.WHITE, null),
-    SKIP(Text.of("SKIP"), "msd_skip", null, Formatting.GREEN, null),
-    OPERATOR(Text.of("ADMIN"), "msd_operator", null, Formatting.GREEN, null),
-    PLAYER_DUEL(Text.of("DUEL"), "msd_duel", "msd_duel_dead", Formatting.RED, Formatting.DARK_GRAY),
-    PLAYER_WARDEN(Text.of("WARDEN"), "msd_warden", "msd_warden_dead", Formatting.RED, Formatting.DARK_RED),
-    PLAYER_BLACK(Text.of("BLACK"), "msd_black", "msd_black_dead", Formatting.DARK_PURPLE, Formatting.DARK_GRAY),
-    PLAYER_YELLOW(Text.of("YELLOW"), "msd_yellow", "msd_yellow_dead", Formatting.YELLOW, Formatting.GOLD),
-    PLAYER_BLUE(Text.of("BLUE"), "msd_blue", "msd_blue_dead", Formatting.AQUA, Formatting.BLUE);
+    NONE(Text.of("NONE"), null, null, null, Formatting.WHITE, null),
+    SKIP(Text.of("SKIP"), "msd_skip", null, null, Formatting.GREEN, null),
+    OPERATOR(Text.of("ADMIN"), "msd_operator", null, null, Formatting.GREEN, null),
+    PLAYER_DUEL(Text.of("DUEL"), "msd_duel", "msd_duel_dead", "msd_duel_damaged", Formatting.RED, Formatting.DARK_GRAY),
+    PLAYER_WARDEN(Text.of("WARDEN"), "msd_warden", "msd_warden_dead", "msd_warden_damaged", Formatting.RED, Formatting.DARK_RED),
+    PLAYER_BLACK(Text.of("BLACK"), "msd_black", "msd_black_dead", "msd_black_damaged", Formatting.DARK_PURPLE, Formatting.DARK_GRAY),
+    PLAYER_YELLOW(Text.of("YELLOW"), "msd_yellow", "msd_yellow_dead", "msd_yellow_damaged", Formatting.YELLOW, Formatting.GOLD),
+    PLAYER_BLUE(Text.of("BLUE"), "msd_blue", "msd_blue_dead", "msd_blue_damaged", Formatting.AQUA, Formatting.BLUE);
 
     private final Text displayName;
     private final String nameAlive;
     private final String nameDead;
+    private final String nameDamaged;
     private final Formatting colorAlive;
     private final Formatting colorDead;
 
-    GameTeam(Text displayName, String nameAlive, String nameDead, Formatting colorAlive, Formatting colorDead) {
+    GameTeam(Text displayName, String nameAlive, String nameDead, String nameDamaged, Formatting colorAlive, Formatting colorDead) {
         this.displayName = displayName;
         this.nameAlive = nameAlive;
         this.nameDead = nameDead;
+        this.nameDamaged = nameDamaged;
         this.colorAlive = colorAlive;
         this.colorDead = colorDead;
     }
@@ -86,6 +88,16 @@ public enum GameTeam {
             team.setDisplayName(displayName);
             team.setColor(colorDead);
             team.setPrefix(Text.of("\u2620 "));
+        });
+    }
+
+    public @Nullable Team getDamagedTeam(@Nullable Scoreboard scoreboard) {
+        if (scoreboard == null || nameDamaged == null) {
+            return null;
+        }
+        return getOrCreateTeam(scoreboard, nameDamaged, team -> {
+            team.setDisplayName(displayName);
+            team.setColor(Formatting.LIGHT_PURPLE);
         });
     }
 

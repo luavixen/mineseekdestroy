@@ -41,13 +41,7 @@ class SpecialFamilyGuyService : Service() {
             }
             .thenAccept {
                 positions.forEach {
-                    world.spawnParticles(
-                        ParticleTypes.POOF,
-                        it.x.toDouble() + 0.5,
-                        it.y.toDouble() + 0.5,
-                        it.z.toDouble() + 0.5,
-                        5, 0.0, 0.0, 0.0, 0.25,
-                    )
+                    Broadcast.sendParticles(ParticleTypes.POOF, 0.25F, 5, world, it.toCenterPos())
                 }
 
                 Scheduler.delay(0.05) {
@@ -62,10 +56,10 @@ class SpecialFamilyGuyService : Service() {
 
                     var i = 0
 
-                    while (true) {
+                    while (i < 64) {
                         if (!world.isAir(entity.blockPos.add(0, i + 1, 0))) {
                             i += 2
-                        } else if (world.isAir(entity.blockPos.add(0, i, 0))) {
+                        } else if (!world.isAir(entity.blockPos.add(0, i, 0))) {
                             i += 1
                         } else {
                             break

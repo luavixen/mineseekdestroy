@@ -14,6 +14,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -68,10 +69,12 @@ public abstract class GameState {
             return true;
         }
         if (context != null) {
+            var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            if (player.isPlaying() && Game.PLACABLE_BLOCKS.contains(state.getBlock())) {
-                return true;
-            }
+            return player.isPlaying() && player.isAlive()
+                && Game.PLACABLE_BLOCKS.contains(state.getBlock())
+                && properties.getRegionPlayable().contains(pos)
+                && properties.getRegionBlimp().excludes(pos);
         }
         return false;
     }
@@ -133,7 +136,7 @@ public abstract class GameState {
                     properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
                     properties.getRegionBlimp().excludes(blockHit.getBlockPos())
                 ) {
-                    if (blockItem.getBlock() == Blocks.TARGET) {
+                    if (item == Items.TARGET && stack.hasCustomName()) {
                         context.specialFamilyGuyService.handleFamilyGuyBlockPlaced(player, blockHit);
                     }
                     return ActionResult.PASS;

@@ -1,9 +1,9 @@
 package dev.foxgirl.mineseekdestroy.service;
 
+import com.google.common.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntity;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityTrackerUpdateS2CPacket;
 import dev.foxgirl.mineseekdestroy.util.Fuck;
-import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -109,7 +109,6 @@ public final class GlowService extends Service {
         var context = getContext();
 
         var targetPlayer = context.getPlayer(targetEntity);
-        if (targetPlayer.isPlaying() && targetPlayer.isAlive()) return null;
 
         var packetId = packet.id();
         if (packetId == targetEntity.getId()) return null;
@@ -119,6 +118,11 @@ public final class GlowService extends Service {
 
         var packetPlayer = context.getPlayer(packetEntity);
         if (packetPlayer == null) return null;
+
+        if (
+            targetPlayer.isPlaying() && targetPlayer.isAlive() &&
+            targetPlayer.getTeam() != packetPlayer.getTeam()
+        ) return null;
 
         var value = (byte) flags.value();
         if (packetPlayer.isPlaying() && packetPlayer.isAlive()) {

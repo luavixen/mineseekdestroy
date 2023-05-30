@@ -15,6 +15,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
+import net.minecraft.util.math.Vec3d
 import java.time.Instant
 
 class SpecialPianoService : Service() {
@@ -66,14 +67,14 @@ class SpecialPianoService : Service() {
 
             val pitch = tuning[index]
 
-            world.spawnParticles(
+            Broadcast.sendParticles(
                 ParticleTypes.NOTE,
-                pos.x.toDouble() + 0.5,
-                pos.y.toDouble() + 1.0,
-                pos.z.toDouble() + 0.5,
-                1,
-                0.0, 0.0, 0.0,
-                pitch.toDouble() / 24.0,
+                pitch / 24.0F, 1,
+                world, Vec3d(
+                    pos.x.toDouble() + 0.5,
+                    pos.y.toDouble() + 1.0,
+                    pos.z.toDouble() + 0.5,
+                ),
             )
             Broadcast.sendSound(
                 SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(),
