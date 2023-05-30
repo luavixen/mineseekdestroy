@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
-import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -202,14 +201,10 @@ public abstract class GameState {
     }
 
     public boolean onItemDropped(@Nullable GameContext context, ServerPlayerEntity playerEntity, ItemStack stack, boolean throwRandomly, boolean retainOwnership) {
-        if (Game.getGame().isOperator(playerEntity)) {
-            return true;
-        }
-        if (Game.UNDROPPABLE_ITEMS.contains(stack.getItem())) {
-            playerEntity.giveItemStack(stack.copy());
-            return false;
-        }
-        return !Game.ILLEGAL_ITEMS.contains(stack.getItem());
+        return Game.getGame().isOperator(playerEntity) || (
+            !Game.UNDROPPABLE_ITEMS.contains(stack.getItem()) &&
+            !Game.ILLEGAL_ITEMS.contains(stack.getItem())
+        );
     }
 
     public boolean onItemAcquired(@Nullable GameContext context, ServerPlayerEntity playerEntity, PlayerInventory inventory, ItemStack stack, int slot) {

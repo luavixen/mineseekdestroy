@@ -998,8 +998,8 @@ class SpecialSummonsService : Service() {
                 Text.of("(Blindness for others)"),
             ),
             summonItem(
-                TheologyPair(DEEP, FLAME), FLINT_AND_STEEL,
-                Text.of("Receive some firestarters and anvils"),
+                TheologyPair(DEEP, FLAME), ANVIL,
+                Text.of("Receive water buckets and anvils"),
             ),
             summonItem(
                 TheologyPair(BARTER, COSMOS), COOKED_BEEF,
@@ -1007,7 +1007,7 @@ class SpecialSummonsService : Service() {
             ),
             summonItem(
                 TheologyPair(FLAME, OCCULT), GHAST_SPAWN_EGG,
-                Text.of("Spawn a Ghast in the arena"),
+                Text.of("Spawn ghasts in the arena"),
             ),
             summonItem(
                 TheologyPair(DEEP, COSMOS), PRISMARINE_SHARD,
@@ -1015,7 +1015,7 @@ class SpecialSummonsService : Service() {
             ),
             summonItem(
                 TheologyPair(BARTER, OCCULT), GOLDEN_SWORD,
-                Text.of("Receive some instant-kill swords"),
+                Text.of("Receive very powerful swords"),
             ),
             summonItem(
                 TheologyPair(DEEP, OCCULT), COMPASS,
@@ -1062,11 +1062,11 @@ class SpecialSummonsService : Service() {
                 override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
-                        .append(" has summoned flint, steel, and anvils.")
+                        .append(" has summoned water buckets and anvils.")
                 override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
-                        .append(" summoned flint, steel, and anvils.")
+                        .append(" summoned water buckets and anvils.")
             } },
             TheologyPair(OCCULT, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
@@ -1098,11 +1098,11 @@ class SpecialSummonsService : Service() {
                 override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
-                        .append(" has summoned a ghast!")
+                        .append(" has summoned some ghasts!")
                 override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
-                        .append(" summoned a ghast!")
+                        .append(" summoned some ghasts!")
             } },
             TheologyPair(COSMOS, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
@@ -1134,11 +1134,11 @@ class SpecialSummonsService : Service() {
                 override val subtitle =
                     Text.empty()
                         .append(options.team.displayName)
-                        .append(" gained a full stack of snow blocks.")
+                        .append(" gained a full stack of ice blocks.")
                 override val tooltip =
                     Text.empty()
                         .append(options.team.displayName)
-                        .append(" gained blocks of snow.")
+                        .append(" gained blocks of ice.")
             } },
             TheologyPair(DEEP, DEEP) to { object : DefaultTextProvider(it) {
                 override val title =

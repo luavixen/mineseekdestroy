@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.BiFunction;
 
-public final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
+public final class ImmutableMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("unchecked")
     public static <K, V> @NotNull ImmutableMap<K, V> of() {
@@ -321,6 +321,10 @@ public final class ImmutableMap<K, V> extends AbstractMap<K, V> implements Map<K
     @Override
     public int size() {
         return elements.length;
+    }
+    @Override
+    public boolean isEmpty() {
+        return size() == 0;
     }
 
     @Override
