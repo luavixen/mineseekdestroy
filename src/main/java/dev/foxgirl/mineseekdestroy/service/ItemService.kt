@@ -3,8 +3,8 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
+import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
-import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -43,6 +43,11 @@ class ItemService : Service() {
 
             val inventory = player.inventory ?: continue
 
+            val toolItems = when (player.mainTeam) {
+                GameTeam.PLAYER_BLUE -> toolItemsBlue
+                else -> toolItemsYellow
+            }
+
             val powderItem = when (player.team) {
                 GameTeam.PLAYER_DUEL -> BROWN_CONCRETE_POWDER
                 GameTeam.PLAYER_WARDEN -> BLACK_CONCRETE_POWDER
@@ -52,11 +57,10 @@ class ItemService : Service() {
                 else -> continue
             }
 
-            val tools = ToolItemsHandler(player.mainTeam)
-
             inventory.forEach { stack, item, i ->
-                if (toolItems.contains(item) && tools.apply(item)) {
-                    inventory.setStack(i, ItemStack.EMPTY)
+                val toolItem = toolItems[item]
+                if (toolItem != null) {
+                    inventory.setStack(i, ItemStack(toolItem))
                 }
                 if (powderItems.contains(item) && item !== powderItem) {
                     val count = stack.count
@@ -71,8 +75,6 @@ class ItemService : Service() {
                     inventory.setStack(i, ItemStack.EMPTY)
                 }
             }
-
-            tools.finalize(inventory)
         }
     }
 
@@ -102,30 +104,16 @@ class ItemService : Service() {
             WHITE_TERRACOTTA, LIGHT_GRAY_TERRACOTTA,
         )
 
-        private val toolItems = immutableSetOf(
-            IRON_AXE, IRON_SHOVEL,
-            IRON_SWORD, IRON_PICKAXE,
-            CROSSBOW, BOW,
+        private val toolItemsYellow = immutableMapOf(
+            IRON_SWORD to IRON_AXE,
+            IRON_PICKAXE to IRON_SHOVEL,
+            BOW to CROSSBOW,
         )
-
-        private val toolItemsYellow = arrayOf(IRON_AXE, IRON_SHOVEL, CROSSBOW)
-        private val toolItemsBlue = arrayOf(IRON_SWORD, IRON_PICKAXE, BOW)
-
-        private class ToolItemsHandler(team: GameTeam?) {
-            private val items: Array<Item>
-            private val state: BooleanArray
-
-            init {
-                items = if (team == GameTeam.PLAYER_BLUE) toolItemsBlue else toolItemsYellow
-                state = BooleanArray(items.size)
-            }
-
-            fun apply(item: Item) =
-                items.indexOf(item).let { i -> if (i < 0) true else state[i].also { state[i] = true } }
-
-            fun finalize(inventory: PlayerInventory) =
-                state.forEachIndexed { i, has -> if (!has) inventory.insertStack(ItemStack(items[i])) }
-        }
+        private val toolItemsBlue = immutableMapOf(
+            IRON_AXE to IRON_SWORD,
+            IRON_SHOVEL to IRON_PICKAXE,
+            CROSSBOW to BOW,
+        )
 
     }
 

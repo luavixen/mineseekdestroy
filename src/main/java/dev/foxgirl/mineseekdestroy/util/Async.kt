@@ -3,7 +3,10 @@ package dev.foxgirl.mineseekdestroy.util
 import dev.foxgirl.mineseekdestroy.Game
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import kotlin.coroutines.*
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 object Async {
 
@@ -18,19 +21,14 @@ object Async {
         handle(go(context, coroutine))
 
     private fun <T> handle(promise: CompletableFuture<T>) {
-        promise.handle { _, cause -> Game.LOGGER.error("Unexpected exception in async task", cause) }
+        promise.handle { _, cause -> if (cause != null) Game.LOGGER.error("Unexpected exception in async task", cause) }
     }
 
     suspend fun <T> await(promise: CompletableFuture<T>): T =
-        suspendCoroutine {
-            promise.handle { value, err ->
-                it.resumeWith(if (err != null) Result.failure(err) else Result.success(value))
-            }
-        }
+        suspendCoroutine { promise.handle { value, cause -> it.resumeWith(if (cause != null) Result.failure(cause) else Result.success(value)) } }
 
     suspend fun delay(): Unit =
         suspendCoroutine { Scheduler.now { _ -> it.resume(Unit) } }
-
     suspend fun delay(seconds: Double): Unit =
         suspendCoroutine { Scheduler.delay(seconds) { _ -> it.resume(Unit) } }
 
@@ -43,3 +41,5 @@ object Async {
     }
 
 }
+
+suspend inline fun <T> CompletableFuture<T>.await(): T = Async.await(this)
