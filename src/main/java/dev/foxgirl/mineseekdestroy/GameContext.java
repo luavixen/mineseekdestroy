@@ -58,6 +58,9 @@ public final class GameContext {
 
     private final Team[] teams;
 
+    private final Map<String, Team> teamMap;
+    private final Map<String, Team> teamBaseMap;
+
     public final @NotNull PlayerManager playerManager;
 
     private final HashMap<UUID, GamePlayer> playerMap;
@@ -158,9 +161,26 @@ public final class GameContext {
             teamBlueDamaged = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getDamagedTeam(scoreboard)),
         };
 
+        teamMap = new HashMap<>(teams.length);
+        teamBaseMap = new HashMap<>(teams.length);
+
+        for (var value : GameTeam.values()) {
+            var team = value.getAliveTeam(scoreboard);
+            if (team != null) {
+                for (var name : value.getNames()) {
+                    teamBaseMap.put(name, team);
+                }
+                teamMap.put(Objects.requireNonNull(value.getName()), team);
+            }
+            var teamDead = value.getDeadTeam(scoreboard);
+            if (teamDead != null) teamMap.put(teamDead.getName(), teamDead);
+            var teamDamaged = value.getDamagedTeam(scoreboard);
+            if (teamDamaged != null) teamMap.put(teamDamaged.getName(), teamDamaged);
+        }
+
         playerManager = server.getPlayerManager();
 
-        playerMap = new HashMap<>(32);
+        playerMap = new HashMap<>(64);
         playerMapLock = new Object();
 
         services = new Service[] {
@@ -367,6 +387,24 @@ public final class GameContext {
             }
             return wrapper;
         }
+    }
+
+    public @Nullable Team getTeam(@NotNull GameTeam team) {
+        Objects.requireNonNull(team, "Argument 'team'");
+        return getTeam(Objects.requireNonNull(team.getName(), "Expression 'team.getName()'"));
+    }
+    public @Nullable Team getTeam(@NotNull String name) {
+        Objects.requireNonNull(name, "Argument 'name'");
+        return teamMap.get(name);
+    }
+
+    public @Nullable Team getBaseTeam(@NotNull Team team) {
+        Objects.requireNonNull(team, "Argument 'team'");
+        return getBaseTeam(team.getName());
+    }
+    public @Nullable Team getBaseTeam(@NotNull String name) {
+        Objects.requireNonNull(name, "Argument 'name'");
+        return teamBaseMap.get(name);
     }
 
 }

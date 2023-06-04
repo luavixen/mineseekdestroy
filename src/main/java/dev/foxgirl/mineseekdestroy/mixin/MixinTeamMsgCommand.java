@@ -11,6 +11,7 @@ import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
@@ -18,8 +19,24 @@ import java.util.List;
 @Mixin(TeamMsgCommand.class)
 public abstract class MixinTeamMsgCommand {
 
-    @Inject(method = "execute", at = @At("HEAD"), cancellable = true)
-    private static void mineseekdestroy$onExecute(ServerCommandSource source, Entity entity, Team team, List<ServerPlayerEntity> recipients, SignedMessage message, CallbackInfo info) {
+    @ModifyVariable(
+        method = "execute(Lnet/minecraft/server/command/ServerCommandSource;Lnet/minecraft/entity/Entity;Lnet/minecraft/scoreboard/Team;Ljava/util/List;Lnet/minecraft/network/message/SignedMessage;)V",
+        at = @At("HEAD"), ordinal = 0
+    )
+    private static Team mineseekdestroy$hookExecute$0(Team team) {
+        var context = Game.getGame().getContext();
+        if (context != null) {
+            var teamNew = context.getBaseTeam(team);
+            if (teamNew != null && teamNew != team) return teamNew;
+        }
+        return team;
+    }
+
+    @Inject(
+        method = "execute(Lnet/minecraft/server/command/ServerCommandSource;Lnet/minecraft/entity/Entity;Lnet/minecraft/scoreboard/Team;Ljava/util/List;Lnet/minecraft/network/message/SignedMessage;)V",
+        at = @At("HEAD"), cancellable = true
+    )
+    private static void mineseekdestroy$hookExecute$1(ServerCommandSource source, Entity entity, Team team, List<ServerPlayerEntity> recipients, SignedMessage message, CallbackInfo info) {
         if (!Game.getGame().getRuleBoolean(Game.RULE_MESSAGE_TEAM_ALLOWED)) {
             source.sendError(Text.of("Team messages are disabled"));
             info.cancel();

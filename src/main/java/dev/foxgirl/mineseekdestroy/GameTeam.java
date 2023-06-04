@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.screen.ScreenTexts;
@@ -8,6 +9,7 @@ import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public enum GameTeam {
@@ -27,6 +29,7 @@ public enum GameTeam {
     private final String nameDamaged;
     private final Formatting colorAlive;
     private final Formatting colorDead;
+    private final List<String> names;
 
     GameTeam(Text displayName, String nameAlive, String nameDead, String nameDamaged, Formatting colorAlive, Formatting colorDead) {
         this.displayName = displayName;
@@ -35,6 +38,12 @@ public enum GameTeam {
         this.nameDamaged = nameDamaged;
         this.colorAlive = colorAlive;
         this.colorDead = colorDead;
+
+        var names = ImmutableList.<String>builder(3);
+        if (nameAlive != null) names.add(nameAlive);
+        if (nameDead != null) names.add(nameDead);
+        if (nameDamaged != null) names.add(nameDamaged);
+        this.names = names.build();
     }
 
     public boolean isPlaying() {
@@ -51,6 +60,14 @@ public enum GameTeam {
 
     public boolean isOnScoreboard() {
         return this != NONE && this != OPERATOR;
+    }
+
+    public @Nullable String getName() {
+        return nameAlive;
+    }
+
+    public @NotNull List<@NotNull String> getNames() {
+        return names;
     }
 
     public @NotNull Formatting getColor() {

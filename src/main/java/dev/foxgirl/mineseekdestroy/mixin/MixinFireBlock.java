@@ -31,12 +31,12 @@ public abstract class MixinFireBlock extends AbstractFireBlock {
     }
 
     @Overwrite
-    public int getSpreadChance(BlockState state) {
+    private int getSpreadChance(BlockState state) {
         return mineseekdestroy$flameActive(state) ? 5 : 0;
     }
 
     @Overwrite
-    public int getBurnChance(BlockState state) {
+    private int getBurnChance(BlockState state) {
         return mineseekdestroy$flameActive(state) ? 20 : 0;
     }
 
