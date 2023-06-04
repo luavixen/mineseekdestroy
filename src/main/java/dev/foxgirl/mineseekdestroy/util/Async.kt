@@ -1,15 +1,25 @@
 package dev.foxgirl.mineseekdestroy.util
 
+import dev.foxgirl.mineseekdestroy.Game
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import kotlin.coroutines.*
 
 object Async {
 
-    fun <T> run(coroutine: suspend Async.() -> T): CompletableFuture<T> =
-        run(EmptyCoroutineContext, coroutine)
-    fun <T> run(context: CoroutineContext, coroutine: suspend Async.() -> T): CompletableFuture<T> =
+    fun <T> go(coroutine: suspend Async.() -> T): CompletableFuture<T> =
+        go(EmptyCoroutineContext, coroutine)
+    fun <T> go(context: CoroutineContext, coroutine: suspend Async.() -> T): CompletableFuture<T> =
         AsyncSupport.execute(context, suspend { coroutine(this) })
+
+    fun <T> run(coroutine: suspend Async.() -> T): Unit =
+        handle(go(coroutine))
+    fun <T> run(context: CoroutineContext, coroutine: suspend Async.() -> T): Unit =
+        handle(go(context, coroutine))
+
+    private fun <T> handle(promise: CompletableFuture<T>) {
+        promise.handle { _, cause -> Game.LOGGER.error("Unexpected exception in async task", cause) }
+    }
 
     suspend fun <T> await(promise: CompletableFuture<T>): T =
         suspendCoroutine {

@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameContext
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.util.Async
 import dev.foxgirl.mineseekdestroy.util.Broadcast
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Scheduler
@@ -84,21 +85,18 @@ class AutomationService : Service() {
             }
         }
 
-        val iterator = tasks.iterator()
-
         val secondsDelay = game.getRuleDouble(Game.RULE_AUTOMATION_DELAY_DURATION)
         val secondsInterval = game.getRuleDouble(Game.RULE_AUTOMATION_INTERVAL_DURATION)
 
-        Scheduler.delay(secondsDelay) {
+        Async.run {
+            delay(secondsDelay)
+
             players.forEach { it.isAlive = true }
             logger.info("Automation marked all players alive")
 
-            Scheduler.interval(secondsInterval) { schedule ->
-                if (iterator.hasNext()) {
-                    iterator.next()()
-                } else {
-                    schedule.cancel()
-                }
+            for (task in tasks) {
+                delay(secondsInterval)
+                task()
             }
         }
     }

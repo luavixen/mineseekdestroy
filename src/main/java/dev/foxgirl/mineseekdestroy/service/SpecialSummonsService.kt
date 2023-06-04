@@ -146,19 +146,16 @@ class SpecialSummonsService : Service() {
                 Blocks.TRIPWIRE,
             )
 
-            val slices = iterator {
+            Async.run {
                 val (start, end) = properties.regionFlood
                 for (y in start.y..end.y) {
-                    yield(Region(
+                    delay(1.0)
+
+                    val region = Region(
                         BlockPos(start.x, y, start.z),
                         BlockPos(end.x, y, end.z),
-                    ))
-                }
-            }
-
-            Scheduler.interval(1.0) { schedule ->
-                if (slices.hasNext()) {
-                    Editor.edit(world, slices.next()) { state, _, _, _ ->
+                    )
+                    val promise = Editor.edit(world, region) { state, _, _, _ ->
                         if (state.isAir || blocks.contains(state.block)) {
                             Blocks.WATER.defaultState
                         } else if (state.contains(Properties.WATERLOGGED)) {
@@ -167,8 +164,8 @@ class SpecialSummonsService : Service() {
                             null
                         }
                     }
-                } else {
-                    schedule.cancel()
+
+                    await(promise)
                 }
             }
 
