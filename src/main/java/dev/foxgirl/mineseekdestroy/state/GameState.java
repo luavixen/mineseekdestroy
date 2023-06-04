@@ -110,6 +110,12 @@ public abstract class GameState {
                 }
                 return ActionResult.PASS;
             }
+            if (
+                blockState.getBlock() == Blocks.LEVER &&
+                properties.getRegionBlimp().contains(blockHit.getBlockPos())
+            ) {
+                return ActionResult.PASS;
+            }
         } else {
             if (
                 blockState.getBlock() == Blocks.LEVER &&

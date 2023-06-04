@@ -1,11 +1,9 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.util.Broadcast
-import dev.foxgirl.mineseekdestroy.util.Editor
-import dev.foxgirl.mineseekdestroy.util.Region
-import dev.foxgirl.mineseekdestroy.util.Scheduler
+import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
+import net.minecraft.block.Blocks
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -17,65 +15,73 @@ import net.minecraft.util.math.Direction.*
 class SpecialFamilyGuyService : Service() {
 
     fun handleFamilyGuyBlockPlaced(player: GamePlayer, blockHit: BlockHitResult) {
-        val playerEntity = player.entity ?: return
+        Async.run {
+            val playerEntity = player.entity ?: return@run
 
-        val structure = structures[playerEntity.horizontalFacing] ?: return
+            val structure = structures[playerEntity.horizontalFacing] ?: return@run
 
-        val offset = blockHit.blockPos.offset(blockHit.side).subtract(structure.center)
-        val region = structure.region.offset(offset)
+            val target = blockHit.blockPos.offset(blockHit.side)
 
-        val center = region.center
+            delay()
 
-        val positions = ArrayList<BlockPos>(128)
+            if (world.getBlockState(target).block !== Blocks.TARGET) return@run
 
-        Editor
-            .edit(world, region) { _, y, x, z ->
-                val pos = BlockPos(x, y, z)
-                val state = world.getBlockState(pos.subtract(offset))
-                if (state.isAir) {
-                    null
-                } else {
-                    positions.add(pos)
-                    state
+            val offset = target.subtract(structure.center)
+            val region = structure.region.offset(offset)
+
+            val center = region.center
+
+            val positions = ArrayList<BlockPos>(128)
+
+            Editor
+                .edit(world, region) { _, y, x, z ->
+                    val pos = BlockPos(x, y, z)
+                    val state = world.getBlockState(pos.subtract(offset))
+                    if (state.isAir) {
+                        null
+                    } else {
+                        positions.add(pos)
+                        state
+                    }
                 }
-            }
-            .thenAccept {
-                positions.forEach {
-                    Broadcast.sendParticles(ParticleTypes.POOF, 0.25F, 5, world, it.toCenterPos())
-                }
+                .thenAccept {
+                    positions.forEach {
+                        Broadcast.sendParticles(ParticleTypes.POOF, 0.25F, 5, world, it.toCenterPos())
+                    }
 
-                Scheduler.delay(0.05) {
-                    notesHarp.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
-                }
-                Scheduler.delay(0.45) {
-                    notesBass.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
-                }
+                    Scheduler.delay(0.05) {
+                        notesHarp.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
+                    }
+                    Scheduler.delay(0.45) {
+                        notesBass.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
+                    }
 
-                for (entity in world.players) {
-                    if (!region.contains(entity)) continue
+                    for (entity in world.players) {
+                        if (!region.contains(entity)) continue
 
-                    var i = 0
+                        var i = 0
 
-                    while (i < 64) {
-                        if (!world.isAir(entity.blockPos.add(0, i + 1, 0))) {
-                            i += 2
-                        } else if (!world.isAir(entity.blockPos.add(0, i, 0))) {
-                            i += 1
-                        } else {
-                            break
+                        while (i < 64) {
+                            if (!world.isAir(entity.blockPos.add(0, i + 1, 0))) {
+                                i += 2
+                            } else if (!world.isAir(entity.blockPos.add(0, i, 0))) {
+                                i += 1
+                            } else {
+                                break
+                            }
+                        }
+
+                        if (i != 0) {
+                            entity.networkHandler.requestTeleport(
+                                entity.x,
+                                entity.y + i.toDouble(),
+                                entity.z,
+                                entity.yaw, entity.pitch,
+                            )
                         }
                     }
-
-                    if (i != 0) {
-                        entity.networkHandler.requestTeleport(
-                            entity.x,
-                            entity.y + i.toDouble(),
-                            entity.z,
-                            entity.yaw, entity.pitch,
-                        )
-                    }
                 }
-            }
+        }
     }
 
     private companion object {

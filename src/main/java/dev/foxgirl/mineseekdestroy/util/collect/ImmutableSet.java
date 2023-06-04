@@ -52,9 +52,9 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
             return of(collect());
         }
 
-        @Override
-        public void add(E element) {
-            super.add(element);
+        public @NotNull Builder<E> add(E element) {
+            append(element);
+            return this;
         }
     }
 
@@ -119,7 +119,7 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
 
             entries[index] = new Entry<>(hash, element, entryHead);
 
-            elements.add(element);
+            elements.append(element);
         }
 
         this.entries = entries;

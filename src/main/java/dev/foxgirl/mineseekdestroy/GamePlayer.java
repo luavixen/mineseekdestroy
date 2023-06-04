@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy;
 
-import dev.foxgirl.mineseekdestroy.mixin.MixinLivingEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.scoreboard.Scoreboard;
@@ -35,7 +34,7 @@ public final class GamePlayer {
             return true;
         }
         if (obj instanceof GamePlayer player) {
-            return uuid.equals(player.uuid);
+            return context == player.context && uuid.equals(player.uuid);
         }
         return false;
     }
@@ -199,13 +198,15 @@ public final class GamePlayer {
     }
 
     private @Nullable Team getScoreboardTeam() {
-        var player = getEntity();
-        if (player != null && player.isAlive() && player.networkHandler.isConnectionOpen()) {
-            return (
-                player.getWorld().getTime() - ((MixinLivingEntity) player).mineseekdestroy$getLastDamageTime() > 10L
-                    ? currentTeam.getDamagedTeam(getScoreboard())
-                    : currentTeam.getAliveTeam(getScoreboard())
-            );
+        if (currentAlive) {
+            var player = getEntity();
+            if (player != null && player.isAlive() && player.networkHandler.isConnectionOpen()) {
+                return (
+                    player.getWorld().getTime() - player.lastDamageTime < 10L
+                        ? currentTeam.getDamagedTeam(getScoreboard())
+                        : currentTeam.getAliveTeam(getScoreboard())
+                );
+            }
         }
         return currentTeam.getDeadTeam(getScoreboard());
     }

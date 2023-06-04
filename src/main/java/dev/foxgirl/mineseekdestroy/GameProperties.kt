@@ -289,10 +289,6 @@ sealed interface GameProperties {
             OAK_LOG,
         )).toImmutableSet()
 
-        override fun setup(context: GameContext) {
-            context.game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, false)
-        }
-
     }
 
     object Lights : GameProperties {
@@ -308,9 +304,9 @@ sealed interface GameProperties {
         override val templateInventory = BlockPos(-96, -15, 773)
         override val templateLoottable = BlockPos(-94, -15, 773)
 
-        override val regionAll = Region(BlockPos(-46, -66, 734), BlockPos(-181, -26, 897))
-        override val regionLegal = Region(BlockPos(-46, -66, 734), BlockPos(-181, 65536, 897))
-        override val regionPlayable = Region(BlockPos(-46, -66, 734), BlockPos(-181, -26, 897))
+        override val regionAll = Region(BlockPos(-46, -66, 724), BlockPos(-181, -26, 897))
+        override val regionLegal = Region(BlockPos(-46, -66, 724), BlockPos(-181, 65536, 897))
+        override val regionPlayable = Region(BlockPos(-46, -66, 724), BlockPos(-181, -26, 897))
         override val regionBlimp = Region(BlockPos(-67, 4, 754), BlockPos(-144, -16, 794))
         override val regionBarrierArenaTarget = Region(BlockPos(-96, -39, 840), BlockPos(-129, -54, 862))
         override val regionBarrierArenaTemplate = Region(BlockPos(41, 12, -574), BlockPos(8, -3, -552))

@@ -71,6 +71,7 @@ public final class GameContext {
     public final @NotNull SaturationService saturationService;
     public final @NotNull GlowService glowService;
     public final @NotNull ItemService itemService;
+    public final @NotNull ShieldService shieldService;
     public final @NotNull SnapshotService snapshotService;
     public final @NotNull StormService stormService;
     public final @NotNull SmokerService smokerService;
@@ -171,6 +172,7 @@ public final class GameContext {
             saturationService = new SaturationService(),
             glowService = new GlowService(),
             itemService = new ItemService(),
+            shieldService = new ShieldService(),
             snapshotService = new SnapshotService(),
             stormService = new StormService(),
             smokerService = new SmokerService(),
@@ -199,7 +201,7 @@ public final class GameContext {
         game.setRuleInt(GameRules.RANDOM_TICK_SPEED, GameRules.DEFAULT_RANDOM_TICK_SPEED);
         game.setRuleInt(GameRules.PLAYERS_SLEEPING_PERCENTAGE, 200);
         game.setRuleBoolean(GameRules.KEEP_INVENTORY, true);
-        game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
+        game.setRuleBoolean(GameRules.DO_FIRE_TICK, true);
         game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
         game.setRuleBoolean(GameRules.DO_DAYLIGHT_CYCLE, true);
 

@@ -330,7 +330,7 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             val region = properties.regionBlimp
             val position = BlockPos(region.center.x.toInt(), region.start.y - 7, region.center.z.toInt())
-            for (i in 0..3) EntityType.GHAST.spawn(world, position, SpawnReason.COMMAND)
+            for (i in 1..3) EntityType.GHAST.spawn(world, position, SpawnReason.COMMAND)
         }
     }
 

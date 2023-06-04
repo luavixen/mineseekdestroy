@@ -16,7 +16,6 @@
         "MixinFarmlandBlock",
         "MixinFireBlock",
         "MixinItemUsageContext",
-        "MixinLivingEntity",
         "MixinMessageCommand",
         "MixinMinecraftServer",
         "MixinPigEntity",
@@ -29,6 +28,7 @@
         "MixinServerPlayerInteractionManager",
         "MixinServerPlayNetworkHandler",
         "MixinSharedConstants",
+        "MixinTeam",
         "MixinTeamMsgCommand"
     ]
 }

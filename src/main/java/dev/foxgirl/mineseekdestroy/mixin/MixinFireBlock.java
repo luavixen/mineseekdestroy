@@ -3,11 +3,10 @@ package dev.foxgirl.mineseekdestroy.mixin;
 import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.FireBlock;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.Overwrite;
 
 @Mixin(FireBlock.class)
 public abstract class MixinFireBlock extends AbstractFireBlock {
@@ -20,27 +19,25 @@ public abstract class MixinFireBlock extends AbstractFireBlock {
         var game = Game.getGame();
 
         var context = game.getContext();
-        if (context != null && context.specialSummonsService.isScaldingEarth()) {
-            var ignored = game.getProperties().getInflammableBlocks();
-            if (ignored.contains(state.getBlock())) return false;
-            return true;
-        }
+        if (context == null) return false;
 
-        return false;
-    }
+        var block = state.getBlock();
 
-    @Inject(method = "getSpreadChance", at = @At("HEAD"), cancellable = true)
-    private void mineseekdestroy$hookGetSpreadChance(BlockState state, CallbackInfoReturnable<Integer> info) {
-        if (mineseekdestroy$flameActive(state)) {
-            info.setReturnValue(5);
+        if (context.specialSummonsService.isScaldingEarth()) {
+            return !game.getProperties().getInflammableBlocks().contains(block);
+        } else {
+            return block == Blocks.TNT;
         }
     }
 
-    @Inject(method = "getBurnChance", at = @At("HEAD"), cancellable = true)
-    private void mineseekdestroy$hookGetBurnChance(BlockState state, CallbackInfoReturnable<Integer> info) {
-        if (mineseekdestroy$flameActive(state)) {
-            info.setReturnValue(20);
-        }
+    @Overwrite
+    public int getSpreadChance(BlockState state) {
+        return mineseekdestroy$flameActive(state) ? 5 : 0;
+    }
+
+    @Overwrite
+    public int getBurnChance(BlockState state) {
+        return mineseekdestroy$flameActive(state) ? 20 : 0;
     }
 
 }

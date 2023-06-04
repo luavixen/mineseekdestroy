@@ -63,8 +63,9 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
             }
         }
 
-        public void put(K key, V value) {
-            super.add(new Entry<>(key, value));
+        public @NotNull Builder<K, V> put(K key, V value) {
+            append(new Entry<>(key, value));
+            return this;
         }
     }
 
@@ -292,7 +293,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
             entry.next = entryHead;
             entries[index] = entry;
 
-            elements.add(entry);
+            elements.append(entry);
         }
 
         this.entries = entries;

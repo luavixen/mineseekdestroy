@@ -11,10 +11,10 @@ import java.util.List;
 @Mixin(EntityTrackerUpdateS2CPacket.class)
 public interface MixinEntityTrackerUpdateS2CPacket {
 
-    @Accessor("id") @Mutable
+    @Mutable @Accessor("id")
     void mineseekdestroy$setId(int id);
 
-    @Accessor("trackedValues") @Mutable
+    @Mutable @Accessor("trackedValues")
     void mineseekdestroy$setTrackedValues(List<DataTracker.SerializedEntry<?>> trackedValues);
 
 }

@@ -24,6 +24,8 @@ import net.fabricmc.fabric.api.gamerule.v1.rule.DoubleRule;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -495,9 +497,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) &&
                         properties.getRegionBlimp().contains(playerEntity)
                     ) {
-                        LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered blimp killzone and is eligible");
-                        playerEntity.kill();
-                        playerEntity.setHealth(0.0F);
+                        playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 40));
                     }
                 }
             }

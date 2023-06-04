@@ -66,9 +66,9 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
             return ImmutableList.wrap(collect());
         }
 
-        @Override
-        public void add(E element) {
-            super.add(element);
+        public @NotNull Builder<E> add(E element) {
+            append(element);
+            return this;
         }
     }
 

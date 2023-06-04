@@ -15,7 +15,7 @@ class ArrayBuilder<E> {
     public int size() { return size; }
     public boolean isEmpty() { return size == 0; }
 
-    void add(E element) {
+    void append(E element) {
         var elements = this.elements;
         if (elements.length <= size) {
             elements = this.elements = Arrays.copyOf(elements, Math.max(elements.length << 1, 8));

@@ -121,7 +121,7 @@ class ItemService : Service() {
             }
 
             fun apply(item: Item) =
-                items.indexOf(item).let { i -> if (i < 0) true else { state[i] = true; false } }
+                items.indexOf(item).let { i -> if (i < 0) true else state[i].also { state[i] = true } }
 
             fun finalize(inventory: PlayerInventory) =
                 state.forEachIndexed { i, has -> if (!has) inventory.insertStack(ItemStack(items[i])) }
