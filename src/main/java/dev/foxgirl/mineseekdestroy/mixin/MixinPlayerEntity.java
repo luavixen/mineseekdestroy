@@ -38,7 +38,7 @@ public abstract class MixinPlayerEntity {
         var context = Game.getGame().getContext();
         if (
             context != null &&
-            context.getPlayer((ServerPlayerEntity) (Object) this).getMainTeam() == GameTeam.PLAYER_BLUE
+            context.getPlayer((ServerPlayerEntity) (Object) this).getTeam() == GameTeam.PLAYER_BLUE
         ) {
             return true;
         }

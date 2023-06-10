@@ -91,6 +91,17 @@ class ArmorService : Service() {
                         .apply { addEnchantment(Enchantments.THORNS, 3) },
                 )
             }
+            val loadoutBlack: Array<ItemStack> = run {
+                val armor = armorColorer(colorBlack)
+                arrayOf(
+                    armor(LEATHER_BOOTS),
+                    armor(LEATHER_LEGGINGS)
+                        .apply { addEnchantment(Enchantments.THORNS, 3) }
+                        .apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) },
+                    armor(LEATHER_CHESTPLATE),
+                    armor(LEATHER_HELMET),
+                )
+            }
             val loadoutBlackYellow: Array<ItemStack> = run {
                 val armor = armorColorer(colorBlack)
                 arrayOf(
@@ -143,8 +154,7 @@ class ArmorService : Service() {
                     PLAYER_WARDEN -> loadoutWarden
                     PLAYER_YELLOW -> loadoutYellow
                     PLAYER_BLUE -> loadoutBlue
-                    PLAYER_BLACK ->
-                        if (player.mainTeam == PLAYER_BLUE) loadoutBlackBlue else loadoutBlackYellow
+                    PLAYER_BLACK -> loadoutBlack
                 }
             }
         }

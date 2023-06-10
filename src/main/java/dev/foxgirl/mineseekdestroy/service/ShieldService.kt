@@ -8,7 +8,7 @@ class ShieldService : Service() {
 
     override fun update() {
         for ((player, playerEntity) in playerEntitiesIn) {
-            if (player.mainTeam == GameTeam.PLAYER_YELLOW && playerEntity.isBlocking) {
+            if (player.team == GameTeam.PLAYER_YELLOW && playerEntity.isBlocking) {
                 playerEntity.itemCooldownManager.set(Items.SHIELD, 100)
                 playerEntity.clearActiveItem()
                 playerEntity.world.sendEntityStatus(playerEntity, EntityStatuses.BREAK_SHIELD)

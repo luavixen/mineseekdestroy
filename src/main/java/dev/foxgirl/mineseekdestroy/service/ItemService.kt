@@ -5,10 +5,12 @@ import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
+import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -43,10 +45,7 @@ class ItemService : Service() {
 
             val inventory = player.inventory ?: continue
 
-            val toolItems = when (player.mainTeam) {
-                GameTeam.PLAYER_BLUE -> toolItemsBlue
-                else -> toolItemsYellow
-            }
+            val toolStacks = toolStackMaps[player.team]
 
             val powderItem = when (player.team) {
                 GameTeam.PLAYER_DUEL -> BROWN_CONCRETE_POWDER
@@ -58,9 +57,12 @@ class ItemService : Service() {
             }
 
             inventory.forEach { stack, item, i ->
-                val toolItem = toolItems[item]
-                if (toolItem != null) {
-                    inventory.setStack(i, ItemStack(toolItem))
+                if (toolStacks != null) {
+                    val tool = Tool.from(stack)
+                    if (tool != null) {
+                        val toolStack = toolStacks[tool]!!
+                        if (!ItemStack.areItemsEqual(toolStack, stack)) inventory.setStack(i, toolStack.copy())
+                    }
                 }
                 if (powderItems.contains(item) && item !== powderItem) {
                     val count = stack.count
@@ -104,15 +106,53 @@ class ItemService : Service() {
             WHITE_TERRACOTTA, LIGHT_GRAY_TERRACOTTA,
         )
 
-        private val toolItemsYellow = immutableMapOf(
-            IRON_SWORD to IRON_AXE,
-            IRON_PICKAXE to IRON_SHOVEL,
-            BOW to CROSSBOW,
-        )
-        private val toolItemsBlue = immutableMapOf(
-            IRON_AXE to IRON_SWORD,
-            IRON_SHOVEL to IRON_PICKAXE,
-            CROSSBOW to BOW,
+        private enum class Tool {
+            Tool1, Tool2, Tool3, Tool4;
+
+            val key = "MsdTool${ordinal + 1}".intern()
+
+            fun stack(item: Item) = stack(ItemStack(item))
+            fun stack(stack: ItemStack): Pair<Tool, ItemStack> =
+                this to stack.also { it.getOrCreateNbt().put(key, NbtByte.ONE) }
+
+            companion object {
+                fun from(stack: ItemStack): Tool? = stack.nbt?.let(::from)
+                fun from(nbt: NbtCompound): Tool? {
+                    if (nbt.contains(Tool1.key)) return Tool1
+                    if (nbt.contains(Tool2.key)) return Tool2
+                    if (nbt.contains(Tool3.key)) return Tool3
+                    if (nbt.contains(Tool4.key)) return Tool4
+                    return null
+                }
+            }
+        }
+
+        private val toolStackMaps: Map<GameTeam, Map<Tool, ItemStack>> = immutableMapOf(
+            GameTeam.PLAYER_DUEL to immutableMapOf(
+                Tool.Tool1.stack(IRON_SWORD),
+                Tool.Tool2.stack(IRON_AXE),
+                Tool.Tool3.stack(CROSSBOW),
+                Tool.Tool4.stack(BOW),
+            ),
+            GameTeam.PLAYER_BLACK to immutableMapOf(
+                Tool.Tool1.stack(IRON_AXE),
+                Tool.Tool2.stack(IRON_PICKAXE),
+                Tool.Tool3.stack(BOW),
+                Tool.Tool4.stack(TRIDENT)
+                    .also { (_, stack) -> stack.addEnchantment(Enchantments.LOYALTY, 3) },
+            ),
+            GameTeam.PLAYER_YELLOW to immutableMapOf(
+                Tool.Tool1.stack(IRON_AXE),
+                Tool.Tool2.stack(IRON_SHOVEL),
+                Tool.Tool3.stack(CROSSBOW),
+                Tool.Tool4.stack(CROSSBOW),
+            ),
+            GameTeam.PLAYER_BLUE to immutableMapOf(
+                Tool.Tool1.stack(IRON_SWORD),
+                Tool.Tool2.stack(IRON_PICKAXE),
+                Tool.Tool3.stack(BOW),
+                Tool.Tool4.stack(BOW),
+            ),
         )
 
     }

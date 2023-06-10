@@ -6,7 +6,13 @@ import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Region
 import net.minecraft.command.EntitySelector
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
+import net.minecraft.nbt.NbtByte
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.Position
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
@@ -109,20 +115,36 @@ internal fun setup() {
         }
     }
 
-    Command.build("state") {
-        fun register(literal: String, state: () -> GameState) {
-            it.params(argLiteral(literal)) {
-                it.action { args ->
-                    game.state = state()
-                    args.sendInfo("Set game state to '${literal}'")
+    Command.build("debug") {
+        it.params(argLiteral("state")) {
+            fun register(literal: String, state: () -> GameState) {
+                it.params(argLiteral(literal)) {
+                    it.action { args ->
+                        game.state = state()
+                        args.sendInfo("Set game state to '${literal}'")
+                    }
+                }
+            }
+            register("waiting") { WaitingGameState() }
+            register("finalizing") { FinalizingGameState() }
+            register("starting") { StartingGameState() }
+            register("playing") { PlayingGameState() }
+            register("dueling") { DuelingGameState() }
+        }
+        it.params(argLiteral("givetools")) {
+            it.action { args ->
+                val entity = args.context.source.entity
+                if (entity is ServerPlayerEntity) {
+                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool1", NbtByte.ONE); it.setCustomName(Text.literal("Tool 1").formatted(Formatting.GREEN)) })
+                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool2", NbtByte.ONE); it.setCustomName(Text.literal("Tool 2").formatted(Formatting.GREEN)) })
+                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool3", NbtByte.ONE); it.setCustomName(Text.literal("Tool 3").formatted(Formatting.GREEN)) })
+                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool4", NbtByte.ONE); it.setCustomName(Text.literal("Tool 4").formatted(Formatting.GREEN)) })
+                    args.sendInfo("Added tools to inventory")
+                } else {
+                    args.sendError("Cannot give tools, command source has no entity")
                 }
             }
         }
-        register("waiting") { WaitingGameState() }
-        register("finalizing") { FinalizingGameState() }
-        register("starting") { StartingGameState() }
-        register("playing") { PlayingGameState() }
-        register("dueling") { DuelingGameState() }
     }
 
     Command.build("snapshot") {
