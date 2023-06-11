@@ -1,7 +1,9 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
+import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
+import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ArmorItem
 import net.minecraft.item.DyeableItem
@@ -44,7 +46,7 @@ class ArmorService : Service() {
 
     private companion object {
 
-        private val loadoutFor: (GamePlayer) -> Array<ItemStack>
+        private val loadouts: Map<GameTeam, Array<ItemStack>>
 
         init {
             fun convertComponent(component: Float): Int {
@@ -145,22 +147,20 @@ class ArmorService : Service() {
                 )
             }
 
-            loadoutFor = { player ->
-                when (player.team) {
-                    NONE -> loadoutEmpty
-                    SKIP -> loadoutEmpty
-                    OPERATOR -> loadoutEmpty
-                    PLAYER_DUEL -> loadoutDuel
-                    PLAYER_WARDEN -> loadoutWarden
-                    PLAYER_YELLOW -> loadoutYellow
-                    PLAYER_BLUE -> loadoutBlue
-                    PLAYER_BLACK -> loadoutBlack
-                }
-            }
+            loadouts = immutableMapOf(
+                NONE to loadoutEmpty,
+                SKIP to loadoutEmpty,
+                OPERATOR to loadoutEmpty,
+                PLAYER_DUEL to loadoutDuel,
+                PLAYER_WARDEN to loadoutWarden,
+                PLAYER_YELLOW to loadoutYellow,
+                PLAYER_BLUE to loadoutBlue,
+                PLAYER_BLACK to loadoutBlack,
+            )
         }
 
         private fun armorSet(list: MutableList<ItemStack>, player: GamePlayer): Boolean {
-            val loadout = loadoutFor(player)
+            val loadout = loadouts[player.team]!!
             var dirty = false
             for (i in list.indices) {
                 if (ItemStack.areEqual(list[i], loadout[i])) continue

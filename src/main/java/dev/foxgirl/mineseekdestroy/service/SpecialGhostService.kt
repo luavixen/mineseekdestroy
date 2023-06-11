@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.GameProperties
 import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Region
 import dev.foxgirl.mineseekdestroy.util.Scheduler
+import dev.foxgirl.mineseekdestroy.util.terminate
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
@@ -74,6 +75,7 @@ class SpecialGhostService : Service() {
                 logger.info("SpecialGhostService search for spawn positions returned ${results.size} result(s)")
                 spawnPositions = results.map { it.pos.let { Vec3d(it.x + 0.5, it.y + 1.0, it.z + 0.5) } }
             }
+            .terminate()
     }
 
     private var schedule: Scheduler.Schedule? = null

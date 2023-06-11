@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public enum GameTeam {
@@ -87,20 +88,18 @@ public enum GameTeam {
         return team;
     }
 
-    public @Nullable Team getAliveTeam(@Nullable Scoreboard scoreboard) {
-        if (scoreboard == null || nameAlive == null) {
-            return null;
-        }
+    public @Nullable Team getAliveTeam(@NotNull Scoreboard scoreboard) {
+        Objects.requireNonNull(scoreboard, "Argument 'scoreboard'");
+        if (nameAlive == null) return null;
         return getOrCreateTeam(scoreboard, nameAlive, team -> {
             team.setDisplayName(displayName);
             team.setColor(colorAlive);
         });
     }
 
-    public @Nullable Team getDeadTeam(@Nullable Scoreboard scoreboard) {
-        if (scoreboard == null || nameDead == null) {
-            return null;
-        }
+    public @Nullable Team getDeadTeam(@NotNull Scoreboard scoreboard) {
+        Objects.requireNonNull(scoreboard, "Argument 'scoreboard'");
+        if (nameDead == null) return null;
         return getOrCreateTeam(scoreboard, nameDead, team -> {
             team.setDisplayName(displayName);
             team.setColor(colorDead);
@@ -108,10 +107,9 @@ public enum GameTeam {
         });
     }
 
-    public @Nullable Team getDamagedTeam(@Nullable Scoreboard scoreboard) {
-        if (scoreboard == null || nameDamaged == null) {
-            return null;
-        }
+    public @Nullable Team getDamagedTeam(@NotNull Scoreboard scoreboard) {
+        Objects.requireNonNull(scoreboard, "Argument 'scoreboard'");
+        if (nameDamaged == null) return null;
         return getOrCreateTeam(scoreboard, nameDamaged, team -> {
             team.setDisplayName(displayName);
             team.setColor(Formatting.LIGHT_PURPLE);

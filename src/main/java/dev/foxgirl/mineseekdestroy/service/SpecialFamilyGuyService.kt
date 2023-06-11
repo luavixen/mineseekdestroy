@@ -81,6 +81,7 @@ class SpecialFamilyGuyService : Service() {
                         }
                     }
                 }
+                .terminate()
         }
     }
 

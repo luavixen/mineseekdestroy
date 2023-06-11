@@ -35,10 +35,10 @@ class SnapshotService : Service() {
 
     private val snapshots = mutableListOf<Snapshot>()
 
-    private var restored = false
+    private var ready = false
 
     fun executeSnapshotSave(console: Console) {
-        restored = false
+        ready = false
         Snapshot(players.map(::SnapshotPlayer)).let { snapshot ->
             snapshots.add(snapshot)
             console.sendInfo("Created snapshot of ${snapshot.players.size} players")
@@ -46,9 +46,11 @@ class SnapshotService : Service() {
     }
 
     fun executeSnapshotRestore(console: Console) {
-        if (restored) {
-            restored = false
-            console.sendError("Are you sure? Restoring will cause item loss, run command again to confirm")
+        if (ready) {
+            ready = false
+        } else {
+            ready = true
+            return console.sendError("Are you sure? Restoring could cause loss of progress, run again to confirm")
         }
         val snapshot = snapshots.removeLastOrNull()
         if (snapshot == null) {

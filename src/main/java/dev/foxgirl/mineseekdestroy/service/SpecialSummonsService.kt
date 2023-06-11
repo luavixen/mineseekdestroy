@@ -404,6 +404,7 @@ class SpecialSummonsService : Service() {
                     }
                     return@edit null
                 }
+                .terminate()
 
             game.setRuleBoolean(GameRules.DO_FIRE_TICK, true)
             world.setWeatherClear()
@@ -468,6 +469,7 @@ class SpecialSummonsService : Service() {
                     .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
                     .associateBy { it.pos }
             }
+            .terminate()
     }
 
     private fun timeoutReset() {

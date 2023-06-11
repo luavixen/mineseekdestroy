@@ -112,8 +112,10 @@ public abstract class GameState {
                 return ActionResult.PASS;
             }
             if (
-                blockState.getBlock() == Blocks.LEVER &&
-                properties.getRegionBlimp().contains(blockHit.getBlockPos())
+                blockState.getBlock() == Blocks.LEVER && (
+                    properties.getRegionBlimp().contains(blockHit.getBlockPos()) ||
+                    properties.getRegionPlayable().excludes(blockHit.getBlockPos())
+                )
             ) {
                 return ActionResult.PASS;
             }
@@ -208,14 +210,17 @@ public abstract class GameState {
     }
 
     public boolean onItemDropped(@Nullable GameContext context, ServerPlayerEntity playerEntity, ItemStack stack, boolean throwRandomly, boolean retainOwnership) {
-        if (Game.getGame().isOperator(playerEntity)) return true;
-
+        if (Game.getGame().isOperator(playerEntity)) {
+            return true;
+        }
         if (Game.UNDROPPABLE_ITEMS.contains(stack.getItem())) {
             Scheduler.delay(1.0, (schedule) -> playerEntity.giveItemStack(stack));
             return false;
         }
-
-        return !Game.ILLEGAL_ITEMS.contains(stack.getItem());
+        if (Game.ILLEGAL_ITEMS.contains(stack.getItem())) {
+            return false;
+        }
+        return true;
     }
 
     public boolean onItemAcquired(@Nullable GameContext context, ServerPlayerEntity playerEntity, PlayerInventory inventory, ItemStack stack, int slot) {

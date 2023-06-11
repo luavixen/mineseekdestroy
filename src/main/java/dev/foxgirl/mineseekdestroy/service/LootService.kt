@@ -6,6 +6,7 @@ import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.collect.toImmutableList
+import dev.foxgirl.mineseekdestroy.util.terminate
 import net.minecraft.block.Blocks
 import net.minecraft.block.ChestBlock
 import net.minecraft.block.entity.BarrelBlockEntity
@@ -37,6 +38,7 @@ class LootService : Service() {
                 logger.info("LootService search for containers returned ${results.size} result(s)")
                 positions = results.map { it.pos }
             }
+            .terminate()
     }
 
     fun executeClear(console: Console) {
