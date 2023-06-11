@@ -33,7 +33,7 @@ public abstract class MixinProjectileEntity {
         var context = Game.getGame().getContext();
         if (context != null) {
             var player = context.getPlayer(((EntityHitResult) hitResult).getEntity());
-            if (player != null && player.isSpectator()) {
+            if (player != null && (player.isSpectator() || player.isGhost())) {
                 info.cancel();
             }
         }

@@ -24,7 +24,7 @@ public abstract class RunningGameState extends GameState {
         Position position;
 
         var player = context.getPlayer(newPlayerEntity);
-        if (player.isPlaying() && !player.isAlive()) {
+        if (player.isPlayingOrGhost() && !player.isAlive()) {
             position = Game.getGameProperties().getPositionBlimp();
         } else {
             position = Game.getGameProperties().getPositionSpawn().toCenterPos();
@@ -43,7 +43,7 @@ public abstract class RunningGameState extends GameState {
         if (context == null) return true;
 
         var player = context.getPlayer(playerEntity);
-        if (player.isPlaying() && player.isAlive()) {
+        if (player.isPlayingOrGhost() && player.isAlive()) {
             player.setAlive(false);
             player.countDeath();
 
@@ -66,7 +66,7 @@ public abstract class RunningGameState extends GameState {
         if (context == null) return false;
 
         var player = context.getPlayer(playerEntity);
-        if (player.isPlaying() && player.isAlive()) {
+        if (player.isPlayingOrGhost() && player.isAlive()) {
             var vehicle = playerEntity.getVehicle();
             if (vehicle instanceof PigEntity) {
                 if (damageSource.isOf(DamageTypes.FALL)) {

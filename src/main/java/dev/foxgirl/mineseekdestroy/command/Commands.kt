@@ -205,6 +205,7 @@ internal fun setup() {
         }
         register("none", GameTeam.NONE)
         register("skip", GameTeam.SKIP)
+        register("ghost", GameTeam.GHOST)
         register("operator", GameTeam.OPERATOR)
         register("duel", GameTeam.PLAYER_DUEL)
         register("warden", GameTeam.PLAYER_WARDEN)
@@ -436,24 +437,24 @@ internal fun setup() {
                 }
             }
         }
-        it.params(argLiteral("ghosts")) {
+        it.params(argLiteral("ghouls")) {
             it.params(argLiteral("enable")) {
                 it.actionWithContext { args, context ->
                     if (properties != GameProperties.Macander) {
-                        args.sendError("Cannot manage ghosts for this arena")
+                        args.sendError("Cannot manage ghouls for this arena")
                     } else {
-                        game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, true)
-                        args.sendInfo("Ghosts enabled")
+                        game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, true)
+                        args.sendInfo("Ghouls enabled")
                     }
                 }
             }
             it.params(argLiteral("disable")) {
                 it.actionWithContext { args, context ->
                     if (properties != GameProperties.Macander) {
-                        args.sendError("Cannot manage ghosts for this arena")
+                        args.sendError("Cannot manage ghouls for this arena")
                     } else {
-                        game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false)
-                        args.sendInfo("Ghosts disabled")
+                        game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, false)
+                        args.sendInfo("Ghouls disabled")
                     }
                 }
             }

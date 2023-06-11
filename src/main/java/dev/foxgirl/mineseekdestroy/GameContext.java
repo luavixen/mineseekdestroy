@@ -75,12 +75,13 @@ public final class GameContext {
     public final @NotNull GlowService glowService;
     public final @NotNull ItemService itemService;
     public final @NotNull ShieldService shieldService;
+    public final @NotNull GhostService ghostService;
     public final @NotNull SnapshotService snapshotService;
     public final @NotNull StormService stormService;
     public final @NotNull SmokerService smokerService;
     public final @NotNull AutomationService automationService;
     public final @NotNull SpecialTowerService specialTowerService;
-    public final @NotNull SpecialGhostService specialGhostService;
+    public final @NotNull SpecialGhoulService specialGhoulService;
     public final @NotNull SpecialCarService specialCarService;
     public final @NotNull SpecialSummonsService specialSummonsService;
     public final @NotNull SpecialPianoService specialPianoService;
@@ -193,12 +194,13 @@ public final class GameContext {
             glowService = new GlowService(),
             itemService = new ItemService(),
             shieldService = new ShieldService(),
+            ghostService = new GhostService(),
             snapshotService = new SnapshotService(),
             stormService = new StormService(),
             smokerService = new SmokerService(),
             automationService = new AutomationService(),
             specialTowerService = new SpecialTowerService(),
-            specialGhostService = new SpecialGhostService(),
+            specialGhoulService = new SpecialGhoulService(),
             specialCarService = new SpecialCarService(),
             specialSummonsService = new SpecialSummonsService(),
             specialPianoService = new SpecialPianoService(),
@@ -227,7 +229,7 @@ public final class GameContext {
 
         game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true);
         game.setRuleBoolean(Game.RULE_SUMMONS_ENABLED, true);
-        game.setRuleBoolean(Game.RULE_GHOSTS_ENABLED, false);
+        game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, true);

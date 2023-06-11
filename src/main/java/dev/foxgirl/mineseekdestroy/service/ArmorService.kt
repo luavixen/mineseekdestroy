@@ -150,6 +150,7 @@ class ArmorService : Service() {
             loadouts = immutableMapOf(
                 NONE to loadoutEmpty,
                 SKIP to loadoutEmpty,
+                GHOST to loadoutEmpty,
                 OPERATOR to loadoutEmpty,
                 PLAYER_DUEL to loadoutDuel,
                 PLAYER_WARDEN to loadoutWarden,

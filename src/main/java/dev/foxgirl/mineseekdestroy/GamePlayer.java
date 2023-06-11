@@ -171,6 +171,14 @@ public final class GamePlayer {
         return currentTeam.isSpectator();
     }
 
+    public boolean isGhost() {
+        return currentTeam.isGhost();
+    }
+
+    public boolean isPlayingOrGhost() {
+        return currentTeam.isPlayingOrGhost();
+    }
+
     public boolean isOnScoreboard() {
         return currentTeam.isOnScoreboard();
     }

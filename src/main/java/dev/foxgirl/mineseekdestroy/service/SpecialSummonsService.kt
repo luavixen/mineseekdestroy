@@ -335,10 +335,10 @@ class SpecialSummonsService : Service() {
         override fun update() {
             for ((_, entity) in playerEntitiesNormal) {
                 if (!entity.hasStatusEffect(StatusEffects.SLOW_FALLING)) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, 20000000))
+                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, 80))
                 }
                 if (!entity.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.JUMP_BOOST, 20000000, 5))
+                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.JUMP_BOOST, 80, 5))
                 }
             }
         }

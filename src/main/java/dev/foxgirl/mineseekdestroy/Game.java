@@ -99,12 +99,12 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_TOWER_KNOCKBACK =
         GameRuleRegistry.register("msdTowerKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
 
-    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_GHOSTS_ENABLED =
-        GameRuleRegistry.register("msdGhostsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_SPAWN_DELAY_MIN =
-        GameRuleRegistry.register("msdGhostsSpawnDelayMin", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(15.0));
-    public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_SPAWN_DELAY_MAX =
-        GameRuleRegistry.register("msdGhostsSpawnDelayMax", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(30.0));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_GHOULS_ENABLED =
+        GameRuleRegistry.register("msdGhoulsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOULS_SPAWN_DELAY_MIN =
+        GameRuleRegistry.register("msdGhoulsSpawnDelayMin", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(15.0));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOULS_SPAWN_DELAY_MAX =
+        GameRuleRegistry.register("msdGhoulsSpawnDelayMax", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(30.0));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_CARS_COOLDOWN_DURATION =
         GameRuleRegistry.register("msdCarsCooldownDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(15.0));

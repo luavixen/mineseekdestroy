@@ -48,12 +48,13 @@ class ItemService : Service() {
             val toolStacks = toolStackMaps[player.team]
 
             val powderItem = when (player.team) {
+                GameTeam.SKIP, GameTeam.GHOST -> MAGENTA_CONCRETE_POWDER
                 GameTeam.PLAYER_DUEL -> BROWN_CONCRETE_POWDER
                 GameTeam.PLAYER_WARDEN -> BLACK_CONCRETE_POWDER
                 GameTeam.PLAYER_BLACK -> BLACK_CONCRETE_POWDER
                 GameTeam.PLAYER_YELLOW -> YELLOW_CONCRETE_POWDER
                 GameTeam.PLAYER_BLUE -> BLUE_CONCRETE_POWDER
-                else -> continue
+                else -> null
             }
 
             inventory.forEach { stack, item, i ->
@@ -64,7 +65,7 @@ class ItemService : Service() {
                         if (!ItemStack.areItemsEqual(toolStack, stack)) inventory.setStack(i, toolStack.copy())
                     }
                 }
-                if (powderItems.contains(item) && item !== powderItem) {
+                if (powderItem != null && powderItem !== item && powderItems.contains(item)) {
                     val count = stack.count
                     inventory.setStack(i, ItemStack.EMPTY)
                     inventory.insertStack(ItemStack(powderItem, count))

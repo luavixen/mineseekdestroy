@@ -17,6 +17,7 @@ public enum GameTeam {
 
     NONE(Text.of("NONE"), null, null, null, Formatting.WHITE, null),
     SKIP(Text.of("SKIP"), "msd_skip", null, null, Formatting.GREEN, null),
+    GHOST(Text.of("GHOST"), "msd_ghost", null, null, Formatting.GRAY, null),
     OPERATOR(Text.of("ADMIN"), "msd_operator", null, null, Formatting.GREEN, null),
     PLAYER_DUEL(Text.of("DUEL"), "msd_duel", "msd_duel_dead", "msd_duel_damaged", Formatting.RED, Formatting.DARK_GRAY),
     PLAYER_WARDEN(Text.of("WARDEN"), "msd_warden", "msd_warden_dead", "msd_warden_damaged", Formatting.RED, Formatting.DARK_RED),
@@ -48,7 +49,7 @@ public enum GameTeam {
     }
 
     public boolean isPlaying() {
-        return this != NONE && this != SKIP && this != OPERATOR;
+        return this != NONE && this != SKIP && this != GHOST && this != OPERATOR;
     }
 
     public boolean isOperator() {
@@ -56,11 +57,19 @@ public enum GameTeam {
     }
 
     public boolean isSpectator() {
-        return this == NONE || this == SKIP;
+        return this == NONE;
+    }
+
+    public boolean isGhost() {
+        return this == SKIP || this == GHOST;
+    }
+
+    public boolean isPlayingOrGhost() {
+        return this != NONE && this != OPERATOR;
     }
 
     public boolean isOnScoreboard() {
-        return this != NONE && this != OPERATOR;
+        return this != NONE && this != GHOST && this != OPERATOR;
     }
 
     public @Nullable String getName() {

@@ -17,13 +17,13 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import kotlin.random.Random
 
-class SpecialGhostService : Service() {
+class SpecialGhoulService : Service() {
 
     private val region = Region(BlockPos(90, -40, -24), BlockPos(50, -40, -88))
 
-    private val spawnEnabled get() = game.getRuleBoolean(Game.RULE_GHOSTS_ENABLED)
-    private val spawnDelayMin get() = game.getRuleDouble(Game.RULE_GHOSTS_SPAWN_DELAY_MIN)
-    private val spawnDelayMax get() = game.getRuleDouble(Game.RULE_GHOSTS_SPAWN_DELAY_MAX)
+    private val spawnEnabled get() = game.getRuleBoolean(Game.RULE_GHOULS_ENABLED)
+    private val spawnDelayMin get() = game.getRuleDouble(Game.RULE_GHOULS_SPAWN_DELAY_MIN)
+    private val spawnDelayMax get() = game.getRuleDouble(Game.RULE_GHOULS_SPAWN_DELAY_MAX)
 
     private fun spawnDelay(): Double {
         return try {
@@ -72,7 +72,7 @@ class SpecialGhostService : Service() {
         Editor
             .search(world, region) { it.block === Blocks.OCHRE_FROGLIGHT }
             .thenApply { results ->
-                logger.info("SpecialGhostService search for spawn positions returned ${results.size} result(s)")
+                logger.info("SpecialGhoulService search for spawn positions returned ${results.size} result(s)")
                 spawnPositions = results.map { it.pos.let { Vec3d(it.x + 0.5, it.y + 1.0, it.z + 0.5) } }
             }
             .terminate()

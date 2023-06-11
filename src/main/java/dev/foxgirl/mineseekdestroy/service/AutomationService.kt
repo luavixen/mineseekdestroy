@@ -65,7 +65,7 @@ class AutomationService : Service() {
                     }
                 } else {
                     tasks.add {
-                        player.team = GameTeam.NONE
+                        player.team = GameTeam.GHOST
                         game.sendInfo(
                             Text.literal(player.name).formatted(Formatting.DARK_RED),
                             Text.literal("has been removed from the game!").formatted(Formatting.RED),
