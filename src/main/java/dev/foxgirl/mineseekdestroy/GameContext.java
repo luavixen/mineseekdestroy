@@ -245,6 +245,10 @@ public final class GameContext {
         scoreboard.removeObjective(scoreboardKills);
         scoreboard.removeObjective(scoreboardHearts);
 
+        game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
+        game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, false);
+        game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, false);
+
         for (var team : teams) {
             scoreboard.removeTeam(team);
         }

@@ -68,7 +68,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_DURATION =
         GameRuleRegistry.register("msdStartingCountdownSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_EFFECT_DURATION =
-        GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
+        GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(25.0));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_PING_VOLUME =
         GameRuleRegistry.register("msdPingVolume", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.2));
@@ -153,6 +153,42 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.CHIPPED_ANVIL,
         Blocks.DAMAGED_ANVIL,
         Blocks.FIRE,
+    });
+
+    public static final @NotNull Set<@NotNull Block> UNSTEALABLE_BLOCKS = ImmutableSet.copyOf(new Block[] {
+        Blocks.AIR, Blocks.CAVE_AIR, Blocks.FIRE,
+        Blocks.SMOKER, Blocks.FLETCHING_TABLE,
+        Blocks.TARGET, Blocks.TNT, Blocks.LADDER,
+        Blocks.ANVIL, Blocks.CHIPPED_ANVIL, Blocks.DAMAGED_ANVIL,
+        Blocks.SAND, Blocks.GRAVEL, Blocks.STONE, Blocks.DIRT, Blocks.DIRT_PATH,
+        Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT, Blocks.FARMLAND,
+        Blocks.ACACIA_TRAPDOOR,
+        Blocks.BEDROCK,
+        Blocks.BLACKSTONE_WALL,
+        Blocks.CHISELED_NETHER_BRICKS,
+        Blocks.CRYING_OBSIDIAN,
+        Blocks.DARK_OAK_FENCE,
+        Blocks.DARK_OAK_SLAB,
+        Blocks.DARK_OAK_STAIRS,
+        Blocks.DARK_OAK_TRAPDOOR,
+        Blocks.GOLD_BLOCK,
+        Blocks.IRON_BARS,
+        Blocks.LIME_STAINED_GLASS,
+        Blocks.LOOM,
+        Blocks.NETHER_BRICKS,
+        Blocks.NETHER_BRICK_FENCE,
+        Blocks.NETHER_BRICK_WALL,
+        Blocks.OBSIDIAN,
+        Blocks.PRISMARINE_STAIRS,
+        Blocks.PRISMARINE_WALL,
+        Blocks.RAW_GOLD_BLOCK,
+        Blocks.REDSTONE_BLOCK,
+        Blocks.REDSTONE_LAMP,
+        Blocks.WARPED_FENCE,
+        Blocks.WARPED_PLANKS,
+        Blocks.WARPED_STAIRS,
+        Blocks.WAXED_CUT_COPPER,
+        Blocks.WAXED_CUT_COPPER_STAIRS,
     });
 
     public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {

@@ -17,7 +17,10 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -186,8 +189,20 @@ public abstract class GameState {
 
     public ActionResult onAttackBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockPos pos, Direction direction) {
         if (context != null && context.world == world) {
-            if (world.getBlockState(pos).getBlock() == Blocks.QUARTZ_SLAB) {
-                var result = context.specialPianoService.handleInteract(context.getPlayer((ServerPlayerEntity) playerEntity), pos);
+            var properties = Game.getGameProperties();
+            var player = context.getPlayer((ServerPlayerEntity) playerEntity);
+            var blockState = world.getBlockState(pos);
+            if (blockState.getBlock() == Blocks.QUARTZ_SLAB) {
+                var result = context.specialPianoService.handleInteract(player, pos);
+                if (result != ActionResult.PASS) return result;
+            }
+            if (
+                player.isGhost() && player.isAlive() &&
+                !Game.UNSTEALABLE_BLOCKS.contains(blockState.getBlock()) &&
+                properties.getRegionPlayable().contains(pos) &&
+                properties.getRegionBlimp().excludes(pos)
+            ) {
+                var result = context.ghostService.handleInteract(player, pos);
                 if (result != ActionResult.PASS) return result;
             }
         }

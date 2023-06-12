@@ -74,6 +74,7 @@ class SpecialSummonsService : Service() {
                 .append(theology1.displayName)
                 .append(Text.literal(" X ").formatted(Formatting.GREEN))
                 .append(theology2.displayName)
+                .styled { it.withItalic(false) }
 
         override fun toString() = "TheologyPair(theology1=${theology1}, theology2=${theology2})"
 
@@ -191,7 +192,7 @@ class SpecialSummonsService : Service() {
 
                 val target = target()
 
-                val name = Text.literal("Sound of ").formatted(Formatting.GREEN).append(target.displayName)
+                val name = Text.literal("Sound of ").formatted(Formatting.GREEN).append(target.displayName).styled { it.withItalic(false) }
                 val nameJSON = Text.Serializer.toJson(name)
 
                 val stack = ItemStack(COMPASS)

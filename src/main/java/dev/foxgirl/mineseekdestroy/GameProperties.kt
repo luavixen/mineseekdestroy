@@ -157,15 +157,15 @@ sealed interface GameProperties {
 
         override val regionAll = Region(BlockPos(-24, 35, 51), BlockPos(175, -61, -169))
         override val regionLegal = Region(BlockPos(-24, 65536, 51), BlockPos(175, -56, -169))
-        override val regionPlayable = Region(BlockPos(-24, -6, 51), BlockPos(175, -56, -169))
-        override val regionBlimp = Region(BlockPos(91, -1, -102), BlockPos(49, 20, -32))
+        override val regionPlayable = Region(BlockPos(-24, 3, 51), BlockPos(175, -56, -169))
+        override val regionBlimp = Region(BlockPos(50, 10, -24), BlockPos(90, 29, -101))
         override val regionBarrierArenaTarget = Region(BlockPos(48, -30, -89), BlockPos(92, -47, -23))
         override val regionBarrierArenaTemplate = Region(BlockPos(48, -30, -605), BlockPos(92, -47, -539))
-        override val regionBarrierBlimpTarget = Region(BlockPos(63, 7, -42), BlockPos(77, -1, -67))
-        override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
+        override val regionBarrierBlimpTarget = Region(BlockPos(63, 17, -42), BlockPos(77, 9, -67))
+        override val regionBarrierBlimpTemplate = Region(BlockPos(63, 17, -558), BlockPos(77, 9, -583))
         override val regionBarrierBlimpAdditions = immutableListOf(
-            Region(BlockPos(35, 3, -7), BlockPos(33, 3, -9)),
-            Region(BlockPos(130, 3, -81), BlockPos(128, 3, -79)),
+            Region(BlockPos(35, 13, -7), BlockPos(33, 13, -9)),
+            Region(BlockPos(130, 13, -81), BlockPos(128, 13, -79)),
         )
         override val regionFlood = Region(BlockPos(-24, -50, 51), BlockPos(175, -30, -169))
 

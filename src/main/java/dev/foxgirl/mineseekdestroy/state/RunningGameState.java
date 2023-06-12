@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
+import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.PigEntity;
@@ -88,7 +89,12 @@ public abstract class RunningGameState extends GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            if (!player.isPlaying()) return false;
+            if (!player.isPlaying()) {
+                if (!player.isSpectator()) {
+                    Scheduler.delay(1.0, (schedule) -> playerEntity.giveItemStack(stack));
+                }
+                return false;
+            }
         }
         return super.onItemDropped(context, playerEntity, stack, throwRandomly, retainOwnership);
     }

@@ -11,6 +11,7 @@ import net.minecraft.item.Items
 import net.minecraft.nbt.NbtByte
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.Position
@@ -135,10 +136,11 @@ internal fun setup() {
             it.action { args ->
                 val entity = args.context.source.entity
                 if (entity is ServerPlayerEntity) {
-                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool1", NbtByte.ONE); it.setCustomName(Text.literal("Tool 1").formatted(Formatting.GREEN)) })
-                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool2", NbtByte.ONE); it.setCustomName(Text.literal("Tool 2").formatted(Formatting.GREEN)) })
-                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool3", NbtByte.ONE); it.setCustomName(Text.literal("Tool 3").formatted(Formatting.GREEN)) })
-                    entity.giveItemStack(ItemStack(Items.SPONGE).also { it.getOrCreateNbt().put("MsdTool4", NbtByte.ONE); it.setCustomName(Text.literal("Tool 4").formatted(Formatting.GREEN)) })
+                    fun stack(i: Int) = ItemStack(Items.SPONGE).also {
+                        it.getOrCreateNbt().put("MsdTool${i}", NbtByte.ONE)
+                        it.setCustomName(Text.literal("Tool ${i}").setStyle(Style.EMPTY.withColor(Formatting.GREEN).withItalic(false)))
+                    }
+                    for (i in 1..4) entity.giveItemStack(stack(i))
                     args.sendInfo("Added tools to inventory")
                 } else {
                     args.sendError("Cannot give tools, command source has no entity")

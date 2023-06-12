@@ -48,7 +48,7 @@ public final class Scheduler {
     private static final Object lock = new Object();
     private static final AtomicBoolean running = new AtomicBoolean(true);
 
-    private static PriorityQueue<Task> queue = new PriorityQueue<>(16);
+    private static PriorityQueue<Task> queue = new PriorityQueue<>(128);
     private static TaskThread thread = new TaskThread();
 
     static {
