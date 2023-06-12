@@ -26,6 +26,8 @@ class SpecialFamilyGuyService : Service() {
 
             if (world.getBlockState(target).block !== Blocks.TARGET) return@run
 
+            logger.info("Player ${player.name} placed family guy block at ${target.toShortString()}")
+
             val offset = target.subtract(structure.center)
             val region = structure.region.offset(offset)
 
@@ -81,7 +83,7 @@ class SpecialFamilyGuyService : Service() {
                         }
                     }
                 }
-                .terminate()
+                .await()
         }
     }
 

@@ -797,10 +797,8 @@ class SpecialSummonsService : Service() {
         val altar: Altar? = altars[pos]
         if (altar != null) {
             player.entity?.openHandledScreen(AltarNamedScreenHandlerFactory(altar))
-            Game.LOGGER.info("Player ${player.name} opened altar at ${pos} with theology ${altar.theology}")
             return ActionResult.SUCCESS
         } else {
-            Game.LOGGER.info("Player ${player.name} failed to open invalid altar at ${pos}")
             return ActionResult.PASS
         }
     }
