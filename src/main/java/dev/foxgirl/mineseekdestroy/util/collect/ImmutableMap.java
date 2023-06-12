@@ -124,31 +124,22 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
         return null;
     }
 
-    private static abstract class WrappedIterator<K, V> {
-        protected final Iterator<Entry<K, V>> iterator;
-
-        private WrappedIterator(Entry<K, V>[] elements) {
-            this.iterator = new ArrayIterator<>(elements, 0);
-        }
-
-        public boolean hasNext() { return iterator.hasNext(); }
-        public void remove() { throw new UnsupportedOperationException(); }
-    }
-
-    private static final class KeyIterator<K, V> extends WrappedIterator<K, V> implements Iterator<K> {
+    private static final class KeyIterator<K, V> extends AbstractArrayIterator<Entry<K, V>, K> {
         private KeyIterator(Entry<K, V>[] elements) {
-            super(elements);
+            super(elements, 0);
         }
 
-        @Override public K next() { return iterator.next().getKey(); }
+        @Override public K next() { return getNext().getKey(); }
+        @Override public K previous() { return getPrevious().getKey(); }
     }
 
-    private static final class ValueIterator<K, V> extends WrappedIterator<K, V> implements Iterator<V> {
+    private static final class ValueIterator<K, V> extends AbstractArrayIterator<Entry<K, V>, V> {
         private ValueIterator(Entry<K, V>[] elements) {
-            super(elements);
+            super(elements, 0);
         }
 
-        @Override public V next() { return iterator.next().getValue(); }
+        @Override public V next() { return getNext().getValue(); }
+        @Override public V previous() { return getPrevious().getValue(); }
     }
 
     private abstract class BaseSet<E> extends ImmutableCollection<E> implements Set<E> {
@@ -268,6 +259,10 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
 
     private final Entry<K, V>[] elements;
 
+    private transient EntrySet entrySet;
+    private transient KeySet keySet;
+    private transient Values<K, V> values;
+
     private static final ImmutableMap<?, ?> EMPTY = new ImmutableMap<>();
 
     private ImmutableMap() {
@@ -352,17 +347,27 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
 
     @Override
     public @NotNull Set<Map.@NotNull Entry<K, V>> entrySet() {
-        return new EntrySet();
+        var entrySet = this.entrySet;
+        if (entrySet == null) {
+            entrySet = this.entrySet = new EntrySet();
+        }
+        return entrySet;
     }
-
     @Override
     public @NotNull Set<K> keySet() {
-        return new KeySet();
+        var keySet = this.keySet;
+        if (keySet == null) {
+            keySet = this.keySet = new KeySet();
+        }
+        return keySet;
     }
-
     @Override
     public @NotNull Collection<V> values() {
-        return new Values<>(elements);
+        var values = this.values;
+        if (values == null) {
+            values = this.values = new Values<>(elements);
+        }
+        return values;
     }
 
     @Override

@@ -56,6 +56,38 @@ public final class AsyncSupport {
     private static final MethodType TYPE_INVOKE = MethodType.methodType(Object.class, Continuation.class);
     private static final MethodType TYPE_INVOKE_GENERIC = MethodType.methodType(Object.class, Object.class);
 
+    private static <T> Object invokeInterface(Object coroutine, CompletableContinuation<T> continuation) {
+        try {
+            @SuppressWarnings({"unchecked", "rawtypes" })
+            Function1<Continuation<T>, Object> function = (Function1) coroutine;
+            return function.invoke(continuation);
+        } catch (Throwable err) {
+            throw new RuntimeException(err);
+        }
+    }
+
+    private static <T> Object invokeReflection(Object coroutine, CompletableContinuation<T> continuation) {
+        Class<?> clazz = coroutine.getClass();
+        try {
+            MethodHandles.Lookup handleLookup = MethodHandles.privateLookupIn(clazz, MethodHandles.lookup());
+            MethodHandle handle;
+            try {
+                handle = handleLookup.findVirtual(clazz, "invoke", TYPE_INVOKE);
+            } catch (NoSuchMethodException err0) {
+                try {
+                    handle = handleLookup.findVirtual(clazz, "invoke", TYPE_INVOKE_GENERIC);
+                } catch (NoSuchMethodException err1) {
+                    var err = new IllegalArgumentException("No such method 'invoke' for coroutine object", err1);
+                    err.addSuppressed(err0);
+                    throw err;
+                }
+            }
+            return handle.invoke(coroutine, continuation);
+        } catch (Throwable err) {
+            throw new RuntimeException(err);
+        }
+    }
+
     /**
      * Executes the given coroutine.
      *
@@ -72,7 +104,6 @@ public final class AsyncSupport {
      * @throws NullPointerException
      *   If either {@code context} or {@code coroutine} is null.
      */
-    @SuppressWarnings("unchecked")
     public static <T> @NotNull CompletableFuture<T> execute(
         @NotNull CoroutineContext context,
         @NotNull Object coroutine
@@ -83,35 +114,9 @@ public final class AsyncSupport {
         CompletableFuture<T> future = new CompletableFuture<>();
         CompletableContinuation<T> continuation = new CompletableContinuation<>(context, future);
 
-        Object result;
-
-        if (coroutine instanceof Function1) {
-            try {
-                result = ((Function1<Continuation<T>, Object>) coroutine).invoke(continuation);
-            } catch (Throwable err) {
-                throw new RuntimeException(err);
-            }
-        } else {
-            Class<?> clazz = coroutine.getClass();
-            try {
-                MethodHandles.Lookup handleLookup = MethodHandles.privateLookupIn(clazz, MethodHandles.lookup());
-                MethodHandle handle;
-                try {
-                    handle = handleLookup.findVirtual(clazz, "invoke", TYPE_INVOKE);
-                } catch (NoSuchMethodException err0) {
-                    try {
-                        handle = handleLookup.findVirtual(clazz, "invoke", TYPE_INVOKE_GENERIC);
-                    } catch (NoSuchMethodException err1) {
-                        var err = new IllegalArgumentException("No such method 'invoke' for coroutine object", err1);
-                        err.addSuppressed(err0);
-                        throw err;
-                    }
-                }
-                result = handle.invoke(coroutine, continuation);
-            } catch (Throwable err) {
-                throw new RuntimeException(err);
-            }
-        }
+        Object result = coroutine instanceof Function1
+            ? invokeInterface(coroutine, continuation)
+            : invokeReflection(coroutine, continuation);
 
         if (result != IntrinsicsKt.getCOROUTINE_SUSPENDED()) {
             resolveFuture(future, result);

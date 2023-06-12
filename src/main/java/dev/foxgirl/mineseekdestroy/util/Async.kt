@@ -31,11 +31,8 @@ object Async {
     suspend fun <T> awaitResults(vararg promises: CompletableFuture<T>): List<Result<T>> = awaitInternalResults(promises)
     suspend fun <T> awaitResults(promises: Collection<CompletableFuture<T>>): List<Result<T>> = awaitInternalResults(promises.toTypedArray())
 
-    private suspend fun <T> awaitInternalResults(promises: Array<out CompletableFuture<T>>) =
-        suspendCoroutineWaiter(promises).toList()
-
     private suspend fun <T> awaitInternal(promises: Array<out CompletableFuture<T>>): List<T> {
-        val results = suspendCoroutineWaiter(promises)
+        val results = suspendCoroutine { Waiter(promises, it).start() }
         val values = ArrayList<T>(results.size)
 
         val iterator = results.iterator()
@@ -58,8 +55,8 @@ object Async {
         return values
     }
 
-    private suspend fun <T> suspendCoroutineWaiter(promises: Array<out CompletableFuture<T>>): Array<Result<T>> =
-        suspendCoroutine { Waiter(promises, it).start() }
+    private suspend fun <T> awaitInternalResults(promises: Array<out CompletableFuture<T>>) =
+        suspendCoroutine { Waiter(promises, it).start() }.asList()
 
     private class Waiter<T>(
         private val promises: Array<out CompletableFuture<T>>,
