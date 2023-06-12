@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
+import dev.foxgirl.mineseekdestroy.state.RunningGameState;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.scoreboard.Scoreboard;
@@ -220,7 +221,7 @@ public final class GamePlayer {
     }
 
     public @NotNull Text getDisplayName() {
-        return Team.decorateName(getScoreboardTeam(), Text.literal(getName()));
+        return Team.decorateName(currentTeam.getAliveTeam(getScoreboard()), Text.literal(getName()));
     }
 
     public void update() {
@@ -242,7 +243,7 @@ public final class GamePlayer {
             }
         }
 
-        if (isOnScoreboard()) {
+        if (isOnScoreboard() && !(isGhost() && Game.getGame().getState() instanceof RunningGameState)) {
             var playerKills = getKills();
             var playerScore = scoreboard.getPlayerScore(playerName, scoreboardObjective);
 

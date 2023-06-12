@@ -4,7 +4,6 @@ import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
-import java.util.concurrent.CompletableFuture
 
 class BarrierService : Service() {
 
