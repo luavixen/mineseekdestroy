@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class MixinServerPlayNetworkHandler {
 
-    @Shadow(prefix = "mineseekdestroy$")
-    private ServerPlayerEntity mineseekdestroy$player;
+    @Shadow
+    private ServerPlayerEntity player;
 
     @ModifyVariable(
         method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V",
@@ -25,11 +25,11 @@ public abstract class MixinServerPlayNetworkHandler {
         var context = Game.getGame().getContext();
         if (context != null) {
             if (packet instanceof EntityPositionS2CPacket) {
-                var replacement = context.invisibilityService.handlePositionPacket((EntityPositionS2CPacket) packet, mineseekdestroy$player);
+                var replacement = context.invisibilityService.handlePositionPacket((EntityPositionS2CPacket) packet, player);
                 if (replacement != null) return replacement;
             }
             if (packet instanceof EntityTrackerUpdateS2CPacket) {
-                var replacement = context.glowService.handleTrackerUpdatePacket((EntityTrackerUpdateS2CPacket) packet, mineseekdestroy$player);
+                var replacement = context.glowService.handleTrackerUpdatePacket((EntityTrackerUpdateS2CPacket) packet, player);
                 if (replacement != null) return replacement;
             }
         }

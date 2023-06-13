@@ -21,8 +21,6 @@ import java.util.*
 
 class GhostService : Service() {
 
-    private var schedule: Scheduler.Schedule? = null
-
     private fun updateGhosts() {
         val running = state is PlayingGameState
 
@@ -61,9 +59,12 @@ class GhostService : Service() {
         }
     }
 
+    private var schedule: Scheduler.Schedule? = null
+
     override fun update() {
         if (schedule == null) {
-            schedule = Scheduler.delay(1.0) { updateGhosts() }
+            schedule = Scheduler.delay(1.0) { schedule = null }
+            updateGhosts()
         }
     }
 

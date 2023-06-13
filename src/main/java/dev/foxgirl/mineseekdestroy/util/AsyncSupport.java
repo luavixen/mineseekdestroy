@@ -21,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 public final class AsyncSupport {
 
     private AsyncSupport() {
-        throw new UnsupportedOperationException();
     }
 
     private static final class CompletableContinuation<T> implements Continuation<T> {
