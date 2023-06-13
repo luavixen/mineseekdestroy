@@ -78,18 +78,6 @@ public final class GamePlayer {
         return previousTeam;
     }
 
-    public @Nullable GameTeam getMainTeam() {
-        switch (currentTeam) {
-            case PLAYER_YELLOW -> { return GameTeam.PLAYER_YELLOW; }
-            case PLAYER_BLUE -> { return GameTeam.PLAYER_BLUE; }
-        }
-        switch (previousTeam) {
-            case PLAYER_YELLOW -> { return GameTeam.PLAYER_YELLOW; }
-            case PLAYER_BLUE -> { return GameTeam.PLAYER_BLUE; }
-        }
-        return null;
-    }
-
     public void setTeam(@NotNull GameTeam team) {
         Objects.requireNonNull(team, "Argument 'team'");
         if (currentTeam != team) {
@@ -206,7 +194,7 @@ public final class GamePlayer {
         return context.scoreboardKills;
     }
 
-    private @Nullable Team getScoreboardTeam() {
+    public @Nullable Team getScoreboardTeam() {
         if (currentAlive) {
             var player = getEntity();
             if (player != null && player.isAlive() && player.networkHandler.isConnectionOpen()) {

@@ -24,13 +24,21 @@ import net.fabricmc.fabric.api.gamerule.v1.rule.DoubleRule;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtByte;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import org.apache.logging.log4j.LogManager;
@@ -58,6 +66,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_AUTOMATION_ENABLED =
         GameRuleRegistry.register("msdAutomationEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_AUTOMATION_GHOSTS_ENABLED =
+        GameRuleRegistry.register("msdAutomationGhostsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_AUTOMATION_DELAY_DURATION =
         GameRuleRegistry.register("msdAutomationDelayDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(5.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_AUTOMATION_INTERVAL_DURATION =
@@ -68,7 +78,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_DURATION =
         GameRuleRegistry.register("msdStartingCountdownSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_STARTING_EFFECT_DURATION =
-        GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(25.0));
+        GameRuleRegistry.register("msdStartingEffectDurationSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
 
     public static final @NotNull GameRules.Key<DoubleRule> RULE_PING_VOLUME =
         GameRuleRegistry.register("msdPingVolume", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(0.2));
@@ -124,7 +134,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
         UUID.fromString("53489b5d-d23a-4758-9374-2d8151fba31a"), // ReachOutLaz
-        UUID.fromString("8f059236-a8be-4414-bffc-fcc138127419"), // YinkyBaginky
         UUID.fromString("01dc40cd-2dba-4063-b2c5-bc333e864e0c"), // Karma_Dragon
     });
 
@@ -150,6 +159,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.BLUE_ICE,
         Blocks.SNOW_BLOCK,
         Blocks.BONE_BLOCK,
+        Blocks.SLIME_BLOCK,
         Blocks.CHIPPED_ANVIL,
         Blocks.DAMAGED_ANVIL,
         Blocks.FIRE,
@@ -157,10 +167,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Set<@NotNull Block> UNSTEALABLE_BLOCKS = ImmutableSet.copyOf(new Block[] {
         Blocks.AIR, Blocks.CAVE_AIR, Blocks.FIRE,
+        Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.ENDER_CHEST, Blocks.BARREL,
         Blocks.SMOKER, Blocks.FLETCHING_TABLE,
         Blocks.TARGET, Blocks.TNT, Blocks.LADDER,
         Blocks.ANVIL, Blocks.CHIPPED_ANVIL, Blocks.DAMAGED_ANVIL,
-        Blocks.SAND, Blocks.GRAVEL, Blocks.STONE, Blocks.DIRT, Blocks.DIRT_PATH,
+        Blocks.GRAVEL, Blocks.STONE, Blocks.DIRT, Blocks.DIRT_PATH,
         Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT, Blocks.FARMLAND,
         Blocks.ACACIA_TRAPDOOR,
         Blocks.BEDROCK,
@@ -189,12 +200,30 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.WARPED_STAIRS,
         Blocks.WAXED_CUT_COPPER,
         Blocks.WAXED_CUT_COPPER_STAIRS,
+        Blocks.SHULKER_BOX,
+        Blocks.WHITE_SHULKER_BOX,
+        Blocks.ORANGE_SHULKER_BOX,
+        Blocks.MAGENTA_SHULKER_BOX,
+        Blocks.LIGHT_BLUE_SHULKER_BOX,
+        Blocks.YELLOW_SHULKER_BOX,
+        Blocks.LIME_SHULKER_BOX,
+        Blocks.PINK_SHULKER_BOX,
+        Blocks.GRAY_SHULKER_BOX,
+        Blocks.LIGHT_GRAY_SHULKER_BOX,
+        Blocks.CYAN_SHULKER_BOX,
+        Blocks.PURPLE_SHULKER_BOX,
+        Blocks.BLUE_SHULKER_BOX,
+        Blocks.BROWN_SHULKER_BOX,
+        Blocks.GREEN_SHULKER_BOX,
+        Blocks.RED_SHULKER_BOX,
+        Blocks.BLACK_SHULKER_BOX,
     });
 
     public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
         Items.SHIELD,
         Items.BOW,
         Items.CROSSBOW,
+        Items.TRIDENT,
         Items.FISHING_ROD,
         Items.CARROT_ON_A_STICK,
         Items.FIREWORK_ROCKET,
@@ -261,6 +290,17 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.RED_CONCRETE,
         Items.LIME_CONCRETE,
     });
+
+    public static final @NotNull ItemStack stackEggBlock = new ItemStack(Items.BONE_BLOCK);
+    static {
+        stackEggBlock.getOrCreateNbt().put("MsdFancyEggBlock", NbtByte.ONE);
+        stackEggBlock.setCustomName(Text.literal("Egg Block").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
+    }
+    public static final @NotNull ItemStack stackEctoplasm = new ItemStack(Items.SLIME_BLOCK);
+    static {
+        stackEctoplasm.getOrCreateNbt().put("MsdFancyEctoplasm", NbtByte.ONE);
+        stackEctoplasm.setCustomName(Text.literal("Ectogasm").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
+    }
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override

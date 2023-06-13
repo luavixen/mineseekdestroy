@@ -269,7 +269,7 @@ internal fun setup() {
                 }
             }
 
-            fun isPlaying(player: GamePlayer) = !player.isOperator && player.isPlaying
+            fun isPlaying(player: GamePlayer) = !player.isOperator && player.isPlayingOrGhost
             fun isRegion(player: GamePlayer) = !player.isOperator && player.entity.let { if (it != null) !region().contains(it) else false }
 
             it.params(argLiteral(literal)) {

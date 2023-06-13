@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
@@ -21,6 +22,7 @@ import org.spongepowered.asm.mixin.Unique;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Mixin(PigEntity.class)
 public abstract class MixinPigEntity extends AnimalEntity {
@@ -50,7 +52,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
 
     @Unique
     @SuppressWarnings("unchecked")
-    private static final List<RegistryKey<DamageType>> mineseekdestroy$cooldownDamageTypes = ImmutableList.copyOf(new RegistryKey[] {
+    private static final Set<RegistryKey<DamageType>> mineseekdestroy$cooldownDamageTypes = ImmutableSet.copyOf(new RegistryKey[] {
         DamageTypes.GENERIC,
         DamageTypes.MAGIC,
         DamageTypes.INDIRECT_MAGIC,
@@ -84,7 +86,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
 
     @Unique
     private void mineseekdestroy$handleDamage(DamageSource source, float amount) {
-        if (amount >= 1.0F && mineseekdestroy$cooldownDamageTypes.stream().anyMatch(source::isOf)) {
+        if (amount >= 1.0F && mineseekdestroy$cooldownDamageTypes.contains(source.getTypeRegistryEntry().getKey().orElse(null))) {
             mineseekdestroy$cooldownActivate();
         }
     }

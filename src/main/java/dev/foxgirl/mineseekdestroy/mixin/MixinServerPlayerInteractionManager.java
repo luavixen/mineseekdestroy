@@ -34,17 +34,16 @@ public abstract class MixinServerPlayerInteractionManager {
         method = "interactBlock",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;")
     )
-    private ActionResult mineseekdestroy$hookInteractBlock$1(ItemStack itemStack, ItemUsageContext itemUsageContext) {
-        var access = (MixinItemUsageContext) itemUsageContext;
+    private ActionResult mineseekdestroy$hookInteractBlock$1(ItemStack stack, ItemUsageContext usageContext) {
         var result = ExtraEvents.BLOCK_USED_WITH.invoker().handle(
-            access.mineseekdestroy$getPlayer(),
-            access.mineseekdestroy$getWorld(),
-            access.mineseekdestroy$getHand(),
-            access.mineseekdestroy$getHit(),
-            itemStack
+            usageContext.player,
+            usageContext.world,
+            usageContext.hand,
+            usageContext.hit,
+            stack
         );
         if (result != ActionResult.PASS) return result;
-        return itemStack.useOnBlock(itemUsageContext);
+        return stack.useOnBlock(usageContext);
     }
 
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)

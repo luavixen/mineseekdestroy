@@ -60,7 +60,7 @@ public final class GlowService extends Service {
             var entity = player.getEntity();
             if (entity == null) continue;
             if (entity.getWorld() != world || !entity.isAlive()) continue;
-            boolean glowing = player.isPlaying() && player.isAlive();
+            boolean glowing = player.isPlayingOrGhost() && player.isAlive();
             packetsFake.add(createFakeFlagsPacket(entity, glowing));
             packetsReal.add(createRealFlagsPacket(entity));
         }
@@ -125,7 +125,7 @@ public final class GlowService extends Service {
         ) return null;
 
         var value = (byte) flags.value();
-        if (packetPlayer.isPlaying() && packetPlayer.isAlive()) {
+        if (packetPlayer.isPlayingOrGhost() && packetPlayer.isAlive()) {
             value = (byte) (value | 0x40);
         } else {
             value = (byte) (value & 0xBF);

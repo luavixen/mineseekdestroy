@@ -17,10 +17,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -140,7 +137,7 @@ public abstract class GameState {
         if (context != null && context.world == world) {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            if (player.isPlaying() && player.isAlive()) {
+            if (player.isPlayingOrGhost() && player.isAlive()) {
                 var item = stack.getItem();
                 if (
                     item instanceof BlockItem blockItem &&
@@ -148,12 +145,19 @@ public abstract class GameState {
                     properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
                     properties.getRegionBlimp().excludes(blockHit.getBlockPos())
                 ) {
-                    if (item == Items.TARGET && stack.hasCustomName()) {
-                        context.specialFamilyGuyService.handleFamilyGuyBlockPlaced(player, blockHit);
+                    if (player.isPlaying()) {
+                        if (item == Items.TARGET && stack.hasCustomName()) {
+                            context.specialFamilyGuyService.handleFamilyGuyBlockPlaced(player, blockHit);
+                        }
+                        return ActionResult.PASS;
+                    } else if (player.isGhost()) {
+                        if (item == Items.SLIME_BLOCK) {
+                            return ActionResult.PASS;
+                        }
                     }
-                    return ActionResult.PASS;
+                    return ActionResult.FAIL;
                 }
-                if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
+                if (!player.isGhost() && Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
             }
         }
         return ActionResult.FAIL;

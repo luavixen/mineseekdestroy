@@ -16,12 +16,12 @@ public abstract class MixinMinecraftServer {
         try {
             Game.getGame().destroy();
         } catch (Exception cause) {
-            Game.LOGGER.error("Game destroy failed", cause);
+            Game.LOGGER.error("Shutdown, game destroy failed", cause);
         }
         try {
             Scheduler.stop();
         } catch (Exception cause) {
-            Game.LOGGER.error("Scheduler failed to stop", cause);
+            Game.LOGGER.error("Shutdown, scheduler failed to stop", cause);
         }
     }
 

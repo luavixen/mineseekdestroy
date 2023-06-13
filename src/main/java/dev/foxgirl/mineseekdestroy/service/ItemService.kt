@@ -13,6 +13,8 @@ import net.minecraft.item.Items.*
 import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 
 class ItemService : Service() {
 
@@ -63,19 +65,35 @@ class ItemService : Service() {
                     if (tool != null) {
                         val toolStack = toolStacks[tool]!!
                         if (!ItemStack.areItemsEqual(toolStack, stack)) inventory.setStack(i, toolStack.copy())
+                        return@forEach
                     }
                 }
+
+                if (item === BONE_BLOCK && !ItemStack.areNbtEqual(stack, Game.stackEggBlock)) {
+                    inventory.setStack(i, Game.stackEggBlock.copyWithCount(stack.count))
+                    return@forEach
+                }
+                if (item === SLIME_BLOCK && !ItemStack.areNbtEqual(stack, Game.stackEctoplasm)) {
+                    inventory.setStack(i, Game.stackEctoplasm.copyWithCount(stack.count))
+                    return@forEach
+                }
+
                 if (powderItem != null && powderItem !== item && powderItems.contains(item)) {
                     val count = stack.count
                     inventory.setStack(i, ItemStack.EMPTY)
                     inventory.insertStack(ItemStack(powderItem, count))
+                    return@forEach
                 }
+
                 if (illegalItems.contains(item)) {
                     inventory.setStack(i, ItemStack.EMPTY)
+                    return@forEach
                 }
+
                 val nbt: NbtCompound? = stack.nbt
                 if (nbt != null && nbt.contains("MsdIllegal")) {
                     inventory.setStack(i, ItemStack.EMPTY)
+                    return@forEach
                 }
             }
         }

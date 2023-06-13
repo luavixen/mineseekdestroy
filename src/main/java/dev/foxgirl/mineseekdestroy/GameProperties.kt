@@ -146,14 +146,14 @@ sealed interface GameProperties {
 
         override val positionSpawn = BlockPos(144, -39, -55)
 
-        override val positionBlimp = Vec3d(70.5, 1.0, -55.5)
+        override val positionBlimp = Vec3d(70.5, 11.0, -55.5)
         override val positionArena = Vec3d(70.5, -39.0, -55.5)
         override val positionDuel1 = Vec3d(70.5, -39.0, -71.5)
         override val positionDuel2 = Vec3d(70.5, -39.0, -39.5)
         override val positionHell = Vec3d(70.5, -65536.0, -55.5)
 
-        override val templateInventory = BlockPos(69, 1, -72)
-        override val templateLoottable = BlockPos(69, 1, -74)
+        override val templateInventory = BlockPos(69, 11, -72)
+        override val templateLoottable = BlockPos(69, 11, -74)
 
         override val regionAll = Region(BlockPos(-24, 35, 51), BlockPos(175, -61, -169))
         override val regionLegal = Region(BlockPos(-24, 65536, 51), BlockPos(175, -56, -169))
@@ -162,7 +162,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTarget = Region(BlockPos(48, -30, -89), BlockPos(92, -47, -23))
         override val regionBarrierArenaTemplate = Region(BlockPos(48, -30, -605), BlockPos(92, -47, -539))
         override val regionBarrierBlimpTarget = Region(BlockPos(63, 17, -42), BlockPos(77, 9, -67))
-        override val regionBarrierBlimpTemplate = Region(BlockPos(63, 17, -558), BlockPos(77, 9, -583))
+        override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
         override val regionBarrierBlimpAdditions = immutableListOf(
             Region(BlockPos(35, 13, -7), BlockPos(33, 13, -9)),
             Region(BlockPos(130, 13, -81), BlockPos(128, 13, -79)),

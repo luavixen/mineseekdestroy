@@ -76,6 +76,12 @@ public abstract class RunningGameState extends GameState {
                     context.specialCarService.cooldownActivate((PigEntity) vehicle);
                 }
             }
+            if (
+                player.isGhost() &&
+                context.ghostService.shouldIgnoreDamage(damageSource.getTypeRegistryEntry().getKey().orElse(null))
+            ) {
+                return false;
+            }
             return true;
         }
 

@@ -55,17 +55,21 @@ class AutomationService : Service() {
 
         val players = players
 
+        val teamSkip = GameTeam.SKIP
+        val teamRemoved =
+            if (game.getRuleBoolean(Game.RULE_AUTOMATION_GHOSTS_ENABLED)) GameTeam.GHOST else GameTeam.NONE
+
         for (player in players) {
             val record = records[player] ?: continue
             if (player.team == GameTeam.PLAYER_BLACK) {
                 if (player.kills > record.kills) {
                     tasks.add {
-                        player.team = GameTeam.SKIP
+                        player.team = teamSkip
                         logger.info("Automation assigned " + player.name + " to skip")
                     }
                 } else {
                     tasks.add {
-                        player.team = GameTeam.GHOST
+                        player.team = teamRemoved
                         game.sendInfo(
                             Text.literal(player.name).formatted(Formatting.DARK_RED),
                             Text.literal("has been removed from the game!").formatted(Formatting.RED),

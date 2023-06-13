@@ -3,3 +3,9 @@ accessWidener v1 named
 accessible method net/minecraft/entity/Entity isBeingRainedOn ()Z
 
 accessible field net/minecraft/entity/LivingEntity lastDamageTime J
+
+accessible field net/minecraft/item/ItemUsageContext player Lnet/minecraft/entity/player/PlayerEntity;
+accessible field net/minecraft/item/ItemUsageContext hand Lnet/minecraft/util/Hand;
+accessible field net/minecraft/item/ItemUsageContext hit Lnet/minecraft/util/hit/BlockHitResult;
+accessible field net/minecraft/item/ItemUsageContext world Lnet/minecraft/world/World;
+accessible field net/minecraft/item/ItemUsageContext stack Lnet/minecraft/item/ItemStack;
