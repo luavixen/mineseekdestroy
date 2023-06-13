@@ -13,41 +13,37 @@ public abstract class ImmutableCollection<E> extends AbstractCollection<E> imple
     public final boolean add(E value) {
         throw new UnsupportedOperationException();
     }
-
     @Override
     public final boolean remove(Object value) {
         throw new UnsupportedOperationException();
     }
-
     @Override
     public final boolean addAll(@NotNull Collection<? extends E> collection) {
         throw new UnsupportedOperationException();
     }
-
     @Override
     public final boolean removeAll(@NotNull Collection<?> collection) {
         throw new UnsupportedOperationException();
     }
-
     @Override
-    public final boolean removeIf(Predicate<? super E> filter) {
+    public final boolean removeIf(@NotNull Predicate<? super E> filter) {
         throw new UnsupportedOperationException();
     }
-
     @Override
     public final boolean retainAll(@NotNull Collection<?> collection) {
         throw new UnsupportedOperationException();
     }
-
     @Override
     public final void clear() {
         throw new UnsupportedOperationException();
     }
 
-    @SuppressWarnings("unchecked")
     static <T> T[] toArray(T[] array, Object[] elements) {
-        int size = elements.length;
+        return toArray(array, elements, elements.length);
+    }
 
+    @SuppressWarnings("unchecked")
+    static <T> T[] toArray(T[] array, Object[] elements, int size) {
         if (array.length < size) {
             return Arrays.copyOf(elements, size, (Class<? extends T[]>) array.getClass());
         }

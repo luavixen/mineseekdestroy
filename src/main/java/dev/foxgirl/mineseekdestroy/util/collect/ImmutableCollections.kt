@@ -16,12 +16,18 @@ fun <K, V> immutableMapOf(vararg pairs: Pair<K, V>): Map<K, V> {
 }
 
 fun <T> Iterable<T>.toImmutableList(): List<T> {
-    val collection = if (this is Collection<T>) this else toCollection(mutableListOf())
-    return ImmutableList.of(collection)
+    return if (this is Collection<T>) {
+        ImmutableList.of(this)
+    } else {
+        ImmutableList.builder<T>().also { toCollection(it) }.build()
+    }
 }
 fun <T> Iterable<T>.toImmutableSet(): Set<T> {
-    val collection = if (this is Collection<T>) this else toCollection(mutableListOf())
-    return ImmutableSet.of(collection)
+    return if (this is Collection<T>) {
+        ImmutableSet.of(this)
+    } else {
+        ImmutableSet.builder<T>().also { toCollection(it) }.build()
+    }
 }
 
 fun <K, V> Map<K, V>.toImmutableList(): List<Pair<K, V>> {
