@@ -3,12 +3,12 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
-import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Position;
 import org.jetbrains.annotations.Nullable;
@@ -95,10 +95,10 @@ public abstract class RunningGameState extends GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            if (!player.isPlaying()) {
-                if (!player.isSpectator()) {
-                    Scheduler.delay(1.0, (schedule) -> playerEntity.giveItemStack(stack));
-                }
+            if (player.isGhost()) {
+                context.itemService.addStackToInventory(playerEntity, stack, true);
+                return false;
+            } else if (!player.isPlaying()) {
                 return false;
             }
         }
@@ -112,7 +112,11 @@ public abstract class RunningGameState extends GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            if (!player.isPlaying()) return false;
+            if (player.isGhost()) {
+                return stack.getItem() == Items.SLIME_BLOCK;
+            } else if (!player.isPlaying()) {
+                return false;
+            }
         }
         return super.onItemAcquired(context, playerEntity, inventory, stack, slot);
     }

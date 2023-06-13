@@ -166,6 +166,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     });
 
     public static final @NotNull Set<@NotNull Block> UNSTEALABLE_BLOCKS = ImmutableSet.copyOf(new Block[] {
+        Blocks.MAGENTA_CONCRETE_POWDER, Blocks.MAGENTA_CONCRETE,
+        Blocks.SLIME_BLOCK,
         Blocks.AIR, Blocks.CAVE_AIR, Blocks.FIRE,
         Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.ENDER_CHEST, Blocks.BARREL,
         Blocks.SMOKER, Blocks.FLETCHING_TABLE,

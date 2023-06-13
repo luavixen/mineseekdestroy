@@ -134,6 +134,7 @@ class AutomationService : Service() {
     fun executeOpenIpad(console: Console) {
         if (players.none { it.isOperator }) {
             console.sendError("Cannot open iPad, no operators available")
+            return
         }
 
         if (cooldownFlag.getAndSet(true)) {

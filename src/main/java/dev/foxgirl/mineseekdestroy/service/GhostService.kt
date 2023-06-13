@@ -26,16 +26,13 @@ class GhostService : Service() {
 
         for ((player, playerEntity) in playerEntitiesNormal) {
 
+            val healthAttribute = playerEntity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)!!
+
             if (player.isGhost) {
 
                 val goingGhost = running && player.isAlive
 
                 if (goingGhost) {
-                    playerEntitiesIn.values.forEach {
-                        if (it.squaredDistanceTo(playerEntity) <= 16) {
-                            it.frozenTicks = Math.min(it.frozenTicks + 3, it.minFreezeDamageTicks)
-                        }
-                    }
                     playerEntity.addStatusEffect(StatusEffectInstance(StatusEffects.INVISIBILITY, 80))
                 } else {
                     playerEntity.removeStatusEffect(StatusEffects.INVISIBILITY)
@@ -48,11 +45,17 @@ class GhostService : Service() {
                     }
                 }
 
-                playerEntity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)!!.addPersistentModifier(healthModifier)
+                if (!healthAttribute.hasModifier(healthModifier))
+                    healthAttribute.addPersistentModifier(healthModifier)
 
             } else {
 
-                playerEntity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)!!.removeModifier(healthModifier)
+                if (healthAttribute.hasModifier(healthModifier))
+                    healthAttribute.removeModifier(healthModifier)
+
+                if (playerEntity.frozenTicks >= playerEntity.minFreezeDamageTicks) {
+                    playerEntity.damage(playerEntity.damageSources.freeze(), 1.0F)
+                }
 
             }
 
@@ -66,11 +69,25 @@ class GhostService : Service() {
             schedule = Scheduler.delay(1.0) { schedule = null }
             updateGhosts()
         }
+        if (state is PlayingGameState) {
+            for ((player, playerEntity) in playerEntitiesNormal) {
+                if (player.isGhost) {
+                    playerEntitiesIn.values.forEach {
+                        if (it.squaredDistanceTo(playerEntity) <= 20) {
+                            it.frozenTicks = Math.min(it.frozenTicks + 4, it.minFreezeDamageTicks + 20)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun handleInteract(player: GamePlayer, pos: BlockPos): ActionResult {
+        val entity = player.entity
+        if (entity != null) {
+            context.itemService.addStackToInventory(entity, Game.stackEctoplasm, false)
+        }
         world.setBlockState(pos, Blocks.MAGENTA_CONCRETE_POWDER.defaultState)
-        player.inventory?.insertStack(Game.stackEctoplasm.copy())
         return ActionResult.SUCCESS
     }
 
@@ -79,7 +96,7 @@ class GhostService : Service() {
     private companion object {
 
         private val healthModifier =
-            EntityAttributeModifier(UUID.fromString("95880240-c1f7-4660-8e0e-a14f13e2cf41"), "msd_ghost_health", -16.0, EntityAttributeModifier.Operation.ADDITION)
+            EntityAttributeModifier(UUID.fromString("95880240-c1f7-4660-8e0e-a14f13e2cf41"), "msd_ghost_health", -12.0, EntityAttributeModifier.Operation.ADDITION)
 
         private val ignoredDamageTypes = immutableSetOf(
             LIGHTNING_BOLT, LAVA, HOT_FLOOR, IN_WALL, CRAMMING, DROWN, STARVE,

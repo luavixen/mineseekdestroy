@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
-import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -233,7 +232,9 @@ public abstract class GameState {
             return true;
         }
         if (Game.UNDROPPABLE_ITEMS.contains(stack.getItem())) {
-            Scheduler.delay(1.0, (schedule) -> playerEntity.giveItemStack(stack));
+            if (context != null) {
+                context.itemService.addStackToInventory(playerEntity, stack, true);
+            }
             return false;
         }
         if (Game.ILLEGAL_ITEMS.contains(stack.getItem())) {

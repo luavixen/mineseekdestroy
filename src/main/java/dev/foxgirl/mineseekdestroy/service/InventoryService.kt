@@ -12,7 +12,7 @@ class InventoryService : Service() {
     fun executeClear(console: Console, targets: Collection<GamePlayer>) {
         var count = 0
         for (target in targets) {
-            if (target.isPlaying) {
+            if (target.isPlayingOrGhost) {
                 val inventory = target.inventory
                 if (inventory != null) {
                     Inventories.clear(inventory)
@@ -32,7 +32,7 @@ class InventoryService : Service() {
         }
         var count = 0
         for (target in targets) {
-            if (target.isPlaying) {
+            if (target.isPlayingOrGhost) {
                 val inventory = target.inventory
                 if (inventory != null) {
                     Inventories.copy(template, inventory)

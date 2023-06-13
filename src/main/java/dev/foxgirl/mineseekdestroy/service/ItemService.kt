@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
+import dev.foxgirl.mineseekdestroy.util.Async
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.enchantment.Enchantments
@@ -13,8 +14,6 @@ import net.minecraft.item.Items.*
 import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 
 class ItemService : Service() {
 
@@ -35,6 +34,19 @@ class ItemService : Service() {
             if (droppedItems.contains(item)) {
                 inventory.setStack(i, ItemStack.EMPTY)
                 entity.dropItem(stack, true, false)
+            }
+        }
+    }
+
+    fun addStackToInventory(entity: ServerPlayerEntity, stack: ItemStack, wait: Boolean) {
+        val copy = stack.copy()
+        Async.run {
+            if (wait) {
+                delay(1.0)
+            }
+            for (i in 1..10) {
+                if (entity.giveItemStack(copy)) break
+                delay(0.5)
             }
         }
     }
@@ -147,6 +159,12 @@ class ItemService : Service() {
         }
 
         private val toolStackMaps: Map<GameTeam, Map<Tool, ItemStack>> = immutableMapOf(
+            GameTeam.GHOST to immutableMapOf(
+                Tool.Tool1.stack(SKELETON_SKULL),
+                Tool.Tool2.stack(SKELETON_SKULL),
+                Tool.Tool3.stack(SKELETON_SKULL),
+                Tool.Tool4.stack(SKELETON_SKULL),
+            ),
             GameTeam.PLAYER_DUEL to immutableMapOf(
                 Tool.Tool1.stack(IRON_SWORD),
                 Tool.Tool2.stack(IRON_AXE),

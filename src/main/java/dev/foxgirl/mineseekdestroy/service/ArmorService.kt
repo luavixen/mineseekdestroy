@@ -28,7 +28,7 @@ class ArmorService : Service() {
                 inventoryDirty = true
             }
 
-            if (player.team.isPlaying) {
+            if (player.team.isPlayingOrGhost) {
                 if (armorSet(inventory.armor, player)) {
                     inventoryDirty = true
                 }
