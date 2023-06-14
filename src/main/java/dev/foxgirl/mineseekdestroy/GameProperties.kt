@@ -1,16 +1,21 @@
 package dev.foxgirl.mineseekdestroy
 
+import dev.foxgirl.mineseekdestroy.event.GamePropertiesSerializer
 import dev.foxgirl.mineseekdestroy.util.Region
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
+import kotlinx.serialization.Serializable
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks.*
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
 
+@Serializable(with = GamePropertiesSerializer::class)
 sealed interface GameProperties {
+
+    val name: String
 
     val positionSpawn: BlockPos
 
@@ -44,6 +49,8 @@ sealed interface GameProperties {
     fun setup(context: GameContext) {}
 
     object Empty : GameProperties {
+
+        override val name = "none"
 
         override val positionSpawn = BlockPos(0, 0, 0)
 
@@ -144,6 +151,8 @@ sealed interface GameProperties {
 
     object Macander : GameProperties {
 
+        override val name = "macander"
+
         override val positionSpawn = BlockPos(144, -39, -55)
 
         override val positionBlimp = Vec3d(70.5, 11.0, -55.5)
@@ -195,6 +204,8 @@ sealed interface GameProperties {
 
     object Radiator : GameProperties {
 
+        override val name = "radiator"
+
         override val positionSpawn = BlockPos(870, 4, -46)
 
         override val positionBlimp = Vec3d(870.5, 55.0, -40.5)
@@ -240,6 +251,8 @@ sealed interface GameProperties {
     }
 
     object Realm : GameProperties {
+
+        override val name = "realm"
 
         override val positionSpawn = BlockPos(-1249, 63, 197)
 
@@ -292,6 +305,8 @@ sealed interface GameProperties {
     }
 
     object Lights : GameProperties {
+
+        override val name = "lights"
 
         override val positionSpawn = BlockPos(-110, -56, 760)
 

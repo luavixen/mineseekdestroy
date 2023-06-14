@@ -5,6 +5,8 @@ import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Region
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import net.minecraft.command.EntitySelector
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -53,10 +55,10 @@ internal fun setup() {
                     }
                 }
             }
-            register("macander") { GameProperties.Macander }
-            register("radiator") { GameProperties.Radiator }
-            register("realm") { GameProperties.Realm }
-            register("lights") { GameProperties.Lights }
+            register(GameProperties.Macander.name) { GameProperties.Macander }
+            register(GameProperties.Radiator.name) { GameProperties.Radiator }
+            register(GameProperties.Realm.name) { GameProperties.Realm }
+            register(GameProperties.Lights.name) { GameProperties.Lights }
         }
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->
@@ -145,6 +147,11 @@ internal fun setup() {
                 } else {
                     args.sendError("Cannot give tools, command source has no entity")
                 }
+            }
+        }
+        it.params(argLiteral("print")) {
+            it.action { args ->
+                Game.CONSOLE_OPERATORS.sendInfo(Json.encodeToString(game))
             }
         }
     }

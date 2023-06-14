@@ -9,6 +9,11 @@ import org.jetbrains.annotations.Nullable;
 public class PlayingGameState extends RunningGameState {
 
     @Override
+    public @NotNull String getName() {
+        return "playing";
+    }
+
+    @Override
     protected @Nullable GameState onSetup(@NotNull GameContext context) {
         context.game.sendInfo("Round started! KILL!");
 

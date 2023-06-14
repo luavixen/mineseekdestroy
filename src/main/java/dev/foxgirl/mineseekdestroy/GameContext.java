@@ -1,9 +1,11 @@
 package dev.foxgirl.mineseekdestroy;
 
+import dev.foxgirl.mineseekdestroy.event.GameContextSerializer;
 import dev.foxgirl.mineseekdestroy.service.*;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableMap;
+import kotlinx.serialization.Serializable;
 import net.minecraft.entity.Entity;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
@@ -21,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
+@Serializable(with = GameContextSerializer.class)
 public final class GameContext {
 
     private static final String scoreboardKillsName = "msd_kills";

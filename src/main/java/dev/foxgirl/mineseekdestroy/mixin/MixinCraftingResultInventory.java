@@ -1,7 +1,6 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
-import dev.foxgirl.mineseekdestroy.service.ItemService;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;

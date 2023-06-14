@@ -21,6 +21,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class StartingGameState extends GameState {
 
+    @Override
+    public @NotNull String getName() {
+        return "starting";
+    }
+
     private static Text formatRoundStarting(double time, boolean blink) {
         return Text
             .literal("ROUND STARTING IN T-" + new DecimalFormat("00.0000").format(Math.max(time, 0.0)))

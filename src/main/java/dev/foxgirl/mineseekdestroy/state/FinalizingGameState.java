@@ -9,6 +9,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class FinalizingGameState extends RunningGameState {
 
+    @Override
+    public @NotNull String getName() {
+        return "finalizing";
+    }
+
     private final int ticksFinalizing = (int) (Game.getGame().getRuleDouble(Game.RULE_FINALIZING_DURATION) * 20.0);
 
     private int ticks = 0;

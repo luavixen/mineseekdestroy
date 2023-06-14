@@ -9,3 +9,5 @@ accessible field net/minecraft/item/ItemUsageContext hand Lnet/minecraft/util/Ha
 accessible field net/minecraft/item/ItemUsageContext hit Lnet/minecraft/util/hit/BlockHitResult;
 accessible field net/minecraft/item/ItemUsageContext world Lnet/minecraft/world/World;
 accessible field net/minecraft/item/ItemUsageContext stack Lnet/minecraft/item/ItemStack;
+
+accessible field net/minecraft/world/GameRules rules Ljava/util/Map;

@@ -1,7 +1,6 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
-import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -21,7 +20,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 @Mixin(PigEntity.class)

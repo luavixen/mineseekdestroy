@@ -17,6 +17,11 @@ import java.util.List;
 public class DuelingGameState extends RunningGameState {
 
     @Override
+    public @NotNull String getName() {
+        return "dueling";
+    }
+
+    @Override
     protected @Nullable GameState onSetup(@NotNull GameContext context) {
         var players = findPlayers(context);
 
