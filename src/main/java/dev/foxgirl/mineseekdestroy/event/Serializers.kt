@@ -1,9 +1,13 @@
 package dev.foxgirl.mineseekdestroy.event
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException
 import dev.foxgirl.mineseekdestroy.*
+import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.state.GameState
+import dev.foxgirl.mineseekdestroy.util.Inventories
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.descriptors.*
@@ -13,7 +17,13 @@ import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 import kotlinx.serialization.serializer
 import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.inventory.Inventory
+import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
+import net.minecraft.nbt.StringNbtReader
+import net.minecraft.registry.Registries
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
 import java.util.*
@@ -56,6 +66,66 @@ object PositionSerializer : KSerializer<Position> {
     }
 }
 
+object ItemSerializer : KSerializer<Item> {
+    override val descriptor = PrimitiveSerialDescriptor(Item::class.qualifiedName!!, PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Item) {
+        encoder.encodeString(Registries.ITEM.getId(value).toString())
+    }
+
+    override fun deserialize(decoder: Decoder): Item {
+        val id = Identifier.tryParse(decoder.decodeString()) ?: throw SerializationException("Invalid item identifier")
+        return Registries.ITEM.get(id)
+    }
+}
+
+object ItemStackSerializer : KSerializer<ItemStack> {
+    override val descriptor = buildClassSerialDescriptor(ItemStackSerializer::class.qualifiedName!!) {
+        element("item", ItemSerializer.descriptor)
+        element<Int>("count")
+        element<String?>("nbt")
+    }
+
+    override fun serialize(encoder: Encoder, value: ItemStack) {
+        encoder.encodeStructure(descriptor) {
+            encodeSerializableElement(descriptor, 0, ItemSerializer, value.item)
+            encodeIntElement(descriptor, 1, value.count)
+            encodeSerializableElement(descriptor, 2, serializer<String?>(), value.nbt?.asString())
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): ItemStack {
+        return decoder.decodeStructure(descriptor) {
+            ItemStack(
+                decodeSerializableElement(descriptor, 0, ItemSerializer),
+                decodeIntElement(descriptor, 1),
+            ).also {
+                val nbt = decodeSerializableElement(descriptor, 2, serializer<String?>())
+                if (nbt != null) {
+                    try {
+                        it.nbt = StringNbtReader.parse(nbt)
+                    } catch (cause : CommandSyntaxException) {
+                        throw SerializationException("Invalid item stack NBT", cause)
+                    }
+                }
+            }
+        }
+    }
+}
+
+object InventorySerializer : KSerializer<Inventory> {
+    @OptIn(ExperimentalSerializationApi::class)
+    override val descriptor = SerialDescriptor(Inventory::class.qualifiedName!!, ListSerializer(ItemStackSerializer).descriptor)
+
+    override fun serialize(encoder: Encoder, value: Inventory) {
+        encoder.encodeSerializableValue(ListSerializer(ItemStackSerializer), Inventories.list(value))
+    }
+
+    override fun deserialize(decoder: Decoder): Inventory {
+        throw UnsupportedOperationException()
+    }
+}
+
 object StatusEffectInstanceSerializer : KSerializer<StatusEffectInstance> {
     override val descriptor = buildClassSerialDescriptor(StatusEffectInstance::class.qualifiedName!!) {
         element<String>("type")
@@ -77,7 +147,6 @@ object StatusEffectInstanceSerializer : KSerializer<StatusEffectInstance> {
 }
 
 object ServerPlayerEntitySerializer : KSerializer<ServerPlayerEntity> {
-    @OptIn(ExperimentalSerializationApi::class)
     override val descriptor = buildClassSerialDescriptor(ServerPlayerEntity::class.qualifiedName!!) {
         element("position", PositionSerializer.descriptor)
         element<Float>("health")
@@ -86,7 +155,8 @@ object ServerPlayerEntitySerializer : KSerializer<ServerPlayerEntity> {
         element<Int>("hungerFoodLevel")
         element<Float>("hungerSaturationLevel")
         element<Float>("hungerExhaustion")
-        element("effects", listSerialDescriptor(StatusEffectInstanceSerializer.descriptor))
+        element("inventory", InventorySerializer.descriptor)
+        element("effects", ListSerializer(StatusEffectInstanceSerializer).descriptor)
     }
 
     override fun serialize(encoder: Encoder, value: ServerPlayerEntity) {
@@ -98,7 +168,8 @@ object ServerPlayerEntitySerializer : KSerializer<ServerPlayerEntity> {
             encodeIntElement(descriptor, 4, value.hungerManager.foodLevel)
             encodeFloatElement(descriptor, 5, value.hungerManager.saturationLevel)
             encodeFloatElement(descriptor, 6, value.hungerManager.exhaustion)
-            encodeSerializableElement(descriptor, 7, ListSerializer(StatusEffectInstanceSerializer), value.activeStatusEffects.values.toList())
+            encodeSerializableElement(descriptor, 7, InventorySerializer, value.inventory)
+            encodeSerializableElement(descriptor, 8, ListSerializer(StatusEffectInstanceSerializer), value.activeStatusEffects.values.toList())
         }
     }
 
@@ -135,7 +206,7 @@ object GamePlayerSerializer : KSerializer<GamePlayer> {
             encodeSerializableElement(descriptor, 0, UUIDSerializer, value.uuid)
             encodeStringElement(descriptor, 1, value.name)
             encodeBooleanElement(descriptor, 2, value.isAlive)
-            encodeSerializableElement(descriptor, 3, serializer(), value.team)
+            encodeSerializableElement(descriptor, 3, serializer<GameTeam>(), value.team)
             encodeIntElement(descriptor, 4, value.kills)
             encodeIntElement(descriptor, 5, value.deaths)
             encodeSerializableElement(descriptor, 6, ServerPlayerEntitySerializer.nullable, value.entity)
@@ -174,11 +245,13 @@ object GameStateSerializer : KSerializer<GameState> {
 object GameContextSerializer : KSerializer<GameContext> {
     override val descriptor = buildClassSerialDescriptor(GameContext::class.qualifiedName!!) {
         element<List<GamePlayer>>("players")
+        element<SpecialSummonsService>("summons")
     }
 
     override fun serialize(encoder: Encoder, value: GameContext) {
         encoder.encodeStructure(descriptor) {
             encodeSerializableElement(descriptor, 0, serializer<List<GamePlayer>>(), value.players)
+            encodeSerializableElement(descriptor, 1, serializer<SpecialSummonsService>(), value.specialSummonsService)
         }
     }
 

@@ -5,8 +5,6 @@ import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Region
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import net.minecraft.command.EntitySelector
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -147,11 +145,6 @@ internal fun setup() {
                 } else {
                     args.sendError("Cannot give tools, command source has no entity")
                 }
-            }
-        }
-        it.params(argLiteral("print")) {
-            it.action { args ->
-                Game.CONSOLE_OPERATORS.sendInfo(Json.encodeToString(game))
             }
         }
     }

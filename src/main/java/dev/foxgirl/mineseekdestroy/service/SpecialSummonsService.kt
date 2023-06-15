@@ -9,6 +9,12 @@ import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -48,6 +54,7 @@ import net.minecraft.world.World
 import java.time.Duration
 import java.time.Instant
 
+@Serializable(with = SpecialSummonsService.Companion.Serializer::class)
 class SpecialSummonsService : Service() {
 
     enum class Theology {
@@ -904,7 +911,19 @@ class SpecialSummonsService : Service() {
         summonEffects(options)
     }
 
-    private companion object {
+    internal companion object {
+
+        internal object Serializer : KSerializer<SpecialSummonsService> {
+            override val descriptor = buildClassSerialDescriptor(SpecialSummonsService::class.qualifiedName!!) {}
+
+            override fun deserialize(decoder: Decoder): SpecialSummonsService {
+                TODO("Not yet implemented")
+            }
+
+            override fun serialize(encoder: Encoder, value: SpecialSummonsService) {
+                TODO("Not yet implemented")
+            }
+        }
 
         private fun PlayerEntity.giveItem(stack: ItemStack) {
             if (stack.isEmpty) return
