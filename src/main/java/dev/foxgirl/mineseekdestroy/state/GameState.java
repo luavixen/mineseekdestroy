@@ -54,7 +54,7 @@ public abstract class GameState {
     public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {
         var position = Game.getGameProperties().getPositionSpawn().toCenterPos();
         newPlayerEntity.teleport(
-            context != null ? context.world : newPlayerEntity.getWorld(),
+            context != null ? context.world : newPlayerEntity.getServerWorld(),
             position.getX(), position.getY(), position.getZ(),
             newPlayerEntity.getYaw(), newPlayerEntity.getPitch()
         );

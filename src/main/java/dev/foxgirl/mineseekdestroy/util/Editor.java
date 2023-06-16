@@ -148,8 +148,11 @@ public final class Editor {
 
             boolean mutated = false;
 
-            for (var section : chunk.getSectionArray()) {
-                int offsetY = section.getYOffset();
+            var sections = chunk.getSectionArray();
+
+            for (int i = 0, length = sections.length; i < length; i++) {
+                var section = sections[i];
+                int offsetY = i << 4;
                 for (int y = 0; y < 16; y++) {
                     for (int x = 0; x < 16; x++) {
                         for (int z = 0; z < 16; z++) {
@@ -213,7 +216,7 @@ public final class Editor {
             }
 
             for (WorldChunk chunk : chunksMutated) {
-                var packet = new ChunkDataS2CPacket(chunk, manager.getLightingProvider(), null, null, true);
+                var packet = new ChunkDataS2CPacket(chunk, manager.getLightingProvider(), null, null);
                 for (ServerPlayerEntity player : world.getPlayers()) {
                     player.networkHandler.sendPacket(packet);
                 }

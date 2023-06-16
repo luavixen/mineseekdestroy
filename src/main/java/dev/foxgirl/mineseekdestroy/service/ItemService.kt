@@ -81,11 +81,11 @@ class ItemService : Service() {
                     }
                 }
 
-                if (item === BONE_BLOCK && !ItemStack.areNbtEqual(stack, Game.stackEggBlock)) {
+                if (item === BONE_BLOCK && stack.nbt != Game.stackEggBlock.nbt) {
                     inventory.setStack(i, Game.stackEggBlock.copyWithCount(stack.count))
                     return@forEach
                 }
-                if (item === SLIME_BLOCK && !ItemStack.areNbtEqual(stack, Game.stackEctoplasm)) {
+                if (item === SLIME_BLOCK && stack.nbt != Game.stackEctoplasm.nbt) {
                     inventory.setStack(i, Game.stackEctoplasm.copyWithCount(stack.count))
                     return@forEach
                 }

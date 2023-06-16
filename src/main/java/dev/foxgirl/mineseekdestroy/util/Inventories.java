@@ -125,7 +125,7 @@ public final class Inventories {
         @Override
         public void clear() {
             var stacks = this.stacks;
-            for (int i = 0, l = stacks.length; i < l; i++) {
+            for (int i = 0, length = stacks.length; i < length; i++) {
                 stacks[i] = EMPTY_STACK;
             }
         }

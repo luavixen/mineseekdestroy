@@ -176,7 +176,7 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendInfo(vararg values: Any?) {
-            context.source.sendFeedback(Console.format(values, false), true)
+            context.source.sendFeedback({ Console.format(values, false) }, true)
         }
 
         /**

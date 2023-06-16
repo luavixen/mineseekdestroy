@@ -776,8 +776,9 @@ class SpecialSummonsService : Service() {
         override fun canInsertIntoSlot(slot: Slot?) = true
         override fun canInsertIntoSlot(stack: ItemStack?, slot: Slot?) = true
 
-        override fun setNewItemName(newItemName: String?) {
+        override fun setNewItemName(newItemName: String?): Boolean {
             updateResult()
+            return true
         }
     }
 

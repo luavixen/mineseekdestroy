@@ -48,11 +48,11 @@ public abstract class MixinItemEntity extends Entity {
                 }
             }
         } else if (item == Items.BONE_BLOCK) {
-            if (!ItemStack.areNbtEqual(stack, Game.stackEggBlock)) {
+            if (!Objects.equals(stack.getNbt(), Game.stackEggBlock.getNbt())) {
                 stack.setNbt(Objects.requireNonNull(Game.stackEggBlock.getNbt()).copy());
             }
         } else if (item == Items.SLIME_BLOCK) {
-            if (!ItemStack.areNbtEqual(stack, Game.stackEctoplasm)) {
+            if (!Objects.equals(stack.getNbt(), Game.stackEctoplasm.getNbt())) {
                 stack.setNbt(Objects.requireNonNull(Game.stackEctoplasm.getNbt()).copy());
             }
         }
