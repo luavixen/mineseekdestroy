@@ -1,10 +1,7 @@
 package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.command.Command;
-import dev.foxgirl.mineseekdestroy.event.Bus;
-import dev.foxgirl.mineseekdestroy.event.GameSerializer;
-import dev.foxgirl.mineseekdestroy.event.StateChangeEvent;
-import dev.foxgirl.mineseekdestroy.event.UpdateEvent;
+import dev.foxgirl.mineseekdestroy.event.*;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
@@ -516,6 +513,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         AttackEntityCallback.EVENT.register((playerEntity, world, hand, entity, hitResult) -> getState().onAttackEntity(getContext(), playerEntity, world, hand, entity, hitResult));
         ExtraEvents.ITEM_DROPPED.register((playerEntity, stack, throwRandomly, retainOwnership) -> getState().onItemDropped(getContext(), playerEntity, stack, throwRandomly, retainOwnership));
         ExtraEvents.ITEM_ACQUIRED.register((playerEntity, inventory, stack, slot) -> getState().onItemAcquired(getContext(), playerEntity, inventory, stack, slot));
+
+        ServerKt.start();
     }
 
     @Override

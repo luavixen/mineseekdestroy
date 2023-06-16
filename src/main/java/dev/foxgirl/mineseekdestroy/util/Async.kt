@@ -19,7 +19,7 @@ object Async {
         terminate(go(context, suspend { coroutine(this) }))
 
     internal fun <T> terminate(promise: CompletableFuture<T>) {
-        promise.whenComplete { _, cause -> if (cause != null) Game.LOGGER.error("Unexpected exception in async task", cause) }
+        promise.whenComplete { _, cause -> if (cause != null) Game.LOGGER.error("Unhandled exception in async task", cause) }
     }
 
     suspend fun <T> await(promise: CompletableFuture<T>): T =

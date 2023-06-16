@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy.event
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import dev.foxgirl.mineseekdestroy.*
-import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.state.GameState
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -70,7 +69,8 @@ object ItemSerializer : KSerializer<Item> {
     override val descriptor = PrimitiveSerialDescriptor(Item::class.qualifiedName!!, PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Item) {
-        encoder.encodeString(Registries.ITEM.getId(value).toString())
+        val id = Registries.ITEM.getId(value)
+        encoder.encodeString(if (id.namespace == "minecraft") id.path else id.toString())
     }
 
     override fun deserialize(decoder: Decoder): Item {
@@ -245,13 +245,11 @@ object GameStateSerializer : KSerializer<GameState> {
 object GameContextSerializer : KSerializer<GameContext> {
     override val descriptor = buildClassSerialDescriptor(GameContext::class.qualifiedName!!) {
         element<List<GamePlayer>>("players")
-        element<SpecialSummonsService>("summons")
     }
 
     override fun serialize(encoder: Encoder, value: GameContext) {
         encoder.encodeStructure(descriptor) {
             encodeSerializableElement(descriptor, 0, serializer<List<GamePlayer>>(), value.players)
-            encodeSerializableElement(descriptor, 1, serializer<SpecialSummonsService>(), value.specialSummonsService)
         }
     }
 
