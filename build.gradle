@@ -42,7 +42,7 @@ dependencies {
     includeImplementation "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:${project.kotlin_serialization_version}"
     includeImplementation "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:${project.kotlin_serialization_version}"
 
-    includeImplementation 'io.javalin:javalin:5.6.0'
+    includeImplementation "org.eclipse.jetty.websocket:websocket-jetty-server:${project.jetty_version}"
 }
 
 java {
