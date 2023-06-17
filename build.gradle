@@ -1,6 +1,5 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.8.22'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.22'
     id 'fabric-loom' version '1.2.7'
 }
 
@@ -38,11 +37,6 @@ dependencies {
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_version}"
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${project.kotlin_version}"
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${project.kotlin_version}"
-
-    includeImplementation "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:${project.kotlin_serialization_version}"
-    includeImplementation "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:${project.kotlin_serialization_version}"
-
-    includeImplementation "org.eclipse.jetty.websocket:websocket-jetty-server:${project.jetty_version}"
 }
 
 java {

@@ -1,18 +1,15 @@
 package dev.foxgirl.mineseekdestroy
 
-import dev.foxgirl.mineseekdestroy.event.GamePropertiesSerializer
 import dev.foxgirl.mineseekdestroy.util.Region
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
-import kotlinx.serialization.Serializable
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks.*
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
 
-@Serializable(with = GamePropertiesSerializer::class)
 sealed interface GameProperties {
 
     val name: String

@@ -2,8 +2,6 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
-import dev.foxgirl.mineseekdestroy.event.GameStateSerializer;
-import kotlinx.serialization.Serializable;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -28,7 +26,6 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@Serializable(with = GameStateSerializer.class)
 public abstract class GameState {
 
     public abstract @NotNull String getName();

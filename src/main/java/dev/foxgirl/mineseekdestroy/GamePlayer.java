@@ -1,11 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
-import dev.foxgirl.mineseekdestroy.event.AliveChangeEvent;
-import dev.foxgirl.mineseekdestroy.event.Bus;
-import dev.foxgirl.mineseekdestroy.event.GamePlayerSerializer;
-import dev.foxgirl.mineseekdestroy.event.TeamChangeEvent;
 import dev.foxgirl.mineseekdestroy.state.RunningGameState;
-import kotlinx.serialization.Serializable;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.scoreboard.Scoreboard;
@@ -20,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-@Serializable(with = GamePlayerSerializer.class)
 public final class GamePlayer {
 
     private final GameContext context;
@@ -89,16 +83,11 @@ public final class GamePlayer {
         if (currentTeam != team) {
             previousTeam = currentTeam;
             currentTeam = team;
-            Bus.publish(new TeamChangeEvent(this, previousTeam, currentTeam));
         }
     }
 
-    public void setAlive(boolean newAlive) {
-        var oldAlive = currentAlive;
-        if (oldAlive != newAlive) {
-            currentAlive = newAlive;
-            Bus.publish(new AliveChangeEvent(this, oldAlive, newAlive));
-        }
+    public void setAlive(boolean alive) {
+        currentAlive = alive;
     }
 
     public int getKills() {

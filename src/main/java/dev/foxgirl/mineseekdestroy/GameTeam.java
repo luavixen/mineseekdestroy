@@ -1,8 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
-import dev.foxgirl.mineseekdestroy.event.GameTeamSerializer;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
-import kotlinx.serialization.Serializable;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.screen.ScreenTexts;
@@ -15,7 +13,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-@Serializable(with = GameTeamSerializer.class)
 public enum GameTeam {
 
     NONE(Text.of("NONE"), null, null, null, Formatting.WHITE, null),

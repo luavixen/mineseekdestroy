@@ -3,9 +3,6 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameTeam;
-import dev.foxgirl.mineseekdestroy.event.Bus;
-import dev.foxgirl.mineseekdestroy.event.DamageEvent;
-import dev.foxgirl.mineseekdestroy.event.DeathEvent;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.PigEntity;
@@ -59,9 +56,6 @@ public abstract class RunningGameState extends GameState {
                 } else {
                     playerAttacker.countKill();
                 }
-                Bus.publish(new DeathEvent(player, playerAttacker));
-            } else {
-                Bus.publish(new DeathEvent(player, null));
             }
         }
 
@@ -88,7 +82,6 @@ public abstract class RunningGameState extends GameState {
             ) {
                 return false;
             }
-            Bus.publish(new DamageEvent(player, damageAmount));
             return true;
         }
 

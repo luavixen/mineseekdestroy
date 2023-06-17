@@ -1,10 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.command.Command;
-import dev.foxgirl.mineseekdestroy.event.Bus;
-import dev.foxgirl.mineseekdestroy.event.GameSerializer;
-import dev.foxgirl.mineseekdestroy.event.StateChangeEvent;
-import dev.foxgirl.mineseekdestroy.event.UpdateEvent;
 import dev.foxgirl.mineseekdestroy.state.GameState;
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
@@ -13,7 +9,6 @@ import dev.foxgirl.mineseekdestroy.util.Editor;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
 import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
-import kotlinx.serialization.Serializable;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -52,7 +47,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-@Serializable(with = GameSerializer.class)
 public final class Game implements Console, DedicatedServerModInitializer, ServerLifecycleEvents.ServerStarting, ServerTickEvents.StartTick {
 
     public static final @NotNull Logger LOGGER = LogManager.getLogger("MnSnD");
@@ -383,13 +377,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         return Objects.requireNonNull(state, "Expression 'state'");
     }
 
-    public void setState(@NotNull GameState newState) {
-        Objects.requireNonNull(newState, "Argument 'newState'");
-        var oldState = state;
-        if (oldState != newState) {
-            state = newState;
-            Bus.publish(new StateChangeEvent(oldState, newState));
-            LOGGER.info("Game state changed to " + state.getClass().getSimpleName());
+    public void setState(@NotNull GameState state) {
+        Objects.requireNonNull(state, "Argument 'state'");
+        if (this.state != state) {
+            this.state = state;
+            LOGGER.info("Game state changed to " + state.getName());
         }
     }
 
@@ -522,8 +514,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public void onServerStarting(MinecraftServer server) {
         Objects.requireNonNull(server, "Argument 'server'");
         this.server = server;
-
-        Scheduler.interval(0.5, (schedule) -> Bus.publish(new UpdateEvent(this)));
     }
 
     @Override
