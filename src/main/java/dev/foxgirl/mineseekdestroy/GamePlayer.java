@@ -194,22 +194,34 @@ public final class GamePlayer {
         return context.scoreboardKills;
     }
 
+    private @Nullable Team getScoreboardAliveTeam() {
+        return currentTeam.getAliveTeam(getScoreboard());
+    }
+    private @Nullable Team getScoreboardDeadTeam() {
+        var team = currentTeam.getDeadTeam(getScoreboard());
+        return team != null ? team : getScoreboardAliveTeam();
+    }
+    private @Nullable Team getScoreboardDamagedTeam() {
+        var team = currentTeam.getDamagedTeam(getScoreboard());
+        return team != null ? team : getScoreboardAliveTeam();
+    }
+
     public @Nullable Team getScoreboardTeam() {
         if (currentAlive) {
             var player = getEntity();
             if (player != null && player.isAlive() && player.networkHandler.isConnectionOpen()) {
                 return (
                     player.getWorld().getTime() - player.lastDamageTime < 10L
-                        ? currentTeam.getDamagedTeam(getScoreboard())
-                        : currentTeam.getAliveTeam(getScoreboard())
+                        ? getScoreboardDamagedTeam()
+                        : getScoreboardAliveTeam()
                 );
             }
         }
-        return currentTeam.getDeadTeam(getScoreboard());
+        return getScoreboardDeadTeam();
     }
 
     public @NotNull Text getDisplayName() {
-        return Team.decorateName(currentTeam.getAliveTeam(getScoreboard()), Text.literal(getName()));
+        return Team.decorateName(getScoreboardAliveTeam(), Text.literal(getName()));
     }
 
     public void update() {

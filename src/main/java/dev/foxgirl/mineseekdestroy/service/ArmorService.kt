@@ -5,10 +5,7 @@ import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import net.minecraft.enchantment.Enchantments
-import net.minecraft.item.ArmorItem
-import net.minecraft.item.DyeableItem
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.item.*
 import net.minecraft.item.Items.*
 import net.minecraft.util.DyeColor
 
@@ -175,7 +172,8 @@ class ArmorService : Service() {
             var dirty = false
             for (i in list.indices) {
                 val stack = list[i]
-                if (stack.item !is ArmorItem) continue
+                val item = stack.item
+                if (item !is ArmorItem && item !== Items.ELYTRA) continue
                 list[i] = ItemStack.EMPTY
                 dirty = true
             }

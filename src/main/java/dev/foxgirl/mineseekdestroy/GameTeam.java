@@ -16,8 +16,8 @@ import java.util.function.Consumer;
 public enum GameTeam {
 
     NONE(Text.of("NONE"), null, null, null, Formatting.WHITE, null),
-    SKIP(Text.of("SKIP"), "msd_skip", null, null, Formatting.GREEN, null),
-    GHOST(Text.of("GHOST"), "msd_ghost", null, null, Formatting.GRAY, null),
+    SKIP(Text.of("SKIP"), "msd_skip", "msd_skip_dead", null, Formatting.GREEN, Formatting.GRAY),
+    GHOST(Text.of("GHOST"), "msd_ghost", "msd_ghost_dead", null, Formatting.GRAY, Formatting.GRAY),
     OPERATOR(Text.of("ADMIN"), "msd_operator", null, null, Formatting.GREEN, null),
     PLAYER_DUEL(Text.of("DUEL"), "msd_duel", "msd_duel_dead", "msd_duel_damaged", Formatting.RED, Formatting.DARK_GRAY),
     PLAYER_WARDEN(Text.of("WARDEN"), "msd_warden", "msd_warden_dead", "msd_warden_damaged", Formatting.RED, Formatting.DARK_RED),

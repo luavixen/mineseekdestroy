@@ -135,16 +135,18 @@ public final class Editor {
             this.operations = operations;
         }
 
-        private boolean performChunk(WorldChunk chunk, Region region, Action[] actions) {
+        private boolean performChunk(WorldChunk chunk, Region region, ServerWorld world, Action[] actions) {
             var cPos = chunk.getPos();
             int offsetX = cPos.x << 4;
             int offsetZ = cPos.z << 4;
 
-            var bPosMin = region.getStart();
-            var bPosMax = region.getEnd();
-            int bPosMinY = bPosMin.getY(), bPosMaxY = bPosMax.getY();
-            int bPosMinX = bPosMin.getX(), bPosMaxX = bPosMax.getX();
-            int bPosMinZ = bPosMin.getZ(), bPosMaxZ = bPosMax.getZ();
+            var posMin = region.getStart();
+            var posMax = region.getEnd();
+            int posMinY = posMin.getY(), posMaxY = posMax.getY();
+            int posMinX = posMin.getX(), posMaxX = posMax.getX();
+            int posMinZ = posMin.getZ(), posMaxZ = posMax.getZ();
+
+            int bottomY = world.getBottomY();
 
             boolean mutated = false;
 
@@ -152,16 +154,16 @@ public final class Editor {
 
             for (int i = 0, length = sections.length; i < length; i++) {
                 var section = sections[i];
-                int offsetY = i << 4;
+                int offsetY = (i << 4) + bottomY;
                 for (int y = 0; y < 16; y++) {
                     for (int x = 0; x < 16; x++) {
                         for (int z = 0; z < 16; z++) {
                             int posY = y + offsetY;
                             int posX = x + offsetX;
                             int posZ = z + offsetZ;
-                            if (bPosMinY > posY || bPosMaxY < posY) continue;
-                            if (bPosMinX > posX || bPosMaxX < posX) continue;
-                            if (bPosMinZ > posZ || bPosMaxZ < posZ) continue;
+                            if (posMinY > posY || posMaxY < posY) continue;
+                            if (posMinX > posX || posMaxX < posX) continue;
+                            if (posMinZ > posZ || posMaxZ < posZ) continue;
                             var stateOld = section.getBlockState(x, y, z);
                             for (var action : actions) {
                                 var stateNew = action.apply(stateOld, posY, posX, posZ);
@@ -211,7 +213,7 @@ public final class Editor {
             }
 
             for (WorldChunk chunk : chunks) {
-                var mutated = performChunk(chunk, region, actions);
+                var mutated = performChunk(chunk, region, world, actions);
                 if (mutated) chunksMutated.add(chunk);
             }
 
@@ -244,10 +246,10 @@ public final class Editor {
     }
 
     private static final LinkedHashMap<Target, ArrayList<Operation>> operations = new LinkedHashMap<>();
-    private static final Object operationsLock = new Object();
+    private static final Object lock = new Object();
 
     private static void enqueue(ServerWorld world, Region region, Operation operation) {
-        synchronized (operationsLock) {
+        synchronized (lock) {
             operations
                 .computeIfAbsent(new Target(world, region), (key) -> new ArrayList<>())
                 .add(operation);
@@ -260,7 +262,7 @@ public final class Editor {
     public static void update() {
         ArrayList<Task> tasks;
 
-        synchronized (operationsLock) {
+        synchronized (lock) {
             if (operations.isEmpty()) {
                 return;
             }
