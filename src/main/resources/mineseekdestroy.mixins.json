@@ -15,6 +15,7 @@
         "MixinEntityTrackerUpdateS2CPacket",
         "MixinFarmlandBlock",
         "MixinFireBlock",
+        "MixinItem",
         "MixinItemEntity",
         "MixinMessageCommand",
         "MixinMinecraftServer",

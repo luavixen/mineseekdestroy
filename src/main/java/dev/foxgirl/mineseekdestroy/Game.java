@@ -268,6 +268,22 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
     });
 
+    public static final @NotNull Set<@NotNull Item> STACKABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
+        Items.EGG, Items.SNOWBALL,
+        Items.ENDER_PEARL,
+        Items.POTION,
+        Items.SPLASH_POTION,
+        Items.LINGERING_POTION,
+        Items.GLASS_BOTTLE,
+        Items.HONEY_BOTTLE,
+        Items.EXPERIENCE_BOTTLE,
+        Items.BOOK,
+        Items.WRITTEN_BOOK,
+        Items.WRITABLE_BOOK,
+        Items.KNOWLEDGE_BOOK,
+        Items.ENCHANTED_BOOK,
+    });
+
     public static final @NotNull Set<@NotNull Item> ILLEGAL_ITEMS = ImmutableSet.copyOf(new Item[] {
         Items.BEDROCK,
         Items.COMMAND_BLOCK,
