@@ -6,7 +6,9 @@ plugins {
 group = project.mod_group
 archivesBaseName = project.mod_name
 
-version = project.mod_version
+ext.versionRevision = 'git rev-list --count HEAD'.execute().text.trim()
+ext.versionHash = 'git rev-parse --short HEAD'.execute().text.trim()
+version = "0.0.${ext.versionRevision}-${ext.versionHash}"
 
 loom {
     accessWidenerPath = file 'src/main/resources/mineseekdestroy.accesswidener'
