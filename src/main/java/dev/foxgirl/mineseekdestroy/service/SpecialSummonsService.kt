@@ -63,8 +63,18 @@ class SpecialSummonsService : Service() {
     }
 
     class TheologyPair(theology1: Theology, theology2: Theology) {
-        val theology1 = minOf(theology1, theology2)
-        val theology2 = maxOf(theology1, theology2)
+        val theology1: Theology
+        val theology2: Theology
+
+        init {
+            if (theology1 <= theology2) {
+                this.theology1 = theology1
+                this.theology2 = theology2
+            } else {
+                this.theology1 = theology2
+                this.theology2 = theology1
+            }
+        }
 
         val isDouble get() = theology1 === theology2
         val isOnce get() = theologyPairsOnce.contains(this)

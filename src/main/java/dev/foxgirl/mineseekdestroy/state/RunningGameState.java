@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameTeam;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
@@ -48,15 +49,29 @@ public abstract class RunningGameState extends GameState {
             player.setAlive(false);
             player.countDeath();
 
-            if (damageSource.getAttacker() instanceof ServerPlayerEntity playerAttackerEntity) {
-                var playerAttacker = context.getPlayer(playerAttackerEntity);
-                if (player.getTeam() == GameTeam.PLAYER_BLACK) {
-                    playerAttacker.countKill();
-                    playerAttacker.countKill();
-                } else {
-                    playerAttacker.countKill();
-                }
+            GamePlayer attacker = null;
+
+            if (damageSource.getAttacker() instanceof ServerPlayerEntity attackerEntity1) {
+                attacker = context.getPlayer(attackerEntity1);
+            } else if (damageSource.getSource() instanceof ServerPlayerEntity attackerEntity2) {
+                attacker = context.getPlayer(attackerEntity2);
+            } else if (playerEntity.getPrimeAdversary() instanceof ServerPlayerEntity attackerEntity3) {
+                attacker = context.getPlayer(attackerEntity3);
             }
+
+            if (attacker != null) {
+                if (player.getTeam() == GameTeam.PLAYER_BLACK) {
+                    attacker.countKill();
+                    attacker.countKill();
+                } else {
+                    attacker.countKill();
+                }
+                Game.LOGGER.info(player.getName() + " was killed by " + attacker.getName());
+            } else {
+                Game.LOGGER.info(player.getName() + " was killed with no valid attacker");
+            }
+
+            context.specialBuddyService.handleDeath(player);
         }
 
         return true;

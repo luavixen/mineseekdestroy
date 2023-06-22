@@ -412,6 +412,43 @@ internal fun setup() {
     }
 
     Command.build("gimmick") {
+        it.params(argLiteral("buddy")) {
+            it.params(argLiteral("enable")) {
+                it.actionWithContext { args, context ->
+                    game.setRuleBoolean(Game.RULE_BUDDY_ENABLED, true)
+                    args.sendInfo("Buddy system enabled")
+                }
+            }
+            it.params(argLiteral("disable")) {
+                it.actionWithContext { args, context ->
+                    game.setRuleBoolean(Game.RULE_BUDDY_ENABLED, false)
+                    args.sendInfo("Buddy system disabled")
+                }
+            }
+            it.params(argLiteral("list")) {
+                it.actionWithContext { args, context ->
+                    context.specialBuddyService.executeBuddyList(args)
+                }
+            }
+            it.params(argLiteral("add"), argPlayer("follower"), argPlayer("target")) {
+                it.actionWithContext { args, context ->
+                    context.specialBuddyService.executeBuddyAdd(
+                        args,
+                        args.player(context, "target"),
+                        args.player(context, "follower"),
+                    )
+                }
+            }
+            it.params(argLiteral("remove"), argPlayer("follower"), argPlayer("target")) {
+                it.actionWithContext { args, context ->
+                    context.specialBuddyService.executeBuddyRemove(
+                        args,
+                        args.player(context, "target"),
+                        args.player(context, "follower"),
+                    )
+                }
+            }
+        }
         it.params(argLiteral("cars")) {
             it.params(argLiteral("spawn")) {
                 it.actionWithContext { args, context ->

@@ -102,6 +102,10 @@ class AutomationService : Service() {
                 delay(secondsInterval)
                 task()
             }
+            logger.info("Automation completed all tasks")
+
+            delay()
+            context.specialBuddyService.handleAutomationRoundEndCompleted()
         }
     }
 

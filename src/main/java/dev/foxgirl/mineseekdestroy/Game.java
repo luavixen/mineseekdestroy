@@ -126,6 +126,13 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SUMMONS_ENABLED =
         GameRuleRegistry.register("msdSummonsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BUDDY_ENABLED =
+        GameRuleRegistry.register("msdBuddyEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_BUDDY_HEALTH_PENALTY =
+        GameRuleRegistry.register("msdBuddyHealthPenalty", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(8.0));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_BUDDY_ABSORPTION_STRENGTH =
+        GameRuleRegistry.register("msdBuddyAbsorptionStrength", GameRules.Category.MISC, GameRuleFactory.createIntRule(1));
+
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu

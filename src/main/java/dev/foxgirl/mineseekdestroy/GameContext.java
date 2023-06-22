@@ -86,6 +86,7 @@ public final class GameContext {
     public final @NotNull SpecialSummonsService specialSummonsService;
     public final @NotNull SpecialPianoService specialPianoService;
     public final @NotNull SpecialFamilyGuyService specialFamilyGuyService;
+    public final @NotNull SpecialBuddyService specialBuddyService;
 
     private final Service[] services;
 
@@ -205,6 +206,7 @@ public final class GameContext {
             specialSummonsService = new SpecialSummonsService(),
             specialPianoService = new SpecialPianoService(),
             specialFamilyGuyService = new SpecialFamilyGuyService(),
+            specialBuddyService = new SpecialBuddyService(),
         };
     }
 
@@ -397,7 +399,11 @@ public final class GameContext {
 
     public @Nullable Team getTeam(@NotNull GameTeam team) {
         Objects.requireNonNull(team, "Argument 'team'");
-        return getTeam(Objects.requireNonNull(team.getName(), "Expression 'team.getName()'"));
+        var name = team.getName();
+        if (name == null) {
+            throw new IllegalArgumentException("Argument 'team' has no team name");
+        }
+        return getTeam(name);
     }
     public @Nullable Team getTeam(@NotNull String name) {
         Objects.requireNonNull(name, "Argument 'name'");

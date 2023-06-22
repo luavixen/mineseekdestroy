@@ -8,6 +8,7 @@
     "server": [
         "MixinAbstractFurnaceBlockEntity",
         "MixinCraftingResultInventory",
+        "MixinDamageSource",
         "MixinEggEntity",
         "MixinEnderPearlEntity",
         "MixinEntity",
@@ -23,7 +24,6 @@
         "MixinPlayerEntity",
         "MixinPlayerInventory",
         "MixinProjectileEntity",
-        "MixinRecipeManager",
         "MixinSaddledComponent",
         "MixinServerPlayerEntity",
         "MixinServerPlayerInteractionManager",
