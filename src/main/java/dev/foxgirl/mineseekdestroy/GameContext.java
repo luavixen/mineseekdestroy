@@ -38,26 +38,6 @@ public final class GameContext {
     public final @NotNull ScoreboardObjective scoreboardKills;
     public final @NotNull ScoreboardObjective scoreboardHearts;
 
-    public final @NotNull Team teamSkip;
-    public final @NotNull Team teamOperator;
-    public final @NotNull Team teamDuel;
-    public final @NotNull Team teamDuelDead;
-    public final @NotNull Team teamDuelDamaged;
-    public final @NotNull Team teamWarden;
-    public final @NotNull Team teamWardenDead;
-    public final @NotNull Team teamWardenDamaged;
-    public final @NotNull Team teamBlack;
-    public final @NotNull Team teamBlackDead;
-    public final @NotNull Team teamBlackDamaged;
-    public final @NotNull Team teamYellow;
-    public final @NotNull Team teamYellowDead;
-    public final @NotNull Team teamYellowDamaged;
-    public final @NotNull Team teamBlue;
-    public final @NotNull Team teamBlueDead;
-    public final @NotNull Team teamBlueDamaged;
-
-    private final Team[] teams;
-
     private final Map<String, Team> teamMap;
     private final Map<String, Team> teamBaseMap;
 
@@ -143,28 +123,8 @@ public final class GameContext {
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 
-        teams = new Team[] {
-            teamSkip = Objects.requireNonNull(GameTeam.SKIP.getAliveTeam(scoreboard)),
-            teamOperator = Objects.requireNonNull(GameTeam.OPERATOR.getAliveTeam(scoreboard)),
-            teamDuel = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getAliveTeam(scoreboard)),
-            teamDuelDead = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDeadTeam(scoreboard)),
-            teamDuelDamaged = Objects.requireNonNull(GameTeam.PLAYER_DUEL.getDamagedTeam(scoreboard)),
-            teamWarden = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getAliveTeam(scoreboard)),
-            teamWardenDead = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getDeadTeam(scoreboard)),
-            teamWardenDamaged = Objects.requireNonNull(GameTeam.PLAYER_WARDEN.getDamagedTeam(scoreboard)),
-            teamBlack = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getAliveTeam(scoreboard)),
-            teamBlackDead = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getDeadTeam(scoreboard)),
-            teamBlackDamaged = Objects.requireNonNull(GameTeam.PLAYER_BLACK.getDamagedTeam(scoreboard)),
-            teamYellow = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getAliveTeam(scoreboard)),
-            teamYellowDead = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getDeadTeam(scoreboard)),
-            teamYellowDamaged = Objects.requireNonNull(GameTeam.PLAYER_YELLOW.getDamagedTeam(scoreboard)),
-            teamBlue = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getAliveTeam(scoreboard)),
-            teamBlueDead = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getDeadTeam(scoreboard)),
-            teamBlueDamaged = Objects.requireNonNull(GameTeam.PLAYER_BLUE.getDamagedTeam(scoreboard)),
-        };
-
-        teamMap = new HashMap<>(teams.length);
-        teamBaseMap = new HashMap<>(teams.length);
+        teamMap = new HashMap<>(32);
+        teamBaseMap = new HashMap<>(32);
 
         for (var value : GameTeam.values()) {
             var team = value.getAliveTeam(scoreboard);
@@ -232,6 +192,7 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true);
         game.setRuleBoolean(Game.RULE_SUMMONS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, false);
+        game.setRuleBoolean(Game.RULE_BUDDY_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, true);
@@ -251,7 +212,7 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, false);
         game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, false);
 
-        for (var team : teams) {
+        for (var team : teamMap.values()) {
             scoreboard.removeTeam(team);
         }
     }

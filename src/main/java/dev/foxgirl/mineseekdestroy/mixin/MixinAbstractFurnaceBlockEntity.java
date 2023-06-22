@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
+import dev.foxgirl.mineseekdestroy.GameTeam;
 import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
@@ -48,7 +49,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
                 world.spawnEntity(entity);
                 var context = Game.getGame().getContext();
                 if (context != null) {
-                    context.scoreboard.addPlayerToTeam(entity.getEntityName(), context.teamOperator);
+                    context.scoreboard.addPlayerToTeam(entity.getEntityName(), context.getTeam(GameTeam.OPERATOR));
                 }
             }
             entity.setInvisible(true);
@@ -59,7 +60,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
                 var context = Game.getGame().getContext();
                 if (context != null) {
                     try {
-                        context.scoreboard.removePlayerFromTeam(entity.getEntityName(), context.teamOperator);
+                        context.scoreboard.removePlayerFromTeam(entity.getEntityName(), context.getTeam(GameTeam.OPERATOR));
                     } catch (IllegalStateException ignored) {}
                 }
                 entity.remove(Entity.RemovalReason.DISCARDED);

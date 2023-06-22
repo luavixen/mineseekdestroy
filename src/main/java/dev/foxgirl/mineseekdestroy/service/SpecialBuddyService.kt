@@ -8,9 +8,9 @@ import dev.foxgirl.mineseekdestroy.util.Console
 import net.minecraft.entity.damage.DamageType
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.registry.MutableRegistry
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.SimpleRegistry
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
@@ -39,9 +39,9 @@ class SpecialBuddyService : Service() {
     ) {
         val buddy = Buddy(playerTarget, playerFollower)
         if (action(buddy)) {
-            console.sendInfo(messageSuccess, buddy)
+            console.sendInfo(messageSuccess, buddy.displayName)
         } else {
-            console.sendError(messageFailure, buddy)
+            console.sendError(messageFailure, buddy.displayName)
         }
         if (!enabled) {
             console.sendError("Buddy system is currently disabled, be warned")
@@ -76,29 +76,37 @@ class SpecialBuddyService : Service() {
 
     fun handleAutomationRoundEndCompleted() {
         if (!enabled) return
-        for ((player, playerEntity) in playerEntitiesNormal) {
+        for ((_, playerEntity) in playerEntitiesNormal) {
+            playerEntity.removeStatusEffect(StatusEffects.ABSORPTION)
+        }
+        for (player in playersNormal) {
             if (
                 player.team === GameTeam.PLAYER_YELLOW ||
                 player.team === GameTeam.PLAYER_BLUE ||
                 player.team === GameTeam.SKIP
             ) {
-                playerEntity.addStatusEffect(StatusEffectInstance(
-                    StatusEffects.ABSORPTION,
-                    StatusEffectInstance.INFINITE,
-                    game.getRuleInt(Game.RULE_BUDDY_ABSORPTION_STRENGTH),
-                ))
-            } else {
-                playerEntity.removeStatusEffect(StatusEffects.ABSORPTION)
+                for ((playerTarget, playerFollower) in buddies) {
+                    if (playerTarget == player) {
+                        playerFollower.entity?.addStatusEffect(StatusEffectInstance(
+                            StatusEffects.ABSORPTION,
+                            StatusEffectInstance.INFINITE,
+                            game.getRuleInt(Game.RULE_BUDDY_ABSORPTION_STRENGTH) - 1,
+                        ))
+                    }
+                }
             }
         }
         logger.info("Buddy system updated absorption statuses")
     }
 
     override fun setup() {
-        val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE) as MutableRegistry<DamageType>
-        try {
+        // This is such a painful hack, but I don't care!
+        val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE) as SimpleRegistry<DamageType>
+        if (registry.getEntry(damageTypeKey).isEmpty) {
+            registry.frozen = false
             registry.add(damageTypeKey, DamageType("heartbreak", 0.0F), Lifecycle.experimental())
-        } catch (ignored: IllegalStateException) {}
+            registry.freeze()
+        }
     }
 
 }

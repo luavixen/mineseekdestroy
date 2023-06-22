@@ -11,3 +11,5 @@ accessible field net/minecraft/item/ItemUsageContext world Lnet/minecraft/world/
 accessible field net/minecraft/item/ItemUsageContext stack Lnet/minecraft/item/ItemStack;
 
 accessible field net/minecraft/world/GameRules rules Ljava/util/Map;
+
+accessible field net/minecraft/registry/SimpleRegistry frozen Z

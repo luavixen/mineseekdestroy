@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
+import dev.foxgirl.mineseekdestroy.GameTeam;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
@@ -42,7 +43,7 @@ public abstract class MixinItemEntity extends Entity {
         } else if (Game.DROPPED_ITEMS.contains(item)) {
             var context = Game.getGame().getContext();
             if (context != null) {
-                context.scoreboard.addPlayerToTeam(getEntityName(), context.teamOperator);
+                context.scoreboard.addPlayerToTeam(getEntityName(), context.getTeam(GameTeam.OPERATOR));
                 if (!isGlowing()) {
                     setGlowing(true);
                 }
@@ -68,7 +69,7 @@ public abstract class MixinItemEntity extends Entity {
             var context = Game.getGame().getContext();
             if (context != null) {
                 try {
-                    context.scoreboard.removePlayerFromTeam(getEntityName(), context.teamOperator);
+                    context.scoreboard.removePlayerFromTeam(getEntityName(), context.getTeam(GameTeam.OPERATOR));
                 } catch (IllegalStateException ignored) {
                 }
             }

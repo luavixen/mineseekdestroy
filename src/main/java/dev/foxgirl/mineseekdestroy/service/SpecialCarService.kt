@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
+import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.Console
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.attribute.EntityAttributes
@@ -29,7 +30,7 @@ class SpecialCarService : Service() {
 
         world.spawnEntity(entity)
 
-        context.scoreboard.addPlayerToTeam(entity.entityName, context.teamOperator)
+        context.scoreboard.addPlayerToTeam(entity.entityName, context.getTeam(GameTeam.OPERATOR))
 
         console.sendInfo("Spawned new car")
     }
