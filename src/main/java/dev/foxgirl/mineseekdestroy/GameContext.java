@@ -123,22 +123,25 @@ public final class GameContext {
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 
-        teamMap = new HashMap<>(32);
-        teamBaseMap = new HashMap<>(32);
+        var teamMapBuilder = ImmutableMap.<String, Team>builder(32);
+        var teamBaseMapBuilder = ImmutableMap.<String, Team>builder(32);
 
         for (var value : GameTeam.values()) {
             var team = value.getAliveTeam(scoreboard);
             if (team != null) {
                 for (var name : value.getNames()) {
-                    teamBaseMap.put(name, team);
+                    teamBaseMapBuilder.put(name, team);
                 }
-                teamMap.put(Objects.requireNonNull(value.getName()), team);
+                teamMapBuilder.put(Objects.requireNonNull(value.getName()), team);
             }
             var teamDead = value.getDeadTeam(scoreboard);
-            if (teamDead != null) teamMap.put(teamDead.getName(), teamDead);
+            if (teamDead != null) teamMapBuilder.put(teamDead.getName(), teamDead);
             var teamDamaged = value.getDamagedTeam(scoreboard);
-            if (teamDamaged != null) teamMap.put(teamDamaged.getName(), teamDamaged);
+            if (teamDamaged != null) teamMapBuilder.put(teamDamaged.getName(), teamDamaged);
         }
+
+        teamMap = teamMapBuilder.build();
+        teamBaseMap = teamBaseMapBuilder.build();
 
         playerManager = server.getPlayerManager();
 
@@ -361,10 +364,7 @@ public final class GameContext {
     public @Nullable Team getTeam(@NotNull GameTeam team) {
         Objects.requireNonNull(team, "Argument 'team'");
         var name = team.getName();
-        if (name == null) {
-            throw new IllegalArgumentException("Argument 'team' has no team name");
-        }
-        return getTeam(name);
+        return name == null ? null : getTeam(name);
     }
     public @Nullable Team getTeam(@NotNull String name) {
         Objects.requireNonNull(name, "Argument 'name'");
