@@ -4,7 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.Async
-import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
+import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.inventory.Inventory
@@ -54,21 +54,20 @@ class ItemService : Service() {
     override fun update() {
         val running = state is RunningGameState
 
-        for (player in players) {
+        for ((player, playerEntity) in playerEntitiesNormal) {
             if (running && player.isSpectator) continue
 
-            val inventory = player.inventory ?: continue
+            val inventory = playerEntity.inventory
 
             val toolStacks = toolStackMaps[player.team]
 
             val powderItem = when (player.team) {
-                GameTeam.SKIP, GameTeam.GHOST -> MAGENTA_CONCRETE_POWDER
                 GameTeam.PLAYER_DUEL -> BROWN_CONCRETE_POWDER
                 GameTeam.PLAYER_WARDEN -> BLACK_CONCRETE_POWDER
                 GameTeam.PLAYER_BLACK -> BLACK_CONCRETE_POWDER
                 GameTeam.PLAYER_YELLOW -> YELLOW_CONCRETE_POWDER
                 GameTeam.PLAYER_BLUE -> BLUE_CONCRETE_POWDER
-                else -> null
+                else -> MAGENTA_CONCRETE_POWDER
             }
 
             inventory.forEach { stack, item, i ->
@@ -158,33 +157,39 @@ class ItemService : Service() {
             }
         }
 
-        private val toolStackMaps: Map<GameTeam, Map<Tool, ItemStack>> = immutableMapOf(
-            GameTeam.GHOST to immutableMapOf(
+        private val toolStackMaps: Map<GameTeam, Map<Tool, ItemStack>> = enumMapOf(
+            GameTeam.GHOST to enumMapOf(
                 Tool.Tool1.stack(SKELETON_SKULL),
-                Tool.Tool2.stack(SKELETON_SKULL),
-                Tool.Tool3.stack(SKELETON_SKULL),
-                Tool.Tool4.stack(SKELETON_SKULL),
+                Tool.Tool2.stack(BONE),
+                Tool.Tool3.stack(COBWEB),
+                Tool.Tool4.stack(GHAST_TEAR),
             ),
-            GameTeam.PLAYER_DUEL to immutableMapOf(
+            GameTeam.PLAYER_WARDEN to enumMapOf(
+                Tool.Tool1.stack(DIAMOND_AXE),
+                Tool.Tool2.stack(DIAMOND_SHOVEL),
+                Tool.Tool3.stack(CROSSBOW),
+                Tool.Tool4.stack(BOW),
+            ),
+            GameTeam.PLAYER_DUEL to enumMapOf(
                 Tool.Tool1.stack(IRON_SWORD),
                 Tool.Tool2.stack(IRON_AXE),
                 Tool.Tool3.stack(CROSSBOW),
                 Tool.Tool4.stack(BOW),
             ),
-            GameTeam.PLAYER_BLACK to immutableMapOf(
+            GameTeam.PLAYER_BLACK to enumMapOf(
                 Tool.Tool1.stack(IRON_AXE),
                 Tool.Tool2.stack(IRON_PICKAXE),
                 Tool.Tool3.stack(BOW),
                 Tool.Tool4.stack(TRIDENT)
                     .also { (_, stack) -> stack.addEnchantment(Enchantments.LOYALTY, 3) },
             ),
-            GameTeam.PLAYER_YELLOW to immutableMapOf(
+            GameTeam.PLAYER_YELLOW to enumMapOf(
                 Tool.Tool1.stack(IRON_AXE),
                 Tool.Tool2.stack(IRON_SHOVEL),
                 Tool.Tool3.stack(CROSSBOW),
                 Tool.Tool4.stack(CROSSBOW),
             ),
-            GameTeam.PLAYER_BLUE to immutableMapOf(
+            GameTeam.PLAYER_BLUE to enumMapOf(
                 Tool.Tool1.stack(IRON_SWORD),
                 Tool.Tool2.stack(IRON_PICKAXE),
                 Tool.Tool3.stack(BOW),

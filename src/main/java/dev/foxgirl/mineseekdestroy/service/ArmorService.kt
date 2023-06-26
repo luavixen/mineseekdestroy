@@ -3,7 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
-import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
+import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ArmorItem
@@ -125,7 +125,7 @@ class ArmorService : Service() {
             )
         }
 
-        loadouts = immutableMapOf(
+        loadouts = enumMapOf(
             NONE to loadoutEmpty,
             SKIP to loadoutEmpty,
             GHOST to loadoutEmpty,

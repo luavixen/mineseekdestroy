@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Scheduler
 import net.minecraft.entity.damage.DamageType
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -28,6 +29,7 @@ class SpecialBuddyService : Service() {
     }
 
     private val enabled get() = Game.getGame().getRuleBoolean(Game.RULE_BUDDY_ENABLED)
+    private var warning = true
 
     private val buddies = mutableSetOf<Buddy>()
 
@@ -43,7 +45,8 @@ class SpecialBuddyService : Service() {
         } else {
             console.sendError(messageFailure, buddy.displayName)
         }
-        if (!enabled) {
+        if (!enabled && warning) {
+            warning = false; Scheduler.delay(30.0) { warning = true }
             console.sendError("Buddy system is currently disabled, be warned")
         }
     }
@@ -54,8 +57,8 @@ class SpecialBuddyService : Service() {
     fun executeBuddyRemove(console: Console, playerTarget: GamePlayer, playerFollower: GamePlayer) =
         buddyUpdate(console, playerTarget, playerFollower, "Removed buddy pair", "Buddy pair does not exist", buddies::remove)
 
-    fun executeBuddyList(console: Console) {
-        console.sendInfo("Buddy pairs:")
+    fun executeBuddyList(console: Console, title: String = "Buddy pairs:") {
+        console.sendInfo(title)
         buddies.forEach { console.sendInfo("  -", it.displayName) }
     }
 
@@ -65,10 +68,9 @@ class SpecialBuddyService : Service() {
             if (playerTarget == player) {
                 val playerFollowerEntity = playerFollower.entity
                 if (playerFollowerEntity != null) {
-                    playerFollowerEntity.damage(
-                        world.damageSources.create(damageTypeKey, playerTarget.entity, null),
-                        game.getRuleDouble(Game.RULE_BUDDY_HEALTH_PENALTY).toFloat(),
-                    )
+                    val damageSource = world.damageSources.create(damageTypeKey, playerTarget.entity, null)
+                    val damageAmount = game.getRuleDouble(Game.RULE_BUDDY_HEALTH_PENALTY).toFloat()
+                    Scheduler.now { playerFollowerEntity.damage(damageSource, damageAmount) }
                 }
             }
         }
@@ -87,11 +89,16 @@ class SpecialBuddyService : Service() {
             ) {
                 for ((playerTarget, playerFollower) in buddies) {
                     if (playerTarget == player) {
-                        playerFollower.entity?.addStatusEffect(StatusEffectInstance(
-                            StatusEffects.ABSORPTION,
-                            StatusEffectInstance.INFINITE,
-                            game.getRuleInt(Game.RULE_BUDDY_ABSORPTION_STRENGTH) - 1,
-                        ))
+                        val playerFollowerEntity = playerFollower.entity
+                        if (playerFollowerEntity != null) {
+                            playerFollowerEntity.addStatusEffect(StatusEffectInstance(
+                                StatusEffects.ABSORPTION,
+                                StatusEffectInstance.INFINITE,
+                                game.getRuleInt(Game.RULE_BUDDY_ABSORPTION_STRENGTH) - 1,
+                            ))
+                            playerFollowerEntity.sendMessage(Console.format(arrayOf(playerTarget.displayName, "won last game, so you got absorption"), false))
+                            Game.CONSOLE_OPERATORS.sendInfo("Player", playerFollower.displayName, "given absorption for", Text.empty().append(playerTarget.displayName).append("'s"), "win")
+                        }
                     }
                 }
             }

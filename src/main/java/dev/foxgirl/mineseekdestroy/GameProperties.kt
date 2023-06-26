@@ -222,7 +222,10 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionBarrierBlimpAdditions = listOf<Region>()
+        override val regionBarrierBlimpAdditions = immutableListOf(
+            Region(BlockPos(814, 58, -114), BlockPos(812, 58, -116)),
+            Region(BlockPos(927, 58, -102), BlockPos(925, 58, -104)),
+        )
         override val regionFlood = Region(BlockPos(788, -4, -170), BlockPos(974, 13, 30))
 
         override val borderSize = 250.0
@@ -270,7 +273,10 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionBarrierBlimpAdditions = listOf<Region>()
+        override val regionBarrierBlimpAdditions = immutableListOf(
+            Region(BlockPos(-1179, 117, 226), BlockPos(-1177, 117, 228)),
+            Region(BlockPos(-1390, 117, 162), BlockPos(-1392, 117, 160)),
+        )
         override val regionFlood = Region(BlockPos(-1125, -16, 20), BlockPos(-1440, 67, 355))
 
         override val borderSize = 333.0
@@ -324,7 +330,10 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(41, 12, -574), BlockPos(8, -3, -552))
         override val regionBarrierBlimpTarget = Region(BlockPos(-101, -17, 767), BlockPos(-126, -9, 781))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionBarrierBlimpAdditions = listOf<Region>()
+        override val regionBarrierBlimpAdditions = immutableListOf(
+            Region(BlockPos(-72, -12, 857), BlockPos(-70, -12, 859)),
+            Region(BlockPos(-161, -12, 865), BlockPos(-159, -12, 867)),
+        )
         override val regionFlood = Region(BlockPos(-18, -64, 701), BlockPos(-206, -52, 913))
 
         override val borderSize = 200.0

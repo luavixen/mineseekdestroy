@@ -426,6 +426,11 @@ internal fun setup() {
                 }
             }
             it.params(argLiteral("list")) {
+                it.params(argLiteral("announce")) {
+                    it.actionWithContext { args, context ->
+                        context.specialBuddyService.executeBuddyList(Game.CONSOLE_PLAYERS, "You'll want to carry this person to finals:")
+                    }
+                }
                 it.actionWithContext { args, context ->
                     context.specialBuddyService.executeBuddyList(args)
                 }

@@ -266,6 +266,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Set<@NotNull Item> UNDROPPABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
         Items.IRON_SWORD, Items.IRON_PICKAXE, Items.IRON_AXE, Items.IRON_SHOVEL, Items.IRON_HOE,
+        Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE,
         Items.BOW, Items.CROSSBOW,
         Items.TRIDENT,
         Items.ELYTRA,
@@ -273,6 +274,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
         Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS,
         Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS,
+        Items.SKELETON_SKULL, Items.BONE, Items.COBWEB, Items.GHAST_TEAR,
     });
 
     public static final @NotNull Set<@NotNull Item> STACKABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
