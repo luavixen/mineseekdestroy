@@ -313,15 +313,15 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.LIME_CONCRETE,
     });
 
-    public static final @NotNull ItemStack stackEggBlock = new ItemStack(Items.BONE_BLOCK);
+    public static final @NotNull ItemStack STACK_EGG_BLOCK = new ItemStack(Items.BONE_BLOCK);
     static {
-        stackEggBlock.getOrCreateNbt().put("MsdFancyEggBlock", NbtByte.ONE);
-        stackEggBlock.setCustomName(Text.literal("Egg Block").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
+        STACK_EGG_BLOCK.getOrCreateNbt().put("MsdFancyEggBlock", NbtByte.ONE);
+        STACK_EGG_BLOCK.setCustomName(Text.literal("Egg Block").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
     }
-    public static final @NotNull ItemStack stackEctoplasm = new ItemStack(Items.SLIME_BLOCK);
+    public static final @NotNull ItemStack STACK_ECTOPLASM = new ItemStack(Items.SLIME_BLOCK);
     static {
-        stackEctoplasm.getOrCreateNbt().put("MsdFancyEctoplasm", NbtByte.ONE);
-        stackEctoplasm.setCustomName(Text.literal("Ectogasm").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
+        STACK_ECTOPLASM.getOrCreateNbt().put("MsdFancyEctoplasm", NbtByte.ONE);
+        STACK_ECTOPLASM.setCustomName(Text.literal("Ectogasm").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
     }
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {

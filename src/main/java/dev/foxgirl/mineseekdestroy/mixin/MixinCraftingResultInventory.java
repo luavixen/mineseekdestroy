@@ -21,7 +21,7 @@ public abstract class MixinCraftingResultInventory {
     @Inject(method = "setStack", at = @At("HEAD"))
     private void mineseekdestroy$hookSetStack(int slot, ItemStack stack, CallbackInfo info) {
         if (stack.getItem() == Items.BONE_BLOCK) {
-            stack.setNbt(Objects.requireNonNull(Game.stackEggBlock.getNbt()).copy());
+            stack.setNbt(Objects.requireNonNull(Game.STACK_EGG_BLOCK.getNbt()).copy());
         }
     }
 

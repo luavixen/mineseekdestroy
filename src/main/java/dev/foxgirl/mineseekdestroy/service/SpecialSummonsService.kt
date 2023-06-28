@@ -55,7 +55,8 @@ class SpecialSummonsService : Service() {
         OCCULT { override val color = Formatting.LIGHT_PURPLE },
         COSMOS { override val color = Formatting.BLUE },
         BARTER { override val color = Formatting.GOLD },
-        FLAME { override val color = Formatting.RED };
+        FLAME { override val color = Formatting.RED },
+        OPERATOR { override val color = Formatting.GREEN };
 
         abstract val color: Formatting
 
@@ -464,6 +465,7 @@ class SpecialSummonsService : Service() {
                 Blocks.OBSIDIAN -> COSMOS
                 Blocks.WAXED_CUT_COPPER -> BARTER
                 Blocks.NETHER_BRICKS -> FLAME
+                Blocks.COMMAND_BLOCK -> OPERATOR
                 else -> null
             }
         }
@@ -537,11 +539,15 @@ class SpecialSummonsService : Service() {
     }
 
     private fun failCheck(options: Options): Failure? {
-        val kind = options.kind
+        if (options.altar.theology == OPERATOR) {
+            return null
+        }
 
         if (timeoutCheck()) {
             return Failure.TIMEOUT
         }
+
+        val kind = options.kind
 
         if (kind.theology1 !== options.altar.theology && kind.theology2 !== options.altar.theology) {
             return Failure.MISMATCH
@@ -581,6 +587,8 @@ class SpecialSummonsService : Service() {
             }
             FLAME -> {
                 for (i in 1..2) EntityType.BLAZE.spawn(world, options.pos, SpawnReason.COMMAND)
+            }
+            OPERATOR -> {
             }
         }
 
