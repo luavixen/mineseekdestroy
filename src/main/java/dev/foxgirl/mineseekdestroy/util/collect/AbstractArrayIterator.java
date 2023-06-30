@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.util.collect;
 
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 abstract class AbstractArrayIterator<E, T> implements ListIterator<T> {
 
@@ -26,12 +27,20 @@ abstract class AbstractArrayIterator<E, T> implements ListIterator<T> {
     @Override public final int previousIndex() { return index - 1; }
 
     protected final E getNext() {
-        E element = elements[index]; index++;
-        return element;
+        try {
+            E element = elements[index]; index++;
+            return element;
+        } catch (ArrayIndexOutOfBoundsException ignored) {
+            throw new NoSuchElementException();
+        }
     }
     protected final E getPrevious() {
-        E element = elements[index]; index--;
-        return element;
+        try {
+            E element = elements[index]; index--;
+            return element;
+        } catch (ArrayIndexOutOfBoundsException ignored) {
+            throw new NoSuchElementException();
+        }
     }
 
     @Override
