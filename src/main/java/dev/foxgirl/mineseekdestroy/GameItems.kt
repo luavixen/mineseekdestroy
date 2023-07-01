@@ -54,7 +54,7 @@ object GameItems {
     )
     @JvmStatic
     val toolTrident = stackOf(
-        BOW, null,
+        TRIDENT, null,
         text("have fun with this"),
         text("does not affect ghosts").bold(),
     )
@@ -145,22 +145,22 @@ object GameItems {
     )
     @JvmStatic
     val splashPotionSlowness = stackOf(
-        SPLASH_POTION,
-        nbtCompoundOf("Potion" to identifier("strong_slowness")),
+        SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),
+        null,
         text("break their legs!"),
         text("affects ghosts").bold(),
     )
     @JvmStatic
     val splashPotionPoison = stackOf(
-        SPLASH_POTION,
-        nbtCompoundOf("Potion" to identifier("strong_poison")),
+        SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_poison")),
+        null,
         text("will whittle your opponent down to half a heart!"),
         text("affects ghosts").bold(),
     )
     @JvmStatic
     val splashPotionHarming = stackOf(
-        SPLASH_POTION,
-        nbtCompoundOf("Potion" to identifier("strong_harming")),
+        SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_harming")),
+        null,
         text("OOOWWUH"),
         text("affects ghosts").bold(),
     )
