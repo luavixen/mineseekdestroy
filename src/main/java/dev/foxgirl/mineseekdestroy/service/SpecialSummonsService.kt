@@ -215,7 +215,7 @@ class SpecialSummonsService : Service() {
         }
         override fun update() {
             for ((_, entity) in playerEntitiesNormal) {
-                for (stack in Inventories.list(entity.inventory)) {
+                for (stack in entity.inventory.asList()) {
                     if (stack.item !== COMPASS) continue
 
                     val nbt = stack.nbt

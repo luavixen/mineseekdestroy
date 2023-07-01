@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.util
 
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemConvertible
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
@@ -33,7 +34,7 @@ private fun stackOfDisplay(item: ItemConvertible, count: Int, nbt: NbtCompound?,
             it.dataDisplay()["Name"] = toNbtElement(name.copy().itemName())
         }
         if (lore != null && !lore.isEmpty()) {
-            it.dataDisplay()["Lore"] = toNbtList(lore.map { it.copy().itemLore() })
+            it.dataDisplay()["Lore"] = toNbtList(lore.map { lore -> lore.copy().itemLore() })
         }
     }
 
@@ -65,6 +66,8 @@ fun ItemStack.dataDisplay(): NbtCompound {
         return nbtCompoundOf().also { nbt["display"] = it }
     }
 }
+
+fun Inventory.asList(): List<ItemStack> = Inventories.list(this)
 
 fun PlayerEntity.give(stack: ItemStack) = this.give(stack, true)
 fun PlayerEntity.give(stack: ItemStack, drop: Boolean): Boolean {
