@@ -1,6 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.Game
+import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState
 import dev.foxgirl.mineseekdestroy.util.Scheduler
@@ -85,7 +85,7 @@ class GhostService : Service() {
     fun handleInteract(player: GamePlayer, pos: BlockPos): ActionResult {
         val entity = player.entity
         if (entity != null) {
-            context.itemService.addStackToInventory(entity, Game.STACK_ECTOPLASM, false)
+            context.itemService.addStackToInventory(entity, GameItems.ectoplasm, false)
         }
         world.setBlockState(pos, Blocks.MAGENTA_CONCRETE_POWDER.defaultState)
         return ActionResult.SUCCESS

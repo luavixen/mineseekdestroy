@@ -9,12 +9,13 @@ import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
+import kotlin.reflect.KProperty0
 
 object GameItems {
 
     @JvmStatic
     val toolSkull = stackOf(
-        SKELETON_SKULL, null,
+        SKELETON_SKULL, SKELETON_SKULL.name.copy().reset(),
         text("useless! useless! ghost dumb bitch!"),
     )
     @JvmStatic
@@ -236,7 +237,7 @@ object GameItems {
         text("will mostly kill someone!"),
         text("was gained through ") + TheologyPair(OCCULT, BARTER).displayName,
     ).apply {
-        addEnchantment(Enchantments.SHARPNESS, 12)
+        addEnchantment(Enchantments.SHARPNESS, 15)
         setDamage(32)
     }
     @JvmStatic
@@ -265,22 +266,34 @@ object GameItems {
         text("was gained through ") + TheologyPair(DEEP, OCCULT).displayName,
     )
 
-    val replaceable: Map<Item, ItemStack>
+    @JvmStatic
+    val replacements: Map<Item, ItemStack>
     init {
         val builder = ImmutableMap.builder<Item, ItemStack>(32)
         for (stack in listOf<ItemStack>(
             snowBlock, eggBlock, ectoplasm,
             potato, bakedPotato, egg, snowball, spectralArrow,
-            flintAndSteel, enderPearl, familyGuyBlock, shield, fireworkRocket,
+            flintAndSteel, enderPearl, familyGuyBlock, fireworkRocket,
             splashPotionSlowness, splashPotionPoison, splashPotionHarming,
             arrowDeep, arrowOccult, arrowCosmos, arrowBarter, arrowFlame,
         )) {
             builder.put(stack.item, stack)
         }
-        replaceable = builder.build()
+        replacements = builder.build()
     }
 
-    val getters = immutableListOf<() -> ItemStack>(
+    @JvmStatic
+    fun replace(stack: ItemStack) {
+        val replacement = replacements[stack.item]
+        if (replacement != null) {
+            val replacementNbt = replacement.nbt
+            if (replacementNbt != null && replacementNbt != stack.nbt) {
+                stack.nbt = replacementNbt.copy()
+            }
+        }
+    }
+
+    val properties = immutableListOf<KProperty0<ItemStack>>(
         ::toolSkull, ::toolAxe, ::toolSword, ::toolShovel, ::toolPickaxe,
         ::toolCrossbow, ::toolBow, ::toolTrident, ::snowBlock, ::eggBlock,
         ::ectoplasm, ::potato, ::bakedPotato, ::egg, ::snowball,

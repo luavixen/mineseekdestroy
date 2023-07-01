@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
+import dev.foxgirl.mineseekdestroy.GameItems;
 import dev.foxgirl.mineseekdestroy.GameTeam;
 import net.minecraft.block.AbstractFurnaceBlock;
 import net.minecraft.block.BlockState;
@@ -34,6 +35,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
         if (stack.getCount() != 1 || stack.getItem() != Items.BAMBOO) {
             blockEntity.setStack(1, new ItemStack(Items.BAMBOO));
         }
+        GameItems.replace(blockEntity.getStack(2));
     }
 
     @Inject(method = "tick", at = @At("RETURN"))

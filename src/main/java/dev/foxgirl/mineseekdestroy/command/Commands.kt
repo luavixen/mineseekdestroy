@@ -146,7 +146,7 @@ internal fun setup() {
             it.action { args ->
                 val entity = args.context.source.entity
                 if (entity is ServerPlayerEntity) {
-                    GameItems.getters.forEach { entity.give(it().copy()) }
+                    GameItems.properties.forEach { entity.give(it().copy()) }
                     args.sendInfo("Added all game items to inventory")
                 } else {
                     args.sendError("Cannot give special items, command source has no entity")

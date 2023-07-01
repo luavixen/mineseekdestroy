@@ -28,7 +28,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
@@ -309,10 +308,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.RED_CONCRETE,
         Items.LIME_CONCRETE,
     });
-
-    public static final @NotNull ItemStack STACK_BAKED_POTATO = GameItems.getBakedPotato();
-    public static final @NotNull ItemStack STACK_EGG_BLOCK = GameItems.getEggBlock();
-    public static final @NotNull ItemStack STACK_ECTOPLASM = GameItems.getEctoplasm();
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override

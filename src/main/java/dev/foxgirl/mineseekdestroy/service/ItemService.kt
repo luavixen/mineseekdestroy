@@ -8,6 +8,7 @@ import dev.foxgirl.mineseekdestroy.util.Async
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.data
+import dev.foxgirl.mineseekdestroy.util.give
 import dev.foxgirl.mineseekdestroy.util.set
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.inventory.Inventory
@@ -47,7 +48,7 @@ class ItemService : Service() {
                 delay(1.0)
             }
             for (i in 1..10) {
-                if (entity.giveItemStack(copy)) break
+                if (entity.give(copy, false)) break
                 delay(0.5)
             }
         }
@@ -82,7 +83,7 @@ class ItemService : Service() {
                     }
                 }
 
-                val replacementStack = replaceableItems[item]
+                val replacementStack = replacementItems[item]
                 if (replacementStack != null && replacementStack.nbt != stack.nbt) {
                     val count = stack.count
                     inventory.setStack(i, ItemStack.EMPTY)
@@ -113,7 +114,7 @@ class ItemService : Service() {
 
     private companion object {
 
-        private val replaceableItems = GameItems.replaceable
+        private val replacementItems = GameItems.replacements
 
         private val droppedItems = Game.DROPPED_ITEMS
 

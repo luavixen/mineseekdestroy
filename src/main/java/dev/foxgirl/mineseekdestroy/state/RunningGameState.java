@@ -1,9 +1,6 @@
 package dev.foxgirl.mineseekdestroy.state;
 
-import dev.foxgirl.mineseekdestroy.Game;
-import dev.foxgirl.mineseekdestroy.GameContext;
-import dev.foxgirl.mineseekdestroy.GamePlayer;
-import dev.foxgirl.mineseekdestroy.GameTeam;
+import dev.foxgirl.mineseekdestroy.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.PigEntity;
@@ -108,6 +105,7 @@ public abstract class RunningGameState extends GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return true;
         }
+
         if (context != null) {
             var player = context.getPlayer(playerEntity);
             if (player.isGhost()) {
@@ -117,6 +115,7 @@ public abstract class RunningGameState extends GameState {
                 return false;
             }
         }
+
         return super.onItemDropped(context, playerEntity, stack, throwRandomly, retainOwnership);
     }
 
@@ -125,6 +124,12 @@ public abstract class RunningGameState extends GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return true;
         }
+        if (Game.ILLEGAL_ITEMS.contains(stack.getItem())) {
+            return false;
+        }
+
+        GameItems.replace(stack);
+
         if (context != null) {
             var player = context.getPlayer(playerEntity);
             if (player.isGhost()) {
@@ -133,7 +138,8 @@ public abstract class RunningGameState extends GameState {
                 return false;
             }
         }
-        return super.onItemAcquired(context, playerEntity, inventory, stack, slot);
+
+        return true;
     }
 
 }

@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.GameItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -246,7 +247,14 @@ public abstract class GameState {
     }
 
     public boolean onItemAcquired(@Nullable GameContext context, ServerPlayerEntity playerEntity, PlayerInventory inventory, ItemStack stack, int slot) {
-        return Game.getGame().isOperator(playerEntity) || !Game.ILLEGAL_ITEMS.contains(stack.getItem());
+        if (Game.getGame().isOperator(playerEntity)) {
+            return true;
+        }
+        if (Game.ILLEGAL_ITEMS.contains(stack.getItem())) {
+            return false;
+        }
+        GameItems.replace(stack);
+        return true;
     }
 
 }

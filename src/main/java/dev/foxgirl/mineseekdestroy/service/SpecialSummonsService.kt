@@ -916,8 +916,7 @@ class SpecialSummonsService : Service() {
     private companion object {
 
         private fun PlayerEntity.giveItem(stack: ItemStack) {
-            if (stack.isEmpty) return
-            if (!giveItemStack(stack)) dropItem(stack, false)?.let { it.resetPickupDelay(); it.setOwner(uuid) }
+            this.give(stack)
         }
         private fun PlayerEntity.removeItem(predicate: (ItemStack) -> Boolean) {
             val inventory = inventory
