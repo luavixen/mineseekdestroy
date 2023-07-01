@@ -30,11 +30,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtByte;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import org.apache.logging.log4j.LogManager;
@@ -313,16 +310,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.LIME_CONCRETE,
     });
 
-    public static final @NotNull ItemStack STACK_EGG_BLOCK = new ItemStack(Items.BONE_BLOCK);
-    static {
-        STACK_EGG_BLOCK.getOrCreateNbt().put("MsdFancyEggBlock", NbtByte.ONE);
-        STACK_EGG_BLOCK.setCustomName(Text.literal("Egg Block").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
-    }
-    public static final @NotNull ItemStack STACK_ECTOPLASM = new ItemStack(Items.SLIME_BLOCK);
-    static {
-        STACK_ECTOPLASM.getOrCreateNbt().put("MsdFancyEctoplasm", NbtByte.ONE);
-        STACK_ECTOPLASM.setCustomName(Text.literal("Ectogasm").setStyle(Style.EMPTY.withItalic(false).withFormatting(Formatting.GREEN)));
-    }
+    public static final @NotNull ItemStack STACK_BAKED_POTATO = GameItems.getBakedPotato();
+    public static final @NotNull ItemStack STACK_EGG_BLOCK = GameItems.getEggBlock();
+    public static final @NotNull ItemStack STACK_ECTOPLASM = GameItems.getEctoplasm();
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override

@@ -13,3 +13,6 @@ accessible field net/minecraft/item/ItemUsageContext stack Lnet/minecraft/item/I
 accessible field net/minecraft/world/GameRules rules Ljava/util/Map;
 
 accessible field net/minecraft/registry/SimpleRegistry frozen Z
+
+accessible method net/minecraft/nbt/NbtList <init> (Ljava/util/List;B)V
+accessible method net/minecraft/nbt/NbtCompound <init> (Ljava/util/Map;)V

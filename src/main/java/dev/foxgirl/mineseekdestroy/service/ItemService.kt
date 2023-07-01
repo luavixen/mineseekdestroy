@@ -1,17 +1,19 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
+import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.Async
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
+import dev.foxgirl.mineseekdestroy.util.data
+import dev.foxgirl.mineseekdestroy.util.set
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
-import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
 
@@ -80,12 +82,11 @@ class ItemService : Service() {
                     }
                 }
 
-                if (item === BONE_BLOCK && stack.nbt != Game.STACK_EGG_BLOCK.nbt) {
-                    inventory.setStack(i, Game.STACK_EGG_BLOCK.copyWithCount(stack.count))
-                    return@forEach
-                }
-                if (item === SLIME_BLOCK && stack.nbt != Game.STACK_ECTOPLASM.nbt) {
-                    inventory.setStack(i, Game.STACK_ECTOPLASM.copyWithCount(stack.count))
+                val replacementStack = replaceableItems[item]
+                if (replacementStack != null && replacementStack.nbt != stack.nbt) {
+                    val count = stack.count
+                    inventory.setStack(i, ItemStack.EMPTY)
+                    inventory.insertStack(i, replacementStack.copyWithCount(count))
                     return@forEach
                 }
 
@@ -111,6 +112,8 @@ class ItemService : Service() {
     }
 
     private companion object {
+
+        private val replaceableItems = GameItems.replaceable
 
         private val droppedItems = Game.DROPPED_ITEMS
 
@@ -141,9 +144,8 @@ class ItemService : Service() {
 
             val key = "MsdTool${ordinal + 1}".intern()
 
-            fun stack(item: Item) = stack(ItemStack(item))
-            fun stack(stack: ItemStack): Pair<Tool, ItemStack> =
-                this to stack.also { it.getOrCreateNbt().put(key, NbtByte.ONE) }
+            fun stack(stack: ItemStack) =
+                this to stack.copy().apply { data()[key] = true }
 
             companion object {
                 fun from(stack: ItemStack): Tool? = stack.nbt?.let(::from)
@@ -159,41 +161,41 @@ class ItemService : Service() {
 
         private val toolStackMaps: Map<GameTeam, Map<Tool, ItemStack>> = enumMapOf(
             GameTeam.GHOST to enumMapOf(
-                Tool.Tool1.stack(SKELETON_SKULL),
-                Tool.Tool2.stack(BONE),
-                Tool.Tool3.stack(COBWEB),
-                Tool.Tool4.stack(GHAST_TEAR),
+                Tool.Tool1.stack(GameItems.toolSkull),
+                Tool.Tool2.stack(GameItems.toolSkull),
+                Tool.Tool3.stack(GameItems.toolSkull),
+                Tool.Tool4.stack(GameItems.toolSkull),
             ),
             GameTeam.PLAYER_WARDEN to enumMapOf(
-                Tool.Tool1.stack(DIAMOND_AXE),
-                Tool.Tool2.stack(DIAMOND_SHOVEL),
-                Tool.Tool3.stack(CROSSBOW),
-                Tool.Tool4.stack(BOW),
+                Tool.Tool1.stack(GameItems.toolAxe),
+                Tool.Tool2.stack(GameItems.toolShovel),
+                Tool.Tool4.stack(GameItems.toolBow),
+                Tool.Tool3.stack(GameItems.toolCrossbow),
             ),
             GameTeam.PLAYER_DUEL to enumMapOf(
-                Tool.Tool1.stack(IRON_SWORD),
-                Tool.Tool2.stack(IRON_AXE),
-                Tool.Tool3.stack(CROSSBOW),
-                Tool.Tool4.stack(BOW),
+                Tool.Tool1.stack(GameItems.toolSword),
+                Tool.Tool2.stack(GameItems.toolAxe),
+                Tool.Tool3.stack(GameItems.toolBow),
+                Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
             GameTeam.PLAYER_BLACK to enumMapOf(
-                Tool.Tool1.stack(IRON_AXE),
-                Tool.Tool2.stack(IRON_PICKAXE),
-                Tool.Tool3.stack(BOW),
-                Tool.Tool4.stack(TRIDENT)
+                Tool.Tool1.stack(GameItems.toolAxe),
+                Tool.Tool2.stack(GameItems.toolShovel),
+                Tool.Tool3.stack(GameItems.toolBow),
+                Tool.Tool4.stack(GameItems.toolTrident)
                     .also { (_, stack) -> stack.addEnchantment(Enchantments.LOYALTY, 3) },
             ),
             GameTeam.PLAYER_YELLOW to enumMapOf(
-                Tool.Tool1.stack(IRON_AXE),
-                Tool.Tool2.stack(IRON_SHOVEL),
-                Tool.Tool3.stack(CROSSBOW),
-                Tool.Tool4.stack(CROSSBOW),
+                Tool.Tool1.stack(GameItems.toolAxe),
+                Tool.Tool2.stack(GameItems.toolShovel),
+                Tool.Tool3.stack(GameItems.toolCrossbow),
+                Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
             GameTeam.PLAYER_BLUE to enumMapOf(
-                Tool.Tool1.stack(IRON_SWORD),
-                Tool.Tool2.stack(IRON_PICKAXE),
-                Tool.Tool3.stack(BOW),
-                Tool.Tool4.stack(BOW),
+                Tool.Tool1.stack(GameItems.toolSword),
+                Tool.Tool2.stack(GameItems.toolPickaxe),
+                Tool.Tool3.stack(GameItems.toolBow),
+                Tool.Tool4.stack(GameItems.toolBow),
             ),
         )
 

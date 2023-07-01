@@ -5,21 +5,9 @@ import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.command.EntitySelector
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.nbt.NbtByte
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.nbt.NbtHelper
-import net.minecraft.nbt.NbtList
-import net.minecraft.nbt.NbtOps
-import net.minecraft.nbt.NbtString
-import net.minecraft.nbt.StringNbtReader
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Style
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.math.Position
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
@@ -143,10 +131,10 @@ internal fun setup() {
                 val entity = args.context.source.entity
                 if (entity is ServerPlayerEntity) {
                     for (i in 1..4) {
-                        entity.giveItemStack(ItemStack(Items.SPONGE).also {
-                            it.getOrCreateNbt().put("MsdTool${i}", NbtByte.ONE)
-                            it.setCustomName(Text.literal("Tool ${i}").setStyle(Style.EMPTY.withColor(Formatting.GREEN).withItalic(false)))
-                        })
+                        entity.give(stackOf(
+                            Items.SPONGE, nbtCompoundOf("MsdTool${i}".intern() to true),
+                            text("Tool ${i}").reset().green(),
+                        ))
                     }
                     args.sendInfo("Added tools to inventory")
                 } else {
@@ -158,74 +146,8 @@ internal fun setup() {
             it.action { args ->
                 val entity = args.context.source.entity
                 if (entity is ServerPlayerEntity) {
-                    fun give(item: Item, name: Text?, vararg lore: Text, block: (ItemStack) -> Unit = {}) {
-                        entity.giveItemStack(ItemStack(item).also {
-                            val nbt = it.getOrCreateSubNbt("display")
-                            if (name != null) {
-                                nbt.put("Name", NbtString.of(Text.Serializer.toJson(name)))
-                            }
-                            if (lore.isNotEmpty()) {
-                                nbt.put("Lore", NbtList().also { list ->
-                                    lore.forEach { list.add(NbtString.of(Text.Serializer.toJson(it))) }
-                                })
-                            }
-                            block(it)
-                        })
-                    }
-                    give(
-                        Items.POTATO, null,
-                        "fun to eat!".text(),
-                        "can be cooked at ".text() + "shrines".text().bold(),
-                    )
-                    give(
-                        Items.EGG, null,
-                        "pulls players towards you!".text(),
-                        "can be crafted in-inv into an ".text() + "egg block".text().bold(),
-                        "egg blocks".text().bold() + " are best mined with " + "pickaxes".text().bold(),
-                    )
-                    give(
-                        Items.SNOWBALL, null,
-                        "pushes players away from you!".text(),
-                        "can be crafted in-inv into a ".text() + "snow block".text().bold(),
-                        "snow blocks".text().bold() + " are best mined with " + "shovels".text().bold(),
-                    )
-                    give(
-                        Items.FLINT_AND_STEEL, Items.FLINT_AND_STEEL.name().reset().green(),
-                        "FFFFIIIIIIREEEEEEE!".text(),
-                    )
-                    give(
-                        Items.ENDER_PEARL, Items.ENDER_PEARL.name().reset().green(),
-                        "if it lands near a player, it will teleport them to you!".text().yellow(),
-                        "functions normally for blue!".text().blue(),
-                    )
-                    give(
-                        Items.TARGET, "Family Guy Block".text().reset().green(),
-                        "instantly spawns a concrete structure!".text(),
-                        "contains tnt; can be lit & blown up".text(),
-                    )
-                    give(
-                        Items.SPECTRAL_ARROW, null,
-                        "arrow... but glows...".text(),
-                        "does not affect ghosts".text().bold(),
-                    )
-                    give(
-                        Items.SHIELD, Items.SHIELD.name().reset().blue(),
-                        "will not function for yellow!".text().yellow(),
-                        "functions normally for blue!".text().blue(),
-                    ) {
-                        it.getOrCreateSubNbt("BlockEntityTag").also {
-                            it.putInt("Base", 11)
-                            it.putString("id", "minecraft:banner")
-                        }
-                    }
-                    give(
-                        Items.FIREWORK_ROCKET, "Crossbow Rocket".text().reset().yellow(),
-                        "can be shot out of yellow’s crossbows!".text().yellow(),
-                        "will damage blue if used to fly!".text().blue(),
-                    ) {
-                        it.nbt!!.put("Fireworks", StringNbtReader.parse("{Explosions:[{Colors:[I;14602026],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}"))
-                    }
-                    args.sendInfo("Added special items to inventory")
+                    GameItems.getters.forEach { entity.give(it().copy()) }
+                    args.sendInfo("Added all game items to inventory")
                 } else {
                     args.sendError("Cannot give special items, command source has no entity")
                 }
@@ -666,8 +588,7 @@ internal fun setup() {
 private val game get() = Game.getGame()
 private val properties get() = Game.getGameProperties()
 
-private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.player(context: GameContext, name: String = "player")
-    = context.getPlayer(this.get<EntitySelector>(name).getPlayer(this.context.source))
-
-private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.players(context: GameContext, name: String = "players")
-    = context.getPlayers(this.get<EntitySelector>(name).getPlayers(this.context.source))
+private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.player(context: GameContext, name: String = "player") =
+    context.getPlayer(this.get<EntitySelector>(name).getPlayer(this.context.source))
+private fun <S : ServerCommandSource, T : Command.Arguments<S>> T.players(context: GameContext, name: String = "players") =
+    context.getPlayers(this.get<EntitySelector>(name).getPlayers(this.context.source))

@@ -9,16 +9,56 @@ import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-object Texts {
-    fun text(): MutableText = Text.empty()
-    fun text(string: String): MutableText = Text.literal(string)
+fun text(): MutableText = Text.empty()
+fun text(string: String): MutableText = Text.literal(string)
 
-    fun translatable(string: String): MutableText = Text.translatable(string)
-    fun translatable(string: String, vararg args: Any?): MutableText = Text.translatable(string, args)
+fun text(vararg values: Any?): MutableText {
+    var message: MutableText? = null
+    for (value in values) {
+        val part = if (value is Text) value.copy() else value.toString().asText()
+        if (message == null) {
+            message = part
+        } else {
+            message.append(Text.literal(" "))
+            message.append(part)
+        }
+    }
+    return message ?: text()
 }
 
-fun String.text() = Texts.text(this)
-fun String.translatable() = Texts.translatable(this)
+fun translatable(string: String): MutableText = Text.translatable(string)
+fun translatable(string: String, vararg args: Any?): MutableText = Text.translatable(string, *args)
+
+fun String.asText() = text(this)
+fun String.asTranslatable() = translatable(this)
+
+fun MutableText.format(vararg formatting: Formatting): MutableText {
+    this.formatted(*formatting)
+    return this
+}
+
+fun MutableText.style(block: (Style) -> Style?): MutableText {
+    val style = block(this.style)
+    if (style != null) this.style = style
+    return this
+}
+fun MutableText.styleParent(block: (Style) -> Style?): MutableText {
+    val style = block(this.style)
+    if (style != null) this.style = this.style.withParent(style)
+    return this
+}
+
+private val reset =
+    Style.EMPTY
+        .withBold(false)
+        .withItalic(false)
+        .withUnderline(false)
+        .withStrikethrough(false)
+        .withObfuscated(false)
+        .withColor(Formatting.WHITE)
+
+fun MutableText.reset() = this.style { reset }
+fun MutableText.resetParent() = this.styleParent { reset }
 
 operator fun MutableText.plus(text: Text): MutableText {
     this.append(text)
@@ -33,7 +73,7 @@ operator fun MutableText.plus(player: GamePlayer) = this + player.displayName
 operator fun MutableText.plus(team: GameTeam) = this + team.displayName
 
 operator fun MutableText.times(formatting: Formatting): MutableText {
-    this.formatted(formatting)
+    this.format(formatting)
     return this
 }
 operator fun MutableText.times(style: Style): MutableText {
@@ -41,29 +81,29 @@ operator fun MutableText.times(style: Style): MutableText {
     return this
 }
 
-fun MutableText.style(block: (Style) -> Style?): MutableText {
-    val style = block(this.style)
-    if (style != null) this.style = style
-    return this
-}
-
 operator fun MutableText.times(team: GameTeam) = this * team.color
 
-fun MutableText.bold() = this * Formatting.BOLD
-fun MutableText.italics() = this * Formatting.ITALIC
-fun MutableText.underline() = this * Formatting.UNDERLINE
-fun MutableText.strikethrough() = this * Formatting.STRIKETHROUGH
+fun MutableText.black() = this * Formatting.BLACK
+fun MutableText.darkBlue() = this * Formatting.DARK_BLUE
+fun MutableText.darkGreen() = this * Formatting.DARK_GREEN
+fun MutableText.darkAqua() = this * Formatting.DARK_AQUA
+fun MutableText.darkRed() = this * Formatting.DARK_RED
+fun MutableText.darkPurple() = this * Formatting.DARK_PURPLE
+fun MutableText.gold() = this * Formatting.GOLD
+fun MutableText.gray() = this * Formatting.GRAY
+fun MutableText.darkGray() = this * Formatting.DARK_GRAY
+fun MutableText.blue() = this * Formatting.BLUE
+fun MutableText.green() = this * Formatting.GREEN
+fun MutableText.aqua() = this * Formatting.AQUA
+fun MutableText.red() = this * Formatting.RED
+fun MutableText.lightPurple() = this * Formatting.LIGHT_PURPLE
+fun MutableText.yellow() = this * Formatting.YELLOW
+fun MutableText.white() = this * Formatting.WHITE
 fun MutableText.obfuscated() = this * Formatting.OBFUSCATED
-
-fun MutableText.reset() = this.style {
-    Style.EMPTY
-        .withBold(false)
-        .withItalic(false)
-        .withUnderline(false)
-        .withStrikethrough(false)
-        .withObfuscated(false)
-        .withColor(Formatting.WHITE)
-}
+fun MutableText.bold() = this * Formatting.BOLD
+fun MutableText.strikethrough() = this * Formatting.STRIKETHROUGH
+fun MutableText.underline() = this * Formatting.UNDERLINE
+fun MutableText.italic() = this * Formatting.ITALIC
 
 fun MutableText.teamGhost() = this * GameTeam.GHOST
 fun MutableText.teamOperator() = this * GameTeam.OPERATOR
@@ -73,9 +113,11 @@ fun MutableText.teamBlack() = this * GameTeam.PLAYER_BLACK
 fun MutableText.teamYellow() = this * GameTeam.PLAYER_YELLOW
 fun MutableText.teamBlue() = this * GameTeam.PLAYER_BLUE
 
-fun MutableText.green() = this * Formatting.GREEN
-fun MutableText.yellow() = this * Formatting.YELLOW
-fun MutableText.blue() = this * Formatting.BLUE
+private val itemName = reset.withColor(Formatting.GREEN)
+private val itemLore = reset.withColor(Formatting.GREEN).withItalic(true)
+
+fun MutableText.itemName() = this.styleParent { itemName }
+fun MutableText.itemLore() = this.styleParent { itemLore }
 
 fun Item.name(): MutableText = this.name.copy()
 fun ItemStack.name(): MutableText = this.name.copy()

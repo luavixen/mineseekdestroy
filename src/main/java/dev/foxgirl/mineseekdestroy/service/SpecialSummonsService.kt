@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
+import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
@@ -12,7 +13,6 @@ import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
-import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
 import net.minecraft.entity.boss.BossBar
@@ -23,7 +23,8 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
-import net.minecraft.nbt.*
+import net.minecraft.nbt.NbtHelper
+import net.minecraft.nbt.NbtOps
 import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket
@@ -203,20 +204,13 @@ class SpecialSummonsService : Service() {
 
                 val target = target()
 
-                val name = Text.literal("Sound of ").formatted(Formatting.GREEN).append(target.displayName).styled { it.withItalic(false) }
-                val nameJSON = Text.Serializer.toJson(name)
-
-                val stack = ItemStack(COMPASS)
-
-                stack.getOrCreateNbt().also {
-                    it.put("display", NbtCompound().also { it.putString("Name", nameJSON) })
-                    it.put("LodestonePos", nbtSpawn)
-                    it.put("LodestoneDimension", nbtDimension)
-                    it.put("LodestoneTracked", NbtByte.ONE)
-                    it.putUuid("MsdTargetPlayer", target.uuid)
-                }
-
-                entity.giveItem(stack)
+                entity.give(GameItems.summonCompass.copy().apply {
+                    dataDisplay()["Name"] = toNbtElement((text("Sound of ").green() + target.displayName).styled { it.withItalic(false) })
+                    data()["LodestonePos"] = nbtSpawn
+                    data()["LodestoneDimension"] = nbtDimension
+                    data()["LodestoneTracked"] = true
+                    data()["MsdTargetPlayer"] = target.uuid
+                })
             }
         }
         override fun update() {
@@ -230,7 +224,7 @@ class SpecialSummonsService : Service() {
                     val target = context.getPlayer(nbt.getUuid("MsdTargetPlayer")) ?: continue
                     val targetEntity = target.entity ?: continue
 
-                    nbt.put("LodestonePos", NbtHelper.fromBlockPos(targetEntity.blockPos))
+                    nbt["LodestonePos"] = NbtHelper.fromBlockPos(targetEntity.blockPos)
                 }
             }
         }
@@ -273,8 +267,8 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
-                    entity.giveItem(ItemStack(WATER_BUCKET))
-                    entity.giveItem(ItemStack(CHIPPED_ANVIL))
+                    entity.give(GameItems.summonWaterBucket.copy())
+                    entity.give(GameItems.summonChippedAnvil.copy())
                 }
             }
         }
@@ -319,12 +313,8 @@ class SpecialSummonsService : Service() {
     private inner class OccultBarterSummon(options: Options) : Summon(options), Stoppable {
         override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
-            val item = ItemStack(GOLDEN_SWORD).apply {
-                addEnchantment(Enchantments.SHARPNESS, 12)
-                setDamage(32)
-            }
             for ((player, entity) in playerEntitiesIn) {
-                if (player.team === team) entity.giveItem(item.copy())
+                if (player.team === team) entity.give(GameItems.summonGoldenSword.copy())
             }
         }
         override fun stop() {
@@ -360,7 +350,7 @@ class SpecialSummonsService : Service() {
         override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
-                if (player.team === team) entity.giveItem(ItemStack(COOKED_BEEF, 8))
+                if (player.team === team) entity.give(GameItems.summonSteak.copyWithCount(8))
             }
         }
     }
@@ -393,7 +383,7 @@ class SpecialSummonsService : Service() {
         override fun timeout(): Duration = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
-                if (player.team === team) entity.giveItem(ItemStack(BLUE_ICE, 64))
+                if (player.team === team) entity.give(GameItems.summonBlueIce.copyWithCount(64))
             }
         }
     }
@@ -959,22 +949,15 @@ class SpecialSummonsService : Service() {
             TheologyPair(OCCULT, BARTER),
         )
 
-        private fun summonItem(kind: TheologyPair, item: Item, vararg lore: Text): Pair<TheologyPair, ItemStack> {
-            val stack = ItemStack(item)
-
-            stack.getOrCreateNbt().also {
-                it.put("display", NbtCompound().also {
-                    it.putString("Name", Text.Serializer.toJson(kind.displayName))
-                    it.put("Lore", NbtList().also { list ->
-                        lore.forEach { list.add(NbtString.of(Text.Serializer.toJson(it))) }
-                    })
-                })
-                it.put("MsdIllegal", NbtByte.ONE)
-                it.put("MsdSummonItem", NbtByte.ONE)
-            }
-
-            return kind to stack
-        }
+        private fun summonItem(kind: TheologyPair, item: Item, vararg lore: Text): Pair<TheologyPair, ItemStack> =
+            kind to stackOf(item, nbtCompoundOf(
+                "display" to nbtCompoundOf(
+                    "Name" to toNbtElement(kind.displayName),
+                    "Lore" to toNbtList(lore.asList()),
+                ),
+                "MsdIllegal" to true,
+                "MsdSummonItem" to true,
+            ))
 
         private val summonItems = immutableMapOf<TheologyPair, ItemStack>(
             summonItem(
