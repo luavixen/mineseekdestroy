@@ -2,8 +2,9 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.util.*
-import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
+import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import net.minecraft.block.Blocks
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -15,79 +16,95 @@ import net.minecraft.util.math.Direction.*
 class SpecialFamilyGuyService : Service() {
 
     fun handleFamilyGuyBlockPlaced(player: GamePlayer, blockHit: BlockHitResult) {
-        Async.run {
-            val playerEntity = player.entity ?: return@run
+        val playerEntity = player.entity ?: return
+        Async.run { handleFamilyGuyBlockPlacedAsync(player, playerEntity, blockHit) }
+    }
 
-            val structure = structures[playerEntity.horizontalFacing] ?: return@run
+    private suspend fun handleFamilyGuyBlockPlacedAsync(player: GamePlayer, playerEntity: PlayerEntity, blockHit: BlockHitResult) {
+        val structure = structures[playerEntity.horizontalFacing]!!
 
-            val target = blockHit.blockPos.offset(blockHit.side)
+        val targets =
+            targetOffsets(blockHit.blockPos) +
+            targetOffsets(blockHit.blockPos.offset(blockHit.side))
 
-            delay()
+        Async.delay()
 
-            if (world.getBlockState(target).block !== Blocks.TARGET) return@run
+        logger.info("Player ${player.name} attempting to place a family guy block")
 
-            logger.info("Player ${player.name} placed family guy block at ${target.toShortString()}")
+        val target = targets.find { pos -> world.getBlockState(pos).block === Blocks.TARGET }
+        if (target == null) return
 
-            val offset = target.subtract(structure.center)
-            val region = structure.region.offset(offset)
+        logger.info("Player ${player.name} placed family guy block at ${target.toShortString()}")
 
-            val center = region.center
+        val offset = target.subtract(structure.center)
+        val region = structure.region.offset(offset)
 
-            val positions = ArrayList<BlockPos>(128)
+        val center = region.center
 
-            Editor
-                .edit(world, region) { _, y, x, z ->
-                    val pos = BlockPos(x, y, z)
-                    val state = world.getBlockState(pos.subtract(offset))
-                    if (state.isAir) {
-                        null
-                    } else {
-                        positions.add(pos)
-                        state
-                    }
+        val positions = ArrayList<BlockPos>(128)
+
+        Editor
+            .edit(world, region) { _, y, x, z ->
+                val pos = BlockPos(x, y, z)
+                val state = world.getBlockState(pos.subtract(offset))
+                if (state.isAir) {
+                    null
+                } else {
+                    positions.add(pos)
+                    state
                 }
-                .thenAccept {
-                    positions.forEach {
-                        Broadcast.sendParticles(ParticleTypes.POOF, 0.25F, 5, world, it.toCenterPos())
-                    }
+            }
+            .await()
 
-                    Scheduler.delay(0.05) {
-                        notesHarp.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
-                    }
-                    Scheduler.delay(0.45) {
-                        notesBass.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
-                    }
+        positions.forEach {
+            Broadcast.sendParticles(ParticleTypes.POOF, 0.25F, 5, world, it.toCenterPos())
+        }
 
-                    for (entity in world.players) {
-                        if (!region.contains(entity)) continue
+        Scheduler.delay(0.05) {
+            notesHarp.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
+        }
+        Scheduler.delay(0.45) {
+            notesBass.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
+        }
 
-                        var i = 0
+        for (entity in world.players) {
+            if (!region.contains(entity)) continue
 
-                        while (i < 64) {
-                            if (!world.isAir(entity.blockPos.add(0, i + 1, 0))) {
-                                i += 2
-                            } else if (!world.isAir(entity.blockPos.add(0, i, 0))) {
-                                i += 1
-                            } else {
-                                break
-                            }
-                        }
+            var i = 0
 
-                        if (i != 0) {
-                            entity.networkHandler.requestTeleport(
-                                entity.x,
-                                entity.y + i.toDouble(),
-                                entity.z,
-                                entity.yaw, entity.pitch,
-                            )
-                        }
-                    }
+            while (i < 64) {
+                if (!world.isAir(entity.blockPos.add(0, i + 1, 0))) {
+                    i += 2
+                } else if (!world.isAir(entity.blockPos.add(0, i, 0))) {
+                    i += 1
+                } else {
+                    break
                 }
-                .await()
+            }
+
+            if (i != 0) {
+                entity.networkHandler.requestTeleport(
+                    entity.x,
+                    entity.y + i.toDouble(),
+                    entity.z,
+                    entity.yaw, entity.pitch,
+                )
+            }
         }
     }
 
     private companion object {
+
+        private fun targetOffsets(pos: BlockPos) =
+            arrayOf<BlockPos>(
+                pos,
+                pos.offset(DOWN),
+                pos.offset(UP),
+                pos.offset(NORTH),
+                pos.offset(SOUTH),
+                pos.offset(WEST),
+                pos.offset(EAST),
+            )
 
         private fun convertNote(note: Int) = Math.pow(2.0, (note - 12).toDouble() / 12.0).toFloat()
 
@@ -96,7 +113,7 @@ class SpecialFamilyGuyService : Service() {
 
         private class Structure(val region: Region, val center: BlockPos)
 
-        private val structures = immutableMapOf<Direction, Structure>(
+        private val structures = enumMapOf<Direction, Structure>(
             NORTH to Structure(Region(BlockPos(4, -41, -594), BlockPos(1, -47, -597)), BlockPos(2, -47, -595)),
             EAST to Structure(Region(BlockPos(1, -41, -585), BlockPos(4, -47, -588)), BlockPos(2, -47, -587)),
             SOUTH to Structure(Region(BlockPos(9, -41, -588), BlockPos(12, -47, -585)), BlockPos(11, -47, -587)),

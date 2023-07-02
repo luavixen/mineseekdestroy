@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameContext
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
@@ -48,14 +49,14 @@ class SnapshotService : Service() {
         }
 
         constructor(context: GameContext, nbt: NbtCompound) {
-            player = context.getPlayer(nbt["Player"]!!.asCompound())
+            player = context.getPlayer(nbt["Player"].asCompound())
 
-            snapshotTeam = GameTeam.valueOf(nbt["Team"]!!.toActualString())
-            snapshotAlive = nbt["Alive"]!!.toBoolean()
-            snapshotKills = nbt["Kills"]!!.toInt()
-            snapshotDeaths = nbt["Deaths"]!!.toInt()
-            snapshotPosition = nbt["Position"]!!.toBlockPos().toCenterPos()
-            snapshotInventory = Inventories.fromNbt(nbt["Inventory"]!!.asCompound())
+            snapshotTeam = GameTeam.valueOf(nbt["Team"].toActualString())
+            snapshotAlive = nbt["Alive"].toBoolean()
+            snapshotKills = nbt["Kills"].toInt()
+            snapshotDeaths = nbt["Deaths"].toInt()
+            snapshotPosition = nbt["Position"].toBlockPos().toCenterPos()
+            snapshotInventory = Inventories.fromNbt(nbt["Inventory"].asCompound())
         }
 
         fun toNbt() = nbtCompoundOf(
@@ -71,7 +72,7 @@ class SnapshotService : Service() {
 
     private class Snapshot(val players: List<SnapshotPlayer>) {
         constructor(context: GameContext, nbt: NbtCompound)
-            : this(nbt["Players"]!!.asList().map { SnapshotPlayer(context, it.asCompound()) })
+            : this(nbt["Players"].asList().map { SnapshotPlayer(context, it.asCompound()) })
 
         fun toNbt() = nbtCompoundOf("Players" to players)
     }
@@ -123,12 +124,10 @@ class SnapshotService : Service() {
         ready = false
 
         val snapshot = Snapshot(players.map(::SnapshotPlayer))
-
         snapshots.add(snapshot)
 
         val name = "mnsnd-snapshot-${DateTimeFormatter.ISO_INSTANT.format(Instant.now())}.bin"
-        val path = FabricLoader.getInstance().getConfigDir().resolve(name)
-
+        val path = Game.CONFIGDIR.resolve(name)
         try {
             NbtIo.write(nbtCompoundOf("Snapshots" to snapshots), path.toFile())
             logger.info("Saved snapshot to file ${name}")
@@ -140,11 +139,10 @@ class SnapshotService : Service() {
     }
 
     fun executeSnapshotLoadBackup(console: Console, name: String) {
-        val path = FabricLoader.getInstance().getConfigDir().resolve(name)
-
+        val path = Game.CONFIGDIR.resolve(name)
         try {
             val nbt = NbtIo.read(path.toFile())!!
-            val snapshots = nbt["Snapshots"]!!.asList().map { Snapshot(context, it.asCompound()) }
+            val snapshots = nbt["Snapshots"].asList().map { Snapshot(context, it.asCompound()) }
 
             this.snapshots.clear()
             this.snapshots.addAll(snapshots)

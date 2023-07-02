@@ -115,39 +115,39 @@ fun nbtCompoundOf() = nbtCompound()
 fun nbtCompoundOf(vararg pairs: Pair<String, Any?>) =
     createNbtCompound(pairs.size) { pairs.forEach { (key, value) -> it[key] = toNbtElement(value) } }
 
-fun NbtElement.asList() = this as NbtList
-fun NbtElement.asCompound() = this as NbtCompound
+fun NbtElement?.asList() = this as NbtList
+fun NbtElement?.asCompound() = this as NbtCompound
 
-fun NbtElement.toByte(): Byte =
+fun NbtElement?.toByte(): Byte =
     (this as NbtByte).byteValue()
-fun NbtElement.toByteArray(): ByteArray =
+fun NbtElement?.toByteArray(): ByteArray =
     (this as NbtByteArray).byteArray.clone()
-fun NbtElement.toShort(): Short =
+fun NbtElement?.toShort(): Short =
     (this as NbtShort).shortValue()
-fun NbtElement.toInt(): Int =
+fun NbtElement?.toInt(): Int =
     (this as NbtInt).intValue()
-fun NbtElement.toIntArray(): IntArray =
+fun NbtElement?.toIntArray(): IntArray =
     (this as NbtIntArray).intArray.clone()
-fun NbtElement.toLong(): Long =
+fun NbtElement?.toLong(): Long =
     (this as NbtLong).longValue()
-fun NbtElement.toLongArray(): LongArray =
+fun NbtElement?.toLongArray(): LongArray =
     (this as NbtLongArray).longArray.clone()
-fun NbtElement.toFloat(): Float =
+fun NbtElement?.toFloat(): Float =
     (this as NbtFloat).floatValue()
-fun NbtElement.toDouble(): Double =
+fun NbtElement?.toDouble(): Double =
     (this as NbtDouble).doubleValue()
 
-fun NbtElement.toBoolean(): Boolean =
+fun NbtElement?.toBoolean(): Boolean =
     this.toByte().toInt() != 0
-fun NbtElement.toBooleanArray(): BooleanArray =
+fun NbtElement?.toBooleanArray(): BooleanArray =
     this.toByteArray().let { bytes -> BooleanArray(bytes.size).also { bytes.forEachIndexed { i, b -> it[i] = b.toInt() != 0 } } }
 
-fun NbtElement.toActualString(): String =
+fun NbtElement?.toActualString(): String =
     (this as NbtString).asString()
 
-fun NbtElement.toUUID(): UUID =
-    NbtHelper.toUuid(this)
-fun NbtElement.toBlockPos(): BlockPos =
+fun NbtElement?.toUUID(): UUID =
+    NbtHelper.toUuid(this!!)
+fun NbtElement?.toBlockPos(): BlockPos =
     NbtHelper.toBlockPos(this.asCompound())
 
 fun nbtDecode(string: String): NbtElement =

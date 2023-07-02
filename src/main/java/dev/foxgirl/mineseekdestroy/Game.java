@@ -21,6 +21,7 @@ import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.fabricmc.fabric.api.gamerule.v1.rule.DoubleRule;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -38,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
@@ -46,6 +48,8 @@ import java.util.UUID;
 public final class Game implements Console, DedicatedServerModInitializer, ServerLifecycleEvents.ServerStarting, ServerTickEvents.StartTick {
 
     public static final @NotNull Logger LOGGER = LogManager.getLogger("MnSnD");
+
+    public static final @NotNull Path CONFIGDIR = FabricLoader.getInstance().getConfigDir();
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_MESSAGE_DIRECT_ALLOWED =
         GameRuleRegistry.register("msdMessageDirectAllowed", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
