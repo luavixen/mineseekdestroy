@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableMap;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
@@ -358,6 +359,19 @@ public final class GameContext {
                 playerMap.put(uuid, wrapper);
             }
             return wrapper;
+        }
+    }
+
+    public @NotNull GamePlayer getPlayer(@NotNull NbtCompound nbt) {
+        Objects.requireNonNull(nbt, "Argument 'nbt'");
+        var wrapperNew = new GamePlayer(this, nbt);
+        synchronized (playerMapLock) {
+            var wrapperOld = playerMap.get(wrapperNew.getUUID());
+            if (wrapperOld != null) {
+                return wrapperOld;
+            }
+            playerMap.put(wrapperNew.getUUID(), wrapperNew);
+            return wrapperNew;
         }
     }
 

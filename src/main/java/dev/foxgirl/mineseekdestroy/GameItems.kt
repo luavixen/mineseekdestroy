@@ -138,7 +138,7 @@ object GameItems {
     @JvmStatic
     val fireworkRocket = stackOf(
         FIREWORK_ROCKET,
-        nbtDecode("{Explosions:[{Colors:[I;14602026],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}").asCompound(),
+        nbtCompoundOf("Fireworks" to nbtDecode("{Explosions:[{Colors:[I;14602026],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}")),
         text("Crossbow Rocket").yellow(),
         text("can be shot out of yellow’s crossbows!").yellow(),
         text("will damage blue if used to fly!").blue(),
@@ -274,8 +274,6 @@ object GameItems {
             snowBlock, eggBlock, ectoplasm,
             potato, bakedPotato, egg, snowball, spectralArrow,
             flintAndSteel, enderPearl, familyGuyBlock, fireworkRocket,
-            splashPotionSlowness, splashPotionPoison, splashPotionHarming,
-            arrowDeep, arrowOccult, arrowCosmos, arrowBarter, arrowFlame,
         )) {
             builder.put(stack.item, stack)
         }

@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.util
 
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
+import net.minecraft.item.Item
 import net.minecraft.item.ItemConvertible
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
@@ -68,6 +69,10 @@ fun ItemStack.dataDisplay(): NbtCompound {
 }
 
 fun Inventory.asList(): List<ItemStack> = Inventories.list(this)
+
+fun Item.toNbt() = toNbt(this)
+fun ItemStack.toNbt() = toNbt(this)
+fun Inventory.toNbt() = toNbt(this)
 
 fun PlayerEntity.give(stack: ItemStack) = this.give(stack, true)
 fun PlayerEntity.give(stack: ItemStack, drop: Boolean): Boolean {

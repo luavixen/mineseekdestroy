@@ -1,8 +1,10 @@
 package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.state.RunningGameState;
+import dev.foxgirl.mineseekdestroy.util.NbtKt;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
@@ -41,25 +43,51 @@ public final class GamePlayer {
     }
 
     private boolean currentAlive = true;
-
     private GameTeam currentTeam = GameTeam.NONE;
-    private GameTeam previousTeam = GameTeam.NONE;
 
     private int statsKills = 0;
     private int statsDeaths = 0;
 
     private Inventory inventoryMirror = null;
 
-    GamePlayer(@NotNull GameContext context, @NotNull ServerPlayerEntity player) {
+    private GamePlayer(@NotNull GameContext context, UUID uuid, String name) {
         Objects.requireNonNull(context, "Argument 'context'");
-        Objects.requireNonNull(player, "Argument 'player'");
-
         this.context = context;
+        this.uuid = uuid;
+        this.name = name;
+        this.hash = uuid.hashCode();
+    }
 
-        uuid = Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'");
-        name = Objects.requireNonNull(player.getEntityName(), "Expression 'player.getEntityName()'");
+    GamePlayer(@NotNull GameContext context, @NotNull ServerPlayerEntity player) {
+        this(
+            context,
+            Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'"),
+            Objects.requireNonNull(player.getEntityName(), "Expression 'player.getEntityName()'")
+        );
+    }
 
-        hash = uuid.hashCode();
+    GamePlayer(@NotNull GameContext context, @NotNull NbtCompound nbt) {
+        this(
+            context,
+            NbtKt.toUUID(nbt.get("UUID")),
+            NbtKt.toActualString(nbt.get("Name"))
+        );
+
+        currentAlive = NbtKt.toBoolean(nbt.get("Alive"));
+        currentTeam = GameTeam.valueOf(NbtKt.toActualString(nbt.get("Team")));
+        statsKills = NbtKt.toInt(nbt.get("Kills"));
+        statsKills = NbtKt.toInt(nbt.get("Deaths"));
+    }
+
+    public @NotNull NbtCompound toNbt() {
+        var nbt = NbtKt.nbtCompound(8);
+        nbt.putUuid("UUID", uuid);
+        nbt.putString("Name", name);
+        nbt.putBoolean("Alive", currentAlive);
+        nbt.putString("Team", currentTeam.name());
+        nbt.putInt("Kills", statsKills);
+        nbt.putInt("Deaths", statsDeaths);
+        return nbt;
     }
 
     public @NotNull UUID getUUID() {
@@ -74,14 +102,9 @@ public final class GamePlayer {
         return currentTeam;
     }
 
-    public @NotNull GameTeam getPreviousTeam() {
-        return previousTeam;
-    }
-
     public void setTeam(@NotNull GameTeam team) {
         Objects.requireNonNull(team, "Argument 'team'");
         if (currentTeam != team) {
-            previousTeam = currentTeam;
             currentTeam = team;
         }
     }

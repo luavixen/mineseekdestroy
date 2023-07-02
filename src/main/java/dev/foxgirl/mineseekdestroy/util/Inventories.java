@@ -3,6 +3,9 @@ package dev.foxgirl.mineseekdestroy.util;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -67,6 +70,34 @@ public final class Inventories {
             throw new IllegalArgumentException("Argument 'size' is negative");
         }
         return new ArrayInventory(size);
+    }
+
+    public static @NotNull Inventory fromNbt(@NotNull NbtCompound nbt) {
+        Objects.requireNonNull(nbt, "Argument 'nbt'");
+
+        var list = (NbtList) Objects.requireNonNull(nbt.get("Items"), "Expression 'nbt.get(\"Items\")'");
+        int size = list.size();
+
+        var inventory = new ArrayInventory(size);
+        for (int i = 0; i < size; i++) {
+            inventory.setStack(i, ItemStack.fromNbt((NbtCompound) list.get(i)));
+        }
+
+        return inventory;
+    }
+
+    public static @NotNull NbtCompound toNbt(@NotNull Inventory inventory) {
+        Objects.requireNonNull(inventory, "Argument 'inventory'");
+
+        int size = inventory.size();
+        var list = NbtKt.nbtList(size, NbtElement.COMPOUND_TYPE);
+
+        for (int i = 0; i < size; i++) {
+            list.add(NbtKt.toNbt(inventory.getStack(i)));
+        }
+
+        var nbt = NbtKt.nbtCompound(1); nbt.put("Items", list);
+        return nbt;
     }
 
     private static final class InventoryList extends AbstractList<ItemStack> implements RandomAccess {

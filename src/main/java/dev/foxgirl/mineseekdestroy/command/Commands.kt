@@ -164,7 +164,11 @@ internal fun setup() {
         it.params(argLiteral("restore")) {
             it.actionWithContext { args, context ->
                 context.snapshotService.executeSnapshotRestore(args)
-                context.barrierService.executeBlimpClose(args)
+            }
+        }
+        it.params(argLiteral("loadbackup"), argString("name")) {
+            it.actionWithContext { args, context ->
+                context.snapshotService.executeSnapshotLoadBackup(args, args["name"])
             }
         }
     }

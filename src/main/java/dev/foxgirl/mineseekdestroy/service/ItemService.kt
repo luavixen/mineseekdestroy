@@ -85,16 +85,20 @@ class ItemService : Service() {
 
                 val replacementStack = replacementItems[item]
                 if (replacementStack != null && replacementStack.nbt != stack.nbt) {
-                    val count = stack.count
+                    val stackNew = replacementStack.copyWithCount(stack.count)
                     inventory.setStack(i, ItemStack.EMPTY)
-                    inventory.insertStack(i, replacementStack.copyWithCount(count))
+                    if (!inventory.insertStack(i, stackNew)) {
+                        inventory.setStack(i, stackNew)
+                    }
                     return@forEach
                 }
 
                 if (powderItem != null && powderItem !== item && powderItems.contains(item)) {
-                    val count = stack.count
+                    val stackNew = ItemStack(powderItem, stack.count)
                     inventory.setStack(i, ItemStack.EMPTY)
-                    inventory.insertStack(ItemStack(powderItem, count))
+                    if (!inventory.insertStack(i, stackNew)) {
+                        inventory.setStack(i, stackNew)
+                    }
                     return@forEach
                 }
 
