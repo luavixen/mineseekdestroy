@@ -25,13 +25,17 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
 import org.apache.logging.log4j.LogManager;
@@ -312,6 +316,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.RED_CONCRETE,
         Items.LIME_CONCRETE,
     });
+
+    public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_HEARTBREAK =
+        RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("mineseekdestroy", "heartbreak"));
+    public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_ABYSS =
+        RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("mineseekdestroy", "abyss"));
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override

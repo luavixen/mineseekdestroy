@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.*;
+import dev.foxgirl.mineseekdestroy.util.Scheduler;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.PigEntity;
@@ -46,15 +47,18 @@ public abstract class RunningGameState extends GameState {
             player.setAlive(false);
             player.countDeath();
 
-            GamePlayer attacker = null;
-
+            ServerPlayerEntity attackerEntity;
             if (damageSource.getAttacker() instanceof ServerPlayerEntity attackerEntity1) {
-                attacker = context.getPlayer(attackerEntity1);
+                attackerEntity = attackerEntity1;
             } else if (damageSource.getSource() instanceof ServerPlayerEntity attackerEntity2) {
-                attacker = context.getPlayer(attackerEntity2);
+                attackerEntity = attackerEntity2;
             } else if (playerEntity.getPrimeAdversary() instanceof ServerPlayerEntity attackerEntity3) {
-                attacker = context.getPlayer(attackerEntity3);
+                attackerEntity = attackerEntity3;
+            } else {
+                attackerEntity = null;
             }
+
+            GamePlayer attacker = attackerEntity == null ? null : context.getPlayer(attackerEntity);
 
             if (attacker != null) {
                 if (player.getTeam() == GameTeam.PLAYER_BLACK) {
@@ -62,6 +66,14 @@ public abstract class RunningGameState extends GameState {
                     attacker.countKill();
                 } else {
                     attacker.countKill();
+                }
+                if (player.isGhost() && attacker.getTeam() == GameTeam.PLAYER_BLACK) {
+                    Scheduler.now((schedule) -> {
+                        attackerEntity.damage(
+                            attackerEntity.getDamageSources().create(Game.DAMAGE_TYPE_ABYSS, playerEntity, null),
+                            999999.0F // Like. Like a LOT of damage. Kill them
+                        );
+                    });
                 }
                 Game.LOGGER.info(player.getName() + " was killed by " + attacker.getName());
             } else {

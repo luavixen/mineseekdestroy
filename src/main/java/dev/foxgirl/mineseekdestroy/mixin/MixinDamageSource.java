@@ -27,17 +27,26 @@ public abstract class MixinDamageSource {
 
     @Inject(method = "getDeathMessage", at = @At("HEAD"), cancellable = true)
     private void mineseekdestroy$hookGetDeathMessage(LivingEntity entity, CallbackInfoReturnable<Text> info) {
-        var context = Game.getGame().getContext();
-        if (context != null && context.specialBuddyService.getDamageTypeKey() == type.getKey().get()) {
-            Text name;
+        var key = type.getKey().get();
+
+        boolean isHeartbreak = key == Game.DAMAGE_TYPE_HEARTBREAK;
+        boolean isAbyss = key == Game.DAMAGE_TYPE_ABYSS;
+
+        if (isHeartbreak || isAbyss) {
+            Text nameEntity = entity.getDisplayName();
+            Text nameAttacker;
             if (source != null) {
-                name = source.getDisplayName();
+                nameAttacker = source.getDisplayName();
             } else if (attacker != null) {
-                name = attacker.getDisplayName();
+                nameAttacker = attacker.getDisplayName();
             } else {
-                name = Text.of("their buddy");
+                nameAttacker = isHeartbreak ? Text.of("their buddy") : Text.of("a ghost");
             }
-            info.setReturnValue(Text.empty().append(entity.getDisplayName()).append(" was torn by the loss of ").append(name));
+            if (isHeartbreak) {
+                info.setReturnValue(Text.empty().append(nameEntity).append(" was torn by the loss of ").append(nameAttacker));
+            } else {
+                info.setReturnValue(Text.empty().append(nameEntity).append(" was dragged into the abyss by ").append(nameAttacker));
+            }
         }
     }
 

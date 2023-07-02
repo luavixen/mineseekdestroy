@@ -6,7 +6,6 @@ import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState
 import dev.foxgirl.mineseekdestroy.util.*
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.inventory.Inventory
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo

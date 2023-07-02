@@ -9,16 +9,11 @@ import dev.foxgirl.mineseekdestroy.util.Scheduler
 import net.minecraft.entity.damage.DamageType
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.SimpleRegistry
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 class SpecialBuddyService : Service() {
-
-    val damageTypeKey: RegistryKey<DamageType> =
-        RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier("mineseekdestroy", "heartbreak"))
 
     private data class Buddy(val playerTarget: GamePlayer, val playerFollower: GamePlayer) {
         val displayName get(): Text =
@@ -68,7 +63,7 @@ class SpecialBuddyService : Service() {
             if (playerTarget == player) {
                 val playerFollowerEntity = playerFollower.entity
                 if (playerFollowerEntity != null) {
-                    val damageSource = world.damageSources.create(damageTypeKey, playerTarget.entity, null)
+                    val damageSource = world.damageSources.create(Game.DAMAGE_TYPE_HEARTBREAK, playerTarget.entity, null)
                     val damageAmount = game.getRuleDouble(Game.RULE_BUDDY_HEALTH_PENALTY).toFloat()
                     Scheduler.now { playerFollowerEntity.damage(damageSource, damageAmount) }
                 }
@@ -107,12 +102,14 @@ class SpecialBuddyService : Service() {
     }
 
     override fun setup() {
-        // This is such a painful hack, but I don't care!
         val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE) as SimpleRegistry<DamageType>
-        if (registry.getEntry(damageTypeKey).isEmpty) {
+        if (registry.getEntry(Game.DAMAGE_TYPE_HEARTBREAK).isEmpty) {
             registry.frozen = false
-            registry.add(damageTypeKey, DamageType("heartbreak", 0.0F), Lifecycle.experimental())
-            registry.freeze()
+            try {
+                registry.add(Game.DAMAGE_TYPE_HEARTBREAK, DamageType("heartbreak", 0.0F), Lifecycle.experimental())
+            } finally {
+                registry.freeze()
+            }
         }
     }
 

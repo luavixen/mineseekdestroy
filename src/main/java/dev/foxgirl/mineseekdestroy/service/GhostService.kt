@@ -1,5 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import com.mojang.serialization.Lifecycle
+import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.state.PlayingGameState
@@ -14,6 +16,8 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.network.packet.s2c.play.TeamS2CPacket
 import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.SimpleRegistry
 import net.minecraft.scoreboard.Team
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
@@ -92,6 +96,18 @@ class GhostService : Service() {
     }
 
     fun shouldIgnoreDamage(key: RegistryKey<DamageType>?) = ignoredDamageTypes.contains(key)
+
+    override fun setup() {
+        val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE) as SimpleRegistry<DamageType>
+        if (registry.getEntry(Game.DAMAGE_TYPE_ABYSS).isEmpty) {
+            registry.frozen = false
+            try {
+                registry.add(Game.DAMAGE_TYPE_ABYSS, DamageType("abyss", 0.0F), Lifecycle.experimental())
+            } finally {
+                registry.freeze()
+            }
+        }
+    }
 
     private companion object {
 
