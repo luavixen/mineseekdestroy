@@ -120,12 +120,7 @@ public abstract class RunningGameState extends GameState {
 
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            if (player.isGhost()) {
-                context.itemService.addStackToInventory(playerEntity, stack, true);
-                return false;
-            } else if (!player.isPlaying()) {
-                return false;
-            }
+            if (!player.isPlayingOrGhost()) return false;
         }
 
         return super.onItemDropped(context, playerEntity, stack, throwRandomly, retainOwnership);

@@ -54,8 +54,10 @@ class GhostService : Service() {
 
             } else {
 
-                if (healthAttribute.hasModifier(healthModifier))
+                if (healthAttribute.hasModifier(healthModifier)) {
                     healthAttribute.removeModifier(healthModifier)
+                    playerEntity.health = playerEntity.maxHealth
+                }
 
                 if (playerEntity.frozenTicks >= playerEntity.minFreezeDamageTicks) {
                     playerEntity.damage(playerEntity.damageSources.freeze(), 1.0F)

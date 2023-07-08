@@ -54,8 +54,8 @@ class SnapshotService : Service() {
             snapshotAlive = nbt["Alive"].toBoolean()
             snapshotKills = nbt["Kills"].toInt()
             snapshotDeaths = nbt["Deaths"].toInt()
-            snapshotPosition = nbt["Position"].toBlockPos().toCenterPos()
-            snapshotInventory = Inventories.fromNbt(nbt["Inventory"].asCompound())
+            snapshotPosition = nbt["Position"]?.let { it.toBlockPos().toCenterPos() }
+            snapshotInventory = nbt["Inventory"]?.let { Inventories.fromNbt(it.asCompound()) }
         }
 
         fun toNbt() = nbtCompoundOf(
@@ -64,7 +64,7 @@ class SnapshotService : Service() {
             "Alive" to snapshotAlive,
             "Kills" to snapshotKills,
             "Deaths" to snapshotDeaths,
-            "Position" to BlockPos.ofFloored(snapshotPosition),
+            "Position" to snapshotPosition?.let(BlockPos::ofFloored),
             "Inventory" to snapshotInventory,
         )
     }

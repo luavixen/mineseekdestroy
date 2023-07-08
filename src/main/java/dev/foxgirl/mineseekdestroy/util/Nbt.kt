@@ -97,9 +97,9 @@ fun toNbtElement(value: Any?): NbtElement {
         else -> {
             val clazz = value::class.java
             try {
-                val method = clazz.getDeclaredMethod("toNbt")
-                method.setAccessible(true)
-                method.invoke(value) as NbtElement
+                val method = clazz.getDeclaredMethod("toNbt").apply { setAccessible(true) }
+                val result = method.invoke(value)
+                toNbtElement(result)
             } catch (cause: Exception) {
                 throw IllegalArgumentException("Cannot convert class ${clazz.simpleName} to NbtElement", cause)
             }
