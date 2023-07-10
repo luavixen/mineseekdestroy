@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Position
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.listDirectoryEntries
 
 class SnapshotService : Service() {
 
@@ -137,8 +138,12 @@ class SnapshotService : Service() {
         console.sendInfo("Created snapshot of ${snapshot.players.size} players")
     }
 
-    fun executeSnapshotLoadBackup(console: Console, name: String) {
-        val path = Game.CONFIGDIR.resolve(name)
+    fun executeSnapshotLoadBackup(console: Console, name: String?) {
+        val path = if (name != null) {
+            Game.CONFIGDIR.resolve(name)
+        } else {
+            Game.CONFIGDIR.listDirectoryEntries("mnsnd-snapshot-").minOf { it }
+        }
         try {
             val nbt = NbtIo.read(path.toFile())!!
             val snapshots = nbt["Snapshots"].asList().map { Snapshot(context, it.asCompound()) }

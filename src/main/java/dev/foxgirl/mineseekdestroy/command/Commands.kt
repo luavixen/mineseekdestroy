@@ -166,9 +166,14 @@ internal fun setup() {
                 context.snapshotService.executeSnapshotRestore(args)
             }
         }
-        it.params(argLiteral("loadbackup"), argString("name")) {
+        it.params(argLiteral("loadbackup")) {
+            it.params(argGreedyString("name")) {
+                it.actionWithContext { args, context ->
+                    context.snapshotService.executeSnapshotLoadBackup(args, args["name"])
+                }
+            }
             it.actionWithContext { args, context ->
-                context.snapshotService.executeSnapshotLoadBackup(args, args["name"])
+                context.snapshotService.executeSnapshotLoadBackup(args, null)
             }
         }
     }

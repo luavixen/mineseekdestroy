@@ -18,6 +18,8 @@ accessible method net/minecraft/nbt/NbtList <init> (Ljava/util/List;B)V
 accessible method net/minecraft/nbt/NbtCompound <init> (Ljava/util/Map;)V
 
 accessible method net/minecraft/util/collection/DefaultedList <init> (Ljava/util/List;Ljava/lang/Object;)V
+accessible field net/minecraft/util/collection/DefaultedList delegate Ljava/util/List;
+accessible field net/minecraft/util/collection/DefaultedList initialElement Ljava/lang/Object;
 
 accessible field net/minecraft/network/packet/s2c/play/EntityEquipmentUpdateS2CPacket id I
 accessible field net/minecraft/network/packet/s2c/play/EntityEquipmentUpdateS2CPacket equipmentList Ljava/util/List;
