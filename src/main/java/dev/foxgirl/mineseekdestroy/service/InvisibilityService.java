@@ -3,7 +3,6 @@ package dev.foxgirl.mineseekdestroy.service;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameTeam;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityPositionS2CPacket;
-import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Fuck;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
@@ -124,7 +123,7 @@ public final class InvisibilityService extends Service {
         Objects.requireNonNull(packet, "Argument 'packet'");
         Objects.requireNonNull(targetEntity, "Argument 'targetEntity'");
 
-        if (getState() instanceof WaitingGameState) return null;
+        if (getState().isWaiting()) return null;
 
         if (getGame().isOperator(targetEntity) || !targetEntity.isAlive()) return null;
 

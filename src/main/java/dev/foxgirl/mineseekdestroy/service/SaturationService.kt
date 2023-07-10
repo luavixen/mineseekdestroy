@@ -1,11 +1,9 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.state.RunningGameState
-
 class SaturationService : Service() {
 
     override fun update() {
-        val running = state is RunningGameState
+        val running = state.isRunning
         for ((player, entity) in playerEntitiesNormal) {
             if (running && player.isPlayingOrGhost) continue
             if (entity.isDead || entity.isRemoved) continue

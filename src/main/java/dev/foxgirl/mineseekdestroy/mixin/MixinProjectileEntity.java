@@ -1,7 +1,6 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
-import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.thrown.EggEntity;
@@ -28,7 +27,7 @@ public abstract class MixinProjectileEntity {
         if (hitResult.getType() != HitResult.Type.ENTITY) return;
 
         var state = Game.getGame().getState();
-        if (state instanceof WaitingGameState) return;
+        if (state.isWaiting()) return;
 
         var context = Game.getGame().getContext();
         if (context != null) {

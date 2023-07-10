@@ -1,7 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.Broadcast
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
@@ -91,7 +90,7 @@ class SpecialPianoService : Service() {
     private val pianos = HashMap<BlockPos, Piano>()
 
     fun handleInteract(player: GamePlayer, pos: BlockPos): ActionResult {
-        if (state is RunningGameState && !(player.isAlive && player.isPlaying)) return ActionResult.PASS
+        if (state.isRunning && !(player.isAlive && player.isPlaying)) return ActionResult.PASS
 
         val piano1 = pianos[pos]
         if (piano1 != null) {

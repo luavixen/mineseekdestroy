@@ -31,6 +31,16 @@ public abstract class GameState {
 
     public abstract @NotNull String getName();
 
+    public final boolean isPlaying() {
+        return this instanceof PlayingGameState;
+    }
+    public final boolean isRunning() {
+        return this instanceof RunningGameState;
+    }
+    public final boolean isWaiting() {
+        return this instanceof WaitingGameState;
+    }
+
     protected @Nullable GameState onSetup(@NotNull GameContext context) {
         return null;
     }
@@ -71,7 +81,7 @@ public abstract class GameState {
         if (Game.getGame().isOperator(playerEntity)) {
             return true;
         }
-        if (context != null) {
+        if (context != null && isRunning()) {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             return player.isPlaying() && player.isAlive()
@@ -142,7 +152,7 @@ public abstract class GameState {
             if (player.isPlayingOrGhost() && player.isAlive()) {
                 var item = stack.getItem();
                 if (
-                    item instanceof BlockItem blockItem &&
+                    item instanceof BlockItem blockItem && isRunning() &&
                     Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
                     properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
                     properties.getRegionBlimp().excludes(blockHit.getBlockPos())
@@ -203,7 +213,7 @@ public abstract class GameState {
                 if (result != ActionResult.PASS) return result;
             }
             if (
-                player.isGhost() && player.isAlive() &&
+                player.isGhost() && player.isAlive() && isRunning() &&
                 !Game.UNSTEALABLE_BLOCKS.contains(blockState.getBlock()) &&
                 properties.getRegionPlayable().contains(pos) &&
                 properties.getRegionBlimp().excludes(pos)

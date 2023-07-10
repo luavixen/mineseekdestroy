@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy;
 
-import dev.foxgirl.mineseekdestroy.state.RunningGameState;
 import dev.foxgirl.mineseekdestroy.util.NbtKt;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -266,7 +265,7 @@ public final class GamePlayer {
             }
         }
 
-        if (isOnScoreboard() && !(isGhost() && Game.getGame().getState() instanceof RunningGameState)) {
+        if (isOnScoreboard() && !(isGhost() && Game.getGame().getState().isRunning())) {
             var playerKills = getKills();
             var playerScore = scoreboard.getPlayerScore(playerName, scoreboardObjective);
 

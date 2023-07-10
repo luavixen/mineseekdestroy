@@ -5,7 +5,6 @@ import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
-import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
@@ -799,7 +798,7 @@ class SpecialSummonsService : Service() {
 
     fun handleAltarOpen(player: GamePlayer, pos: BlockPos): ActionResult {
         if (!player.isOperator) {
-            if (state !is RunningGameState) return ActionResult.PASS
+            if (state.isWaiting) return ActionResult.PASS
             if (!player.isPlaying || !player.isAlive) return ActionResult.PASS
             if (!game.getRuleBoolean(Game.RULE_SUMMONS_ENABLED)) return ActionResult.PASS
         }

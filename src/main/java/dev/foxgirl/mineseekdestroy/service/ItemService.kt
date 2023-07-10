@@ -3,7 +3,6 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.Async
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
@@ -55,7 +54,7 @@ class ItemService : Service() {
     }
 
     override fun update() {
-        val running = state is RunningGameState
+        val running = state.isRunning
 
         for ((player, playerEntity) in playerEntitiesNormal) {
             if (running && player.isSpectator) continue

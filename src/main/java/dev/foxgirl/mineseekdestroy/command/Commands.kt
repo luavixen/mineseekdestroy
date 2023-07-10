@@ -274,7 +274,7 @@ internal fun setup() {
     Command.build("tp") {
         fun register(literal: String, position: () -> Position, region: () -> Region) {
             fun teleport(console: Console, players: List<GamePlayer>, all: Boolean, filter: (GamePlayer) -> Boolean = { true }) {
-                if (all && game.state is RunningGameState) {
+                if (all && game.state.isRunning) {
                     console.sendError("Cannot teleport all players while the game is running, use @a to force")
                     return
                 }

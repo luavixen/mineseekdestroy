@@ -4,7 +4,6 @@ import com.mojang.serialization.Lifecycle
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.state.PlayingGameState
 import dev.foxgirl.mineseekdestroy.util.Scheduler
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.Blocks
@@ -26,7 +25,7 @@ import java.util.*
 class GhostService : Service() {
 
     private fun updateGhosts() {
-        val running = state is PlayingGameState
+        val running = state.isPlaying
 
         for ((player, playerEntity) in playerEntitiesNormal) {
 
@@ -75,7 +74,7 @@ class GhostService : Service() {
             schedule = Scheduler.delay(1.0) { schedule = null }
             updateGhosts()
         }
-        if (state is PlayingGameState) {
+        if (state.isPlaying) {
             for ((player, playerEntity) in playerEntitiesNormal) {
                 if (player.isGhost) {
                     playerEntitiesIn.values.forEach {

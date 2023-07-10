@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.command.Command;
 import dev.foxgirl.mineseekdestroy.state.GameState;
-import dev.foxgirl.mineseekdestroy.state.PlayingGameState;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Editor;
@@ -588,7 +587,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         playerEntity.kill();
                         playerEntity.setHealth(0.0F);
                     });
-                } else if (context != null && getState() instanceof PlayingGameState) {
+                } else if (context != null && getState().isPlaying()) {
                     var player = context.getPlayer(playerEntity);
                     if (
                         player.isPlaying() && player.isAlive() &&

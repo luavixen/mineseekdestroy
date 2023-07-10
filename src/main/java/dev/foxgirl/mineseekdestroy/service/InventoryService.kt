@@ -1,7 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.state.RunningGameState
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.block.entity.ChestBlockEntity
@@ -44,7 +43,7 @@ class InventoryService : Service() {
     }
 
     override fun update() {
-        if (state is RunningGameState) {
+        if (state.isRunning) {
             for (player in players) mirrorUpdate(player)
         } else {
             for (player in players) mirrorReset(player)
