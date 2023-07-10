@@ -16,6 +16,10 @@ loom {
 
 repositories {
     mavenCentral()
+    maven {
+        name = 'ViaVersion'
+        url = uri 'https://repo.viaversion.com/'
+    }
 }
 
 configurations {
@@ -39,6 +43,8 @@ dependencies {
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_version}"
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${project.kotlin_version}"
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${project.kotlin_version}"
+
+    includeImplementation "com.viaversion:viaversion-api:${project.viaversion_version}"
 }
 
 java {

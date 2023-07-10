@@ -32,6 +32,10 @@ public abstract class MixinServerPlayNetworkHandler {
                 var replacement = context.glowService.handleTrackerUpdatePacket((EntityTrackerUpdateS2CPacket) packet, player);
                 if (replacement != null) return replacement;
             }
+            {
+                var replacement = context.armorService.handlePacket(packet, player);
+                if (replacement != null) return replacement;
+            }
         }
         return packet;
     }

@@ -16,3 +16,26 @@ accessible field net/minecraft/registry/SimpleRegistry frozen Z
 
 accessible method net/minecraft/nbt/NbtList <init> (Ljava/util/List;B)V
 accessible method net/minecraft/nbt/NbtCompound <init> (Ljava/util/Map;)V
+
+accessible method net/minecraft/util/collection/DefaultedList <init> (Ljava/util/List;Ljava/lang/Object;)V
+
+accessible field net/minecraft/network/packet/s2c/play/EntityEquipmentUpdateS2CPacket id I
+accessible field net/minecraft/network/packet/s2c/play/EntityEquipmentUpdateS2CPacket equipmentList Ljava/util/List;
+mutable field net/minecraft/network/packet/s2c/play/EntityEquipmentUpdateS2CPacket id I
+mutable field net/minecraft/network/packet/s2c/play/EntityEquipmentUpdateS2CPacket equipmentList Ljava/util/List;
+accessible field net/minecraft/network/packet/s2c/play/InventoryS2CPacket syncId I
+accessible field net/minecraft/network/packet/s2c/play/InventoryS2CPacket revision I
+accessible field net/minecraft/network/packet/s2c/play/InventoryS2CPacket contents Ljava/util/List;
+accessible field net/minecraft/network/packet/s2c/play/InventoryS2CPacket cursorStack Lnet/minecraft/item/ItemStack;
+mutable field net/minecraft/network/packet/s2c/play/InventoryS2CPacket syncId I
+mutable field net/minecraft/network/packet/s2c/play/InventoryS2CPacket revision I
+mutable field net/minecraft/network/packet/s2c/play/InventoryS2CPacket contents Ljava/util/List;
+mutable field net/minecraft/network/packet/s2c/play/InventoryS2CPacket cursorStack Lnet/minecraft/item/ItemStack;
+accessible field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket syncId I
+accessible field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket revision I
+accessible field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket slot I
+accessible field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket stack Lnet/minecraft/item/ItemStack;
+mutable field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket syncId I
+mutable field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket revision I
+mutable field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket slot I
+mutable field net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket stack Lnet/minecraft/item/ItemStack;

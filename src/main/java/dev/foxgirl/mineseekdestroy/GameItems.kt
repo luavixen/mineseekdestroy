@@ -290,6 +290,10 @@ object GameItems {
             }
         }
     }
+    @JvmStatic
+    fun replaceCopy(stack: ItemStack): ItemStack {
+        return stack.copy().also(::replace)
+    }
 
     val properties = immutableListOf<KProperty0<ItemStack>>(
         ::toolSkull, ::toolAxe, ::toolSword, ::toolShovel, ::toolPickaxe,

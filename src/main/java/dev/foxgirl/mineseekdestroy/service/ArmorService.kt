@@ -1,8 +1,10 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import com.viaversion.viaversion.api.Via
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
+import dev.foxgirl.mineseekdestroy.util.Fuck
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.Enchantments
@@ -11,8 +13,13 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.item.trim.*
+import net.minecraft.network.packet.Packet
+import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket
+import net.minecraft.network.packet.s2c.play.InventoryS2CPacket
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.DyeColor
 
 class ArmorService : Service() {
@@ -138,29 +145,6 @@ class ArmorService : Service() {
         )
     }
 
-    private fun armorSet(list: MutableList<ItemStack>, player: GamePlayer): Boolean {
-        val loadout = loadouts[player.team]!!
-        var dirty = false
-        for (i in list.indices) {
-            if (ItemStack.areEqual(list[i], loadout[i])) continue
-            list[i] = loadout[i].copy()
-            dirty = true
-        }
-        return dirty
-    }
-
-    private fun armorRemove(list: MutableList<ItemStack>): Boolean {
-        var dirty = false
-        for (i in list.indices) {
-            val stack = list[i]
-            val item = stack.item
-            if (item !is ArmorItem && item !== ELYTRA) continue
-            list[i] = ItemStack.EMPTY
-            dirty = true
-        }
-        return dirty
-    }
-
     override fun update() {
         for ((player, entity) in playerEntities) {
             if (game.isOperator(entity)) continue
@@ -189,6 +173,135 @@ class ArmorService : Service() {
                 inventory.markDirty()
             }
         }
+    }
+
+    private fun armorSet(list: MutableList<ItemStack>, player: GamePlayer): Boolean {
+        val loadout = loadouts[player.team]!!
+        var dirty = false
+        for (i in list.indices) {
+            if (ItemStack.areEqual(list[i], loadout[i])) continue
+            list[i] = loadout[i].copy()
+            dirty = true
+        }
+        return dirty
+    }
+
+    private fun armorRemove(list: MutableList<ItemStack>): Boolean {
+        var dirty = false
+        for (i in list.indices) {
+            val stack = list[i]
+            val item = stack.item
+            if (item !is ArmorItem && item !== ELYTRA) continue
+            list[i] = ItemStack.EMPTY
+            dirty = true
+        }
+        return dirty
+    }
+
+    fun handlePacket(packet: Packet<*>, playerEntity: ServerPlayerEntity): Packet<*>? {
+        if (!hasArmorTrimRenderingBug(playerEntity)) return null
+        return when (packet) {
+            is ScreenHandlerSlotUpdateS2CPacket -> handleSlotUpdatePacket(packet)
+            is EntityEquipmentUpdateS2CPacket -> handleEquipmentUpdatePacket(packet)
+            is InventoryS2CPacket -> handleInventoryPacket(packet)
+            else -> null
+        }
+    }
+
+    private companion object {
+
+        private fun hasArmorTrimRenderingBug(playerEntity: ServerPlayerEntity): Boolean {
+            return try {
+                Via.getAPI().getPlayerVersion(playerEntity.uuid) <= 762
+            } catch (cause: IllegalArgumentException) {
+                false
+            }
+        }
+
+        private fun handleSlotUpdatePacket(packet1: ScreenHandlerSlotUpdateS2CPacket): ScreenHandlerSlotUpdateS2CPacket? {
+            if (removeArmorTrimsCheck(packet1.stack)) {
+                return Fuck.create(ScreenHandlerSlotUpdateS2CPacket::class.java).apply {
+                    syncId = packet1.syncId
+                    revision = packet1.revision
+                    slot = packet1.slot
+                    stack = removeArmorTrimsApply(packet1.stack)
+                }
+            }
+            return null
+        }
+        private fun handleEquipmentUpdatePacket(packet1: EntityEquipmentUpdateS2CPacket): EntityEquipmentUpdateS2CPacket? {
+            return removeArmorTrimsFromPacket(
+                packet1,
+                { entry -> entry.second },
+                { entry, stack -> com.mojang.datafixers.util.Pair(entry.first, stack) },
+                { packet2 -> packet2.equipmentList },
+                { packet2, list ->
+                    Fuck.create(EntityEquipmentUpdateS2CPacket::class.java).apply {
+                        id = packet2.id
+                        equipmentList = list
+                    }
+                },
+            )
+        }
+        private fun handleInventoryPacket(packet1: InventoryS2CPacket): InventoryS2CPacket? {
+            return removeArmorTrimsFromPacket(
+                packet1,
+                { stack -> stack },
+                { _, stack -> stack },
+                { packet2 -> packet2.contents },
+                { packet2, list ->
+                    Fuck.create(InventoryS2CPacket::class.java).apply {
+                        syncId = packet2.syncId
+                        revision = packet2.revision
+                        contents = list
+                        cursorStack = packet2.cursorStack.let { if (removeArmorTrimsCheck(it)) removeArmorTrimsApply(it) else it }
+                    }
+                },
+            )
+        }
+
+        private fun removeArmorTrimsCheck(stack: ItemStack?): Boolean {
+            if (stack != null) {
+                val nbt = stack.nbt
+                return nbt != null && nbt.contains("Trim")
+            }
+            return false
+        }
+
+        private fun removeArmorTrimsApply(stack: ItemStack): ItemStack {
+            return stack.copy().apply { nbt?.remove("Trim") }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        private inline fun <T> removeArmorTrims(list: List<T>, getStack: (T) -> ItemStack, updateStack: (T, ItemStack) -> T): List<T>? {
+            for ((i1, value) in list.withIndex()) {
+                val stack1 = getStack(value)
+                if (removeArmorTrimsCheck(stack1)) {
+                    val array = (list as java.util.Collection<T>).toArray() as Array<T>
+                    array[i1] = updateStack(array[i1], removeArmorTrimsApply(stack1))
+                    for (i2 in (i1 + 1) until array.size) {
+                        val stack2 = getStack(array[i2])
+                        if (removeArmorTrimsCheck(stack2)) {
+                            array[i2] = updateStack(array[i2], removeArmorTrimsApply(stack2))
+                        }
+                    }
+                    return array.asList()
+                }
+            }
+            return null
+        }
+
+        private inline fun <T, P : Packet<*>> removeArmorTrimsFromPacket(
+            packet: P,
+            getStack: (T) -> ItemStack,
+            updateStack: (T, ItemStack) -> T,
+            getPacketList: (P) -> List<T>,
+            updatePacketList: (P, List<T>) -> P,
+        ): P? {
+            val list = removeArmorTrims(getPacketList(packet), getStack, updateStack)
+            return if (list != null) updatePacketList(packet, list) else null
+        }
+
     }
 
 }
