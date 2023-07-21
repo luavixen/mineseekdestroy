@@ -368,36 +368,41 @@ sealed interface GameProperties {
 
         override val positionSpawn = BlockPos(67, -3, -1149)
 
-        override val positionBlimp = Vec3d(0.0, 0.0, 0.0)
-        override val positionArena = Vec3d(0.0, 0.0, 0.0)
+        override val positionBlimp = Vec3d(-9.5, 49.0, -1147.5)
+        override val positionArena = Vec3d(67.5, -3.0, -1148.5)
         override val positionDuel1 = Vec3d(15.5, -3.0, -1251.5)
         override val positionDuel2 = Vec3d(-36.5, -3.0, -1251.5)
         override val positionHell = Vec3d(67.5, -65536.0, -1148.5)
 
-        override val templateInventory = BlockPos(0, 0, 0)
-        override val templateLoottable = BlockPos(0, 0, 0)
+        override val templateInventory = BlockPos(6, 49, -1149)
+        override val templateLoottable = BlockPos(8, 49, -1149)
 
         override val regionAll = Region(BlockPos(159, -30, -1328), BlockPos(-152, 100, -1065))
         override val regionLegal = Region(BlockPos(159, -30, -1328), BlockPos(-152, 65536, -1065))
         override val regionPlayable = Region(BlockPos(159, -30, -1328), BlockPos(-152, 100, -1065))
-        override val regionBlimp = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBlimp = Region(BlockPos(-42, 68, -1168), BlockPos(35, 48, -1129))
         override val regionBarrierArenaTarget = Region(BlockPos(-47, 1, -1269), BlockPos(25, -3, -1235))
         override val regionBarrierArenaTemplate = Region(BlockPos(26, 9, -595), BlockPos(-46, 5, -629))
-        override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
-        override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
-        override val regionBarrierBlimpAdditions = listOf<Region>()
-        override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpTarget = Region(BlockPos(1, 47, -1155), BlockPos(-24, 55, -1141))
+        override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
+        override val regionBarrierBlimpAdditions = immutableListOf(
+            Region(BlockPos(-110, 51, -1252), BlockPos(-108, 51, -1250)),
+            Region(BlockPos(66, 51, -1246), BlockPos(68, 51, -1244)),
+        )
+        override val regionFlood = Region(BlockPos(159, -16, -1328), BlockPos(-152, -2, -1065))
 
-        override val borderSize = 0.0
-        override val borderCenter = Vec3d(0.0, 0.0, 0.0)
+        override val borderSize = 275.0
+        override val borderCenter = Vec3d(4.5, 17.0, -1193.5)
 
         override val interactableBlocks = (Empty.interactableBlocks + setOf(
+            ACACIA_DOOR, BAMBOO_DOOR, BIRCH_DOOR, CHERRY_DOOR, CRIMSON_DOOR,
+            DARK_OAK_DOOR, JUNGLE_DOOR, MANGROVE_DOOR, OAK_DOOR, SPRUCE_DOOR,
+            WARPED_DOOR,
         )).toImmutableSet()
 
         override val inflammableBlocks = (Empty.inflammableBlocks + setOf(
-            SMOOTH_STONE, STONE, ANDESITE, COBBLESTONE,
-            WHITE_TERRACOTTA, LIME_TERRACOTTA, BLUE_TERRACOTTA, MAGENTA_TERRACOTTA,
-            BLACKSTONE,
+            SMOOTH_STONE, STONE, ANDESITE, COBBLESTONE, WHITE_TERRACOTTA,
+            LIME_TERRACOTTA, BLUE_TERRACOTTA, MAGENTA_TERRACOTTA, BLACKSTONE,
         )).toImmutableSet()
 
     }
