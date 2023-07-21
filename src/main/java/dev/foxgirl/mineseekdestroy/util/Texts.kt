@@ -8,12 +8,9 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import java.lang.invoke.MethodHandle
 
 fun text(): MutableText = Text.empty()
 fun text(string: String): MutableText = Text.literal(string)
-
-private val getDisplayNameHandles = HashMap<Class<*>, MethodHandle>()
 
 fun text(value: Any?): MutableText {
     if (value == null) {
@@ -25,9 +22,9 @@ fun text(value: Any?): MutableText {
     if (value is String) {
         return value.asText()
     }
-    val handle = Reflector.methodHandle("getDisplayName", value::class.java)
+    val handle = Reflector.methodHandle(value::class.java, "getDisplayName")
     if (handle != null) {
-        return text(handle.invoke(value))
+        return (handle.invoke(value) as Text).copy()
     }
     return value.toString().asText()
 }

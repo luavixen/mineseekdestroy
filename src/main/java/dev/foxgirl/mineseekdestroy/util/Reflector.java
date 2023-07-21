@@ -24,8 +24,8 @@ public final class Reflector {
     private static final Unsafe UNSAFE;
     private static final MethodHandles.Lookup LOOKUP;
 
-    private static final Method METHOD_setAccessible0;
-    private static final Method METHOD_implAddExportsOrOpens;
+    private static final MethodHandle HANDLE_setAccessible0;
+    private static final MethodHandle HANDLE_implAddExportsOrOpens;
 
     static {
         try {
@@ -38,16 +38,19 @@ public final class Reflector {
             var moduleFieldOffset = UNSAFE.objectFieldOffset(moduleField);
             UNSAFE.putObject(Reflector.class, moduleFieldOffset, Object.class.getModule()); // We're the java.lang module now :3
 
-            METHOD_setAccessible0 = AccessibleObject.class.getDeclaredMethod("setAccessible0", boolean.class);
-            METHOD_setAccessible0.setAccessible(true);
+            var setAccessible0Method = AccessibleObject.class.getDeclaredMethod("setAccessible0", boolean.class);
+            setAccessible0Method.setAccessible(true);
 
-            METHOD_implAddExportsOrOpens = Module.class.getDeclaredMethod("implAddExportsOrOpens", String.class, Module.class, boolean.class, boolean.class);
-            METHOD_setAccessible0.invoke(METHOD_implAddExportsOrOpens, true);
+            var implAddExportsOrOpensMethod = Module.class.getDeclaredMethod("implAddExportsOrOpens", String.class, Module.class, boolean.class, boolean.class);
+            setAccessible0Method.invoke(implAddExportsOrOpensMethod, true);
 
             var lookupField = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
-            METHOD_setAccessible0.invoke(lookupField, true);
+            setAccessible0Method.invoke(lookupField, true);
 
             LOOKUP = (MethodHandles.Lookup) lookupField.get(null);
+
+            HANDLE_setAccessible0 = LOOKUP.unreflect(setAccessible0Method);
+            HANDLE_implAddExportsOrOpens = LOOKUP.unreflect(implAddExportsOrOpensMethod);
         } catch (Exception cause) {
             throw new RuntimeException("Reflector JVM manipulation failed", cause);
         }
@@ -100,8 +103,8 @@ public final class Reflector {
     public static <T extends AccessibleObject> @NotNull T forceAccessible(@NotNull T object) {
         Objects.requireNonNull(object, "Argument 'object'");
         try {
-            METHOD_setAccessible0.invoke(object, true);
-        } catch (ReflectiveOperationException cause) {
+            HANDLE_setAccessible0.invoke(object, true);
+        } catch (Throwable cause) {
             throw new RuntimeException(cause);
         }
         return object;
@@ -120,8 +123,13 @@ public final class Reflector {
         Objects.requireNonNull(accessor, "Argument 'accessor'");
         Objects.requireNonNull(target, "Argument 'target'");
         try {
-            METHOD_implAddExportsOrOpens.invoke(target.getModule(), target.getPackageName(), accessor.getModule(), true, true);
-        } catch (ReflectiveOperationException cause) {
+            HANDLE_implAddExportsOrOpens.invoke(
+                target.getModule(),
+                target.getPackageName(),
+                accessor.getModule(),
+                true, true
+            );
+        } catch (Throwable cause) {
             throw new RuntimeException(cause);
         }
     }
@@ -129,25 +137,33 @@ public final class Reflector {
     private static final class MethodKey {
         private static final Class<?>[] PARAMS_EMPTY = new Class[0];
 
-        final String name;
-        final Class<?> clazz;
-        final Class<?>[] params;
+        private final Class<?> clazz;
+        private final String name;
+
+        private Class<?>[] params;
 
         private final int hash;
 
-        MethodKey(String name, Class<?> clazz, Class<?>[] params) {
-            this.name = name;
-            this.clazz = clazz;
+        MethodKey(Class<?> clazz, String name, Class<?>[] params) {
+            int hash = 31 * clazz.hashCode() + name.hashCode();
             if (params == null || params.length == 0) {
-                this.params = params = PARAMS_EMPTY;
+                params = PARAMS_EMPTY;
             } else {
-                this.params = params = params.clone();
+                for (Class<?> param : params) {
+                    hash = 31 * hash + param.hashCode();
+                }
             }
-            int hash = 31 * name.hashCode() + clazz.hashCode();
-            for (Class<?> param : params) {
-                hash = 31 * hash + param.hashCode();
-            }
+            this.clazz = clazz;
+            this.name = name;
+            this.params = params;
             this.hash = hash;
+        }
+
+        private MethodKey trust() {
+            if (params != PARAMS_EMPTY) {
+                params = params.clone();
+            }
+            return this;
         }
 
         @Override
@@ -161,8 +177,8 @@ public final class Reflector {
             if (object == null || object.getClass() != MethodKey.class) return false;
             var other = (MethodKey) object;
             return hash == other.hash
-                && name.equals(other.name)
-                && clazz.equals(other.clazz)
+                && clazz == other.clazz
+                && Objects.equals(name, other.name)
                 && Arrays.equals(params, other.params);
         }
     }
@@ -173,18 +189,18 @@ public final class Reflector {
      * Creates a {@link MethodHandle} by looking up a (possibly private or
      * access-restricted) method in the given class that takes the given
      * parameters.
-     * @param name Method name.
      * @param clazz Method class.
+     * @param name Method name.
      * @param params Method parameters.
      * @return
      *   Created {@link MethodHandle} or null if the method could not be found.
      * @throws RuntimeException If the operation fails.
      * @throws NullPointerException If any arguments are null.
      */
-    public static @Nullable MethodHandle methodHandle(@NotNull String name, @NotNull Class<?> clazz, @NotNull Class<?>... params) {
-        Objects.requireNonNull(name, "Argument 'name'");
+    public static @Nullable MethodHandle methodHandle(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<?>... params) {
         Objects.requireNonNull(clazz, "Argument 'clazz'");
-        var key = new MethodKey(name, clazz, params);
+        Objects.requireNonNull(name, "Argument 'name'");
+        var key = new MethodKey(clazz, name, params);
         synchronized (HANDLES) {
             var handle = HANDLES.get(key);
             if (handle == null) {
@@ -199,10 +215,24 @@ public final class Reflector {
                 } catch (IllegalAccessException cause) {
                     throw new RuntimeException(cause);
                 }
-                HANDLES.put(key, handle);
+                HANDLES.put(key.trust(), handle);
             }
             return handle;
         }
+    }
+
+    /**
+     * Creates a {@link MethodHandle} by looking up a (possibly private or
+     * access-restricted) method in the given class that takes no parameters.
+     * @param clazz Method class.
+     * @param name Method name.
+     * @return
+     *   Created {@link MethodHandle} or null if the method could not be found.
+     * @throws RuntimeException If the operation fails.
+     * @throws NullPointerException If any arguments are null.
+     */
+    public static @Nullable MethodHandle methodHandle(@NotNull Class<?> clazz, @NotNull String name) {
+        return methodHandle(clazz, name, (Class<?>[]) null);
     }
 
 }
