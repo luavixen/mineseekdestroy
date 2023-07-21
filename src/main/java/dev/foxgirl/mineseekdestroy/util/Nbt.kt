@@ -96,13 +96,9 @@ fun toNbtElement(value: Any?): NbtElement {
         is Map<*, *> -> toNbtCompound(value)
         else -> {
             val clazz = value::class.java
-            try {
-                val method = clazz.getDeclaredMethod("toNbt").apply { setAccessible(true) }
-                val result = method.invoke(value)
-                toNbtElement(result)
-            } catch (cause: Exception) {
-                throw IllegalArgumentException("Cannot convert class ${clazz.simpleName} to NbtElement", cause)
-            }
+            val handle = Reflector.methodHandle("toNbt", clazz)
+            if (handle == null) throw IllegalArgumentException("Cannot convert class ${clazz.simpleName} to NbtElement, missing toNbt method")
+            return toNbtElement(handle.invoke(value))
         }
     }
 }

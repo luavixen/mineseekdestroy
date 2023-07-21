@@ -8,14 +8,33 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.lang.invoke.MethodHandle
 
 fun text(): MutableText = Text.empty()
 fun text(string: String): MutableText = Text.literal(string)
 
+private val getDisplayNameHandles = HashMap<Class<*>, MethodHandle>()
+
+fun text(value: Any?): MutableText {
+    if (value == null) {
+        return text("null")
+    }
+    if (value is Text) {
+        return value.copy()
+    }
+    if (value is String) {
+        return value.asText()
+    }
+    val handle = Reflector.methodHandle("getDisplayName", value::class.java)
+    if (handle != null) {
+        return text(handle.invoke(value))
+    }
+    return value.toString().asText()
+}
 fun text(vararg values: Any?): MutableText {
     var message: MutableText? = null
     for (value in values) {
-        val part = if (value is Text) value.copy() else value.toString().asText()
+        val part = text(value)
         if (message == null) {
             message = part
         } else {
@@ -37,12 +56,12 @@ fun MutableText.format(vararg formatting: Formatting): MutableText {
     return this
 }
 
-fun MutableText.style(block: (Style) -> Style?): MutableText {
+inline fun MutableText.style(block: (Style) -> Style?): MutableText {
     val style = block(this.style)
     if (style != null) this.style = style
     return this
 }
-fun MutableText.styleParent(block: (Style) -> Style?): MutableText {
+inline fun MutableText.styleParent(block: (Style) -> Style?): MutableText {
     val style = block(this.style)
     if (style != null) this.style = this.style.withParent(style)
     return this

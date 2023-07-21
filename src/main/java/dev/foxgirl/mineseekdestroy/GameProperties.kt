@@ -362,4 +362,44 @@ sealed interface GameProperties {
 
     }
 
+    object Station : GameProperties {
+
+        override val name = "station"
+
+        override val positionSpawn = BlockPos(67, -3, -1149)
+
+        override val positionBlimp = Vec3d(0.0, 0.0, 0.0)
+        override val positionArena = Vec3d(0.0, 0.0, 0.0)
+        override val positionDuel1 = Vec3d(15.5, -3.0, -1251.5)
+        override val positionDuel2 = Vec3d(-36.5, -3.0, -1251.5)
+        override val positionHell = Vec3d(67.5, -65536.0, -1148.5)
+
+        override val templateInventory = BlockPos(0, 0, 0)
+        override val templateLoottable = BlockPos(0, 0, 0)
+
+        override val regionAll = Region(BlockPos(159, -30, -1328), BlockPos(-152, 100, -1065))
+        override val regionLegal = Region(BlockPos(159, -30, -1328), BlockPos(-152, 65536, -1065))
+        override val regionPlayable = Region(BlockPos(159, -30, -1328), BlockPos(-152, 100, -1065))
+        override val regionBlimp = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierArenaTarget = Region(BlockPos(-47, 1, -1269), BlockPos(25, -3, -1235))
+        override val regionBarrierArenaTemplate = Region(BlockPos(26, 9, -595), BlockPos(-46, 5, -629))
+        override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpAdditions = listOf<Region>()
+        override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+
+        override val borderSize = 0.0
+        override val borderCenter = Vec3d(0.0, 0.0, 0.0)
+
+        override val interactableBlocks = (Empty.interactableBlocks + setOf(
+        )).toImmutableSet()
+
+        override val inflammableBlocks = (Empty.inflammableBlocks + setOf(
+            SMOOTH_STONE, STONE, ANDESITE, COBBLESTONE,
+            WHITE_TERRACOTTA, LIME_TERRACOTTA, BLUE_TERRACOTTA, MAGENTA_TERRACOTTA,
+            BLACKSTONE,
+        )).toImmutableSet()
+
+    }
+
 }

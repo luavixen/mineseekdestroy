@@ -4,7 +4,7 @@ import com.viaversion.viaversion.api.Via
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
-import dev.foxgirl.mineseekdestroy.util.Fuck
+import dev.foxgirl.mineseekdestroy.util.Reflector
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.dataDisplay
 import dev.foxgirl.mineseekdestroy.util.set
@@ -223,7 +223,7 @@ class ArmorService : Service() {
 
     private fun handleSlotUpdatePacket(packet1: ScreenHandlerSlotUpdateS2CPacket): ScreenHandlerSlotUpdateS2CPacket? {
         if (removeArmorTrimsCheck(packet1.stack)) {
-            return Fuck.create(ScreenHandlerSlotUpdateS2CPacket::class.java).apply {
+            return Reflector.create(ScreenHandlerSlotUpdateS2CPacket::class.java).apply {
                 syncId = packet1.syncId
                 revision = packet1.revision
                 slot = packet1.slot
@@ -239,7 +239,7 @@ class ArmorService : Service() {
             { entry, stack -> com.mojang.datafixers.util.Pair(entry.first, stack) },
             { packet2 -> packet2.equipmentList },
             { packet2, list ->
-                Fuck.create(EntityEquipmentUpdateS2CPacket::class.java).apply {
+                Reflector.create(EntityEquipmentUpdateS2CPacket::class.java).apply {
                     id = packet2.id
                     equipmentList = list
                 }
@@ -253,7 +253,7 @@ class ArmorService : Service() {
             { _, stack -> stack },
             { packet2 -> (packet2.contents as DefaultedList<ItemStack>).delegate },
             { packet2, list ->
-                Fuck.create(InventoryS2CPacket::class.java).apply {
+                Reflector.create(InventoryS2CPacket::class.java).apply {
                     syncId = packet2.syncId
                     revision = packet2.revision
                     contents = list

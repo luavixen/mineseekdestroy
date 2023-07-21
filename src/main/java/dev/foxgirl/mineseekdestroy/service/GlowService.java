@@ -3,7 +3,7 @@ package dev.foxgirl.mineseekdestroy.service;
 import com.google.common.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntity;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityTrackerUpdateS2CPacket;
-import dev.foxgirl.mineseekdestroy.util.Fuck;
+import dev.foxgirl.mineseekdestroy.util.Reflector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -22,7 +22,7 @@ public final class GlowService extends Service {
     private static final TrackedData<Byte> FLAGS = MixinEntity.mineseekdestroy$getFLAGS();
 
     private static EntityTrackerUpdateS2CPacket createPacket(int id, List<DataTracker.SerializedEntry<?>> values) {
-        var packet = Fuck.create(EntityTrackerUpdateS2CPacket.class);
+        var packet = Reflector.create(EntityTrackerUpdateS2CPacket.class);
         var access = (MixinEntityTrackerUpdateS2CPacket) (Object) packet;
         access.mineseekdestroy$setId(id);
         access.mineseekdestroy$setTrackedValues(values);

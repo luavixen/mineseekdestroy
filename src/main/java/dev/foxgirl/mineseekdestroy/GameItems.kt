@@ -1,7 +1,7 @@
 package dev.foxgirl.mineseekdestroy
 
+import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theologies
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
-import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.TheologyPair
 import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableMap
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
@@ -229,13 +229,13 @@ object GameItems {
     val summonSteak = stackOf(
         COOKED_BEEF, null,
         text("funnest to eat!"),
-        text("was gained through ") + TheologyPair(COSMOS, BARTER).displayName,
+        text("was gained through ") + Theologies(COSMOS, BARTER).displayName,
     )
     @JvmStatic
     val summonGoldenSword = stackOf(
         GOLDEN_SWORD, null,
         text("will mostly kill someone!"),
-        text("was gained through ") + TheologyPair(OCCULT, BARTER).displayName,
+        text("was gained through ") + Theologies(OCCULT, BARTER).displayName,
     ).apply {
         addEnchantment(Enchantments.SHARPNESS, 15)
         setDamage(32)
@@ -244,26 +244,26 @@ object GameItems {
     val summonBlueIce = stackOf(
         BLUE_ICE, null,
         text("its... its just normal ice i swear"),
-        text("was gained through ") + TheologyPair(FLAME, BARTER).displayName,
+        text("was gained through ") + Theologies(FLAME, BARTER).displayName,
     )
     @JvmStatic
     val summonWaterBucket = stackOf(
         WATER_BUCKET, null,
         text("wotor"),
-        text("was gained through ") + TheologyPair(DEEP, FLAME).displayName,
+        text("was gained through ") + Theologies(DEEP, FLAME).displayName,
     )
     @JvmStatic
     val summonChippedAnvil = stackOf(
         CHIPPED_ANVIL, null,
         text("forge this block onto the HEADS OF YOUR ENEMIES!"),
-        text("was gained through ") + TheologyPair(DEEP, FLAME).displayName,
+        text("was gained through ") + Theologies(DEEP, FLAME).displayName,
     )
     @JvmStatic
     val summonCompass = stackOf(
         COMPASS, null,
         text("this item randomly selects an opp. player and tracks em!"),
         text("every compass currently in play tracks a different player!"),
-        text("was gained through ") + TheologyPair(DEEP, OCCULT).displayName,
+        text("was gained through ") + Theologies(DEEP, OCCULT).displayName,
     )
 
     @JvmStatic

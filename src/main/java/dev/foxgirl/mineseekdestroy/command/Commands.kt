@@ -51,6 +51,7 @@ internal fun setup() {
             register(GameProperties.Radiator.name) { GameProperties.Radiator }
             register(GameProperties.Realm.name) { GameProperties.Realm }
             register(GameProperties.Lights.name) { GameProperties.Lights }
+            register(GameProperties.Station.name) { GameProperties.Station }
         }
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->
@@ -540,7 +541,7 @@ internal fun setup() {
                         null
                     }
 
-                val kind = SpecialSummonsService.TheologyPair(
+                val kind = SpecialSummonsService.Theologies(
                     theologyOf(args["theology1"]) ?: return@actionWithContext,
                     theologyOf(args["theology2"]) ?: return@actionWithContext,
                 )

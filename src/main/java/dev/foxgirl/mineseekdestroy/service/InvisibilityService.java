@@ -4,7 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameTeam;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityPositionS2CPacket;
 import dev.foxgirl.mineseekdestroy.util.Console;
-import dev.foxgirl.mineseekdestroy.util.Fuck;
+import dev.foxgirl.mineseekdestroy.util.Reflector;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
@@ -110,7 +110,7 @@ public final class InvisibilityService extends Service {
 
     private static EntityPositionS2CPacket createInvisiblePositionPacket(int id) {
         var position = Game.getGameProperties().getPositionHell();
-        var packet = Fuck.create(EntityPositionS2CPacket.class);
+        var packet = Reflector.create(EntityPositionS2CPacket.class);
         var access = (MixinEntityPositionS2CPacket) packet;
         access.mineseekdestroy$setId(id);
         access.mineseekdestroy$setX(position.getX());

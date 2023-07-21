@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Reflector
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -10,7 +11,6 @@ import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.passive.PigEntity
 import net.minecraft.util.math.Vec3d
 import java.lang.invoke.MethodHandle
-import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 
 class SpecialCarService : Service() {
@@ -61,9 +61,9 @@ class SpecialCarService : Service() {
     private companion object {
 
         private val handleCooldownIsReady: MethodHandle =
-            MethodHandles.lookup().findVirtual(PigEntity::class.java, "mineseekdestroy\$cooldownIsReady", MethodType.methodType(Boolean::class.javaPrimitiveType))
+            Reflector.lookup().findVirtual(PigEntity::class.java, "mineseekdestroy\$cooldownIsReady", MethodType.methodType(Boolean::class.javaPrimitiveType))
         private val handleCooldownActivate: MethodHandle =
-            MethodHandles.lookup().findVirtual(PigEntity::class.java, "mineseekdestroy\$cooldownActivate", MethodType.methodType(Void::class.javaPrimitiveType))
+            Reflector.lookup().findVirtual(PigEntity::class.java, "mineseekdestroy\$cooldownActivate", MethodType.methodType(Void::class.javaPrimitiveType))
 
     }
 

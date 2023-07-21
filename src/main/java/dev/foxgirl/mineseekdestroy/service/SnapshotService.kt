@@ -75,6 +75,27 @@ class SnapshotService : Service() {
             : this(nbt["Players"].asList().map { SnapshotPlayer(context, it.asCompound()) })
 
         fun toNbt() = nbtCompoundOf("Players" to players)
+
+        fun restore() {
+            players.forEach {
+                it.player.team = it.snapshotTeam
+                it.player.isAlive = it.snapshotAlive
+                it.player.kills = it.snapshotKills
+                it.player.deaths = it.snapshotDeaths
+                if (it.snapshotPosition != null) {
+                    it.player.teleport(it.snapshotPosition)
+                }
+                if (it.snapshotInventory != null) {
+                    val source = it.snapshotInventory
+                    val target = it.player.inventory
+                    if (target != null) {
+                        Inventories.copy(source, target)
+                    }
+                }
+            }
+
+            Game.getGame().state = WaitingGameState()
+        }
     }
 
     private val snapshots = mutableListOf<Snapshot>()
@@ -96,26 +117,8 @@ class SnapshotService : Service() {
         if (snapshot == null) {
             console.sendError("Snapshot stack is empty, cannot restore")
         } else {
-            snapshot.players.forEach {
-                it.player.team = it.snapshotTeam
-                it.player.isAlive = it.snapshotAlive
-                it.player.kills = it.snapshotKills
-                it.player.deaths = it.snapshotDeaths
-                if (it.snapshotPosition != null) {
-                    it.player.teleport(it.snapshotPosition)
-                }
-                if (it.snapshotInventory != null) {
-                    val source = it.snapshotInventory
-                    val target = it.player.inventory
-                    if (target != null) {
-                        Inventories.copy(source, target)
-                    }
-                }
-            }
-
-            state = WaitingGameState()
+            snapshot.restore()
             context.barrierService.executeBlimpClose(console)
-
             console.sendInfo("Restored snapshot of ${snapshot.players.size} players")
         }
     }
@@ -142,7 +145,7 @@ class SnapshotService : Service() {
         val path = if (name != null) {
             Game.CONFIGDIR.resolve(name)
         } else {
-            Game.CONFIGDIR.listDirectoryEntries("mnsnd-snapshot-").minOf { it }
+            Game.CONFIGDIR.listDirectoryEntries("mnsnd-snapshot-*").maxOf { it }
         }
         try {
             val nbt = NbtIo.read(path.toFile())!!
@@ -151,10 +154,16 @@ class SnapshotService : Service() {
             this.snapshots.clear()
             this.snapshots.addAll(snapshots)
 
-            console.sendInfo("Successfully restored ${snapshots.size} entries from snapshot list backup")
+            console.sendInfo("Successfully loaded ${snapshots.size} entries from snapshot list backup")
+
+            val snapshot = snapshots.lastOrNull()
+            if (snapshot != null) {
+                snapshot.restore()
+                console.sendInfo("Restored last snapshot of ${snapshot.players.size} players")
+            }
         } catch (cause : Exception) {
-            console.sendError("Failed to restore snapshot list backup")
-            logger.error("Failed to restore snapshot list backup ${name}", cause)
+            console.sendError("Failed to load snapshot list backup")
+            logger.error("Failed to load snapshot list backup ${name}", cause)
         }
     }
 
