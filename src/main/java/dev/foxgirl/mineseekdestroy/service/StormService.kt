@@ -8,7 +8,7 @@ class StormService : Service() {
 
     private val border: WorldBorder get() = world.worldBorder
 
-    private val sizeMin: Double = 8.0
+    private val sizeMin: Double = 10.0
     private val sizeMax: Double = WorldBorder.STATIC_AREA_SIZE
     private val sizeCurrent get() = properties.borderSize
 
