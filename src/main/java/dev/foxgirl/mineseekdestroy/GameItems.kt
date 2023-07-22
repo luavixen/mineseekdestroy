@@ -191,7 +191,7 @@ object GameItems {
             TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("strong_healing")),
             text("Arrow of the ") + OCCULT.displayName,
             withDeep() + text("receive a ") + text("player-tracking compass").bold() + "!",
-            withOccult() + text("damage your opps and save all black players").format(OCCULT.color) + "!",
+            withOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "!",
             withCosmos() + text("gain night vision and blind your opponents!"),
             withBarter() + text("receive an OP sword!"),
             withFlame() + text("spawn ") + text("3 ghasts").bold() + "!",
