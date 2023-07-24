@@ -59,15 +59,22 @@ class SnapshotService : Service() {
             snapshotInventory = nbt["Inventory"]?.let { Inventories.fromNbt(it.asCompound()) }
         }
 
-        fun toNbt() = nbtCompoundOf(
-            "Player" to player,
-            "Team" to snapshotTeam.name,
-            "Alive" to snapshotAlive,
-            "Kills" to snapshotKills,
-            "Deaths" to snapshotDeaths,
-            "Position" to snapshotPosition?.let(BlockPos::ofFloored),
-            "Inventory" to snapshotInventory,
-        )
+        fun toNbt(): NbtCompound {
+            val nbt = nbtCompoundOf(
+                "Player" to player,
+                "Team" to snapshotTeam.name,
+                "Alive" to snapshotAlive,
+                "Kills" to snapshotKills,
+                "Deaths" to snapshotDeaths,
+            )
+            if (snapshotPosition != null) {
+                nbt["Position"] = toNbt(snapshotPosition.let(BlockPos::ofFloored))
+            }
+            if (snapshotInventory != null) {
+                nbt["Inventory"] = toNbt(snapshotInventory)
+            }
+            return nbt
+        }
     }
 
     private class Snapshot(val players: List<SnapshotPlayer>) {
@@ -145,7 +152,12 @@ class SnapshotService : Service() {
         val path = if (name != null) {
             Game.CONFIGDIR.resolve(name)
         } else {
-            Game.CONFIGDIR.listDirectoryEntries("mnsnd-snapshot-*").maxOf { it }
+            try {
+                Game.CONFIGDIR.listDirectoryEntries("mnsnd-snapshot-*").maxOf { it }
+            } catch (ignored: NoSuchElementException) {
+                console.sendError("No snapshot list backups available to load")
+                return
+            }
         }
         try {
             val nbt = NbtIo.read(path.toFile())!!

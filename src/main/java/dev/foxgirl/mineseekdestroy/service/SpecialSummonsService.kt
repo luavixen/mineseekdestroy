@@ -1149,7 +1149,7 @@ class SpecialSummonsService : Service() {
                 override val subtitle =
                     Text.empty()
                         .append(GameTeam.PLAYER_BLACK.displayName)
-                        .append(" gains many kills, halving everyone's health.")
+                        .append(" gains many kills, almost killing everyone else.")
                 override val tooltip =
                     Text.empty()
                         .append(GameTeam.PLAYER_BLACK.displayName)

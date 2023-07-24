@@ -154,6 +154,11 @@ internal fun setup() {
                 }
             }
         }
+        it.params(argLiteral("cleanloot")) {
+            it.actionWithContext { args, context ->
+                context.lootService.executeDebugClean(args)
+            }
+        }
     }
 
     Command.build("snapshot") {

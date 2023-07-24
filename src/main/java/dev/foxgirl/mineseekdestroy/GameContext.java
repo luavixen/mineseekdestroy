@@ -190,7 +190,7 @@ public final class GameContext {
         game.setRuleInt(GameRules.PLAYERS_SLEEPING_PERCENTAGE, 200);
         game.setRuleBoolean(GameRules.KEEP_INVENTORY, true);
         game.setRuleBoolean(GameRules.DO_FIRE_TICK, true);
-        game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
+        game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, true);
         game.setRuleBoolean(GameRules.DO_DAYLIGHT_CYCLE, true);
 
         game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true);
@@ -213,6 +213,7 @@ public final class GameContext {
         scoreboard.removeObjective(scoreboardHearts);
 
         game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
+        game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, false);
         game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, false);
 

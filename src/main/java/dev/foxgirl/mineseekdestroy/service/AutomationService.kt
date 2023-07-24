@@ -188,28 +188,7 @@ class AutomationService : Service() {
         val factoryPlayers = IpadNamedScreenHandlerFactory(inventoryPlayers)
         val factoryView = IpadNamedScreenHandlerFactory(inventoryView)
 
-        var commitSchedule: Scheduler.Schedule? = null
-        fun commit(): Boolean {
-            commitSchedule = null
-            if (buttonState.ready()) {
-                context.playerManager.playerList.forEach { it.closeHandledScreen() }
-                logger.info("Automation iPad commit started, assigning selected players to skip")
-                players.forEach { it.team = GameTeam.SKIP }
-                targetYellow.commit(context, GameTeam.PLAYER_YELLOW)
-                targetBlue.commit(context, GameTeam.PLAYER_BLUE)
-                targetSkip.commit(context, GameTeam.SKIP)
-                Broadcast.sendSoundPing()
-                return true
-            } else {
-                return false
-            }
-        }
-
-        Scheduler.interval(1.0) { schedule ->
-            if (commitSchedule == null && buttonState.ready()) {
-                commitSchedule = Scheduler.delay(1.0) { if (commit()) schedule.cancel() }
-            }
-
+        val schedule = Scheduler.interval(1.0) {
             for (player in context.players) {
                 val entity = player.entity ?: continue
 
@@ -226,6 +205,28 @@ class AutomationService : Service() {
                     entity.openHandledScreen(factoryView)
                 }
             }
+        }
+
+        Async.run {
+            while (true) {
+                delay(1.0)
+                if (!buttonState.ready()) continue
+                delay(1.0)
+                if (!buttonState.ready()) continue
+                break
+            }
+
+            schedule.cancel()
+            context.playerManager.playerList.forEach { it.closeHandledScreen() }
+
+            logger.info("Automation iPad commit started, assigning selected players to skip")
+            players.forEach { it.team = GameTeam.SKIP }
+
+            targetYellow.commit(context, GameTeam.PLAYER_YELLOW)
+            targetBlue.commit(context, GameTeam.PLAYER_BLUE)
+            targetSkip.commit(context, GameTeam.SKIP)
+
+            Broadcast.sendSoundPing()
         }
     }
 

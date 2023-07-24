@@ -26,6 +26,15 @@ class LootService : Service() {
         }
     }
 
+    private fun template(): Inventory? {
+        val inventories = sequence {
+            for (i in 0 until world.topY) {
+                yield(inventory(world.getBlockEntity(properties.templateLoottable.up(i))) ?: break)
+            }
+        }
+        return inventories.reduceOrNull(::DoubleInventory)
+    }
+
     override fun setup() {
         Editor
             .search(world, properties.regionAll) {
@@ -44,20 +53,10 @@ class LootService : Service() {
     }
 
     fun executeFill(console: Console) {
-        val template: Inventory
-
-        val template1 = inventory(world.getBlockEntity(properties.templateLoottable))
-        if (template1 == null) {
-            console.sendError("Failed to find bottom template chest at ${properties.templateLoottable}")
+        val template = template()
+        if (template == null) {
+            console.sendError("Failed to find template chest(s) at ${properties.templateLoottable}")
             return
-        }
-
-        val template2 = inventory(world.getBlockEntity(properties.templateLoottable.up()))
-        if (template2 == null) {
-            console.sendInfo("Failed to find top template chest at ${properties.templateLoottable.up()}")
-            template = template1
-        } else {
-            template = DoubleInventory(template1, template2)
         }
 
         val lootCount = game.getRuleInt(Game.RULE_LOOT_COUNT)
@@ -75,6 +74,17 @@ class LootService : Service() {
         }
 
         console.sendInfo("Filled all containers with loot")
+    }
+
+    fun executeDebugClean(console: Console) {
+        val template = template()
+        if (template == null) {
+            console.sendError("Failed to find template chest at ${properties.templateLoottable}")
+            return
+        }
+
+        template.asList().forEach(GameItems::replace)
+        console.sendInfo("Updated all items in template chest(s)")
     }
 
     fun handleContainerOpen(entity: BlockEntity?): ActionResult {
