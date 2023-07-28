@@ -4,8 +4,7 @@ import com.mojang.serialization.Lifecycle
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.util.Console
-import dev.foxgirl.mineseekdestroy.util.Scheduler
+import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.entity.damage.DamageType
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -91,8 +90,8 @@ class SpecialBuddyService : Service() {
                                 StatusEffectInstance.INFINITE,
                                 game.getRuleInt(Game.RULE_BUDDY_ABSORPTION_STRENGTH) - 1,
                             ))
-                            playerFollowerEntity.sendMessage(Console.format(arrayOf(playerTarget.displayName, "won last game, so you got absorption"), false))
-                            Game.CONSOLE_OPERATORS.sendInfo("Player", playerFollower.displayName, "given absorption for", Text.empty().append(playerTarget.displayName).append("'s"), "win")
+                            playerFollowerEntity.sendMessage(text(playerTarget, "won last game, so you got absorption").lightPurple())
+                            Game.CONSOLE_OPERATORS.sendInfo("Player", playerFollower, "given absorption for", text(playerTarget.displayName) + "'s", "win")
                         }
                     }
                 }

@@ -10,8 +10,6 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.passive.PigEntity
 import net.minecraft.util.math.Vec3d
-import java.lang.invoke.MethodHandle
-import java.lang.invoke.MethodType
 
 class SpecialCarService : Service() {
 
@@ -51,20 +49,11 @@ class SpecialCarService : Service() {
     }
 
     fun cooldownIsReady(entity: PigEntity): Boolean {
-        return handleCooldownIsReady.invoke(entity) as Boolean
+        return Reflector.methodHandle(PigEntity::class.java, "mineseekdestroy\$cooldownIsReady")!!.invoke(entity) as Boolean
     }
 
     fun cooldownActivate(entity: PigEntity) {
-        handleCooldownActivate.invoke(entity)
-    }
-
-    private companion object {
-
-        private val handleCooldownIsReady: MethodHandle =
-            Reflector.lookup().findVirtual(PigEntity::class.java, "mineseekdestroy\$cooldownIsReady", MethodType.methodType(Boolean::class.javaPrimitiveType))
-        private val handleCooldownActivate: MethodHandle =
-            Reflector.lookup().findVirtual(PigEntity::class.java, "mineseekdestroy\$cooldownActivate", MethodType.methodType(Void::class.javaPrimitiveType))
-
+        Reflector.methodHandle(PigEntity::class.java, "mineseekdestroy\$cooldownActivate")!!.invoke(entity)
     }
 
 }

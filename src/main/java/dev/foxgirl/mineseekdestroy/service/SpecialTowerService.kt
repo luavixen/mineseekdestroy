@@ -22,7 +22,7 @@ class SpecialTowerService : Service() {
 
     private val duration get() = (game.getRuleDouble(Game.RULE_TOWER_EFFECT_DURATION) * 20.0).toInt()
 
-    private var entities: List<Pair<ServerPlayerEntity, Region>> = emptyList()
+    private var entities = listOf<Pair<ServerPlayerEntity, Region>>()
 
     override fun update() {
         if (properties !== GameProperties.Realm) return
@@ -63,7 +63,7 @@ class SpecialTowerService : Service() {
         if (entitiesNew.isNotEmpty()) {
             this.entities = entitiesNew
         } else {
-            this.entities = emptyList()
+            this.entities = listOf()
         }
     }
 

@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.inventory.Inventory
 
 class InventoryService : Service() {
 
@@ -50,30 +51,24 @@ class InventoryService : Service() {
         }
     }
 
-    private companion object {
+    private val mirrors = HashMap<GamePlayer, Inventory>(32)
 
-        private fun mirrorUpdate(player: GamePlayer) {
-            val actual = player.inventory ?: return
-            val mirror = player.inventoryMirror
-            if (player.isSpectator) {
-                if (mirror != null) {
-                    if (!Inventories.equals(mirror, actual)) Inventories.copy(mirror, actual)
-                } else {
-                    player.inventoryMirror = Inventories.copyOf(actual)
-                }
+    private fun mirrorUpdate(player: GamePlayer) {
+        val actual = player.inventory ?: return
+        val mirror = mirrors[player]
+        if (player.isSpectator) {
+            if (mirror != null) {
+                if (!Inventories.equals(mirror, actual)) Inventories.copy(mirror, actual)
             } else {
-                if (mirror != null) {
-                    player.inventoryMirror = null
-                }
+                mirrors[player] = Inventories.copyOf(actual)
             }
+        } else {
+            mirrorReset(player)
         }
+    }
 
-        private fun mirrorReset(player: GamePlayer) {
-            if (player.inventoryMirror != null) {
-                player.inventoryMirror = null
-            }
-        }
-
+    private fun mirrorReset(player: GamePlayer) {
+        mirrors.remove(player)
     }
 
 }

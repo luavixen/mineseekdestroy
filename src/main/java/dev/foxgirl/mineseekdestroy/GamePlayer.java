@@ -2,7 +2,6 @@ package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.util.NbtKt;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
@@ -46,8 +45,6 @@ public final class GamePlayer {
 
     private int statsKills = 0;
     private int statsDeaths = 0;
-
-    private Inventory inventoryMirror = null;
 
     private GamePlayer(@NotNull GameContext context, UUID uuid, String name) {
         Objects.requireNonNull(context, "Argument 'context'");
@@ -148,14 +145,6 @@ public final class GamePlayer {
     public @Nullable PlayerInventory getInventory() {
         var player = getEntity();
         return player != null ? player.getInventory() : null;
-    }
-
-    public @Nullable Inventory getInventoryMirror() {
-        return inventoryMirror;
-    }
-
-    public void setInventoryMirror(@Nullable Inventory mirror) {
-        inventoryMirror = mirror;
     }
 
     public boolean isAlive() {

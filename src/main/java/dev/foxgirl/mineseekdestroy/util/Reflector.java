@@ -7,10 +7,9 @@ import sun.misc.Unsafe;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Reflector provides various tools for manipulating and side-stepping the
@@ -183,7 +182,7 @@ public final class Reflector {
         }
     }
 
-    private static final HashMap<MethodKey, MethodHandle> HANDLES = new HashMap<>(16);
+    private static final ConcurrentHashMap<MethodKey, MethodHandle> HANDLES = new ConcurrentHashMap<>(16);
 
     /**
      * Creates a {@link MethodHandle} by looking up a (possibly private or
@@ -200,25 +199,19 @@ public final class Reflector {
     public static @Nullable MethodHandle methodHandle(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<?>... params) {
         Objects.requireNonNull(clazz, "Argument 'clazz'");
         Objects.requireNonNull(name, "Argument 'name'");
-        var key = new MethodKey(clazz, name, params);
-        synchronized (HANDLES) {
-            var handle = HANDLES.get(key);
-            if (handle == null) {
-                Method method;
-                try {
-                    method = forceAccessible(clazz.getDeclaredMethod(name, params));
-                } catch (NoSuchMethodException ignored) {
-                    return null;
-                }
-                try {
-                    handle = LOOKUP.unreflect(method);
-                } catch (IllegalAccessException cause) {
-                    throw new RuntimeException(cause);
-                }
-                HANDLES.put(key.trust(), handle);
+        return HANDLES.computeIfAbsent(new MethodKey(clazz, name, params), (key) -> {
+            try {
+                var method = forceAccessible(clazz.getDeclaredMethod(name, params));
+                var handle = LOOKUP.unreflect(method);
+                return handle;
+            } catch (NoSuchMethodException ignored) {
+                return null;
+            } catch (IllegalAccessException cause) {
+                throw new RuntimeException(cause);
+            } finally {
+                key.trust();
             }
-            return handle;
-        }
+        });
     }
 
     /**

@@ -2,16 +2,12 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameProperties
-import dev.foxgirl.mineseekdestroy.util.Editor
-import dev.foxgirl.mineseekdestroy.util.Region
-import dev.foxgirl.mineseekdestroy.util.Scheduler
-import dev.foxgirl.mineseekdestroy.util.terminate
+import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
@@ -40,19 +36,19 @@ class SpecialGhoulService : Service() {
         val entity = entityType.create(world) ?: return
         val pos = spawnPositions.random()
         entity.refreshPositionAndAngles(pos.x, pos.y, pos.z, 0F, 0F)
-        entity.equipStack(EquipmentSlot.MAINHAND, ItemStack(IRON_SWORD))
-        entity.equipStack(EquipmentSlot.HEAD, ItemStack(LEATHER_HELMET))
-        entity.equipStack(EquipmentSlot.CHEST, ItemStack(CHAINMAIL_CHESTPLATE))
-        entity.equipStack(EquipmentSlot.LEGS, ItemStack(CHAINMAIL_LEGGINGS).apply { addEnchantment(Enchantments.SWIFT_SNEAK, 3) })
-        entity.equipStack(EquipmentSlot.FEET, ItemStack(LEATHER_BOOTS))
+        entity.equipStack(EquipmentSlot.MAINHAND, stackOf(IRON_SWORD))
+        entity.equipStack(EquipmentSlot.HEAD, stackOf(LEATHER_HELMET))
+        entity.equipStack(EquipmentSlot.CHEST, stackOf(CHAINMAIL_CHESTPLATE))
+        entity.equipStack(EquipmentSlot.LEGS, stackOf(CHAINMAIL_LEGGINGS) { it.addEnchantment(Enchantments.SWIFT_SNEAK, 3) })
+        entity.equipStack(EquipmentSlot.FEET, stackOf(LEATHER_BOOTS))
         world.spawnEntity(entity)
     }
 
     private fun spawnGhost() {
         val entity = EntityType.VEX.create(world) ?: return
         entity.setPosition(spawnPositions.random())
-        entity.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY)
-        entity.equipStack(EquipmentSlot.OFFHAND, ItemStack.EMPTY)
+        entity.equipStack(EquipmentSlot.MAINHAND, stackOf())
+        entity.equipStack(EquipmentSlot.OFFHAND, stackOf())
         entity.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE)!!.baseValue = 0.0
         world.spawnEntity(entity)
     }
