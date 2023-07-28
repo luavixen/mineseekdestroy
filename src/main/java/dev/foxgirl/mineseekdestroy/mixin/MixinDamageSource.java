@@ -40,7 +40,7 @@ public abstract class MixinDamageSource {
             } else if (attacker != null) {
                 nameAttacker = attacker.getDisplayName();
             } else {
-                nameAttacker = isHeartbreak ? Text.of("their buddy") : Text.of("a ghost");
+                nameAttacker = isHeartbreak ? Text.of("their buddy") : Text.of("the gods");
             }
             if (isHeartbreak) {
                 info.setReturnValue(Text.empty().append(nameEntity).append(" was torn by the loss of ").append(nameAttacker));

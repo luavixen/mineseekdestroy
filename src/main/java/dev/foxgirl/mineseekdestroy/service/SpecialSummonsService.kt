@@ -278,7 +278,12 @@ class SpecialSummonsService : Service() {
                 if (player.team === GameTeam.PLAYER_BLACK) player.kills += 2
             }
             for ((player, entity) in playerEntitiesIn) {
-                if (player.team !== GameTeam.PLAYER_BLACK) entity.health = 0.5F
+                if (player.isGhost) {
+                    Scheduler.now { player.team = GameTeam.NONE }
+                    entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 999999.0F)
+                } else if (player.team !== GameTeam.PLAYER_BLACK) {
+                    entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), Math.max(entity.health - 0.5F, 0.0F))
+                }
             }
         }
     }
@@ -373,6 +378,10 @@ class SpecialSummonsService : Service() {
 
             for ((_, entity) in playerEntitiesNormal) {
                 entity.removeItem { items.contains(it.item) }
+            }
+
+            for ((player, entity) in playerEntitiesIn) {
+                if (player.isGhost) entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 999999.0F)
             }
         }
     }

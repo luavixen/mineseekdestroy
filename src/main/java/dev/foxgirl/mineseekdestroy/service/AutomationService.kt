@@ -4,10 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameContext
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.util.Async
-import dev.foxgirl.mineseekdestroy.util.Broadcast
-import dev.foxgirl.mineseekdestroy.util.Console
-import dev.foxgirl.mineseekdestroy.util.Scheduler
+import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
@@ -20,7 +17,6 @@ import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.world.GameMode
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -71,8 +67,8 @@ class AutomationService : Service() {
                     tasks.add {
                         player.team = teamRemoved
                         game.sendInfo(
-                            Text.literal(player.name).formatted(Formatting.DARK_RED),
-                            Text.literal("has been removed from the game!").formatted(Formatting.RED),
+                            text(player).darkRed(),
+                            text("has been removed from the game!").red(),
                         )
                         logger.info("Automation removed " + player.name + " from the game")
                     }
