@@ -87,7 +87,8 @@ public abstract class GameState {
             return player.isPlaying() && player.isAlive()
                 && Game.PLACABLE_BLOCKS.contains(state.getBlock())
                 && properties.getRegionPlayable().contains(pos)
-                && properties.getRegionBlimp().excludes(pos);
+                && properties.getRegionBlimp().excludes(pos)
+                && properties.getRegionBlimpBalloons().excludes(pos);
         }
         return false;
     }
@@ -110,7 +111,8 @@ public abstract class GameState {
                 player.isPlaying() && player.isAlive() &&
                 properties.getInteractableBlocks().contains(blockState.getBlock()) &&
                 properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
-                properties.getRegionBlimp().excludes(blockHit.getBlockPos())
+                properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
+                properties.getRegionBlimpBalloons().excludes(blockHit.getBlockPos())
             ) {
                 var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
                 if (blockEntity instanceof LootableContainerBlockEntity) {
@@ -125,8 +127,9 @@ public abstract class GameState {
             }
             if (
                 blockState.getBlock() == Blocks.LEVER && (
+                    properties.getRegionPlayable().excludes(blockHit.getBlockPos()) ||
                     properties.getRegionBlimp().contains(blockHit.getBlockPos()) ||
-                    properties.getRegionPlayable().excludes(blockHit.getBlockPos())
+                    properties.getRegionBlimpBalloons().contains(blockHit.getBlockPos())
                 )
             ) {
                 return ActionResult.PASS;
@@ -155,7 +158,8 @@ public abstract class GameState {
                     item instanceof BlockItem blockItem && isRunning() &&
                     Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
                     properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
-                    properties.getRegionBlimp().excludes(blockHit.getBlockPos())
+                    properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
+                    properties.getRegionBlimpBalloons().excludes(blockHit.getBlockPos())
                 ) {
                     if (player.isPlaying()) {
                         if (item == Items.TARGET && stack.hasCustomName()) {
@@ -216,7 +220,8 @@ public abstract class GameState {
                 player.isGhost() && player.isAlive() && isRunning() &&
                 !properties.getUnstealableBlocks().contains(blockState.getBlock()) &&
                 properties.getRegionPlayable().contains(pos) &&
-                properties.getRegionBlimp().excludes(pos)
+                properties.getRegionBlimp().excludes(pos) &&
+                properties.getRegionBlimpBalloons().excludes(pos)
             ) {
                 var result = context.ghostService.handleInteract(player, pos);
                 if (result != ActionResult.PASS) return result;

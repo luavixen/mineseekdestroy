@@ -15,6 +15,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
 import net.minecraft.entity.boss.BossBar
+import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
@@ -110,6 +111,8 @@ class SpecialSummonsService : Service() {
         val pos = player.entity?.blockPos ?: altar.pos
     }
 
+    private enum class State { WAITING, READY, DEAD }
+
     private abstract inner class Summon(protected val options: Options) {
         val kind get() = options.kind
         val altar get() = options.altar
@@ -124,20 +127,53 @@ class SpecialSummonsService : Service() {
         protected open fun update() {}
         protected open fun stop() {}
 
+        private var state = State.WAITING
+
         private fun tryAction(verb: String, action: () -> Unit): Boolean {
             return try {
                 action()
                 true
             } catch (cause : Exception) {
-                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb: ${this.javaClass.simpleName}")
-                Game.LOGGER.error("SpecialSummonsService exception while $verb ${this.javaClass.simpleName}", cause)
+                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb: ${javaClass.simpleName}")
+                Game.LOGGER.error("SpecialSummonsService exception while $verb ${javaClass.simpleName}", cause)
                 false
             }
         }
 
-        fun tryPerform() = tryAction("performing", ::perform)
-        fun tryUpdate() = tryAction("updating", ::update)
-        fun tryStop() = tryAction("stopping", ::stop)
+        fun tryPerform(): Boolean {
+            if (state == State.WAITING) {
+                val success = tryAction("performing", ::perform)
+                if (success) {
+                    state = State.READY
+                    Game.CONSOLE_OPERATORS.sendInfo("Summon performed: ${javaClass.simpleName}")
+                }
+                return success
+            }
+            return false
+        }
+        fun tryStop(): Boolean {
+            if (state == State.READY) {
+                val success = tryAction("stopping", ::stop)
+                if (success) {
+                    state = State.DEAD
+                    Game.CONSOLE_OPERATORS.sendInfo("Summon stopped: ${javaClass.simpleName}")
+                }
+                return success
+            }
+            return false
+        }
+        fun tryUpdate(): Boolean {
+            if (state == State.READY) {
+                return tryAction("updating", ::update)
+            }
+            return false
+        }
+
+        fun destroy(): Boolean {
+            summonListGame.remove(this)
+            summonListRound.remove(this)
+            return tryStop()
+        }
     }
 
     private inner class DeepDeepSummon(options: Options) : Summon(options) {
@@ -310,13 +346,24 @@ class SpecialSummonsService : Service() {
             for (player in players) {
                 if (player.team === GameTeam.PLAYER_BLACK) player.kills += 2
             }
-            for ((player, entity) in playerEntitiesIn) {
+
+            for ((player, entity) in playerEntitiesNormal) {
+                if (!player.isAlive) continue
+
+                val source: DamageSource
+                val amount: Float
+
                 if (player.isGhost) {
-                    Scheduler.now { player.team = GameTeam.NONE } // TODO: LOG
-                    entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 999999.0F)
+                    source = world.damageSources.create(Game.DAMAGE_TYPE_ABYSS)
+                    amount = 999999.0F
                 } else if (player.team !== GameTeam.PLAYER_BLACK) {
-                    entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), Math.max(entity.health - 0.5F, 0.0F))
+                    source = world.damageSources.create(Game.DAMAGE_TYPE_ABYSS)
+                    amount = Math.max(entity.health - 0.5F, 0.0F)
+                } else {
+                    continue
                 }
+
+                Scheduler.now { entity.damage(source, amount) }
             }
         }
     }
@@ -421,9 +468,16 @@ class SpecialSummonsService : Service() {
                 entity.inventory.removeAll { items.contains(it.item) }
             }
 
-            for ((player, entity) in playerEntitiesIn) {
-                if (player.isGhost) entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 999999.0F)
+            for ((player, entity) in playerEntitiesNormal) {
+                if (player.isGhost) {
+                    Scheduler.now { entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 999999.0F) }
+                }
             }
+
+            val kinds = immutableListOf(Theologies(FLAME, FLAME), Theologies(DEEP, DEEP), Theologies(COSMOS, COSMOS))
+            val summons = summonListGame.filter { kinds.contains(it.kind) }
+
+            summons.forEach(Summon::destroy)
         }
     }
 
@@ -724,11 +778,7 @@ class SpecialSummonsService : Service() {
     }
 
     override fun update() {
-        val iterator = summonListGame.iterator()
-        while (iterator.hasNext()) {
-            val summon = iterator.next()
-            if (!summon.tryUpdate()) iterator.remove()
-        }
+        summonListGame.toTypedArray().forEach { if (!it.tryUpdate()) it.destroy() }
 
         updateActive()
         updateBar()
@@ -739,15 +789,7 @@ class SpecialSummonsService : Service() {
     }
 
     fun handleRoundEnd() {
-        for (summon in summonListRound) {
-            if (summon.isRoundOnly) {
-                summonListGame.remove(summon)
-                if (summon.tryStop()) {
-                    Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", summon.javaClass.simpleName)
-                }
-            }
-        }
-
+        summonListRound.toTypedArray().forEach { if (it.isRoundOnly) it.destroy() }
         summonListRound.clear()
         timeoutReset()
         textClear()
@@ -784,7 +826,7 @@ class SpecialSummonsService : Service() {
             if (pair != null) {
                 output.setStack(0, summonItems[pair]!!.copy())
             } else {
-                output.setStack(0, ItemStack.EMPTY)
+                output.setStack(0, stackOf())
             }
         }
 
@@ -826,7 +868,7 @@ class SpecialSummonsService : Service() {
 
     private inner class AltarNamedScreenHandlerFactory(val altar: Altar) : NamedScreenHandlerFactory {
         override fun getDisplayName(): Text =
-            text("Altar of the") + altar.theology.displayName
+            text("Altar of the", altar.theology.displayName)
         override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity): ScreenHandler =
             AltarScreenHandler(altar, syncId, playerInventory)
     }
@@ -882,11 +924,7 @@ class SpecialSummonsService : Service() {
     fun executeDebugReset(console: Console) {
         console.sendInfo("Resetting summon system state")
 
-        summonListGame.forEach {
-            if (it.isRoundOnly && it.tryStop()) {
-                Game.CONSOLE_OPERATORS.sendInfo("Summon stopped due to reset:", it.javaClass.simpleName)
-            }
-        }
+        summonListGame.forEach { it.tryStop() }
         summonListGame.clear()
         summonListRound.clear()
 
@@ -951,7 +989,7 @@ class SpecialSummonsService : Service() {
         private fun Inventory.removeAll(predicate: (ItemStack) -> Boolean) {
             for (i in 0 until size()) {
                 val stack = getStack(i)
-                if (predicate(stack)) setStack(i, ItemStack.EMPTY)
+                if (predicate(stack)) setStack(i, stackOf())
             }
         }
 

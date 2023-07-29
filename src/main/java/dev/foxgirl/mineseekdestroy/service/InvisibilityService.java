@@ -104,7 +104,9 @@ public final class InvisibilityService extends Service {
             case NONE, SKIP, GHOST, OPERATOR ->
                 true;
             case PLAYER_DUEL, PLAYER_WARDEN, PLAYER_BLACK, PLAYER_YELLOW, PLAYER_BLUE ->
-                !packetTeam.isSpectator() || Game.getGameProperties().getRegionBlimp().contains(packetEntity);
+                !packetTeam.isSpectator() ||
+                Game.getGameProperties().getRegionBlimp().contains(packetEntity) ||
+                Game.getGameProperties().getRegionBlimpBalloons().contains(packetEntity);
         };
     }
 

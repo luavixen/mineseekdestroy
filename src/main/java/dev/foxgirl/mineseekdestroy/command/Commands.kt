@@ -21,6 +21,7 @@ internal fun setup() {
                 context.barrierService.executeArenaOpen(args)
                 context.barrierService.executeBlimpOpen(args)
                 game.destroy()
+                args.sendInfo("Stopped game")
             }
         }
         it.params(argLiteral("start")) {

@@ -278,7 +278,7 @@ public final class Editor {
             operations.clear();
         }
 
-        tasks.sort(Comparator.comparingLong((task) -> task.target.region.size()));
+        tasks.sort(Comparator.comparingLong((task) -> task.target.region.getSize()));
 
         var server = Game.getGame().getServer();
 

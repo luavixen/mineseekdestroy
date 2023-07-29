@@ -74,6 +74,24 @@ public abstract class RunningGameState extends GameState {
                             999999.0F // Like. Like a LOT of damage. Kill them
                         );
                     });
+                    // FIXME: This works but it also sucks SO bad. Make it not suck
+                    var r = context.ghostService.getGhostRegistry();
+                    Integer x = r.get(player);
+                    if (x == null) x = 0;
+                    x++;
+                    if (x < 4) {
+                        r.put(player, x);
+                    } else {
+                        Scheduler.now((schedule) -> {
+                            Scheduler.now((schedule1) -> {
+                                player.setTeam(GameTeam.NONE);
+                            });
+                            playerEntity.damage(
+                                playerEntity.getDamageSources().create(Game.DAMAGE_TYPE_ABYSS),
+                                999999.0F // Like. Like a LOT of damage. Kill them
+                            );
+                        });
+                    }
                 }
                 Game.LOGGER.info(player.getName() + " was killed by " + attacker.getName());
             } else {

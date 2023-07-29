@@ -63,7 +63,11 @@ public abstract class MixinFireBlock extends AbstractFireBlock {
     @Inject(method = "scheduledTick", at = @At("HEAD"), cancellable = true)
     private void mineseekdestroy$hookScheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random, CallbackInfo info) {
         var properties = Game.getGameProperties();
-        if (properties.getRegionPlayable().excludes(pos) || properties.getRegionBlimp().contains(pos)) {
+        if (
+            properties.getRegionPlayable().excludes(pos) ||
+            properties.getRegionBlimp().contains(pos) ||
+            properties.getRegionBlimpBalloons().contains(pos)
+        ) {
             world.removeBlock(pos, false);
             info.cancel();
         }

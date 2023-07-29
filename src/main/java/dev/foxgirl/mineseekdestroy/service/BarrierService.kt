@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
+import java.util.concurrent.CompletableFuture
 
 class BarrierService : Service() {
 
@@ -12,27 +13,29 @@ class BarrierService : Service() {
     private var targetsArena = listOf<Target>()
     private var targetsBlimp = listOf<Target>()
 
-    private suspend fun search(name: String, region: Region, offset: BlockPos): List<Target> =
-        Editor
-            .search(world, region) { !it.isAir && it.block !== Blocks.MAGENTA_WOOL }
-            .await()
-            .also {
-                logger.info("BarrierService search in barrier template \"${name}\" returned ${it.size} result(s)")
-            }
-            .map {
+    private fun search(name: String, template: Region, target: Region): CompletableFuture<List<Target>> =
+        Async.go {
+            val results = Editor.search(world, template) { !it.isAir && it.block !== Blocks.MAGENTA_WOOL }.await()
+            logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
+
+            val offset = target.start.subtract(template.start)
+
+            results.map {
                 val pos = it.pos.add(offset)
-                Target(pos, world.getBlockState(pos), if (it.state.block !== Blocks.ORANGE_WOOL) it.state else blockAir)
+                val state = if (it.state.block !== Blocks.ORANGE_WOOL) it.state else blockAir
+                Target(pos, world.getBlockState(pos), state)
             }
+        }
 
     private suspend fun setupArena() {
-        val target = properties.regionBarrierArenaTarget
-        val template = properties.regionBarrierArenaTemplate
-        targetsArena = search("arena", template, target.start.subtract(template.start))
+        targetsArena = search("arena", properties.regionBarrierArenaTemplate, properties.regionBarrierArenaTarget).await()
     }
     private suspend fun setupBlimp() {
-        val target = properties.regionBarrierBlimpTarget
-        val template = properties.regionBarrierBlimpTemplate
-        targetsBlimp = search("blimp", template, target.start.subtract(template.start))
+        val tasks = buildList<CompletableFuture<List<Target>>> {
+            add(search("blimp", properties.regionBarrierBlimpTemplate, properties.regionBarrierBlimpTarget))
+            addAll(properties.regionBarrierBlimpBalloonTargets.map { template -> search("blimp-balloon", properties.regionBarrierBlimpBalloonTemplate, template) })
+        }
+        targetsBlimp = Async.await(tasks).flatten()
     }
 
     private fun apply(targets: List<Target>, provider: (Target) -> BlockState) {
@@ -58,12 +61,10 @@ class BarrierService : Service() {
     }
 
     fun executeBlimpOpen(console: Console) {
-        properties.regionBarrierBlimpAdditions.forEach { Editor.edit(world, it) { _, _, _, _ -> blockAir }.terminate() }
         apply(targetsBlimp) { blockAir }
         console.sendInfo("Blimp barriers opened")
     }
     fun executeBlimpClose(console: Console) {
-        properties.regionBarrierBlimpAdditions.forEach { Editor.edit(world, it) { _, _, _, _ -> blockBarrier }.terminate() }
         apply(targetsBlimp, Target::stateClosed)
         console.sendInfo("Blimp barriers closed")
     }

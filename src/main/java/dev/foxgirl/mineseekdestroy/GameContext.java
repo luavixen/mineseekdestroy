@@ -149,29 +149,34 @@ public final class GameContext {
         playerMap = new HashMap<>(64);
         playerMapLock = new Object();
 
-        services = new Service[] {
-            inventoryService = new InventoryService(),
-            lootService = new LootService(),
-            armorService = new ArmorService(),
-            invisibilityService = new InvisibilityService(),
-            barrierService = new BarrierService(),
-            saturationService = new SaturationService(),
-            glowService = new GlowService(),
-            itemService = new ItemService(),
-            shieldService = new ShieldService(),
-            ghostService = new GhostService(),
-            snapshotService = new SnapshotService(),
-            stormService = new StormService(),
-            smokerService = new SmokerService(),
-            automationService = new AutomationService(),
-            specialTowerService = new SpecialTowerService(),
-            specialGhoulService = new SpecialGhoulService(),
-            specialCarService = new SpecialCarService(),
-            specialSummonsService = new SpecialSummonsService(),
-            specialPianoService = new SpecialPianoService(),
-            specialFamilyGuyService = new SpecialFamilyGuyService(),
-            specialBuddyService = new SpecialBuddyService(),
-        };
+        try {
+            services = new Service[] {
+                inventoryService = new InventoryService(),
+                lootService = new LootService(),
+                armorService = new ArmorService(),
+                invisibilityService = new InvisibilityService(),
+                barrierService = new BarrierService(),
+                saturationService = new SaturationService(),
+                glowService = new GlowService(),
+                itemService = new ItemService(),
+                shieldService = new ShieldService(),
+                ghostService = new GhostService(),
+                snapshotService = new SnapshotService(),
+                stormService = new StormService(),
+                smokerService = new SmokerService(),
+                automationService = new AutomationService(),
+                specialTowerService = new SpecialTowerService(),
+                specialGhoulService = new SpecialGhoulService(),
+                specialCarService = new SpecialCarService(),
+                specialSummonsService = new SpecialSummonsService(),
+                specialPianoService = new SpecialPianoService(),
+                specialFamilyGuyService = new SpecialFamilyGuyService(),
+                specialBuddyService = new SpecialBuddyService(),
+            };
+        } catch (Throwable cause) {
+            Game.LOGGER.error("Failed to instantiate services", cause);
+            throw new IllegalStateException("Failed to instantiate services", cause);
+        }
     }
 
     public void initialize() {
@@ -204,7 +209,13 @@ public final class GameContext {
         game.getProperties().setup(this);
 
         for (var service : services) {
-            service.initialize(this);
+            try {
+                service.initialize(this);
+            } catch (Throwable cause) {
+                String message = "Service " + service.getClass().getSimpleName() + " failed to initialize";
+                Game.LOGGER.error(message, cause);
+                throw new IllegalStateException(message, cause);
+            }
         }
     }
 
@@ -224,7 +235,13 @@ public final class GameContext {
 
     public void update() {
         for (var service : services) {
-            service.update();
+            try {
+                service.update();
+            } catch (Throwable cause) {
+                String message = "Service " + service.getClass().getSimpleName() + " failed to update";
+                Game.LOGGER.error(message, cause);
+                throw new IllegalStateException(message, cause);
+            }
         }
         for (var player : getPlayers()) {
             player.update();

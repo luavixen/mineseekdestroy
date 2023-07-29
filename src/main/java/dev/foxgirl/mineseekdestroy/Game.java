@@ -538,7 +538,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         player.isPlaying() && player.isAlive() &&
                         getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && (
                             properties.getRegionBlimp().contains(playerEntity) ||
-                            properties.getRegionBlimpBalloons().stream().anyMatch((region) -> region.contains(playerEntity))
+                            properties.getRegionBlimpBalloons().contains(playerEntity)
                         )
                     ) {
                         playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 40));
@@ -568,6 +568,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         if (context != null) {
             context.destroy();
             context = null;
+            LOGGER.info("Game destroyed");
         }
         setState(new WaitingGameState());
     }

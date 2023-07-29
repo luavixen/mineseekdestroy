@@ -25,6 +25,8 @@ import java.util.*
 
 class GhostService : Service() {
 
+    val ghostRegistry = mutableMapOf<GamePlayer, Int>()
+
     private fun updateGhosts() {
         val running = state.isPlaying
 
@@ -49,8 +51,33 @@ class GhostService : Service() {
                     }
                 }
 
-                if (healthModifiers.none(healthAttribute::hasModifier))
-                    healthAttribute.addPersistentModifier(healthModifier1)
+                // FIXME: Frown. Hacked togetherTH. Rewrite whole ghost health handling system
+
+                val modifier1 = run {
+                    val index = ghostRegistry[player]
+                    if (index == null || index !in healthModifiers.indices) {
+                        ghostRegistry[player] = 0
+                        return@run healthModifier0
+                    } else {
+                        return@run healthModifiers[index]
+                    }
+                }
+
+                var add = true
+
+                healthModifiers.forEach { modifier ->
+                    if (healthAttribute.hasModifier(modifier)) {
+                        if (modifier == modifier1) {
+                            add = false
+                        } else {
+                            healthAttribute.removeModifier(modifier)
+                        }
+                    }
+                }
+
+                if (add) {
+                    healthAttribute.addPersistentModifier(modifier1)
+                }
 
             } else {
 
@@ -115,16 +142,16 @@ class GhostService : Service() {
 
     private companion object {
 
-        private val healthModifier1 =
+        private val healthModifier0 =
             EntityAttributeModifier(UUID.fromString("95880240-c1f7-4660-8e0e-a14f13e2cf41"), "msd_ghost_health", -12.0, EntityAttributeModifier.Operation.ADDITION)
-        private val healthModifier2 =
+        private val healthModifier1 =
             EntityAttributeModifier(UUID.fromString("44a5c49b-f2c6-4c66-8d41-76849b229510"), "msd_ghost_health", -14.0, EntityAttributeModifier.Operation.ADDITION)
-        private val healthModifier3 =
+        private val healthModifier2 =
             EntityAttributeModifier(UUID.fromString("81fa324f-e299-4988-b9de-8dcc777d3cdc"), "msd_ghost_health", -16.0, EntityAttributeModifier.Operation.ADDITION)
-        private val healthModifier4 =
+        private val healthModifier3 =
             EntityAttributeModifier(UUID.fromString("6eecfa8a-977e-43fa-92c4-c680f25bf42c"), "msd_ghost_health", -18.0, EntityAttributeModifier.Operation.ADDITION)
 
-        private val healthModifiers = immutableListOf(healthModifier1, healthModifier2, healthModifier3, healthModifier4)
+        private val healthModifiers = immutableListOf(healthModifier0, healthModifier1, healthModifier2, healthModifier3)
 
         private val ignoredDamageTypes = immutableSetOf(
             LIGHTNING_BOLT, LAVA, HOT_FLOOR, IN_WALL, CRAMMING, DROWN, STARVE,
