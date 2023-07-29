@@ -31,14 +31,32 @@ class ArrayBuilder<E> extends AbstractCollection<E> {
         return size;
     }
 
+    private void ensureCapacityFor(int needed) {
+        int length = elements.length;
+        int free = length - size;
+        if (free < needed) {
+            int lengthMinimum = free + needed;
+            int lengthDoubled = Math.max(length << 1, 8);
+            this.elements = Arrays.copyOf(elements, Math.max(lengthMinimum, lengthDoubled));
+        }
+    }
+
     @Override
     public final boolean add(E element) {
-        var elements = this.elements;
-        if (elements.length <= size) {
-            elements = this.elements = Arrays.copyOf(elements, Math.max(elements.length << 1, 8));
-        }
+        ensureCapacityFor(1);
         elements[size++] = element;
         return true;
+    }
+
+    @Override
+    public final boolean addAll(@NotNull Collection<? extends E> collection) {
+        var iterator = collection.iterator();
+        if (iterator.hasNext()) {
+            ensureCapacityFor(collection.size());
+            do { add(iterator.next()); } while (iterator.hasNext());
+            return true;
+        }
+        return false;
     }
 
     @Override

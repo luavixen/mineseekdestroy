@@ -15,18 +15,33 @@ fun <K, V> immutableMapOf(vararg pairs: Pair<K, V>): Map<K, V> {
     return builder.build()
 }
 
+fun <T> buildImmutableList(action: ImmutableList.Builder<T>.() -> Unit): List<T> =
+    ImmutableList.builder<T>().apply(action).build()
+fun <T> buildImmutableList(capacity: Int, action: ImmutableList.Builder<T>.() -> Unit): List<T> =
+    ImmutableList.builder<T>(capacity).apply(action).build()
+
+fun <T> buildImmutableSet(action: ImmutableSet.Builder<T>.() -> Unit): Set<T> =
+    ImmutableSet.builder<T>().apply(action).build()
+fun <T> buildImmutableSet(capacity: Int, action: ImmutableSet.Builder<T>.() -> Unit): Set<T> =
+    ImmutableSet.builder<T>(capacity).apply(action).build()
+
+fun <K, V> buildImmutableMap(action: ImmutableMap.Builder<K, V>.() -> Unit): Map<K, V> =
+    ImmutableMap.builder<K, V>().apply(action).build()
+fun <K, V> buildImmutableMap(capacity: Int, action: ImmutableMap.Builder<K, V>.() -> Unit): Map<K, V> =
+    ImmutableMap.builder<K, V>(capacity).apply(action).build()
+
 fun <T> Iterable<T>.toImmutableList(): List<T> {
-    return if (this is Collection<T>) {
-        ImmutableList.of(this)
-    } else {
-        ImmutableList.builder<T>().also { toCollection(it) }.build()
+    return when (this) {
+        is ImmutableList<T> -> this
+        is Collection<T> -> ImmutableList.of(this)
+        else -> ImmutableList.builder<T>().also { toCollection(it) }.build()
     }
 }
 fun <T> Iterable<T>.toImmutableSet(): Set<T> {
-    return if (this is Collection<T>) {
-        ImmutableSet.of(this)
-    } else {
-        ImmutableSet.builder<T>().also { toCollection(it) }.build()
+    return when (this) {
+        is ImmutableSet<T> -> this
+        is Collection<T> -> ImmutableSet.of(this)
+        else -> ImmutableSet.builder<T>().also { toCollection(it) }.build()
     }
 }
 
@@ -41,5 +56,5 @@ fun <K, V> Map<K, V>.toImmutableList(): List<Pair<K, V>> {
     return builder.build()
 }
 fun <K, V> Map<K, V>.toImmutableMap(): Map<K, V> {
-    return ImmutableMap.of(this)
+    return if (this is ImmutableMap<K, V>) this else ImmutableMap.of(this)
 }

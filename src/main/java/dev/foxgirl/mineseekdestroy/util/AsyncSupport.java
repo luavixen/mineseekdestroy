@@ -8,7 +8,6 @@ import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -60,30 +59,30 @@ public final class AsyncSupport {
             @SuppressWarnings({"unchecked", "rawtypes" })
             Function1<Continuation<T>, Object> function = (Function1) coroutine;
             return function.invoke(continuation);
-        } catch (Throwable err) {
-            throw new RuntimeException(err);
+        } catch (Throwable cause) {
+            throw new RuntimeException(cause);
         }
     }
 
     private static <T> Object invokeReflection(Object coroutine, CompletableContinuation<T> continuation) {
         Class<?> clazz = coroutine.getClass();
         try {
-            MethodHandles.Lookup handleLookup = MethodHandles.privateLookupIn(clazz, MethodHandles.lookup());
             MethodHandle handle;
             try {
-                handle = handleLookup.findVirtual(clazz, "invoke", TYPE_INVOKE);
-            } catch (NoSuchMethodException err0) {
+                handle = Reflector.lookup().findVirtual(clazz, "invoke", TYPE_INVOKE);
+            } catch (NoSuchMethodException cause0) {
                 try {
-                    handle = handleLookup.findVirtual(clazz, "invoke", TYPE_INVOKE_GENERIC);
-                } catch (NoSuchMethodException err1) {
-                    var err = new IllegalArgumentException("No such method 'invoke' for coroutine object", err1);
-                    err.addSuppressed(err0);
+                    handle = Reflector.lookup().findVirtual(clazz, "invoke", TYPE_INVOKE_GENERIC);
+                } catch (NoSuchMethodException cause1) {
+                    RuntimeException err;
+                    err = new IllegalArgumentException("No such method 'invoke' for coroutine object", cause1);
+                    err.addSuppressed(cause0);
                     throw err;
                 }
             }
             return handle.invoke(coroutine, continuation);
-        } catch (Throwable err) {
-            throw new RuntimeException(err);
+        } catch (Throwable cause) {
+            throw new RuntimeException(cause);
         }
     }
 

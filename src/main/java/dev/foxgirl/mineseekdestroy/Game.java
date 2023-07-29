@@ -171,61 +171,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.FIRE,
     });
 
-    public static final @NotNull Set<@NotNull Block> UNSTEALABLE_BLOCKS = ImmutableSet.copyOf(new Block[] {
-        Blocks.MAGENTA_CONCRETE_POWDER, Blocks.MAGENTA_CONCRETE, Blocks.SLIME_BLOCK,
-        Blocks.AIR, Blocks.CAVE_AIR, Blocks.FIRE,
-        Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.ENDER_CHEST, Blocks.BARREL,
-        Blocks.SMOKER, Blocks.FLETCHING_TABLE,
-        Blocks.TARGET, Blocks.TNT, Blocks.LADDER,
-        Blocks.ANVIL, Blocks.CHIPPED_ANVIL, Blocks.DAMAGED_ANVIL,
-        Blocks.GRAVEL, Blocks.STONE, Blocks.DIRT, Blocks.DIRT_PATH,
-        Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT, Blocks.FARMLAND,
-        Blocks.ACACIA_TRAPDOOR,
-        Blocks.BEDROCK,
-        Blocks.BLACKSTONE_WALL,
-        Blocks.CHISELED_NETHER_BRICKS,
-        Blocks.CRYING_OBSIDIAN,
-        Blocks.DARK_OAK_FENCE,
-        Blocks.DARK_OAK_SLAB,
-        Blocks.DARK_OAK_STAIRS,
-        Blocks.DARK_OAK_TRAPDOOR,
-        Blocks.GOLD_BLOCK,
-        Blocks.IRON_BARS,
-        Blocks.LIME_STAINED_GLASS,
-        Blocks.LOOM,
-        Blocks.NETHER_BRICKS,
-        Blocks.NETHER_BRICK_FENCE,
-        Blocks.NETHER_BRICK_WALL,
-        Blocks.OBSIDIAN,
-        Blocks.PRISMARINE_STAIRS,
-        Blocks.PRISMARINE_WALL,
-        Blocks.RAW_GOLD_BLOCK,
-        Blocks.REDSTONE_BLOCK,
-        Blocks.REDSTONE_LAMP,
-        Blocks.WARPED_FENCE,
-        Blocks.WARPED_PLANKS,
-        Blocks.WARPED_STAIRS,
-        Blocks.WAXED_CUT_COPPER,
-        Blocks.WAXED_CUT_COPPER_STAIRS,
-        Blocks.SHULKER_BOX,
-        Blocks.WHITE_SHULKER_BOX,
-        Blocks.ORANGE_SHULKER_BOX,
-        Blocks.MAGENTA_SHULKER_BOX,
-        Blocks.LIGHT_BLUE_SHULKER_BOX,
-        Blocks.YELLOW_SHULKER_BOX,
-        Blocks.LIME_SHULKER_BOX,
-        Blocks.PINK_SHULKER_BOX,
-        Blocks.GRAY_SHULKER_BOX,
-        Blocks.LIGHT_GRAY_SHULKER_BOX,
-        Blocks.CYAN_SHULKER_BOX,
-        Blocks.PURPLE_SHULKER_BOX,
-        Blocks.BLUE_SHULKER_BOX,
-        Blocks.BROWN_SHULKER_BOX,
-        Blocks.GREEN_SHULKER_BOX,
-        Blocks.RED_SHULKER_BOX,
-        Blocks.BLACK_SHULKER_BOX,
-    });
-
     public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
         Items.SHIELD,
         Items.BOW,
@@ -591,8 +536,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                     var player = context.getPlayer(playerEntity);
                     if (
                         player.isPlaying() && player.isAlive() &&
-                        getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) &&
-                        properties.getRegionBlimp().contains(playerEntity)
+                        getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && (
+                            properties.getRegionBlimp().contains(playerEntity) ||
+                            properties.getRegionBlimpBalloons().stream().anyMatch((region) -> region.contains(playerEntity))
+                        )
                     ) {
                         playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 40));
                     }

@@ -6,9 +6,9 @@ import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
-import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
@@ -19,6 +19,7 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
+import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
@@ -51,12 +52,12 @@ import java.time.Instant
 class SpecialSummonsService : Service() {
 
     enum class Theology {
-        DEEP { override val color = Formatting.DARK_AQUA },
-        OCCULT { override val color = Formatting.LIGHT_PURPLE },
-        COSMOS { override val color = Formatting.BLUE },
-        BARTER { override val color = Formatting.GOLD },
-        FLAME { override val color = Formatting.RED },
-        OPERATOR { override val color = Formatting.GREEN };
+        DEEP { override val color get() = Formatting.DARK_AQUA },
+        OCCULT { override val color get() = Formatting.LIGHT_PURPLE },
+        COSMOS { override val color get() = Formatting.BLUE },
+        BARTER { override val color get() = Formatting.GOLD },
+        FLAME { override val color get() = Formatting.RED },
+        OPERATOR { override val color get() = Formatting.GREEN };
 
         abstract val color: Formatting
 
@@ -78,14 +79,15 @@ class SpecialSummonsService : Service() {
         }
 
         val isDouble get() = theology1 === theology2
-        val isOnce get() = theologiesOnces.contains(this)
+
+        val isOncePerGame get() = theologiesOncePerGame.contains(this)
+        val isOncePerRound get() = theologiesOncePerRound.contains(this)
 
         val displayName: Text get() =
             Text.empty()
                 .append(theology1.displayName)
                 .append(text(" X ").green())
                 .append(theology2.displayName)
-                .resetParent()
 
         override fun toString() = "Theologies(theology1=${theology1}, theology2=${theology2})"
 
@@ -103,9 +105,9 @@ class SpecialSummonsService : Service() {
         val kind: Theologies,
         val altar: Altar,
         val player: GamePlayer,
-        val team: GameTeam = player.team,
     ) {
-        val pos: BlockPos get() = player.entity?.blockPos ?: altar.pos
+        val team = player.team
+        val pos = player.entity?.blockPos ?: altar.pos
     }
 
     private abstract inner class Summon(protected val options: Options) {
@@ -115,18 +117,31 @@ class SpecialSummonsService : Service() {
         val team get() = options.team
         val pos get() = options.pos
 
-        open fun timeout(): Duration = Duration.ZERO
+        open val timeout: Duration get() = Duration.ZERO
+        open val isRoundOnly: Boolean get() = false
 
-        open fun perform() {}
-        open fun update() {}
-    }
+        protected open fun perform() {}
+        protected open fun update() {}
+        protected open fun stop() {}
 
-    private interface Stoppable {
-        fun stop()
+        private fun tryAction(verb: String, action: () -> Unit): Boolean {
+            return try {
+                action()
+                true
+            } catch (cause : Exception) {
+                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb: ${this.javaClass.simpleName}")
+                Game.LOGGER.error("SpecialSummonsService exception while $verb ${this.javaClass.simpleName}", cause)
+                false
+            }
+        }
+
+        fun tryPerform() = tryAction("performing", ::perform)
+        fun tryUpdate() = tryAction("updating", ::update)
+        fun tryStop() = tryAction("stopping", ::stop)
     }
 
     private inner class DeepDeepSummon(options: Options) : Summon(options) {
-        override fun timeout(): Duration = Duration.ofSeconds(30)
+        override val timeout get() = Duration.ofSeconds(30)
         override fun perform() {
             val blocks = immutableSetOf<Block>(
                 Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING, Blocks.BIRCH_SAPLING,
@@ -166,26 +181,43 @@ class SpecialSummonsService : Service() {
                         BlockPos(start.x, y, start.z),
                         BlockPos(end.x, y, end.z),
                     )
-                    val promise = Editor.edit(world, region) { state, _, _, _ ->
-                        if (state.isAir || blocks.contains(state.block)) {
-                            Blocks.WATER.defaultState
-                        } else if (state.contains(Properties.WATERLOGGED)) {
-                            state.with(Properties.WATERLOGGED, true)
-                        } else {
-                            null
-                        }
-                    }
 
-                    await(promise)
+                    Editor
+                        .edit(world, region) { state, _, _, _ ->
+                            if (state.isAir || blocks.contains(state.block)) {
+                                Blocks.WATER.defaultState
+                            } else if (state.contains(Properties.WATERLOGGED)) {
+                                state.with(Properties.WATERLOGGED, true)
+                            } else {
+                                null
+                            }
+                        }
+                        .await()
                 }
             }
 
             world.setWeatherRain()
         }
+        override fun stop() {
+            Editor
+                .edit(world, properties.regionFlood) { state, _, _, _ ->
+                    if (state.block === Blocks.WATER) {
+                        return@edit Blocks.AIR.defaultState
+                    }
+                    if (state.contains(Properties.WATERLOGGED)) {
+                        return@edit state.with(Properties.WATERLOGGED, false)
+                    }
+                    return@edit null
+                }
+                .terminate()
+
+            world.setWeatherClear()
+        }
     }
 
-    private inner class DeepOccultSummon(options: Options) : Summon(options), Stoppable {
-        override fun timeout(): Duration = Duration.ofSeconds(60)
+    private inner class DeepOccultSummon(options: Options) : Summon(options) {
+        override val timeout get() = Duration.ofSeconds(60)
+        override val isRoundOnly get() = true
         override fun perform() {
             val targets = playersIn.filter { it.team !== team }
             val targetsPool = targets.toMutableList().apply { shuffle() }
@@ -228,12 +260,13 @@ class SpecialSummonsService : Service() {
         }
         override fun stop() {
             for ((_, entity) in playerEntitiesNormal) {
-                entity.removeItem { it.item === COMPASS }
+                entity.inventory.removeAll { it.item === COMPASS }
             }
         }
     }
 
-    private inner class DeepCosmosSummon(options: Options) : Summon(options), Stoppable {
+    private inner class DeepCosmosSummon(options: Options) : Summon(options) {
+        override val isRoundOnly get() = true
         override fun perform() {
             world.setWeatherRain()
         }
@@ -250,7 +283,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class DeepBarterSummon(options: Options) : Summon(options) {
-        override fun timeout(): Duration = Duration.ofSeconds(30)
+        override val timeout get() = Duration.ofSeconds(30)
         override fun update() {
             for ((_, entity) in playerEntitiesIn) {
                 if (entity.isTouchingWater && !entity.hasStatusEffect(StatusEffects.POISON)) {
@@ -261,7 +294,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class DeepFlameSummon(options: Options) : Summon(options) {
-        override fun timeout(): Duration = Duration.ofSeconds(90)
+        override val timeout get() = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) {
@@ -279,7 +312,7 @@ class SpecialSummonsService : Service() {
             }
             for ((player, entity) in playerEntitiesIn) {
                 if (player.isGhost) {
-                    Scheduler.now { player.team = GameTeam.NONE }
+                    Scheduler.now { player.team = GameTeam.NONE } // TODO: LOG
                     entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 999999.0F)
                 } else if (player.team !== GameTeam.PLAYER_BLACK) {
                     entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), Math.max(entity.health - 0.5F, 0.0F))
@@ -288,8 +321,9 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    private inner class OccultCosmosSummon(options: Options) : Summon(options), Stoppable {
-        override fun timeout(): Duration = Duration.ofSeconds(90)
+    private inner class OccultCosmosSummon(options: Options) : Summon(options) {
+        override val timeout get() = Duration.ofSeconds(90)
+        override val isRoundOnly get() = true
         override fun perform() {
             for ((player, entity) in playerEntitiesIn) {
                 if (player.team === team) {
@@ -313,8 +347,9 @@ class SpecialSummonsService : Service() {
         }
     }
 
-    private inner class OccultBarterSummon(options: Options) : Summon(options), Stoppable {
-        override fun timeout(): Duration = Duration.ofSeconds(90)
+    private inner class OccultBarterSummon(options: Options) : Summon(options) {
+        override val timeout get() = Duration.ofSeconds(90)
+        override val isRoundOnly get() = true
         override fun perform() {
             for ((player, entity) in playerEntitiesIn) {
                 if (player.team === team) entity.give(GameItems.summonGoldenSword.copy())
@@ -322,13 +357,13 @@ class SpecialSummonsService : Service() {
         }
         override fun stop() {
             for ((_, entity) in playerEntitiesNormal) {
-                entity.removeItem { it.item === GOLDEN_SWORD }
+                entity.inventory.removeAll { it.item === GOLDEN_SWORD }
             }
         }
     }
 
     private inner class OccultFlameSummon(options: Options) : Summon(options) {
-        override fun timeout(): Duration = Duration.ofSeconds(30)
+        override val timeout get() = Duration.ofSeconds(30)
         override fun perform() {
             val region = properties.regionBlimp
             val position = BlockPos(region.center.x.toInt(), region.start.y - 7, region.center.z.toInt())
@@ -347,10 +382,16 @@ class SpecialSummonsService : Service() {
                 }
             }
         }
+        override fun stop() {
+            for ((_, entity) in playerEntitiesNormal) {
+                entity.removeStatusEffect(StatusEffects.SLOW_FALLING)
+                entity.removeStatusEffect(StatusEffects.JUMP_BOOST)
+            }
+        }
     }
 
     private inner class CosmosBarterSummon(options: Options) : Summon(options) {
-        override fun timeout(): Duration = Duration.ofSeconds(90)
+        override val timeout get() = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) entity.give(GameItems.summonSteak.copyWithCount(8))
@@ -359,7 +400,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class CosmosFlameSummon(options: Options) : Summon(options) {
-        override fun timeout(): Duration = Duration.ofSeconds(60)
+        override val timeout get() = Duration.ofSeconds(60)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) entity.absorptionAmount += 2.0F
@@ -377,7 +418,7 @@ class SpecialSummonsService : Service() {
             )
 
             for ((_, entity) in playerEntitiesNormal) {
-                entity.removeItem { items.contains(it.item) }
+                entity.inventory.removeAll { items.contains(it.item) }
             }
 
             for ((player, entity) in playerEntitiesIn) {
@@ -387,7 +428,7 @@ class SpecialSummonsService : Service() {
     }
 
     private inner class BarterFlameSummon(options: Options) : Summon(options) {
-        override fun timeout(): Duration = Duration.ofSeconds(90)
+        override val timeout get() = Duration.ofSeconds(90)
         override fun perform() {
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.team === team) entity.give(GameItems.summonBlueIce.copyWithCount(64))
@@ -418,6 +459,9 @@ class SpecialSummonsService : Service() {
             game.setRuleBoolean(GameRules.DO_FIRE_TICK, true)
             world.setWeatherClear()
         }
+        override fun stop() {
+            game.setRuleBoolean(GameRules.DO_FIRE_TICK, false)
+        }
     }
 
     private val summons = immutableMapOf<Theologies, (Options) -> Summon>(
@@ -446,10 +490,11 @@ class SpecialSummonsService : Service() {
     private var timeout = Instant.now()
     private var timeoutDuration = Duration.ZERO
 
-    private var textProvider: TextProvider? = null
+    private var textProvider = null as TextProvider?
     private var textLastUpdate = Instant.now()
 
     var isScaldingEarth = false; private set
+    var isFlashFlood = false; private set
     var isPollutedWater = false; private set
     var isAcidRain = false; private set
     var isTracking = false; private set
@@ -469,17 +514,14 @@ class SpecialSummonsService : Service() {
         fun findTheology(pos: BlockPos): Theology? =
             findTheologyAt(pos.up()) ?: findTheologyAt(pos.down())
 
-        Editor
-            .search(world, properties.regionAll) {
-                it.block === Blocks.FLETCHING_TABLE
-            }
-            .thenAccept { results ->
-                logger.info("SpecialSummonService search for altars returned ${results.size} result(s)")
-                altars = results
-                    .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
-                    .associateBy { it.pos }
-            }
-            .terminate()
+        Async.run {
+            altars = Editor.search(world, properties.regionAll) { it.block === Blocks.FLETCHING_TABLE }
+                .await()
+                .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
+                .associateBy { it.pos }
+
+            logger.info("SpecialSummonService search for altars returned ${altars.size} result(s)")
+        }
     }
 
     private fun timeoutReset() {
@@ -549,10 +591,10 @@ class SpecialSummonsService : Service() {
         if (kind.theology1 !== options.altar.theology && kind.theology2 !== options.altar.theology) {
             return Failure.MISMATCH
         }
-        if (kind.isDouble && summonListGame.any { it.kind == kind }) {
+        if (kind.isOncePerGame && summonListGame.any { it.kind == kind }) {
             return Failure.REPEATED_DOUBLE
         }
-        if (kind.isOnce && summonListRound.any { it.kind == kind }) {
+        if (kind.isOncePerRound && summonListRound.any { it.kind == kind }) {
             return Failure.REPEATED_ONCE
         }
         if (kind == summonListRound.lastOrNull()?.kind) {
@@ -599,14 +641,10 @@ class SpecialSummonsService : Service() {
 
     private fun summonPerform(options: Options) {
         val summon = summons[options.kind]!!.invoke(options)
-        summonListGame.add(summon)
-        summonListRound.add(summon)
-        timeoutSet(summon.timeout())
-        try {
-            summon.perform()
-        } catch (cause : Exception) {
-            Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while performing:", summon.javaClass.simpleName)
-            Game.LOGGER.error("SpecialSummonsService exception while performing ${summon.javaClass.simpleName}", cause)
+        if (summon.tryPerform()) {
+            summonListGame.add(summon)
+            summonListRound.add(summon)
+            timeoutSet(summon.timeout)
         }
     }
 
@@ -655,8 +693,9 @@ class SpecialSummonsService : Service() {
     }
 
     private fun updateActive() {
-        val active = summonListGame.map { it.kind }.toImmutableSet()
+        val active = summonListGame.map { it.kind }
         isScaldingEarth = active.contains(Theologies(FLAME, FLAME))
+        isFlashFlood = active.contains(Theologies(DEEP, DEEP))
         isPollutedWater = active.contains(Theologies(DEEP, BARTER))
         isAcidRain = active.contains(Theologies(DEEP, COSMOS))
         isTracking = active.contains(Theologies(DEEP, OCCULT))
@@ -688,13 +727,7 @@ class SpecialSummonsService : Service() {
         val iterator = summonListGame.iterator()
         while (iterator.hasNext()) {
             val summon = iterator.next()
-            try {
-                summon.update()
-            } catch (cause : Exception) {
-                iterator.remove()
-                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while updating:", summon.javaClass.simpleName)
-                Game.LOGGER.error("SpecialSummonsService exception while updating ${summon.javaClass.simpleName}", cause)
-            }
+            if (!summon.tryUpdate()) iterator.remove()
         }
 
         updateActive()
@@ -707,14 +740,10 @@ class SpecialSummonsService : Service() {
 
     fun handleRoundEnd() {
         for (summon in summonListRound) {
-            if (summon is Stoppable) {
+            if (summon.isRoundOnly) {
                 summonListGame.remove(summon)
-                try {
-                    summon.stop()
+                if (summon.tryStop()) {
                     Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", summon.javaClass.simpleName)
-                } catch (cause : Exception) {
-                    Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while stopping:", summon.javaClass.simpleName)
-                    Game.LOGGER.error("SpecialSummonsService exception while stopping ${summon.javaClass.simpleName}", cause)
                 }
             }
         }
@@ -772,11 +801,11 @@ class SpecialSummonsService : Service() {
         }
 
         override fun onClosed(player: PlayerEntity) {
-            player.giveItem(cursorStack)
+            player.give(cursorStack)
             cursorStack = ItemStack.EMPTY
 
-            player.giveItem(input.removeStack(0))
-            player.giveItem(input.removeStack(1))
+            player.give(input.removeStack(0))
+            player.give(input.removeStack(1))
         }
 
         override fun canTakeOutput(playerEntity: PlayerEntity, present: Boolean): Boolean {
@@ -854,8 +883,7 @@ class SpecialSummonsService : Service() {
         console.sendInfo("Resetting summon system state")
 
         summonListGame.forEach {
-            if (it is Stoppable) {
-                it.stop()
+            if (it.isRoundOnly && it.tryStop()) {
                 Game.CONSOLE_OPERATORS.sendInfo("Summon stopped due to reset:", it.javaClass.simpleName)
             }
         }
@@ -920,15 +948,10 @@ class SpecialSummonsService : Service() {
 
     private companion object {
 
-        private fun PlayerEntity.giveItem(stack: ItemStack) {
-            this.give(stack)
-        }
-        private fun PlayerEntity.removeItem(predicate: (ItemStack) -> Boolean) {
-            val inventory = inventory
-            for (i in 0 until inventory.size()) {
-                val stack = inventory.getStack(i)
-                if (stack.isEmpty) continue
-                if (predicate(stack)) inventory.setStack(i, ItemStack.EMPTY)
+        private fun Inventory.removeAll(predicate: (ItemStack) -> Boolean) {
+            for (i in 0 until size()) {
+                val stack = getStack(i)
+                if (predicate(stack)) setStack(i, ItemStack.EMPTY)
             }
         }
 
@@ -939,18 +962,18 @@ class SpecialSummonsService : Service() {
             setWeather(24000 * 10, 0, false, false)
         }
 
-        private val theologiesDouble = immutableSetOf<Theologies>(
+        private val theologiesOncePerGame = immutableListOf<Theologies>(
             Theologies(DEEP, DEEP),
-            Theologies(OCCULT, OCCULT),
-            Theologies(COSMOS, COSMOS),
-            Theologies(BARTER, BARTER),
-            Theologies(FLAME, FLAME),
-        )
-        private val theologiesOnces = immutableSetOf<Theologies>(
             Theologies(DEEP, OCCULT),
-            Theologies(DEEP, COSMOS),
             Theologies(DEEP, BARTER),
+            Theologies(OCCULT, OCCULT),
             Theologies(OCCULT, BARTER),
+            Theologies(COSMOS, COSMOS),
+            Theologies(FLAME,  FLAME),
+        )
+        private val theologiesOncePerRound = immutableListOf<Theologies>(
+            Theologies(DEEP, COSMOS),
+            Theologies(BARTER, BARTER),
         )
 
         private fun summonItem(kind: Theologies, item: Item, vararg lore: Text): Pair<Theologies, ItemStack> =

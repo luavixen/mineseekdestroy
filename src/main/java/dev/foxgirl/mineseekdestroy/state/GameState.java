@@ -214,7 +214,7 @@ public abstract class GameState {
             }
             if (
                 player.isGhost() && player.isAlive() && isRunning() &&
-                !Game.UNSTEALABLE_BLOCKS.contains(blockState.getBlock()) &&
+                !properties.getUnstealableBlocks().contains(blockState.getBlock()) &&
                 properties.getRegionPlayable().contains(pos) &&
                 properties.getRegionBlimp().excludes(pos)
             ) {
