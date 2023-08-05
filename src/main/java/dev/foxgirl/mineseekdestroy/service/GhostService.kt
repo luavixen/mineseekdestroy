@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Scheduler
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
@@ -151,6 +152,15 @@ class GhostService : Service() {
     }
 
     fun shouldIgnoreDamage(key: RegistryKey<DamageType>?) = ignoredDamageTypes.contains(key)
+
+    fun executeSetBlackDeaths(console: Console, targets: Collection<GamePlayer>, value: Int) {
+        for (target in targets) healthValue(target).value = value
+        console.sendInfo("Set ghost black death counter for ${targets.size} player(s)")
+    }
+    fun executeClearBlackDeaths(console: Console, targets: Collection<GamePlayer>) {
+        for (target in targets) healthValue(target).value = 0
+        console.sendInfo("Cleared ghost black death counter for ${targets.size} player(s)")
+    }
 
     private companion object {
 

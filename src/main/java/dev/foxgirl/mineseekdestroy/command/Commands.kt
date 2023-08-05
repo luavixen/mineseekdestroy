@@ -278,6 +278,19 @@ internal fun setup() {
         }
     }
 
+    Command.build("ghosts") {
+        it.params(argLiteral("setdeaths"), argPlayers(), argInt("value", 0, 4)) {
+            it.actionWithContext { args, context ->
+                context.ghostService.executeSetBlackDeaths(args, args.players(context), args["value"])
+            }
+        }
+        it.params(argLiteral("cleardeaths"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                context.ghostService.executeClearBlackDeaths(args, args.players(context))
+            }
+        }
+    }
+
     Command.build("tp") {
         fun register(literal: String, position: () -> Position, region: () -> Region) {
             fun teleport(console: Console, players: List<GamePlayer>, all: Boolean, filter: (GamePlayer) -> Boolean = { true }) {
