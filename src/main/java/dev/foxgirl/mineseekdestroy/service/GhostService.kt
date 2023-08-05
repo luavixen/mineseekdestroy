@@ -1,13 +1,14 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import com.mojang.serialization.Lifecycle
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
+import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.Scheduler
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.Blocks
+import net.minecraft.entity.attribute.EntityAttributeInstance
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.damage.DamageType
@@ -16,16 +17,38 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.network.packet.s2c.play.TeamS2CPacket
 import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.SimpleRegistry
 import net.minecraft.scoreboard.Team
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
 import java.util.*
 
 class GhostService : Service() {
 
-    val ghostRegistry = mutableMapOf<GamePlayer, Int>()
+    private class GhostHealth {
+        var value = 0; set(value) { field = value.coerceIn(0, healthModifiers.size) }
+        fun count() = ++value == healthModifiers.size
+
+        fun apply(attribute: EntityAttributeInstance) {
+            val modifier = healthModifiers.getOrNull(value) ?: healthModifier3
+            var missing = true
+            healthModifiers.forEach {
+                if (attribute.hasModifier(it)) {
+                    if (it == modifier) {
+                        missing = false
+                    } else {
+                        attribute.removeModifier(it)
+                    }
+                }
+            }
+            if (missing) {
+                attribute.addPersistentModifier(modifier)
+            }
+        }
+    }
+
+    private val healthValues = HashMap<GamePlayer, GhostHealth>()
+    private fun healthValue(player: GamePlayer) = healthValues.getOrPut(player, ::GhostHealth)
 
     private fun updateGhosts() {
         val running = state.isPlaying
@@ -33,6 +56,7 @@ class GhostService : Service() {
         for ((player, playerEntity) in playerEntitiesNormal) {
 
             val healthAttribute = playerEntity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)!!
+            val healthValue = healthValue(player)
 
             if (player.isGhost) {
 
@@ -51,45 +75,19 @@ class GhostService : Service() {
                     }
                 }
 
-                // FIXME: Frown. Hacked togetherTH. Rewrite whole ghost health handling system
-
-                val modifier1 = run {
-                    val index = ghostRegistry[player]
-                    if (index == null || index !in healthModifiers.indices) {
-                        ghostRegistry[player] = 0
-                        return@run healthModifier0
-                    } else {
-                        return@run healthModifiers[index]
-                    }
-                }
-
-                var add = true
-
-                healthModifiers.forEach { modifier ->
-                    if (healthAttribute.hasModifier(modifier)) {
-                        if (modifier == modifier1) {
-                            add = false
-                        } else {
-                            healthAttribute.removeModifier(modifier)
-                        }
-                    }
-                }
-
-                if (add) {
-                    healthAttribute.addPersistentModifier(modifier1)
-                }
+                healthValue.apply(healthAttribute)
 
             } else {
 
-                healthModifiers.forEach { modifier ->
-                    if (healthAttribute.hasModifier(modifier)) {
-                        healthAttribute.removeModifier(modifier)
-                        playerEntity.health = playerEntity.maxHealth
-                    }
-                }
-
                 if (playerEntity.frozenTicks >= playerEntity.minFreezeDamageTicks) {
                     playerEntity.damage(playerEntity.damageSources.freeze(), 1.0F)
+                }
+
+                healthModifiers.forEach {
+                    if (healthAttribute.hasModifier(it)) {
+                        healthAttribute.removeModifier(it)
+                        playerEntity.health = playerEntity.maxHealth
+                    }
                 }
 
             }
@@ -117,6 +115,32 @@ class GhostService : Service() {
         }
     }
 
+    fun handleDeath(
+        player: GamePlayer,
+        playerEntity: ServerPlayerEntity,
+        attacker: GamePlayer,
+        attackerEntity: ServerPlayerEntity,
+    ) {
+        if (attacker.team !== GameTeam.PLAYER_BLACK) return
+
+        Scheduler.now {
+            attackerEntity.damage(
+                world.damageSources.create(Game.DAMAGE_TYPE_ABYSS, playerEntity, null),
+                999999.0F,
+            )
+        }
+
+        if (healthValue(player).count()) {
+            Scheduler.now {
+                playerEntity.damage(
+                    world.damageSources.create(Game.DAMAGE_TYPE_ABYSS),
+                    999999.0F,
+                )
+                player.team = GameTeam.NONE
+            }
+        }
+    }
+
     fun handleInteract(player: GamePlayer, pos: BlockPos): ActionResult {
         val entity = player.entity
         if (entity != null) {
@@ -127,18 +151,6 @@ class GhostService : Service() {
     }
 
     fun shouldIgnoreDamage(key: RegistryKey<DamageType>?) = ignoredDamageTypes.contains(key)
-
-    override fun setup() {
-        val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE) as SimpleRegistry<DamageType>
-        if (registry.getEntry(Game.DAMAGE_TYPE_ABYSS).isEmpty) {
-            registry.frozen = false
-            try {
-                registry.add(Game.DAMAGE_TYPE_ABYSS, DamageType("abyss", 0.0F), Lifecycle.experimental())
-            } finally {
-                registry.freeze()
-            }
-        }
-    }
 
     private companion object {
 

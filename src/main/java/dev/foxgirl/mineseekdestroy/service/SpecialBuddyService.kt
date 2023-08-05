@@ -1,15 +1,11 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import com.mojang.serialization.Lifecycle
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.*
-import net.minecraft.entity.damage.DamageType
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.SimpleRegistry
 import net.minecraft.text.Text
 
 class SpecialBuddyService : Service() {
@@ -98,18 +94,6 @@ class SpecialBuddyService : Service() {
             }
         }
         logger.info("Buddy system updated absorption statuses")
-    }
-
-    override fun setup() {
-        val registry = world.registryManager.get(RegistryKeys.DAMAGE_TYPE) as SimpleRegistry<DamageType>
-        if (registry.getEntry(Game.DAMAGE_TYPE_HEARTBREAK).isEmpty) {
-            registry.frozen = false
-            try {
-                registry.add(Game.DAMAGE_TYPE_HEARTBREAK, DamageType("heartbreak", 0.0F), Lifecycle.experimental())
-            } finally {
-                registry.freeze()
-            }
-        }
     }
 
 }

@@ -1,11 +1,15 @@
 package dev.foxgirl.mineseekdestroy;
 
+import com.mojang.serialization.Lifecycle;
 import dev.foxgirl.mineseekdestroy.service.*;
 import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableMap;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
@@ -190,6 +194,20 @@ public final class GameContext {
         }
 
         server.setDifficulty(Difficulty.NORMAL, true);
+
+        var damageTypes = (SimpleRegistry<DamageType>) world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
+        var damageTypesThawed = false;
+        if (damageTypes.getEntry(Game.DAMAGE_TYPE_ABYSS).isEmpty()) {
+            damageTypesThawed = true;
+            damageTypes.frozen = false;
+            damageTypes.add(Game.DAMAGE_TYPE_ABYSS, new DamageType("abyss", 0.0F), Lifecycle.experimental());
+        }
+        if (damageTypes.getEntry(Game.DAMAGE_TYPE_HEARTBREAK).isEmpty()) {
+            damageTypesThawed = true;
+            damageTypes.frozen = false;
+            damageTypes.add(Game.DAMAGE_TYPE_HEARTBREAK, new DamageType("heartbreak", 0.0F), Lifecycle.experimental());
+        }
+        if (damageTypesThawed) damageTypes.freeze();
 
         game.setRuleInt(GameRules.RANDOM_TICK_SPEED, GameRules.DEFAULT_RANDOM_TICK_SPEED);
         game.setRuleInt(GameRules.PLAYERS_SLEEPING_PERCENTAGE, 200);

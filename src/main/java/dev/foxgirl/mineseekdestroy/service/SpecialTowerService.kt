@@ -3,7 +3,6 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameProperties
 import dev.foxgirl.mineseekdestroy.util.Region
-import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket
@@ -13,7 +12,7 @@ import kotlin.math.sqrt
 
 class SpecialTowerService : Service() {
 
-    private val regions = immutableListOf(
+    private val regions = Region.Set(
         Region(BlockPos(-1268, 124, 235), BlockPos(-1262, 131, 241)),
         Region(BlockPos(-1144, 136, 239), BlockPos(-1150, 129, 245)),
         Region(BlockPos(-1379, 143, 177), BlockPos(-1373, 136, 183)),

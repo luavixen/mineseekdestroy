@@ -109,7 +109,6 @@ sealed interface GameProperties {
                 FIRE, AIR, CAVE_AIR,
                 ACACIA_TRAPDOOR,
                 BEDROCK,
-                BLACKSTONE_WALL,
                 CHISELED_NETHER_BRICKS,
                 COARSE_DIRT,
                 CRYING_OBSIDIAN,
@@ -132,12 +131,7 @@ sealed interface GameProperties {
                 NETHER_BRICK_WALL,
                 OBSIDIAN,
                 PODZOL,
-                PRISMARINE_STAIRS,
-                PRISMARINE_WALL,
-                QUARTZ_SLAB,
                 RAW_GOLD_BLOCK,
-                REDSTONE_BLOCK,
-                REDSTONE_LAMP,
                 ROOTED_DIRT,
                 SAND,
                 SMOKER,
@@ -186,9 +180,8 @@ sealed interface GameProperties {
         override val regionPlayable = Region(BlockPos(-24, 3, 51), BlockPos(175, -56, -169))
         override val regionBlimp = Region(BlockPos(50, 10, -24), BlockPos(90, 29, -101))
         override val regionBlimpBalloons = Region.Set(
-            // FIXME: These are fucked, I just kinda eyeballed them
-            Region(BlockPos(44, 34, -19), BlockPos(24, 9, 1)),
-            Region(BlockPos(119, 10, -90), BlockPos(139, 34, -70)),
+            Region(BlockPos(43, 13, 1), BlockPos(25, 32, -17)),
+            Region(BlockPos(138, 13, -71), BlockPos(120, 32, -89)),
         )
         override val regionBarrierArenaTemplate = Region(BlockPos(48, -30, -605), BlockPos(92, -47, -539))
         override val regionBarrierArenaTarget = Region(BlockPos(48, -30, -89), BlockPos(92, -47, -23))
@@ -253,7 +246,8 @@ sealed interface GameProperties {
         override val regionPlayable = Region(BlockPos(788, 75, -170), BlockPos(974, -7, 30))
         override val regionBlimp = Region(BlockPos(918, 80, -16), BlockPos(835, 53, -62))
         override val regionBlimpBalloons = Region.Set(
-            // TODO: Fill out balloon bounding boxes
+            Region(BlockPos(935, 58, -94), BlockPos(917, 77, -112)),
+            Region(BlockPos(822, 58, -106), BlockPos(804, 77, -124)),
         )
         override val regionBarrierArenaTarget = Region(BlockPos(919, -1, -52), BlockPos(806, 35, -125))
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
@@ -261,7 +255,8 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
         override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
-            // TODO: Fill out balloon barrier targets
+            Region(BlockPos(931, 58, -98), BlockPos(921, 61, -108)),
+            Region(BlockPos(818, 58, -110), BlockPos(808, 61, -120)),
         )
         override val regionFlood = Region(BlockPos(788, -4, -170), BlockPos(974, 13, 30))
 
@@ -320,7 +315,8 @@ sealed interface GameProperties {
         override val regionPlayable = Region(BlockPos(-1600, 112, 591), BlockPos(-945, -8, -192))
         override val regionBlimp = Region(BlockPos(-1326, 133, 177), BlockPos(-1249, 113, 216))
         override val regionBlimpBalloons = Region.Set(
-            // TODO: Fill out balloon bounding boxes
+            Region(BlockPos(-1382, 117, 170), BlockPos(-1400, 136, 152)),
+            Region(BlockPos(-1169, 117, 236), BlockPos(-1187, 136, 218)),
         )
         override val regionBarrierArenaTarget = Region(BlockPos(-1238, 71, 187), BlockPos(-1275, 63, 208))
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
@@ -328,7 +324,8 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
         override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
-            // TODO: Fill out balloon barrier targets
+            Region(BlockPos(-1386, 117, 166), BlockPos(-1396, 120, 156)),
+            Region(BlockPos(-1173, 117, 232), BlockPos(-1183, 120, 222)),
         )
         override val regionFlood = Region(BlockPos(-1125, -16, 20), BlockPos(-1440, 67, 355))
 
@@ -388,7 +385,8 @@ sealed interface GameProperties {
         override val regionPlayable = Region(BlockPos(-46, -66, 724), BlockPos(-181, -26, 897))
         override val regionBlimp = Region(BlockPos(-67, 4, 754), BlockPos(-144, -16, 794))
         override val regionBlimpBalloons = Region.Set(
-            // TODO: Fill out balloon bounding boxes
+            Region(BlockPos(-151, -12, 875), BlockPos(-169, 7, 857)),
+            Region(BlockPos(-62, -12, 867), BlockPos(-80, 7, 849)),
         )
         override val regionBarrierArenaTarget = Region(BlockPos(-96, -39, 840), BlockPos(-129, -54, 862))
         override val regionBarrierArenaTemplate = Region(BlockPos(41, 12, -574), BlockPos(8, -3, -552))
@@ -396,7 +394,8 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
         override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
-            // TODO: Fill out balloon barrier targets
+            Region(BlockPos(-155, -12, 871), BlockPos(-165, -9, 861)),
+            Region(BlockPos(-66, -12, 863), BlockPos(-76, -9, 853)),
         )
         override val regionFlood = Region(BlockPos(-18, -64, 701), BlockPos(-206, -52, 913))
 
@@ -454,7 +453,8 @@ sealed interface GameProperties {
         override val regionPlayable = Region(BlockPos(159, -30, -1328), BlockPos(-152, 100, -1065))
         override val regionBlimp = Region(BlockPos(-42, 68, -1168), BlockPos(35, 48, -1129))
         override val regionBlimpBalloons = Region.Set(
-            // TODO: Fill out balloon bounding boxes
+            Region(BlockPos(76, 51, -1236), BlockPos(58, 70, -1254)),
+            Region(BlockPos(-100, 51, -1242), BlockPos(-118, 70, -1260)),
         )
         override val regionBarrierArenaTarget = Region(BlockPos(-47, 1, -1269), BlockPos(25, -3, -1235))
         override val regionBarrierArenaTemplate = Region(BlockPos(26, 9, -595), BlockPos(-46, 5, -629))
@@ -462,7 +462,8 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
         override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
-            // TODO: Fill out balloon barrier targets
+            Region(BlockPos(72, 51, -1240), BlockPos(62, 54, -1250)),
+            Region(BlockPos(-104, 51, -1246), BlockPos(-114, 54, -1256)),
         )
         override val regionFlood = Region(BlockPos(159, -16, -1328), BlockPos(-152, -2, -1065))
 
