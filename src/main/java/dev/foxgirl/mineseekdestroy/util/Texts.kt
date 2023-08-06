@@ -29,17 +29,15 @@ fun text(value: Any?): MutableText {
     return value.toString().asText()
 }
 fun text(vararg values: Any?): MutableText {
-    var message: MutableText? = null
-    for (value in values) {
-        val part = text(value)
-        if (message == null) {
-            message = part
-        } else {
-            message.append(Text.literal(" "))
-            message.append(part)
+    val message = text()
+    if (values.isNotEmpty()) {
+        message.append(text(values[0]))
+        for (i in 1 until values.size) {
+            message.append(text(" "))
+            message.append(text(values[i]))
         }
     }
-    return message ?: text()
+    return message
 }
 
 fun translatable(string: String): MutableText = Text.translatable(string)

@@ -8,8 +8,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AccessibleObject;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * Reflector provides various tools for manipulating and side-stepping the
@@ -143,7 +144,7 @@ public final class Reflector {
 
         private final int hash;
 
-        MethodKey(Class<?> clazz, String name, Class<?>[] params) {
+        private MethodKey(Class<?> clazz, String name, Class<?>[] params) {
             int hash = 31 * clazz.hashCode() + name.hashCode();
             if (params == null || params.length == 0) {
                 params = PARAMS_EMPTY;
@@ -158,11 +159,10 @@ public final class Reflector {
             this.hash = hash;
         }
 
-        private MethodKey trust() {
+        private void trust() {
             if (params != PARAMS_EMPTY) {
                 params = params.clone();
             }
-            return this;
         }
 
         @Override
@@ -177,12 +177,33 @@ public final class Reflector {
             var other = (MethodKey) object;
             return hash == other.hash
                 && clazz == other.clazz
-                && Objects.equals(name, other.name)
+                && name.equals(other.name)
                 && Arrays.equals(params, other.params);
         }
     }
 
-    private static final ConcurrentHashMap<MethodKey, MethodHandle> HANDLES = new ConcurrentHashMap<>(16);
+    private static final class MethodFinder implements Function<MethodKey, MethodHandle> {
+        private static final MethodFinder INSTANCE = new MethodFinder();
+
+        private MethodFinder() {
+        }
+
+        @Override
+        public MethodHandle apply(MethodKey key) {
+            key.trust();
+            try {
+                var method = forceAccessible(key.clazz.getDeclaredMethod(key.name, key.params));
+                var handle = LOOKUP.unreflect(method);
+                return handle;
+            } catch (NoSuchMethodException ignored) {
+                return null;
+            } catch (IllegalAccessException cause) {
+                throw new RuntimeException(cause);
+            }
+        }
+    }
+
+    private static final HashMap<MethodKey, MethodHandle> HANDLES = new HashMap<>(16);
 
     /**
      * Creates a {@link MethodHandle} by looking up a (possibly private or
@@ -199,19 +220,10 @@ public final class Reflector {
     public static @Nullable MethodHandle methodHandle(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<?>... params) {
         Objects.requireNonNull(clazz, "Argument 'clazz'");
         Objects.requireNonNull(name, "Argument 'name'");
-        return HANDLES.computeIfAbsent(new MethodKey(clazz, name, params), (key) -> {
-            try {
-                var method = forceAccessible(clazz.getDeclaredMethod(name, params));
-                var handle = LOOKUP.unreflect(method);
-                return handle;
-            } catch (NoSuchMethodException ignored) {
-                return null;
-            } catch (IllegalAccessException cause) {
-                throw new RuntimeException(cause);
-            } finally {
-                key.trust();
-            }
-        });
+        var key = new MethodKey(clazz, name, params);
+        synchronized (HANDLES) {
+            return HANDLES.computeIfAbsent(key, MethodFinder.INSTANCE);
+        }
     }
 
     /**

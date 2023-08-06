@@ -120,6 +120,8 @@ class SpecialSummonsService : Service() {
         val team get() = options.team
         val pos get() = options.pos
 
+        val displayName get() = kind.displayName
+
         open val timeout: Duration get() = Duration.ZERO
         open val isRoundOnly: Boolean get() = false
 
@@ -134,7 +136,7 @@ class SpecialSummonsService : Service() {
                 action()
                 true
             } catch (cause : Exception) {
-                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb: ${javaClass.simpleName}")
+                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb:", this)
                 Game.LOGGER.error("SpecialSummonsService exception while $verb ${javaClass.simpleName}", cause)
                 false
             }
@@ -145,7 +147,7 @@ class SpecialSummonsService : Service() {
                 val success = tryAction("performing", ::perform)
                 if (success) {
                     state = State.READY
-                    Game.CONSOLE_OPERATORS.sendInfo("Summon performed: ${javaClass.simpleName}")
+                    Game.CONSOLE_OPERATORS.sendInfo("Summon performed:", this)
                 }
                 return success
             }
@@ -156,7 +158,7 @@ class SpecialSummonsService : Service() {
                 val success = tryAction("stopping", ::stop)
                 if (success) {
                     state = State.DEAD
-                    Game.CONSOLE_OPERATORS.sendInfo("Summon stopped: ${javaClass.simpleName}")
+                    Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", this)
                 }
                 return success
             }
