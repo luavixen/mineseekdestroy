@@ -13,6 +13,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -231,8 +232,11 @@ public final class Editor {
 
         @Override
         public void run() {
+            var start = System.nanoTime();
+            var success = false;
             try {
                 perform();
+                success = true;
             } catch (Throwable cause) {
                 for (Operation operation : operations) {
                     try {
@@ -241,6 +245,17 @@ public final class Editor {
                     }
                 }
                 throw cause;
+            } finally {
+                var message = new StringBuilder(64);
+                message.append("Editor executed task (");
+                message.append(success ? "success" : "failure");
+                message.append(") for ");
+                message.append(operations.length);
+                message.append(" operation(s) in ");
+                message.append(new DecimalFormat("#.##").format((double) (System.nanoTime() - start) * 1e-6D));
+                message.append("ms");
+                if (success) Game.LOGGER.info(message.toString());
+                else Game.LOGGER.warn(message.toString());
             }
         }
     }

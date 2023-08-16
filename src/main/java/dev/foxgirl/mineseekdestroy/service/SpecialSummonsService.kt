@@ -131,12 +131,12 @@ class SpecialSummonsService : Service() {
 
         private var state = State.WAITING
 
-        private fun tryAction(verb: String, action: () -> Unit): Boolean {
+        private inline fun tryAction(verb: String, action: () -> Unit): Boolean {
             return try {
                 action()
                 true
             } catch (cause : Exception) {
-                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb:", this)
+                Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb:", this.displayName)
                 Game.LOGGER.error("SpecialSummonsService exception while $verb ${javaClass.simpleName}", cause)
                 false
             }
@@ -147,7 +147,7 @@ class SpecialSummonsService : Service() {
                 val success = tryAction("performing", ::perform)
                 if (success) {
                     state = State.READY
-                    Game.CONSOLE_OPERATORS.sendInfo("Summon performed:", this)
+                    Game.CONSOLE_OPERATORS.sendInfo("Summon performed:", this.displayName)
                 }
                 return success
             }
@@ -158,7 +158,7 @@ class SpecialSummonsService : Service() {
                 val success = tryAction("stopping", ::stop)
                 if (success) {
                     state = State.DEAD
-                    Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", this)
+                    Game.CONSOLE_OPERATORS.sendInfo("Summon stopped:", this.displayName)
                 }
                 return success
             }
@@ -720,13 +720,12 @@ class SpecialSummonsService : Service() {
         val failure = failCheck(options)
         if (failure != null) {
             Game.CONSOLE_PLAYERS.sendInfo(options.team, "failed a summon")
-            Game.CONSOLE_OPERATORS.sendInfo("Summon", options.kind, "failed:", failure)
+            Game.CONSOLE_OPERATORS.sendInfo("Summon failed:", failure, options.kind)
 
             textProvider = textProvidersFailure[failure]!!(options)
             failPerform(options)
         } else {
             Game.CONSOLE_PLAYERS.sendInfo(options.team, "summoned", options.kind)
-            Game.CONSOLE_OPERATORS.sendInfo("Summon", options.kind, "success!")
 
             textProvider = textProvidersSuccess[options.kind]!!(options)
             summonPerform(options)
