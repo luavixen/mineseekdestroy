@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.util
 
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.Vec3i
@@ -13,6 +14,8 @@ class Region : Selection {
 
     val chunkStart: ChunkPos
     val chunkEnd: ChunkPos
+
+    val box: Box
 
     constructor(a: Vec3i, b: Vec3i) {
         start = BlockPos(
@@ -27,6 +30,7 @@ class Region : Selection {
         )
         chunkStart = ChunkPos(start)
         chunkEnd = ChunkPos(end)
+        box = Box(start, end.add(1, 1, 1))
     }
 
     val center get() =
@@ -65,18 +69,21 @@ class Region : Selection {
     override fun toString() =
         "Region{start=$start, end=$end}"
 
-    class Set private constructor(private val regions: ImmutableSet<Region>) : kotlin.collections.Set<Region> by regions, Selection {
+    class Set : AbstractSet<Region>, Selection {
 
-        constructor(vararg elements: Region) : this(ImmutableSet.copyOf(elements))
-        constructor(collection: Collection<Region>) : this(ImmutableSet.copyOf(collection))
+        private val regions: Array<Region>
+
+        constructor(vararg elements: Region) {
+            regions = ImmutableSet.copyOf(elements).toTypedArray()
+        }
+        constructor(collection: Collection<Region>) {
+            regions = ImmutableSet.copyOf(collection).toTypedArray()
+        }
 
         override fun contains(x: Int, y: Int, z: Int) = regions.any { it.contains(x, y, z) }
 
-        override fun equals(other: Any?) =
-            other === this || (other is kotlin.collections.Set<*> && size == other.size && containsAll(other))
-
-        override fun hashCode() = regions.hashCode()
-        override fun toString() = regions.toString()
+        override val size get() = regions.size
+        override fun iterator() = regions.iterator()
 
     }
 

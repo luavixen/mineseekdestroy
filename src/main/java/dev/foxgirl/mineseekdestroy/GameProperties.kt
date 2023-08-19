@@ -29,6 +29,7 @@ sealed interface GameProperties {
     val regionPlayable: Region
     val regionBlimp: Region
     val regionBlimpBalloons: Region.Set
+    val regionBlimpFans: Region.Set
     val regionBarrierArenaTemplate: Region
     val regionBarrierArenaTarget: Region
     val regionBarrierBlimpTemplate: Region
@@ -66,6 +67,7 @@ sealed interface GameProperties {
         override val regionPlayable = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBlimp = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBlimpBalloons = Region.Set()
+        override val regionBlimpFans = Region.Set()
         override val regionBarrierArenaTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierArenaTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
@@ -180,6 +182,7 @@ sealed interface GameProperties {
             Region(BlockPos(43, 13, 1), BlockPos(25, 32, -17)),
             Region(BlockPos(138, 13, -71), BlockPos(120, 32, -89)),
         )
+        override val regionBlimpFans = Region.Set()
         override val regionBarrierArenaTemplate = Region(BlockPos(48, -30, -605), BlockPos(92, -47, -539))
         override val regionBarrierArenaTarget = Region(BlockPos(48, -30, -89), BlockPos(92, -47, -23))
         override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
@@ -246,6 +249,7 @@ sealed interface GameProperties {
             Region(BlockPos(935, 58, -94), BlockPos(917, 77, -112)),
             Region(BlockPos(822, 58, -106), BlockPos(804, 77, -124)),
         )
+        override val regionBlimpFans = Region.Set()
         override val regionBarrierArenaTarget = Region(BlockPos(919, -1, -52), BlockPos(806, 35, -125))
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
@@ -315,6 +319,7 @@ sealed interface GameProperties {
             Region(BlockPos(-1382, 117, 170), BlockPos(-1400, 136, 152)),
             Region(BlockPos(-1169, 117, 236), BlockPos(-1187, 136, 218)),
         )
+        override val regionBlimpFans = Region.Set()
         override val regionBarrierArenaTarget = Region(BlockPos(-1238, 71, 187), BlockPos(-1275, 63, 208))
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
@@ -385,6 +390,12 @@ sealed interface GameProperties {
             Region(BlockPos(-151, -12, 875), BlockPos(-169, 7, 857)),
             Region(BlockPos(-62, -12, 867), BlockPos(-80, 7, 849)),
         )
+        override val regionBlimpFans = Region.Set(
+            Region(BlockPos(-103, -6, 785), BlockPos(-95, -8, 793)),
+            Region(BlockPos(-132, -6, 785), BlockPos(-124, -8, 793)),
+            Region(BlockPos(-301, -6, 763), BlockPos(-95, -8, 755)),
+            Region(BlockPos(-132, -6, 763), BlockPos(-124, -8, 755)),
+        )
         override val regionBarrierArenaTarget = Region(BlockPos(-96, -39, 840), BlockPos(-129, -54, 862))
         override val regionBarrierArenaTemplate = Region(BlockPos(41, 12, -574), BlockPos(8, -3, -552))
         override val regionBarrierBlimpTarget = Region(BlockPos(-101, -17, 767), BlockPos(-126, -9, 781))
@@ -453,6 +464,7 @@ sealed interface GameProperties {
             Region(BlockPos(76, 51, -1236), BlockPos(58, 70, -1254)),
             Region(BlockPos(-100, 51, -1242), BlockPos(-118, 70, -1260)),
         )
+        override val regionBlimpFans = Region.Set()
         override val regionBarrierArenaTarget = Region(BlockPos(-47, 1, -1269), BlockPos(25, -3, -1235))
         override val regionBarrierArenaTemplate = Region(BlockPos(26, 9, -595), BlockPos(-46, 5, -629))
         override val regionBarrierBlimpTarget = Region(BlockPos(1, 47, -1155), BlockPos(-24, 55, -1141))
