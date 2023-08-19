@@ -48,7 +48,7 @@ class GhostService : Service() {
         }
     }
 
-    private val healthValues = HashMap<GamePlayer, GhostHealth>()
+    private val healthValues = HashMap<GamePlayer, GhostHealth>(32)
     private fun healthValue(player: GamePlayer) = healthValues.getOrPut(player, ::GhostHealth)
 
     private fun updateGhosts() {
@@ -165,13 +165,13 @@ class GhostService : Service() {
     private companion object {
 
         private val healthModifier0 =
-            EntityAttributeModifier(UUID.fromString("95880240-c1f7-4660-8e0e-a14f13e2cf41"), "msd_ghost_health", -12.0, EntityAttributeModifier.Operation.ADDITION)
+            EntityAttributeModifier(UUID.fromString("95880240-c1f7-4660-8e0e-a14f13e2cf41"), "msd_ghost_health_0", -12.0, EntityAttributeModifier.Operation.ADDITION)
         private val healthModifier1 =
-            EntityAttributeModifier(UUID.fromString("44a5c49b-f2c6-4c66-8d41-76849b229510"), "msd_ghost_health", -14.0, EntityAttributeModifier.Operation.ADDITION)
+            EntityAttributeModifier(UUID.fromString("44a5c49b-f2c6-4c66-8d41-76849b229510"), "msd_ghost_health_1", -14.0, EntityAttributeModifier.Operation.ADDITION)
         private val healthModifier2 =
-            EntityAttributeModifier(UUID.fromString("81fa324f-e299-4988-b9de-8dcc777d3cdc"), "msd_ghost_health", -16.0, EntityAttributeModifier.Operation.ADDITION)
+            EntityAttributeModifier(UUID.fromString("81fa324f-e299-4988-b9de-8dcc777d3cdc"), "msd_ghost_health_2", -16.0, EntityAttributeModifier.Operation.ADDITION)
         private val healthModifier3 =
-            EntityAttributeModifier(UUID.fromString("6eecfa8a-977e-43fa-92c4-c680f25bf42c"), "msd_ghost_health", -18.0, EntityAttributeModifier.Operation.ADDITION)
+            EntityAttributeModifier(UUID.fromString("6eecfa8a-977e-43fa-92c4-c680f25bf42c"), "msd_ghost_health_3", -18.0, EntityAttributeModifier.Operation.ADDITION)
 
         private val healthModifiers = immutableListOf(healthModifier0, healthModifier1, healthModifier2, healthModifier3)
 

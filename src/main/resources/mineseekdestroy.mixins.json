@@ -24,6 +24,7 @@
         "MixinPlayerEntity",
         "MixinPlayerInventory",
         "MixinProjectileEntity",
+        "MixinRecipeManager",
         "MixinSaddledComponent",
         "MixinServerPlayerEntity",
         "MixinServerPlayerInteractionManager",
