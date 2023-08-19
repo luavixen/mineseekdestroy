@@ -49,7 +49,7 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
         }
 
         public @NotNull ImmutableSet<E> build() {
-            return of(collect());
+            return of(this);
         }
 
         public @NotNull Builder<E> put(E element) {

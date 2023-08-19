@@ -59,7 +59,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
             if (isEmpty()) {
                 return of();
             } else {
-                return new ImmutableMap<>(ImmutableList.wrap(collect()));
+                return new ImmutableMap<>(this);
             }
         }
 

@@ -11,6 +11,9 @@ class Region : Selection {
     val start: BlockPos
     val end: BlockPos
 
+    val chunkStart: ChunkPos
+    val chunkEnd: ChunkPos
+
     constructor(a: Vec3i, b: Vec3i) {
         start = BlockPos(
             Math.min(a.x, b.x),
@@ -22,10 +25,9 @@ class Region : Selection {
             Math.max(a.y, b.y),
             Math.max(a.z, b.z),
         )
+        chunkStart = ChunkPos(start)
+        chunkEnd = ChunkPos(end)
     }
-
-    val chunkStart get() = ChunkPos(start)
-    val chunkEnd get() = ChunkPos(end)
 
     val center get() =
         Vec3d(
@@ -34,10 +36,14 @@ class Region : Selection {
             (start.z.toLong() + end.z.toLong()).toDouble() / 2.0 + 0.5,
         )
 
-    val size get() =
-        (end.x - start.x).toLong() *
-        (end.y - start.y).toLong() *
-        (end.z - start.z).toLong()
+    val blockCount get() =
+        (end.x - start.x + 1).toLong() *
+        (end.y - start.y + 1).toLong() *
+        (end.z - start.z + 1).toLong()
+
+    val chunkCount get() =
+        (chunkEnd.x - chunkStart.x + 1).toLong() *
+        (chunkEnd.z - chunkStart.z + 1).toLong()
 
     operator fun component1() = start
     operator fun component2() = end

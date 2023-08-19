@@ -1,6 +1,8 @@
 package dev.foxgirl.mineseekdestroy.util;
 
 import dev.foxgirl.mineseekdestroy.Game;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -127,7 +129,7 @@ public final class Editor {
         }
     }
 
-    private static final class Task implements Runnable {
+    private static final class Task {
         private final Target target;
         private final Operation[] operations;
 
@@ -182,7 +184,7 @@ public final class Editor {
             return mutated;
         }
 
-        private void perform() {
+        private List<WorldChunk> performTask() {
             Target target = this.target;
             Operation[] operations = this.operations;
 
@@ -191,15 +193,15 @@ public final class Editor {
 
             ServerChunkManager manager = world.getChunkManager();
 
+            int chunksCount = (int) region.getChunkCount();
+
+            var chunks = new ArrayList<WorldChunk>(chunksCount);
+            var chunksMutated = new ArrayList<WorldChunk>(chunksCount);
+
             var cPosMin = region.getChunkStart();
             var cPosMax = region.getChunkEnd();
             int cPosMinX = cPosMin.x, cPosMaxX = cPosMax.x;
             int cPosMinZ = cPosMin.z, cPosMaxZ = cPosMax.z;
-
-            int chunksCount = (cPosMaxX - cPosMinX + 1) * (cPosMaxZ - cPosMinZ + 1);
-
-            var chunks = new ArrayList<WorldChunk>(chunksCount);
-            var chunksMutated = new ArrayList<WorldChunk>(chunksCount);
 
             for (int x = cPosMinX; x <= cPosMaxX; x++) {
                 for (int z = cPosMinZ; z <= cPosMaxZ; z++) {
@@ -218,25 +220,19 @@ public final class Editor {
                 if (mutated) chunksMutated.add(chunk);
             }
 
-            for (WorldChunk chunk : chunksMutated) {
-                var packet = new ChunkDataS2CPacket(chunk, manager.getLightingProvider(), null, null);
-                for (ServerPlayerEntity player : world.getPlayers()) {
-                    player.networkHandler.sendPacket(packet);
-                }
-            }
-
             for (Operation operation : operations) {
                 operation.complete();
             }
+
+            return chunksMutated;
         }
 
-        @Override
-        public void run() {
+        private List<WorldChunk> perform() {
+            Game.LOGGER.info("Editor performing task for " + operations.length + " operation(s)");
             var start = System.nanoTime();
-            var success = false;
+            var success = true;
             try {
-                perform();
-                success = true;
+                return performTask();
             } catch (Throwable cause) {
                 for (Operation operation : operations) {
                     try {
@@ -244,10 +240,10 @@ public final class Editor {
                     } catch (Throwable ignored) {
                     }
                 }
-                throw cause;
+                success = false;
             } finally {
                 var message = new StringBuilder(64);
-                message.append("Editor executed task (");
+                message.append("Editor performed task (");
                 message.append(success ? "success" : "failure");
                 message.append(") for ");
                 message.append(operations.length);
@@ -257,6 +253,7 @@ public final class Editor {
                 if (success) Game.LOGGER.info(message.toString());
                 else Game.LOGGER.warn(message.toString());
             }
+            return ImmutableList.of();
         }
     }
 
@@ -275,6 +272,12 @@ public final class Editor {
      * Executes all enqueued operations.
      */
     public static void update() {
+        var server = Game.getGame().getServer();
+
+        if (!server.isOnThread()) {
+            throw new IllegalStateException("Editor update started from wrong thread");
+        }
+
         ArrayList<Task> tasks;
 
         synchronized (lock) {
@@ -293,13 +296,32 @@ public final class Editor {
             operations.clear();
         }
 
-        tasks.sort(Comparator.comparingLong((task) -> task.target.region.getSize()));
+        tasks.sort(Comparator.comparingLong((task) -> task.target.region.getBlockCount()));
 
-        var server = Game.getGame().getServer();
+        var chunkLists = new ArrayList<List<WorldChunk>>(tasks.size());
+        var chunkCount = 0;
 
-        for (var task : tasks) {
-            Game.LOGGER.info("Editor executing task for " + task.operations.length + " operation(s)");
-            server.execute(task);
+        for (Task task : tasks) {
+            var chunks = task.perform();
+            if (chunks.isEmpty()) continue;
+            chunkLists.add(chunks);
+            chunkCount = Math.max(chunkCount, (int) task.target.region.getChunkCount());
+        }
+
+        if (chunkLists.isEmpty()) return;
+
+        var chunks = ImmutableSet.<WorldChunk>builder(chunkCount);
+        chunkLists.forEach(chunks::addAll);
+
+        var distance = server.getPlayerManager().getViewDistance() + 4;
+
+        for (WorldChunk chunk : chunks.build()) {
+            var world = (ServerWorld) chunk.getWorld();
+            var packet = new ChunkDataS2CPacket(chunk, world.getChunkManager().getLightingProvider(), null, null);
+            for (ServerPlayerEntity player : world.getPlayers()) {
+                if (player.getChunkPos().getChebyshevDistance(chunk.getPos()) > distance) continue;
+                player.networkHandler.sendPacket(packet);
+            }
         }
     }
 
