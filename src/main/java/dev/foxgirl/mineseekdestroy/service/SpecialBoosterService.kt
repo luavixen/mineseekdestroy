@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameProperties
+import dev.foxgirl.mineseekdestroy.util.Broadcast
 import dev.foxgirl.mineseekdestroy.util.Region
 import dev.foxgirl.mineseekdestroy.util.Selection
 import net.minecraft.entity.LivingEntity
@@ -9,6 +10,8 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.sound.SoundCategory
+import net.minecraft.sound.SoundEvents
 import net.minecraft.util.TypeFilter
 import net.minecraft.util.math.BlockPos
 import kotlin.math.sqrt
@@ -50,10 +53,18 @@ class SpecialBoosterService : Service() {
             }
             leaving.forEach {
                 it.addVelocity(0.0, game.getRuleDouble(Game.RULE_FANS_KNOCKBACK), 0.0)
+
                 if (it is ServerPlayerEntity) {
                     it.networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(it))
                     it.velocityDirty = false
                 }
+
+                Broadcast.sendSound(
+                    SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,
+                    SoundCategory.PLAYERS,
+                    1.0F, 1.0F,
+                    world, it.pos,
+                )
             }
         }
 
@@ -86,10 +97,18 @@ class SpecialBoosterService : Service() {
                         }
 
                         it.takeKnockback(game.getRuleDouble(Game.RULE_TOWER_KNOCKBACK), pushX, pushY)
+
                         if (it is ServerPlayerEntity) {
                             it.networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(it))
                             it.velocityDirty = false
                         }
+
+                        Broadcast.sendSound(
+                            SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,
+                            SoundCategory.PLAYERS,
+                            1.0F, 1.0F,
+                            world, it.pos,
+                        )
                     }
                 }
             }
