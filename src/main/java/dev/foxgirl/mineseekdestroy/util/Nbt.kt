@@ -65,12 +65,11 @@ fun toNbt(value: Inventory): NbtCompound = Inventories.toNbt(value)
 fun toNbt(value: Collection<*>) = toNbtList(value)
 fun toNbt(value: Map<*, *>) = toNbtCompound(value)
 
-fun toNbtElement(value: Any?): NbtElement {
+private fun toNbtElementConversion(value: Any?): NbtElement {
     if (value == null) {
         throw NullPointerException("Cannot convert null to NbtElement")
     }
     return when (value) {
-        is NbtElement -> value
         is Byte -> toNbt(value)
         is ByteArray -> toNbt(value)
         is Short -> toNbt(value)
@@ -104,6 +103,9 @@ fun toNbtElement(value: Any?): NbtElement {
             }
         }
     }
+}
+fun toNbtElement(value: Any?): NbtElement {
+    return if (value is NbtElement) value else toNbtElementConversion(value)
 }
 
 fun nbtListOf() = nbtList()

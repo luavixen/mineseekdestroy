@@ -16,6 +16,7 @@ import net.minecraft.nbt.NbtString
 import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
+import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.text.Text
 import net.minecraft.world.GameMode
 import java.util.concurrent.atomic.AtomicBoolean
@@ -33,7 +34,6 @@ class AutomationService : Service() {
     private fun recordsCreate() {
         records = players.associateWith(::Record)
     }
-
     private fun recordsTake(): Map<GamePlayer, Record> {
         return records.also { records = emptyMap() }
     }
@@ -129,7 +129,7 @@ class AutomationService : Service() {
         }
     }
 
-    private val cooldownFlag = AtomicBoolean(false)
+    private val ipadCooldownFlag = AtomicBoolean(false)
 
     fun executeOpenIpad(console: Console) {
         if (players.none { it.isOperator }) {
@@ -137,14 +137,14 @@ class AutomationService : Service() {
             return
         }
 
-        if (cooldownFlag.getAndSet(true)) {
+        if (ipadCooldownFlag.getAndSet(true)) {
             console.sendError("Cannot open iPad, already in progress")
             return
         }
         try {
-            Scheduler.delay(5.0) { cooldownFlag.set(false) }
+            Scheduler.delay(5.0) { ipadCooldownFlag.set(false) }
         } catch (cause: Exception) {
-            cooldownFlag.set(false)
+            ipadCooldownFlag.set(false)
             throw cause
         }
 
@@ -174,8 +174,8 @@ class AutomationService : Service() {
             listing,
         )
 
-        val inventoryLiveOperators = LiveInventory(parts + listOf(buttonOperators))
-        val inventoryLivePlayers = LiveInventory(parts + listOf(buttonPlayers))
+        val inventoryLiveOperators = LiveInventory(parts + buttonOperators)
+        val inventoryLivePlayers = LiveInventory(parts + buttonPlayers)
 
         val inventoryPlayers = ViewInventory(inventoryLivePlayers, buttonState::open)
         val inventoryView = ViewInventory(inventoryLivePlayers)
@@ -229,13 +229,17 @@ class AutomationService : Service() {
     private companion object {
 
         private class IpadNamedScreenHandlerFactory(private val inventory: Inventory) : NamedScreenHandlerFactory {
-            override fun getDisplayName(): Text = Text.of("child's ipad")
-            override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity?): ScreenHandler {
-                return GenericContainerScreenHandler.createGeneric9x6(syncId, playerInventory, inventory)
+            override fun getDisplayName(): Text = text("child's ipad")
+            override fun createMenu(sync: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity?): ScreenHandler {
+                return IpadScreenHandler(sync, playerInventory, inventory)
             }
         }
 
-        private val empty = ItemStack.EMPTY!!
+        private class IpadScreenHandler(
+            sync: Int,
+            inventoryPlayer: PlayerInventory,
+            inventoryContainer: Inventory,
+        ) : GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, sync, inventoryPlayer, inventoryContainer, 6)
 
         private class LiveInventory(parts: Iterable<InventoryPart>) : Inventory {
             private val mappings = arrayOfNulls<InventoryPart>(size())
@@ -254,19 +258,17 @@ class AutomationService : Service() {
             override fun size() = 54
             override fun isEmpty() = false
 
-            override fun setStack(slot: Int, stack: ItemStack?) {
-                mapped(slot) { index, part -> part.set(index, stack ?: empty) }
-            }
-
-            override fun removeStack(slot: Int, amount: Int) = removeStack(slot)
-            override fun removeStack(slot: Int): ItemStack {
-                mapped(slot) { index, part -> return part.set(index, empty) }
-                return empty
-            }
-
             override fun getStack(slot: Int): ItemStack {
                 mapped(slot) { index, part -> return part.get(index) }
-                return empty
+                return stackOf()
+            }
+            override fun setStack(slot: Int, stack: ItemStack?) {
+                mapped(slot) { index, part -> part.set(index, stack ?: stackOf()) }
+            }
+            override fun removeStack(slot: Int, amount: Int) = removeStack(slot)
+            override fun removeStack(slot: Int): ItemStack {
+                mapped(slot) { index, part -> return part.set(index, stackOf()) }
+                return stackOf()
             }
 
             override fun clear() {}
@@ -283,34 +285,37 @@ class AutomationService : Service() {
                 if (mutable()) inventory.setStack(slot, stack)
             }
             override fun removeStack(slot: Int, amount: Int) =
-                if (mutable()) inventory.removeStack(slot, amount) else empty
+                if (mutable()) inventory.removeStack(slot, amount) else stackOf()
             override fun removeStack(slot: Int) =
-                if (mutable()) inventory.removeStack(slot) else empty
+                if (mutable()) inventory.removeStack(slot) else stackOf()
         }
 
-        private abstract class InventoryPart(val mapping: IntArray) {
+        private abstract class InventoryPart(@JvmField val mapping: IntArray) {
             abstract fun get(index: Int): ItemStack
             abstract fun set(index: Int, stack: ItemStack): ItemStack
         }
 
-        private class BackgroundInventoryPart(mapping: IntArray, private val stack: ItemStack) : InventoryPart(mapping) {
-            override fun get(index: Int) = stack.copy()
-            override fun set(index: Int, stack: ItemStack) = empty
+        private class BackgroundInventoryPart(mapping: IntArray, private val stack: ItemStack) :
+            InventoryPart(mapping) {
+            override fun get(index: Int) = stackOf(stack)
+            override fun set(index: Int, stack: ItemStack) = stackOf()
         }
 
         private class ListingInventoryPart(mapping: IntArray, players: List<GamePlayer>) : InventoryPart(mapping) {
             private val slots = arrayOfNulls<ItemStack>(mapping.size)
+
             init {
                 for (i in 0 until Math.min(mapping.size, players.size)) {
-                    val nbt = NbtCompound().also {
-                        it.put("SkullOwner", NbtString.of(players[i].name))
-                        it.put("MsdIllegal", NbtByte.ONE)
-                    }
-                    slots[i] = ItemStack(Items.PLAYER_HEAD).also { it.nbt = nbt }
+                    slots[i] = stackOf(
+                        Items.PLAYER_HEAD, nbtCompoundOf(
+                            "SkullOwner" to players[i].name,
+                            "MsdIllegal" to true,
+                        )
+                    )
                 }
             }
 
-            override fun get(index: Int) = slots[index]?.copy() ?: empty
+            override fun get(index: Int) = slots[index]?.copy() ?: stackOf()
             override fun set(index: Int, stack: ItemStack) = get(index)
         }
 
@@ -318,11 +323,11 @@ class AutomationService : Service() {
             private val slots = arrayOfNulls<ItemStack>(mapping.size)
 
             override fun get(index: Int): ItemStack {
-                return slots[index] ?: empty
+                return slots[index] ?: stackOf()
             }
             override fun set(index: Int, stack: ItemStack): ItemStack {
                 val stackNew = if (stack.item === Items.PLAYER_HEAD) stack.copy() else null
-                val stackOld = slots[index] ?: empty
+                val stackOld = slots[index] ?: stackOf()
                 slots[index] = stackNew
                 return stackOld
             }
@@ -354,7 +359,7 @@ class AutomationService : Service() {
             override fun get(index: Int) = (if (state.flags[index]) itemLocked else itemOpen).copy()
             override fun set(index: Int, stack: ItemStack): ItemStack {
                 if (mutable) state.flags[index] = !state.flags[index]
-                return empty
+                return stackOf()
             }
         }
 
@@ -364,13 +369,8 @@ class AutomationService : Service() {
             fun open() = flags.none { it }
         }
 
-        private fun ItemStack.setIllegal(): ItemStack {
-            setSubNbt("MsdIllegal", NbtByte.ONE)
-            return this
-        }
-
-        private val itemLocked = ItemStack(Items.RED_CONCRETE).setCustomName(Text.of("LOCKED IN")).setIllegal()
-        private val itemOpen = ItemStack(Items.LIME_CONCRETE).setCustomName(Text.of("OPEN")).setIllegal()
+        private val itemLocked = stackOf(Items.RED_CONCRETE, nbtCompoundOf("MsdIllegal" to true), text("LOCKED IN").red())
+        private val itemOpen = stackOf(Items.LIME_CONCRETE, nbtCompoundOf("MsdIllegal" to true), text("OPEN").green())
 
         private val backgroundYellow: BackgroundInventoryPart
         private val backgroundBlue: BackgroundInventoryPart
@@ -379,28 +379,21 @@ class AutomationService : Service() {
         private val mappingTargetYellow: IntArray
         private val mappingTargetBlue: IntArray
         private val mappingTargetSkip: IntArray
-        private val mappingListing: IntArray
         private val mappingButtons: IntArray
+        private val mappingListing: IntArray
 
         init {
-            val itemYellow = ItemStack(Items.YELLOW_STAINED_GLASS_PANE).setCustomName(Text.of("TEAM YELLOW")).setIllegal()
-            val itemBlue = ItemStack(Items.BLUE_STAINED_GLASS_PANE).setCustomName(Text.of("TEAM BLUE")).setIllegal()
-            val itemSkip = ItemStack(Items.LIME_STAINED_GLASS_PANE).setCustomName(Text.of("SKIP!")).setIllegal()
+            val itemYellow = stackOf(Items.YELLOW_STAINED_GLASS_PANE, nbtCompoundOf("MsdIllegal" to true), text("TEAM YELLOW").teamYellow())
+            val itemBlue = stackOf(Items.BLUE_STAINED_GLASS_PANE, nbtCompoundOf("MsdIllegal" to true), text("TEAM BLUE").teamBlue())
+            val itemSkip = stackOf(Items.LIME_STAINED_GLASS_PANE, nbtCompoundOf("MsdIllegal" to true), text("SKIP!").green())
 
-            val mappingYellow = buildList {
-                addAll(9..11)
-                addAll(45..47)
-            }.toIntArray()
-            val mappingBlue = buildList {
-                addAll(15..17)
-                addAll(51..53)
-            }.toIntArray()
+            val mappingYellow = intArrayOf(18, 20, 21)
+            val mappingBlue = intArrayOf(23, 24, 26)
             val mappingSkip = buildList {
-                addAll(12..14)
-                addAll(21..23)
-                add(30)
-                add(32)
-                addAll(39..41)
+                add(22)
+                addAll(30..32)
+                add(39)
+                add(41)
                 addAll(48..50)
             }.toIntArray()
 
@@ -409,18 +402,18 @@ class AutomationService : Service() {
             backgroundSkip = BackgroundInventoryPart(mappingSkip, itemSkip)
 
             mappingTargetYellow = buildList {
-                addAll(18..20)
                 addAll(27..29)
                 addAll(36..38)
+                addAll(45..47)
             }.toIntArray()
             mappingTargetBlue = buildList {
-                addAll(24..26)
                 addAll(33..35)
                 addAll(42..44)
+                addAll(51..53)
             }.toIntArray()
-            mappingTargetSkip = intArrayOf(31)
-            mappingListing = intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8)
-            mappingButtons = intArrayOf(28, 34)
+            mappingTargetSkip = intArrayOf(40)
+            mappingButtons = intArrayOf(19, 25)
+            mappingListing = (0..17).toList().toIntArray()
         }
 
     }

@@ -869,7 +869,7 @@ class SpecialSummonsService : Service() {
 
     private inner class AltarNamedScreenHandlerFactory(val altar: Altar) : NamedScreenHandlerFactory {
         override fun getDisplayName(): Text =
-            text("Altar of the", altar.theology.displayName)
+            text("Altar of the ").append(altar.theology.displayName)
         override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity): ScreenHandler =
             AltarScreenHandler(altar, syncId, playerInventory)
     }

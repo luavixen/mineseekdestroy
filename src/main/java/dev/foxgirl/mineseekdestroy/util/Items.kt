@@ -8,7 +8,10 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 
-fun stackOf(): ItemStack = ItemStack.EMPTY
+inline fun stackOf(): ItemStack = ItemStack.EMPTY
+
+inline fun stackOf(stack: ItemStack, count: Int): ItemStack = stack.copyWithCount(count)
+inline fun stackOf(stack: ItemStack): ItemStack = stack.copy()
 
 fun stackOf(item: ItemConvertible, count: Int) = ItemStack(item, count)
 fun stackOf(item: ItemConvertible) = stackOf(item, 1)
