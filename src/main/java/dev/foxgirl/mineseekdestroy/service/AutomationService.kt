@@ -10,7 +10,6 @@ import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
-import net.minecraft.nbt.NbtByte
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtString
 import net.minecraft.screen.GenericContainerScreenHandler

@@ -113,14 +113,14 @@ class SpecialSummonsService : Service() {
 
     private enum class State { WAITING, READY, DEAD }
 
-    private abstract inner class Summon(protected val options: Options) {
+    private abstract inner class Summon(val options: Options) {
         val kind get() = options.kind
         val altar get() = options.altar
         val player get() = options.player
         val team get() = options.team
         val pos get() = options.pos
 
-        val displayName get() = kind.displayName
+        val displayName: Text get() = kind.displayName
 
         open val timeout: Duration get() = Duration.ZERO
         open val isRoundOnly: Boolean get() = false
@@ -744,7 +744,7 @@ class SpecialSummonsService : Service() {
     private abstract class DefaultTextProvider(val options: Options) : TextProvider
     private abstract class FailureTextProvider(val options: Options) : TextProvider {
         override val title: Text = text("Summon failed!")
-        override val tooltip: Text = text(options.team.displayName, "failed to summon.")
+        override val tooltip: Text = text(options.team, "failed to summon.")
     }
 
     private fun updateActive() {
@@ -1092,206 +1092,157 @@ class SpecialSummonsService : Service() {
         private val textProvidersSuccess = immutableMapOf<Theologies, (Options) -> TextProvider>(
             Theologies(DEEP, OCCULT) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Star and compass, map and sextant;")
+                    text("Star & compass, map & sextant;")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" received trackers to hunt their enemies.")
+                    text(options.team, "received trackers to hunt their enemies.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" received trackers for enemy players.")
+                    text(options.team, "received trackers for enemy players.")
             } },
             Theologies(DEEP, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Whirling clouds cast a stinging spittle!")
+                    text("Whirling clouds cast a stinging spittle!")
                 override val subtitle =
-                    Text.of("Acid rain! Stay indoors.")
+                    text("Acid rain! Stay indoors.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" summoned stinging rain.")
+                    text(options.team, "summoned stinging rain.")
             } },
             Theologies(DEEP, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Flowing waters boil and bubble...")
+                    text("Flowing waters boil and bubble...")
                 override val subtitle =
-                    Text.of("Bodies of water are now harmful!")
+                    text("Bodies of water are now harmful!")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" poisoned the water.")
+                    text(options.team, "poisoned the water.")
             } },
             Theologies(DEEP, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("From the heart of the forge,")
+                    text("From the heart of the forge,")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" has summoned water buckets and anvils.")
+                    text(options.team, "has summoned water buckets and anvils.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" summoned water buckets and anvils.")
+                    text(options.team, "summoned water buckets and anvils.")
             } },
             Theologies(OCCULT, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("A creeping void floods the maze...")
+                    text("A creeping void floods the maze...")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" has gained fullbright and blinded everyone else.")
+                    text(options.team, "has gained fullbright and blinded everyone else.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" has fullbright visibility.")
+                    text(options.team, "has fullbright visibility.")
             } },
             Theologies(OCCULT, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("You only have one shot.")
+                    text("You only have one shot.")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" has gained powerful single-use swords.")
+                    text(options.team, "has gained powerful single-use swords.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" was granted powerful swords.")
+                    text(options.team, "was granted powerful swords.")
             } },
             Theologies(OCCULT, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Horrifying screams come from below!")
+                    text("Horrifying screams come from below!")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" has summoned some ghasts!")
+                    text(options.team, "has summoned some ghasts!")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" summoned some ghasts!")
+                    text(options.team, "summoned some ghasts!")
             } },
             Theologies(COSMOS, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("A feast fit for royals!")
+                    text("A feast fit for royals!")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" has received a bounty of steaks.")
+                    text(options.team, "has received a bounty of steaks.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" summoned a steak feast.")
+                    text(options.team, "summoned a steak feast.")
             } },
             Theologies(COSMOS, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("A lingering flame burns inside!")
+                    text("A lingering flame burns inside!")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" has gained additional health.")
+                    text(options.team, "has gained additional health.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" gained a health bonus.")
+                    text(options.team, "gained a health bonus.")
             } },
             Theologies(BARTER, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.of("Oh, the weather outside is frightful...")
+                    text("The weather outside is frightful...")
                 override val subtitle =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" gained a full stack of ice blocks.")
+                    text(options.team, "gained a full stack of ice blocks.")
                 override val tooltip =
-                    Text.empty()
-                        .append(options.team.displayName)
-                        .append(" gained blocks of ice.")
+                    text(options.team, "gained blocks of ice.")
             } },
             Theologies(DEEP, DEEP) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.literal("FLASH FLOOD").formatted(DEEP.color)
+                    text("FLASH FLOOD") * DEEP.color
                 override val subtitle =
-                    Text.of("The map is filling with water!")
+                    text("The map is filling with water!")
                 override val tooltip =
-                    Text.of("The map is flooding.")
+                    text("The map is flooding.")
             } },
             Theologies(OCCULT, OCCULT) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.literal("DESPERATION").formatted(OCCULT.color)
+                    text("DESPERATION") * OCCULT.color
                 override val subtitle =
-                    Text.empty()
-                        .append(GameTeam.PLAYER_BLACK.displayName)
-                        .append(" gains many kills, almost killing everyone else.")
+                    text(GameTeam.PLAYER_BLACK, "gains many kills, almost killing everyone else.")
                 override val tooltip =
-                    Text.empty()
-                        .append(GameTeam.PLAYER_BLACK.displayName)
-                        .append(" players gained two kills.")
+                    text(GameTeam.PLAYER_BLACK, "players gained two kills.")
             } },
             Theologies(COSMOS, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.literal("FINAL FRONTIER").formatted(COSMOS.color)
+                    text("FINAL FRONTIER") * COSMOS.color
                 override val subtitle =
-                    Text.of("Gravity has been significantly reduced!")
+                    text("Gravity has been significantly reduced!")
                 override val tooltip =
-                    Text.of("Gravity is significantly reduced.")
+                    text("Gravity is significantly reduced.")
             } },
             Theologies(BARTER, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.literal("MARKET CRASH").formatted(BARTER.color)
+                    text("MARKET CRASH") * BARTER.color
                 override val subtitle =
-                    Text.of("All special items have been lost!")
+                    text("All special items have been lost!")
                 override val tooltip =
-                    Text.of("All special items have been lost.")
+                    text("All special items have been lost.")
             } },
             Theologies(FLAME, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    Text.literal("INFERNO").formatted(FLAME.color)
+                    text("INFERNO") * FLAME.color
                 override val subtitle =
-                    Text.of("Most blocks are now flammable.")
+                    text("Most blocks are now flammable.")
                 override val tooltip =
-                    Text.of("Most blocks are now flammable.")
+                    text("Most blocks are now flammable.")
             } },
         )
 
         private val textProvidersFailure = immutableMapOf<Failure, (Options) -> TextProvider>(
             Failure.TIMEOUT to { object : FailureTextProvider(it) {
                 override val subtitle =
-                    Text.of("Let the cooldown complete first!")
+                    text("Let the cooldown complete first!")
             } },
             Failure.MISMATCH to { object : FailureTextProvider(it) {
                 override val subtitle: Text =
                     if (options.kind.isDouble) {
-                        Text.empty()
-                            .append(options.kind.displayName)
-                            .append(" can only be performed at a ")
-                            .append(options.kind.theology1.displayName)
-                            .append(" altar!")
+                        text(options.kind, "can only be performed at a", options.kind.theology1, "altar!")
                     } else {
-                        Text.empty()
-                            .append(options.kind.displayName)
-                            .append(" can only be performed at a ")
-                            .append(options.kind.theology1.displayName)
-                            .append(" or ")
-                            .append(options.kind.theology2.displayName)
-                            .append(" altar!")
+                        text(
+                            options.kind.displayName,
+                            "can only be performed at a",
+                            options.kind.theology1,
+                            "or",
+                            options.kind.theology2,
+                            "altar!",
+                        )
                     }
             } },
             Failure.REPEATED_DOUBLE to { object : FailureTextProvider(it) {
                 override val subtitle =
-                    Text.empty()
-                        .append(options.kind.displayName)
-                        .append(" can only be performed once per game!")
+                    text(options.kind, "can only be performed once per game!")
             } },
             Failure.REPEATED_ONCE to { object : FailureTextProvider(it) {
                 override val subtitle =
-                    Text.empty()
-                        .append(options.kind.displayName)
-                        .append(" can only be performed once per round!")
+                    text(options.kind, "can only be performed once per round!")
             } },
             Failure.REPEATED_SEQUENCE to { object : FailureTextProvider(it) {
                 override val subtitle =
-                    Text.empty()
-                        .append(options.kind.displayName)
-                        .append(" can't be performed twice in a row!")
+                    text(options.kind, "can't be performed twice in a row!")
             } },
         )
 

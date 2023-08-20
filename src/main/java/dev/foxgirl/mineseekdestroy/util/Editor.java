@@ -48,7 +48,7 @@ public final class Editor {
 
         @Override
         public boolean equals(Object other) {
-            if (this == other){
+            if (this == other) {
                 return true;
             }
             return other instanceof Target otherTarget
@@ -228,7 +228,6 @@ public final class Editor {
         }
 
         private List<WorldChunk> perform() {
-            Game.LOGGER.info("Editor performing task for " + operations.length + " operation(s)");
             var start = System.nanoTime();
             var success = true;
             try {
