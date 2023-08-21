@@ -182,7 +182,12 @@ sealed interface GameProperties {
             Region(BlockPos(43, 13, 1), BlockPos(25, 32, -17)),
             Region(BlockPos(138, 13, -71), BlockPos(120, 32, -89)),
         )
-        override val regionBlimpFans = Region.Set()
+        override val regionBlimpFans = Region.Set(
+            Region(BlockPos(59, 20, -44), BlockPos(51, 18, -36)),
+            Region(BlockPos(59, 20, -73), BlockPos(51, 18, -36)),
+            Region(BlockPos(81, 20, -44), BlockPos(89, 18, -36)),
+            Region(BlockPos(81, 20, -73), BlockPos(89, 18, -65)),
+        )
         override val regionBarrierArenaTemplate = Region(BlockPos(48, -30, -605), BlockPos(92, -47, -539))
         override val regionBarrierArenaTarget = Region(BlockPos(48, -30, -89), BlockPos(92, -47, -23))
         override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
@@ -249,7 +254,12 @@ sealed interface GameProperties {
             Region(BlockPos(935, 58, -94), BlockPos(917, 77, -112)),
             Region(BlockPos(822, 58, -106), BlockPos(804, 77, -124)),
         )
-        override val regionBlimpFans = Region.Set()
+        override val regionBlimpFans = Region.Set(
+            Region(BlockPos(887, 64, -51), BlockPos(879, 62, -59)),
+            Region(BlockPos(858, 64, -51), BlockPos(850, 62, -59)),
+            Region(BlockPos(879, 64, -29), BlockPos(887, 62, -21)),
+            Region(BlockPos(850, 64, -29), BlockPos(858, 62, -21)),
+        )
         override val regionBarrierArenaTarget = Region(BlockPos(919, -1, -52), BlockPos(806, 35, -125))
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
@@ -319,7 +329,12 @@ sealed interface GameProperties {
             Region(BlockPos(-1382, 117, 170), BlockPos(-1400, 136, 152)),
             Region(BlockPos(-1169, 117, 236), BlockPos(-1187, 136, 218)),
         )
-        override val regionBlimpFans = Region.Set()
+        override val regionBlimpFans = Region.Set(
+            Region(BlockPos(-1314, 123, 208), BlockPos(-1306, 121, 216)),
+            Region(BlockPos(-1285, 123, 208), BlockPos(-1277, 121, 216)),
+            Region(BlockPos(-1277, 123, 186), BlockPos(-1285, 121, 178)),
+            Region(BlockPos(-1306, 123, 186), BlockPos(-1314, 121, 178)),
+        )
         override val regionBarrierArenaTarget = Region(BlockPos(-1238, 71, 187), BlockPos(-1275, 63, 208))
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
@@ -464,7 +479,12 @@ sealed interface GameProperties {
             Region(BlockPos(76, 51, -1236), BlockPos(58, 70, -1254)),
             Region(BlockPos(-100, 51, -1242), BlockPos(-118, 70, -1260)),
         )
-        override val regionBlimpFans = Region.Set()
+        override val regionBlimpFans = Region.Set(
+            Region(BlockPos(7, 58, -1159), BlockPos(-1, 56, -1167)),
+            Region(BlockPos(-22, 58, -1159), BlockPos(-30, 56, -1167)),
+            Region(BlockPos(-1, 58, -1137), BlockPos(7, 56, -1129)),
+            Region(BlockPos(-30, 58, -1137), BlockPos(-22, 56, -1129)),
+        )
         override val regionBarrierArenaTarget = Region(BlockPos(-47, 1, -1269), BlockPos(25, -3, -1235))
         override val regionBarrierArenaTemplate = Region(BlockPos(26, 9, -595), BlockPos(-46, 5, -629))
         override val regionBarrierBlimpTarget = Region(BlockPos(1, 47, -1155), BlockPos(-24, 55, -1141))
