@@ -49,7 +49,7 @@ class GhostService : Service() {
     }
 
     private val healthValues = HashMap<GamePlayer, GhostHealth>(32)
-    private fun healthValue(player: GamePlayer) = healthValues.getOrPut(player, ::GhostHealth)
+    private fun healthValue(player: GamePlayer) = healthValues.computeIfAbsent(player) { GhostHealth() }
 
     private fun updateGhosts() {
         val running = state.isPlaying

@@ -393,7 +393,7 @@ sealed interface GameProperties {
         override val regionBlimpFans = Region.Set(
             Region(BlockPos(-103, -6, 785), BlockPos(-95, -8, 793)),
             Region(BlockPos(-132, -6, 785), BlockPos(-124, -8, 793)),
-            Region(BlockPos(-301, -6, 763), BlockPos(-95, -8, 755)),
+            Region(BlockPos(-103, -6, 763), BlockPos(-95, -8, 755)),
             Region(BlockPos(-132, -6, 763), BlockPos(-124, -8, 755)),
         )
         override val regionBarrierArenaTarget = Region(BlockPos(-96, -39, 840), BlockPos(-129, -54, 862))
