@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy.command
 
+import com.mojang.brigadier.builder.ArgumentBuilder
 import dev.foxgirl.mineseekdestroy.*
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.state.*
@@ -26,27 +27,40 @@ internal fun setup() {
         }
         it.params(argLiteral("start")) {
             fun register(literal: String, properties: () -> GameProperties) {
-                it.params(argLiteral(literal)) {
-                    it.params(argLiteral("noauto")) {
-                        it.action { args ->
-                            if (game.context == null) {
-                                game.initialize(properties())
-                                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false)
-                                args.sendInfo("Started new game WITHOUT automation")
-                            } else {
-                                args.sendError("Cannot start new game, already running")
-                            }
-                        }
-                    }
+                val flags = mapOf<String, () -> Unit>(
+                    "noauto" to { game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false) },
+                    "noghosts" to { game.setRuleBoolean(Game.RULE_AUTOMATION_GHOSTS_ENABLED, false) },
+                    "nosummons" to { game.setRuleBoolean(Game.RULE_SUMMONS_ENABLED, false) },
+                    "chaos" to { game.setRuleBoolean(Game.RULE_CHAOS_ENABLED, true) },
+                )
+
+                fun registerFlags(it: ArgumentBuilder<ServerCommandSource, *>, enabled: Array<String>) {
+                    val flagsEnabled = mutableListOf<Map.Entry<String, () -> Unit>>()
+                    val flagsRemaining = mutableListOf<Map.Entry<String, () -> Unit>>()
+                    flags.entries.forEach { (if (it.key in enabled) flagsEnabled else flagsRemaining).add(it) }
+
                     it.action { args ->
                         if (game.context == null) {
                             game.initialize(properties())
-                            args.sendInfo("Started new game with automation")
+                            if (flagsEnabled.isNotEmpty()) {
+                                flagsEnabled.forEach { (_, action) -> action() }
+                                args.sendInfo("Started new game with flags", flagsEnabled.map { it.key })
+                            } else {
+                                args.sendInfo("Started new game with defaults")
+                            }
                         } else {
                             args.sendError("Cannot start new game, already running")
                         }
                     }
+
+                    if (flagsRemaining.isNotEmpty()) {
+                        flagsRemaining.forEach { (flag) ->
+                            it.params(argLiteral(flag)) { registerFlags(it, enabled + flag) }
+                        }
+                    }
                 }
+
+                it.params(argLiteral(literal)) { registerFlags(it, arrayOf()) }
             }
             register(GameProperties.Macander.name) { GameProperties.Macander }
             register(GameProperties.Radiator.name) { GameProperties.Radiator }

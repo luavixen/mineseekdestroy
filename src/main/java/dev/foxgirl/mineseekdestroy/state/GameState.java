@@ -77,7 +77,7 @@ public abstract class GameState {
         return false;
     }
 
-    public boolean allowBlockBreak(@Nullable GameContext context, PlayerEntity playerEntity, World world, BlockPos pos, BlockState state, BlockEntity entity) {
+    public boolean allowBlockBreak(@Nullable GameContext context, PlayerEntity playerEntity, World world, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity) {
         if (Game.getGame().isOperator(playerEntity)) {
             return true;
         }
@@ -85,10 +85,10 @@ public abstract class GameState {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             return player.isPlaying() && player.isAlive()
-                && Game.PLACABLE_BLOCKS.contains(state.getBlock())
-                && properties.getRegionPlayable().contains(pos)
-                && properties.getRegionBlimp().excludes(pos)
-                && properties.getRegionBlimpBalloons().excludes(pos);
+                && Game.PLACABLE_BLOCKS.contains(blockState.getBlock())
+                && properties.getRegionPlayable().contains(blockPos)
+                && properties.getRegionBlimp().excludes(blockPos)
+                && properties.getRegionBlimpBalloons().excludes(blockPos);
         }
         return false;
     }
@@ -108,7 +108,8 @@ public abstract class GameState {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (
-                player.isPlaying() && player.isAlive() &&
+                // TODO: Remove this change/check after the champions game
+                (Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && player.isAlive() &&
                 properties.getInteractableBlocks().contains(blockState.getBlock()) &&
                 properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
                 properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
@@ -161,7 +162,8 @@ public abstract class GameState {
                     properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
                     properties.getRegionBlimpBalloons().excludes(blockHit.getBlockPos())
                 ) {
-                    if (player.isPlaying()) {
+                    // TODO: Remove this change/check after the champions game
+                    if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying())) {
                         if (item == Items.TARGET && stack.hasCustomName()) {
                             context.specialFamilyGuyService.handleFamilyGuyBlockPlaced(player, blockHit);
                         }
@@ -173,7 +175,12 @@ public abstract class GameState {
                     }
                     return ActionResult.FAIL;
                 }
-                if (!player.isGhost() && Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
+                // TODO: Remove this change/check after the champions game
+                if (Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
+                    if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
+                } else {
+                    if (!player.isGhost() && Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
+                }
             }
         }
         return ActionResult.FAIL;
@@ -185,20 +192,22 @@ public abstract class GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            if (player.isPlaying() && Game.USABLE_ITEMS.contains(stack.getItem())) {
+            // TODO: Remove this change/check after the champions game
+            if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && Game.USABLE_ITEMS.contains(stack.getItem())) {
                 return ActionResult.PASS;
             }
         }
         return ActionResult.FAIL;
     }
 
-    public ActionResult onUseEntity(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult) {
+    public ActionResult onUseEntity(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHit) {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            if (player.isPlaying() && player.isAlive()) {
+            // TODO: Remove this change/check after the champions game
+            if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && player.isAlive()) {
                 if (entity instanceof PigEntity && context.specialCarService.cooldownIsReady((PigEntity) entity)) {
                     return ActionResult.PASS;
                 }
@@ -207,36 +216,36 @@ public abstract class GameState {
         return ActionResult.FAIL;
     }
 
-    public ActionResult onAttackBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockPos pos, Direction direction) {
+    public ActionResult onAttackBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockPos blockPos, Direction direction) {
         if (context != null && context.world == world) {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            var blockState = world.getBlockState(pos);
+            var blockState = world.getBlockState(blockPos);
             if (blockState.getBlock() == Blocks.QUARTZ_SLAB) {
-                var result = context.specialPianoService.handleInteract(player, pos);
+                var result = context.specialPianoService.handleInteract(player, blockPos);
                 if (result != ActionResult.PASS) return result;
             }
             if (
                 player.isGhost() && player.isAlive() && isRunning() &&
-                !properties.getUnstealableBlocks().contains(blockState.getBlock()) &&
-                properties.getRegionPlayable().contains(pos) &&
-                properties.getRegionBlimp().excludes(pos) &&
-                properties.getRegionBlimpBalloons().excludes(pos)
+                properties.getRegionPlayable().contains(blockPos) &&
+                properties.getRegionBlimp().excludes(blockPos) &&
+                properties.getRegionBlimpBalloons().excludes(blockPos)
             ) {
-                var result = context.ghostService.handleInteract(player, pos);
+                var result = context.ghostService.handleInteract(player, blockPos, blockState);
                 if (result != ActionResult.PASS) return result;
             }
         }
         return ActionResult.PASS;
     }
 
-    public ActionResult onAttackEntity(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult hitResult) {
+    public ActionResult onAttackEntity(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, Entity entity, @Nullable EntityHitResult entityHit) {
         if (Game.getGame().isOperator(playerEntity)) {
             return ActionResult.PASS;
         }
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            if (player.isPlaying() && player.isAlive()) {
+            // TODO: Remove this change/check after the champions game
+            if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && player.isAlive()) {
                 if (entity instanceof PlayerEntity || entity instanceof MobEntity) {
                     return ActionResult.PASS;
                 }

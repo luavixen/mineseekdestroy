@@ -8,6 +8,7 @@ import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Scheduler
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
+import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.attribute.EntityAttributeInstance
 import net.minecraft.entity.attribute.EntityAttributeModifier
@@ -76,7 +77,9 @@ class GhostService : Service() {
                     }
                 }
 
-                healthValue.apply(healthAttribute)
+                if (!game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
+                    healthValue.apply(healthAttribute)
+                }
 
             } else {
 
@@ -123,6 +126,7 @@ class GhostService : Service() {
         attackerEntity: ServerPlayerEntity,
     ) {
         if (attacker.team !== GameTeam.PLAYER_BLACK) return
+        if (!game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) return
 
         Scheduler.now {
             attackerEntity.damage(
@@ -142,12 +146,19 @@ class GhostService : Service() {
         }
     }
 
-    fun handleInteract(player: GamePlayer, pos: BlockPos): ActionResult {
+    fun handleInteract(player: GamePlayer, blockPos: BlockPos, blockState: BlockState): ActionResult {
+        // TODO: Remove this change/check after the champions game
+        if (properties.unstealableBlocks.contains(blockState.block) && !game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
+            return ActionResult.PASS
+        }
+
         val entity = player.entity
         if (entity != null) {
             context.itemService.addStackToInventory(entity, GameItems.ectoplasm, false)
         }
-        world.setBlockState(pos, Blocks.MAGENTA_CONCRETE_POWDER.defaultState)
+
+        world.setBlockState(blockPos, Blocks.MAGENTA_CONCRETE_POWDER.defaultState)
+
         return ActionResult.SUCCESS
     }
 

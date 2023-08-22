@@ -134,7 +134,8 @@ public abstract class RunningGameState extends GameState {
         if (context != null) {
             var player = context.getPlayer(playerEntity);
             if (player.isGhost()) {
-                return stack.getItem() == Items.SLIME_BLOCK;
+                // TODO: Remove this change/check after the champions game
+                return stack.getItem() == Items.SLIME_BLOCK || Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED);
             } else if (!player.isPlaying()) {
                 return false;
             }

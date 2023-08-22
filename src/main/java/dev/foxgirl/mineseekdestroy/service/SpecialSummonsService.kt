@@ -634,6 +634,10 @@ class SpecialSummonsService : Service() {
     }
 
     private fun failCheck(options: Options): Failure? {
+        if (game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
+            return null
+        }
+
         if (options.altar.theology == OPERATOR) {
             return null
         }
@@ -729,6 +733,10 @@ class SpecialSummonsService : Service() {
 
             textProvider = textProvidersSuccess[options.kind]!!(options)
             summonPerform(options)
+        }
+
+        if (game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
+            timeoutReset()
         }
 
         textUpdateFull()

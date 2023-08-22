@@ -220,6 +220,7 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_SUMMONS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, false);
         game.setRuleBoolean(Game.RULE_BUDDY_ENABLED, false);
+        game.setRuleBoolean(Game.RULE_CHAOS_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, true);

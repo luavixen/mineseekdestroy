@@ -141,6 +141,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_BUDDY_ABSORPTION_STRENGTH =
         GameRuleRegistry.register("msdBuddyAbsorptionStrength", GameRules.Category.MISC, GameRuleFactory.createIntRule(1));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_CHAOS_ENABLED =
+        GameRuleRegistry.register("msdChaosEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
@@ -480,13 +483,13 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayerEntity, newPlayerEntity, alive) -> getState().onRespawn(getContext(), oldPlayerEntity, newPlayerEntity, alive));
         ServerPlayerEvents.ALLOW_DEATH.register((playerEntity, damageSource, damageAmount) -> getState().allowDeath(getContext(), playerEntity, damageSource, damageAmount));
         ExtraEvents.PLAYER_DAMAGED.register((playerEntity, damageSource, damageAmount) -> getState().onTakeDamage(getContext(), playerEntity, damageSource, damageAmount));
-        PlayerBlockBreakEvents.BEFORE.register((world, playerEntity, pos, blockState, blockEntity) -> getState().allowBlockBreak(getContext(), playerEntity, world, pos, blockState, blockEntity));
+        PlayerBlockBreakEvents.BEFORE.register((world, playerEntity, blockPos, blockState, blockEntity) -> getState().allowBlockBreak(getContext(), playerEntity, world, blockPos, blockState, blockEntity));
         ExtraEvents.BLOCK_USED.register((playerEntity, world, hand, blockHit, blockState) -> getState().onUseBlock(getContext(), playerEntity, world, hand, blockHit, blockState));
         ExtraEvents.BLOCK_USED_WITH.register((playerEntity, world, hand, blockHit, blockItemStack) -> getState().onUseBlockWith(getContext(), playerEntity, world, hand, blockHit, blockItemStack));
         ExtraEvents.ITEM_USED.register((playerEntity, world, hand, stack) -> getState().onUseItem(getContext(), playerEntity, world, hand, stack));
-        UseEntityCallback.EVENT.register((playerEntity, world, hand, entity, hitResult) -> getState().onUseEntity(getContext(), playerEntity, world, hand, entity, hitResult));
+        UseEntityCallback.EVENT.register((playerEntity, world, hand, entity, entityHit) -> getState().onUseEntity(getContext(), playerEntity, world, hand, entity, entityHit));
         AttackBlockCallback.EVENT.register((playerEntity, world, hand, pos, direction) -> getState().onAttackBlock(getContext(), playerEntity, world, hand, pos, direction));
-        AttackEntityCallback.EVENT.register((playerEntity, world, hand, entity, hitResult) -> getState().onAttackEntity(getContext(), playerEntity, world, hand, entity, hitResult));
+        AttackEntityCallback.EVENT.register((playerEntity, world, hand, entity, entityHit) -> getState().onAttackEntity(getContext(), playerEntity, world, hand, entity, entityHit));
         ExtraEvents.ITEM_DROPPED.register((playerEntity, stack, throwRandomly, retainOwnership) -> getState().onItemDropped(getContext(), playerEntity, stack, throwRandomly, retainOwnership));
         ExtraEvents.ITEM_ACQUIRED.register((playerEntity, inventory, stack, slot) -> getState().onItemAcquired(getContext(), playerEntity, inventory, stack, slot));
     }
