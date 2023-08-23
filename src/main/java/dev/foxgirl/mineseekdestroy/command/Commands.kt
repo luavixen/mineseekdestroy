@@ -26,7 +26,7 @@ internal fun setup() {
             }
         }
         it.params(argLiteral("start")) {
-            fun register(literal: String, properties: () -> GameProperties) {
+            fun register(properties: () -> GameProperties) {
                 val flags = mapOf<String, () -> Unit>(
                     "noauto" to { game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false) },
                     "noghosts" to { game.setRuleBoolean(Game.RULE_AUTOMATION_GHOSTS_ENABLED, false) },
@@ -60,13 +60,14 @@ internal fun setup() {
                     }
                 }
 
-                it.params(argLiteral(literal)) { registerFlags(it, arrayOf()) }
+                it.params(argLiteral(properties().name)) { registerFlags(it, arrayOf()) }
             }
-            register(GameProperties.Macander.name) { GameProperties.Macander }
-            register(GameProperties.Radiator.name) { GameProperties.Radiator }
-            register(GameProperties.Realm.name) { GameProperties.Realm }
-            register(GameProperties.Lights.name) { GameProperties.Lights }
-            register(GameProperties.Station.name) { GameProperties.Station }
+            register { GameProperties.Macander }
+            register { GameProperties.Radiator }
+            register { GameProperties.Realm }
+            register { GameProperties.Lights }
+            register { GameProperties.Station }
+            register { GameProperties.Horror }
         }
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->

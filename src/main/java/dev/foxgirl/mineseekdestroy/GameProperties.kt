@@ -535,4 +535,51 @@ sealed interface GameProperties {
 
     }
 
+    object Horror : GameProperties {
+
+        override val name = "horror"
+
+        override val positionSpawn = BlockPos(-959, 112, -1080)
+
+        override val positionBlimp = Vec3d(-958.5, 142.0, -1081.5)
+        override val positionArena = Vec3d(-958.5, 112.0, -1079.5)
+        override val positionDuel1 = Vec3d(-958.5, 112.0, -1051.5)
+        override val positionDuel2 = Vec3d(-958.5, 112.0, -1107.5)
+        override val positionHell = Vec3d(-958.5, -65536.0, -1079.5)
+
+        override val templateInventory = BlockPos(-958, 142, -1066)
+        override val templateLoottable = BlockPos(-958, 142, -1064)
+
+        override val regionAll = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 180, -1197))
+        override val regionLegal = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 65536, -1197))
+        override val regionPlayable = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 140, -1197))
+        override val regionBlimp = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBlimpBalloons = Region.Set()
+        override val regionBlimpFans = Region.Set()
+        override val regionBarrierArenaTemplate = Region.EMPTY
+        override val regionBarrierArenaTarget = Region.EMPTY
+        override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpBalloonTemplate = Region(BlockPos(1, -20, -532), BlockPos(-9, -17, -542))
+        override val regionBarrierBlimpBalloonTargets = Region.Set()
+        override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+
+        override val borderSize = 200.0
+        override val borderCenter = Vec3d(-958.5, 0.0, -1079.5)
+
+        override val interactableBlocks = buildImmutableSet<Block> {
+            addAll(Empty.interactableBlocks)
+            addAll(Macander.interactableBlocks)
+            addAll(Radiator.interactableBlocks)
+            addAll(Realm.interactableBlocks)
+            addAll(Lights.interactableBlocks)
+            addAll(Station.interactableBlocks)
+        }
+
+        override val inflammableBlocks = Empty.interactableBlocks
+
+        override val unstealableBlocks = emptySet<Block>()
+
+    }
+
 }

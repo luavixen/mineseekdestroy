@@ -41,8 +41,7 @@ public abstract class MixinFireBlock extends AbstractFireBlock {
         if (block == Blocks.TNT) return mineseekdestroy$CHANCE_ALWAYS;
 
         if (context.specialSummonsService.isScaldingEarth()) {
-            // TODO: Remove this change/check after the champions game
-            return game.getProperties().getInflammableBlocks().contains(block) && !game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)
+            return game.getProperties().getInflammableBlocks().contains(block)
                 ? mineseekdestroy$CHANCE_NONE
                 : mineseekdestroy$CHANCE_WOOD;
         }
