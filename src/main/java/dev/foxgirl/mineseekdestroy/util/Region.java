@@ -14,8 +14,8 @@ import java.util.Objects;
 public final class Region implements Selection {
 
     public static final @NotNull Region EMPTY = new Region(
-        new BlockPos(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE),
-        new BlockPos(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE)
+        new BlockPos(0, -64, 0),
+        new BlockPos(0, -64, 0)
     );
 
     private final BlockPos start;

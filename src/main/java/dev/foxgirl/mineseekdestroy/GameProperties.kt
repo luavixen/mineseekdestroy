@@ -36,6 +36,7 @@ sealed interface GameProperties {
     val regionBarrierBlimpTarget: Region
     val regionBarrierBlimpBalloonTemplate: Region
     val regionBarrierBlimpBalloonTargets: Region.Set
+    val regionBarrierBlimpFills: Region.Set
     val regionFlood: Region
 
     val borderSize: Double
@@ -47,7 +48,7 @@ sealed interface GameProperties {
 
     fun setup(context: GameContext) {}
 
-    object Empty : GameProperties {
+    object Base : GameProperties {
 
         override val name = "none"
 
@@ -74,6 +75,7 @@ sealed interface GameProperties {
         override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpBalloonTemplate = Region(BlockPos(1, -20, -532), BlockPos(-9, -17, -542))
         override val regionBarrierBlimpBalloonTargets = Region.Set()
+        override val regionBarrierBlimpFills = Region.Set()
         override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
 
         override val borderSize = 0.0
@@ -192,18 +194,19 @@ sealed interface GameProperties {
         override val regionBarrierArenaTarget = Region(BlockPos(48, -30, -89), BlockPos(92, -47, -23))
         override val regionBarrierBlimpTemplate = Region(BlockPos(63, 7, -558), BlockPos(77, -1, -583))
         override val regionBarrierBlimpTarget = Region(BlockPos(63, 17, -42), BlockPos(77, 9, -67))
-        override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
+        override val regionBarrierBlimpBalloonTemplate = Base.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
             Region(BlockPos(39, 13, -3), BlockPos(29, 16, -13)),
             Region(BlockPos(134, 13, -75), BlockPos(124, 16, -85)),
         )
+        override val regionBarrierBlimpFills = Region.Set()
         override val regionFlood = Region(BlockPos(-24, -50, 51), BlockPos(175, -30, -169))
 
         override val borderSize = 200.0
         override val borderCenter = Vec3d(70.5, 0.0, -55.5)
 
         override val interactableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.interactableBlocks)
+            addAll(Base.interactableBlocks)
             addAll(listOf(
                 ACACIA_DOOR,
                 BIRCH_DOOR,
@@ -219,7 +222,7 @@ sealed interface GameProperties {
         }
 
         override val inflammableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.inflammableBlocks)
+            addAll(Base.inflammableBlocks)
             addAll(listOf(
                 BARREL,
                 BRICKS,
@@ -227,7 +230,7 @@ sealed interface GameProperties {
             ))
         }
 
-        override val unstealableBlocks = Empty.unstealableBlocks
+        override val unstealableBlocks = Base.unstealableBlocks
 
     }
 
@@ -264,18 +267,19 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(121, -18, -663), BlockPos(8, 18, -736))
         override val regionBarrierBlimpTarget = Region(BlockPos(856, 61, -33), BlockPos(881, 53, -47))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
+        override val regionBarrierBlimpBalloonTemplate = Base.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
             Region(BlockPos(931, 58, -98), BlockPos(921, 61, -108)),
             Region(BlockPos(818, 58, -110), BlockPos(808, 61, -120)),
         )
+        override val regionBarrierBlimpFills = Region.Set()
         override val regionFlood = Region(BlockPos(788, -4, -170), BlockPos(974, 13, 30))
 
         override val borderSize = 250.0
         override val borderCenter = Vec3d(870.0, 0.0, -65.0)
 
         override val interactableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.interactableBlocks)
+            addAll(Base.interactableBlocks)
             addAll(listOf(
                 ACACIA_DOOR,
                 BIRCH_DOOR,
@@ -291,7 +295,7 @@ sealed interface GameProperties {
         }
 
         override val inflammableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.inflammableBlocks)
+            addAll(Base.inflammableBlocks)
             addAll(listOf(
                 DEEPSLATE_TILE_SLAB,
                 PODZOL,
@@ -300,7 +304,7 @@ sealed interface GameProperties {
         }
 
         override val unstealableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.unstealableBlocks)
+            addAll(Base.unstealableBlocks)
             add(DEEPSLATE_TILE_SLAB)
         }
 
@@ -339,18 +343,19 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(88, 8, -618), BlockPos(51, 0, -597))
         override val regionBarrierBlimpTarget = Region(BlockPos(-1283, 112, 190), BlockPos(-1308, 120, 204))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
+        override val regionBarrierBlimpBalloonTemplate = Base.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
             Region(BlockPos(-1386, 117, 166), BlockPos(-1396, 120, 156)),
             Region(BlockPos(-1173, 117, 232), BlockPos(-1183, 120, 222)),
         )
+        override val regionBarrierBlimpFills = Region.Set()
         override val regionFlood = Region(BlockPos(-1125, -16, 20), BlockPos(-1440, 67, 355))
 
         override val borderSize = 333.0
         override val borderCenter = Region(BlockPos(-1280, 62, 172), BlockPos(-1309, 62, 145)).center
 
         override val interactableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.interactableBlocks)
+            addAll(Base.interactableBlocks)
             addAll(listOf(
                 ACACIA_DOOR,
                 BIRCH_DOOR,
@@ -368,7 +373,7 @@ sealed interface GameProperties {
         }
 
         override val inflammableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.inflammableBlocks)
+            addAll(Base.inflammableBlocks)
             addAll(listOf(
                 ANDESITE,
                 CAMPFIRE,
@@ -378,7 +383,7 @@ sealed interface GameProperties {
             ))
         }
 
-        override val unstealableBlocks = Empty.unstealableBlocks
+        override val unstealableBlocks = Base.unstealableBlocks
 
     }
 
@@ -415,18 +420,19 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(41, 12, -574), BlockPos(8, -3, -552))
         override val regionBarrierBlimpTarget = Region(BlockPos(-101, -17, 767), BlockPos(-126, -9, 781))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
+        override val regionBarrierBlimpBalloonTemplate = Base.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
             Region(BlockPos(-155, -12, 871), BlockPos(-165, -9, 861)),
             Region(BlockPos(-66, -12, 863), BlockPos(-76, -9, 853)),
         )
+        override val regionBarrierBlimpFills = Region.Set()
         override val regionFlood = Region(BlockPos(-18, -64, 701), BlockPos(-206, -52, 913))
 
         override val borderSize = 200.0
         override val borderCenter = Vec3d(-112.0, -52.0, 828.5)
 
         override val interactableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.interactableBlocks)
+            addAll(Base.interactableBlocks)
             addAll(listOf(
                 ACACIA_DOOR,
                 BIRCH_DOOR,
@@ -444,7 +450,7 @@ sealed interface GameProperties {
         }
 
         override val inflammableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.inflammableBlocks)
+            addAll(Base.inflammableBlocks)
             addAll(listOf(
                 GRAVEL, COARSE_DIRT, PODZOL,
                 STONE, STONE_SLAB, STONE_STAIRS,
@@ -452,7 +458,7 @@ sealed interface GameProperties {
             ))
         }
 
-        override val unstealableBlocks = Empty.unstealableBlocks
+        override val unstealableBlocks = Base.unstealableBlocks
 
     }
 
@@ -489,18 +495,19 @@ sealed interface GameProperties {
         override val regionBarrierArenaTemplate = Region(BlockPos(26, 9, -595), BlockPos(-46, 5, -629))
         override val regionBarrierBlimpTarget = Region(BlockPos(1, 47, -1155), BlockPos(-24, 55, -1141))
         override val regionBarrierBlimpTemplate = Region(BlockPos(82, 28, -578), BlockPos(57, 36, -564))
-        override val regionBarrierBlimpBalloonTemplate = Empty.regionBarrierBlimpBalloonTemplate
+        override val regionBarrierBlimpBalloonTemplate = Base.regionBarrierBlimpBalloonTemplate
         override val regionBarrierBlimpBalloonTargets = Region.Set(
             Region(BlockPos(72, 51, -1240), BlockPos(62, 54, -1250)),
             Region(BlockPos(-104, 51, -1246), BlockPos(-114, 54, -1256)),
         )
+        override val regionBarrierBlimpFills = Region.Set()
         override val regionFlood = Region(BlockPos(159, -16, -1328), BlockPos(-152, -2, -1065))
 
         override val borderSize = 275.0
         override val borderCenter = Vec3d(4.5, 17.0, -1193.5)
 
         override val interactableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.interactableBlocks)
+            addAll(Base.interactableBlocks)
             addAll(listOf(
                 ACACIA_DOOR,
                 BAMBOO_DOOR,
@@ -517,7 +524,7 @@ sealed interface GameProperties {
         }
 
         override val inflammableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.inflammableBlocks)
+            addAll(Base.inflammableBlocks)
             addAll(listOf(
                 SMOOTH_STONE, STONE, ANDESITE, COBBLESTONE,
                 WHITE_CONCRETE, DARK_PRISMARINE, BLACKSTONE,
@@ -526,7 +533,7 @@ sealed interface GameProperties {
         }
 
         override val unstealableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.unstealableBlocks)
+            addAll(Base.unstealableBlocks)
             addAll(listOf(
                 PINK_GLAZED_TERRACOTTA,
                 GREEN_GLAZED_TERRACOTTA,
@@ -553,22 +560,63 @@ sealed interface GameProperties {
         override val regionAll = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 180, -1197))
         override val regionLegal = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 65536, -1197))
         override val regionPlayable = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 140, -1197))
-        override val regionBlimp = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
-        override val regionBlimpBalloons = Region.Set()
-        override val regionBlimpFans = Region.Set()
+        override val regionBlimp = Region(BlockPos(-939, 161, -1114), BlockPos(-979, 141, -1037))
+        override val regionBlimpBalloons = Region.Set(
+            // Yellow blimp
+            Region(BlockPos(-995, 161, -1028), BlockPos(-918, 141, -988)),
+            // Blue blimp
+            Region(BlockPos(-922, 161, -1134), BlockPos(-999, 141, -1174)),
+        )
+        override val regionBlimpFans = Region.Set(
+            // Purple blimp
+            Region(BlockPos(-948, 151, -1094), BlockPos(-940, 150, -1102)),
+            Region(BlockPos(-948, 151, -1065), BlockPos(-940, 150, -1073)),
+            Region(BlockPos(-970, 151, -1102), BlockPos(-978, 150, -1094)),
+            Region(BlockPos(-970, 151, -1073), BlockPos(-978, 150, -1065)),
+            // Yellow blimp
+            Region(BlockPos(-975, 151, -1019), BlockPos(-983, 150, -1027)),
+            Region(BlockPos(-946, 151, -1019), BlockPos(-954, 150, -1027)),
+            Region(BlockPos(-983, 151, -997), BlockPos(-975, 150, -989)),
+            Region(BlockPos(-954, 151, -997), BlockPos(-946, 150, -989)),
+            // Blue blimp
+            Region(BlockPos(-971, 151, -1143), BlockPos(-963, 150, -1135)),
+            Region(BlockPos(-942, 151, -1143), BlockPos(-934, 150, -1135)),
+            Region(BlockPos(-934, 151, -1165), BlockPos(-942, 150, -1173)),
+            Region(BlockPos(-963, 151, -1165), BlockPos(-971, 150, -1173)),
+        )
         override val regionBarrierArenaTemplate = Region.EMPTY
         override val regionBarrierArenaTarget = Region.EMPTY
-        override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
-        override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
-        override val regionBarrierBlimpBalloonTemplate = Region(BlockPos(1, -20, -532), BlockPos(-9, -17, -542))
+        override val regionBarrierBlimpTemplate = Region.EMPTY
+        override val regionBarrierBlimpTarget = Region.EMPTY
+        override val regionBarrierBlimpBalloonTemplate = Region.EMPTY
         override val regionBarrierBlimpBalloonTargets = Region.Set()
-        override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpFills = Region.Set(
+            // Purple blimp
+            Region(BlockPos(-963, 142, -1092), BlockPos(-963, 142, -1072)),
+            Region(BlockPos(-955, 142, -1092), BlockPos(-955, 142, -1072)),
+            Region(BlockPos(-964, 144, -1092), BlockPos(-964, 143, -1072)),
+            Region(BlockPos(-954, 144, -1092), BlockPos(-954, 143, -1072)),
+            Region(BlockPos(-958, 146, -1094), BlockPos(-960, 143, -1094)),
+            // Yellow blimp
+            Region(BlockPos(-973, 142, -1004), BlockPos(-953, 142, -1004)),
+            Region(BlockPos(-973, 142, -1012), BlockPos(-953, 142, -1012)),
+            Region(BlockPos(-973, 144, -1003), BlockPos(-953, 143, -1003)),
+            Region(BlockPos(-973, 144, -1013), BlockPos(-953, 143, -1013)),
+            Region(BlockPos(-975, 146, -1009), BlockPos(-975, 143, -1007)),
+            // Blue blimp
+            Region(BlockPos(-944, 142, -1158), BlockPos(-964, 142, -1158)),
+            Region(BlockPos(-944, 142, -1150), BlockPos(-964, 142, -1150)),
+            Region(BlockPos(-944, 144, -1159), BlockPos(-964, 143, -1159)),
+            Region(BlockPos(-944, 144, -1149), BlockPos(-964, 143, -1149)),
+            Region(BlockPos(-942, 146, -1153), BlockPos(-942, 143, -1155)),
+        )
+        override val regionFlood = Region(BlockPos(-1005, -20, -1005), BlockPos(-905, -17, -1155))
 
         override val borderSize = 200.0
         override val borderCenter = Vec3d(-958.5, 0.0, -1079.5)
 
         override val interactableBlocks = buildImmutableSet<Block> {
-            addAll(Empty.interactableBlocks)
+            addAll(Base.interactableBlocks)
             addAll(Macander.interactableBlocks)
             addAll(Radiator.interactableBlocks)
             addAll(Realm.interactableBlocks)
@@ -576,7 +624,7 @@ sealed interface GameProperties {
             addAll(Station.interactableBlocks)
         }
 
-        override val inflammableBlocks = Empty.interactableBlocks
+        override val inflammableBlocks = Base.interactableBlocks
 
         override val unstealableBlocks = emptySet<Block>()
 

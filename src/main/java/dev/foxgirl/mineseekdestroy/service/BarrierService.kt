@@ -61,12 +61,20 @@ class BarrierService : Service() {
     }
 
     fun executeBlimpOpen(console: Console) {
-        apply(targetsBlimp) { blockAir }
-        console.sendInfo("Blimp barriers opened")
+        Async.run {
+            fun fillOpen(region: Region) = Editor.edit(world, region) { state, _, _, _ -> if (state.block === Blocks.RED_STAINED_GLASS) blockAir else null }
+            await(properties.regionBarrierBlimpFills.map(::fillOpen))
+            apply(targetsBlimp) { blockAir }
+            console.sendInfo("Blimp barriers opened")
+        }
     }
     fun executeBlimpClose(console: Console) {
-        apply(targetsBlimp, Target::stateClosed)
-        console.sendInfo("Blimp barriers closed")
+        Async.run {
+            fun fillClose(region: Region) = Editor.edit(world, region) { state, _, _, _ -> if (state.isAir) blockBarrier else null }
+            await(properties.regionBarrierBlimpFills.map(::fillClose))
+            apply(targetsBlimp, Target::stateClosed)
+            console.sendInfo("Blimp barriers closed")
+        }
     }
 
     private companion object {
