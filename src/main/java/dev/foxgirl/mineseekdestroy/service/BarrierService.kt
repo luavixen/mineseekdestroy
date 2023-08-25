@@ -62,16 +62,16 @@ class BarrierService : Service() {
 
     fun executeBlimpOpen(console: Console) {
         Async.run {
-            fun fillOpen(region: Region) = Editor.edit(world, region) { state, _, _, _ -> if (state.block === Blocks.RED_STAINED_GLASS) blockAir else null }
-            await(properties.regionBarrierBlimpFills.map(::fillOpen))
+            val action = Editor.Action { state, _, _, _ -> if (state.block === Blocks.RED_STAINED_GLASS) blockAir else null }
+            await(properties.regionBarrierBlimpFills.map { region -> Editor.edit(world, region, action) })
             apply(targetsBlimp) { blockAir }
             console.sendInfo("Blimp barriers opened")
         }
     }
     fun executeBlimpClose(console: Console) {
         Async.run {
-            fun fillClose(region: Region) = Editor.edit(world, region) { state, _, _, _ -> if (state.isAir) blockBarrier else null }
-            await(properties.regionBarrierBlimpFills.map(::fillClose))
+            val action = Editor.Action { state, _, _, _ -> if (state.isAir) blockBarrier else null }
+            await(properties.regionBarrierBlimpFills.map { region -> Editor.edit(world, region, action) })
             apply(targetsBlimp, Target::stateClosed)
             console.sendInfo("Blimp barriers closed")
         }

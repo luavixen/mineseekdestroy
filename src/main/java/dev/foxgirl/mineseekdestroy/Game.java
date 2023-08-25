@@ -111,7 +111,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FANS_EFFECT_DURATION =
         GameRuleRegistry.register("msdFansEffectDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(20.0));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FANS_KNOCKBACK =
-        GameRuleRegistry.register("msdFansKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
+        GameRuleRegistry.register("msdFansKnockback", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(2.0));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_GHOULS_ENABLED =
         GameRuleRegistry.register("msdGhoulsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));

@@ -65,7 +65,7 @@ compileKotlin {
         freeCompilerArgs += [
             '-Xno-call-assertions',
             '-Xno-receiver-assertions',
-            // '-Xno-param-assertions',
+            '-Xno-param-assertions',
         ]
     }
 }

@@ -557,9 +557,9 @@ sealed interface GameProperties {
         override val templateInventory = BlockPos(-958, 142, -1066)
         override val templateLoottable = BlockPos(-958, 142, -1064)
 
-        override val regionAll = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 180, -1197))
-        override val regionLegal = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 65536, -1197))
-        override val regionPlayable = Region(BlockPos(-1054, -64, -926), BlockPos(-850, 140, -1197))
+        override val regionAll = Region(BlockPos(-1054, -64, -962), BlockPos(-850, 180, -1197))
+        override val regionLegal = Region(BlockPos(-1054, -64, -962), BlockPos(-850, 65536, -1197))
+        override val regionPlayable = Region(BlockPos(-1054, -64, -962), BlockPos(-850, 140, -1197))
         override val regionBlimp = Region(BlockPos(-939, 161, -1114), BlockPos(-979, 141, -1037))
         override val regionBlimpBalloons = Region.Set(
             // Yellow blimp
@@ -610,7 +610,7 @@ sealed interface GameProperties {
             Region(BlockPos(-944, 144, -1149), BlockPos(-964, 143, -1149)),
             Region(BlockPos(-942, 146, -1153), BlockPos(-942, 143, -1155)),
         )
-        override val regionFlood = Region(BlockPos(-1005, -20, -1005), BlockPos(-905, -17, -1155))
+        override val regionFlood = Region(BlockPos(-1038, -12, -978), BlockPos(-866, 32, -1181))
 
         override val borderSize = 200.0
         override val borderCenter = Vec3d(-958.5, 0.0, -1079.5)

@@ -74,7 +74,13 @@ object Async {
             }
         }
 
-        fun start() = promises.forEachIndexed { i, promise -> promise.whenComplete(Handler(i)) }
+        fun start() {
+            if (promises.isNotEmpty()) {
+                promises.forEachIndexed { i, promise -> promise.whenComplete(Handler(i)) }
+            } else {
+                continuation.resumeWith(Result.success(emptyArray()))
+            }
+        }
     }
 
     suspend fun delay(): Unit =
