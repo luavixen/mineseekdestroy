@@ -159,13 +159,13 @@ public final class Editor {
                 var section = sections[i];
                 int offsetY = (i << 4) + bottomY;
                 for (int y = 0; y < 16; y++) {
+                    int posY = y + offsetY;
+                    if (posMinY > posY || posMaxY < posY) continue;
                     for (int x = 0; x < 16; x++) {
+                        int posX = x + offsetX;
+                        if (posMinX > posX || posMaxX < posX) continue;
                         for (int z = 0; z < 16; z++) {
-                            int posY = y + offsetY;
-                            int posX = x + offsetX;
                             int posZ = z + offsetZ;
-                            if (posMinY > posY || posMaxY < posY) continue;
-                            if (posMinX > posX || posMaxX < posX) continue;
                             if (posMinZ > posZ || posMaxZ < posZ) continue;
                             var stateOld = section.getBlockState(x, y, z);
                             for (var action : actions) {
