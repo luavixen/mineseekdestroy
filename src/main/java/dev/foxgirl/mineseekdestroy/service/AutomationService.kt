@@ -212,6 +212,10 @@ class AutomationService : Service() {
             }
 
             schedule.cancel()
+
+            delay(0.1)
+            context.playerManager.playerList.forEach { it.closeHandledScreen() }
+            delay(0.1)
             context.playerManager.playerList.forEach { it.closeHandledScreen() }
 
             logger.info("Automation iPad commit started, assigning selected players to skip")

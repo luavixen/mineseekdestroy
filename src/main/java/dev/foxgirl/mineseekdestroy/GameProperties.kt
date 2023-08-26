@@ -626,7 +626,7 @@ sealed interface GameProperties {
 
         override val inflammableBlocks = Base.interactableBlocks
 
-        override val unstealableBlocks = emptySet<Block>()
+        override val unstealableBlocks = Base.inflammableBlocks
 
     }
 

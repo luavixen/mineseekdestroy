@@ -126,7 +126,7 @@ class GhostService : Service() {
         attackerEntity: ServerPlayerEntity,
     ) {
         if (attacker.team !== GameTeam.PLAYER_BLACK) return
-        if (!game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) return
+        if (game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) return
 
         Scheduler.now {
             attackerEntity.damage(
