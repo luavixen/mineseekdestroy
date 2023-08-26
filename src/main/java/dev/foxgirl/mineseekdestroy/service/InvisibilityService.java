@@ -95,11 +95,8 @@ public final class InvisibilityService extends Service {
         return switch (targetTeam) {
             case NONE, SKIP, GHOST, OPERATOR ->
                 true;
-            // TODO: Remove this change/check after the champions game
-            case PLAYER_DUEL, PLAYER_WARDEN, PLAYER_YELLOW, PLAYER_BLUE ->
+            case PLAYER_DUEL, PLAYER_WARDEN, PLAYER_BLACK, PLAYER_YELLOW, PLAYER_BLUE ->
                 packetTeam.isOperator() || packetTeam == targetTeam;
-            case PLAYER_BLACK ->
-                packetTeam.isOperator();
         };
     }
     private static boolean isVisibleToInactive(GameTeam targetTeam, GameTeam packetTeam, Entity packetEntity) {

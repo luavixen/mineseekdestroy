@@ -108,8 +108,7 @@ public abstract class GameState {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (
-                // TODO: Remove this change/check after the champions game
-                (Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && player.isAlive() &&
+                player.isPlaying() && player.isAlive() &&
                 properties.getInteractableBlocks().contains(blockState.getBlock()) &&
                 properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
                 properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
@@ -162,8 +161,7 @@ public abstract class GameState {
                     properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
                     properties.getRegionBlimpBalloons().excludes(blockHit.getBlockPos())
                 ) {
-                    // TODO: Remove this change/check after the champions game
-                    if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying())) {
+                    if (player.isPlaying()) {
                         if (item == Items.TARGET && stack.hasCustomName()) {
                             context.specialFamilyGuyService.handleFamilyGuyBlockPlaced(player, blockHit);
                         }
@@ -175,12 +173,7 @@ public abstract class GameState {
                     }
                     return ActionResult.FAIL;
                 }
-                // TODO: Remove this change/check after the champions game
-                if (Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
-                    if (Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
-                } else {
-                    if (!player.isGhost() && Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
-                }
+                if (!player.isGhost() && Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
             }
         }
         return ActionResult.FAIL;
@@ -192,8 +185,7 @@ public abstract class GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            // TODO: Remove this change/check after the champions game
-            if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && Game.USABLE_ITEMS.contains(stack.getItem())) {
+            if (player.isPlaying() && Game.USABLE_ITEMS.contains(stack.getItem())) {
                 return ActionResult.PASS;
             }
         }
@@ -206,8 +198,7 @@ public abstract class GameState {
         }
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            // TODO: Remove this change/check after the champions game
-            if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && player.isAlive()) {
+            if (player.isPlaying() && player.isAlive()) {
                 if (entity instanceof PigEntity && context.specialCarService.cooldownIsReady((PigEntity) entity)) {
                     return ActionResult.PASS;
                 }
@@ -244,8 +235,7 @@ public abstract class GameState {
         }
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            // TODO: Remove this change/check after the champions game
-            if ((Game.getGame().getRuleBoolean(Game.RULE_CHAOS_ENABLED) ? player.isPlayingOrGhost() : player.isPlaying()) && player.isAlive()) {
+            if (player.isPlaying() && player.isAlive()) {
                 if (entity instanceof PlayerEntity || entity instanceof MobEntity) {
                     return ActionResult.PASS;
                 }

@@ -1,7 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service;
 
 import com.google.common.collect.ImmutableList;
-import dev.foxgirl.mineseekdestroy.GameTeam;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntity;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityTrackerUpdateS2CPacket;
 import dev.foxgirl.mineseekdestroy.util.Reflector;
@@ -110,9 +109,6 @@ public final class GlowService extends Service {
         var context = getContext();
 
         var targetPlayer = context.getPlayer(targetEntity);
-
-        // TODO: Remove this change/check after the champions game
-        if (targetPlayer.getTeam() == GameTeam.PLAYER_BLACK) return null;
 
         var packetId = packet.id();
         if (packetId == targetEntity.getId()) return null;

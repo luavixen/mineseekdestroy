@@ -147,10 +147,7 @@ class GhostService : Service() {
     }
 
     fun handleInteract(player: GamePlayer, blockPos: BlockPos, blockState: BlockState): ActionResult {
-        // TODO: Remove this change/check after the champions game
-        if (properties.unstealableBlocks.contains(blockState.block) && !game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
-            return ActionResult.PASS
-        }
+        if (properties.unstealableBlocks.contains(blockState.block)) return ActionResult.PASS
 
         val entity = player.entity
         if (entity != null) {
