@@ -624,9 +624,9 @@ sealed interface GameProperties {
             addAll(Station.interactableBlocks)
         }
 
-        override val inflammableBlocks = Base.interactableBlocks
+        override val inflammableBlocks = Base.inflammableBlocks
 
-        override val unstealableBlocks = Base.inflammableBlocks
+        override val unstealableBlocks = Base.unstealableBlocks
 
     }
 
