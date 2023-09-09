@@ -25,14 +25,14 @@ object Async {
     suspend fun <T> await(promise: CompletableFuture<T>): T =
         suspendCoroutine { promise.whenComplete { value, cause -> it.resumeWith(if (cause != null) Result.failure(cause) else Result.success(value)) } }
 
-    suspend fun <T> await(vararg promises: CompletableFuture<T>): List<T> = awaitInternal(promises)
-    suspend fun <T> await(promises: Collection<CompletableFuture<T>>): List<T> = awaitInternal(promises.toTypedArray())
+    suspend fun <T> awaitAll(vararg promises: CompletableFuture<T>): List<T> = awaitAllImpl(promises)
+    suspend fun <T> awaitAll(promises: Collection<CompletableFuture<T>>): List<T> = awaitAllImpl(promises.toTypedArray())
 
-    suspend fun <T> awaitResults(vararg promises: CompletableFuture<T>): List<Result<T>> = awaitInternalResults(promises)
-    suspend fun <T> awaitResults(promises: Collection<CompletableFuture<T>>): List<Result<T>> = awaitInternalResults(promises.toTypedArray())
+    suspend fun <T> awaitAllSettled(vararg promises: CompletableFuture<T>): List<Result<T>> = awaitAllSettledImpl(promises)
+    suspend fun <T> awaitAllSettled(promises: Collection<CompletableFuture<T>>): List<Result<T>> = awaitAllSettledImpl(promises.toTypedArray())
 
-    private suspend fun <T> awaitInternal(promises: Array<out CompletableFuture<T>>): List<T> {
-        val results = suspendCoroutine { Waiter(promises, it).start() }
+    private suspend fun <T> awaitAllImpl(promises: Array<out CompletableFuture<T>>): List<T> {
+        val results = awaitAllSettledImpl(promises)
         val values = ArrayList<T>(results.size)
 
         val iterator = results.iterator()
@@ -55,12 +55,12 @@ object Async {
         return values
     }
 
-    private suspend fun <T> awaitInternalResults(promises: Array<out CompletableFuture<T>>) =
-        suspendCoroutine { Waiter(promises, it).start() }.asList()
+    private suspend fun <T> awaitAllSettledImpl(promises: Array<out CompletableFuture<T>>) =
+        suspendCoroutine { Waiter(promises, it).start() }
 
     private class Waiter<T>(
         private val promises: Array<out CompletableFuture<T>>,
-        private val continuation: Continuation<Array<Result<T>>>,
+        private val continuation: Continuation<List<Result<T>>>,
     ) {
         @JvmField val results = arrayOfNulls<Result<T>>(promises.size)
         @JvmField var count = 0
@@ -69,7 +69,8 @@ object Async {
             override fun accept(value: T, cause: Throwable?) {
                 val result = if (cause != null) Result.failure(cause) else Result.success(value)
                 if (synchronized(this@Waiter) { results[i] = result; results.size == ++count }) {
-                    continuation.resumeWith(Result.success(results as Array<Result<T>>))
+                    @Suppress("UNCHECKED_CAST")
+                    continuation.resumeWith(Result.success(results.asList() as List<Result<T>>))
                 }
             }
         }
@@ -78,7 +79,7 @@ object Async {
             if (promises.isNotEmpty()) {
                 promises.forEachIndexed { i, promise -> promise.whenComplete(Handler(i)) }
             } else {
-                continuation.resumeWith(Result.success(emptyArray()))
+                continuation.resumeWith(Result.success(emptyList()))
             }
         }
     }

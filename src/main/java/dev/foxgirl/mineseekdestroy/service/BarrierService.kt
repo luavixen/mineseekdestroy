@@ -35,7 +35,7 @@ class BarrierService : Service() {
             add(search("blimp", properties.regionBarrierBlimpTemplate, properties.regionBarrierBlimpTarget))
             addAll(properties.regionBarrierBlimpBalloonTargets.map { template -> search("blimp-balloon", properties.regionBarrierBlimpBalloonTemplate, template) })
         }
-        targetsBlimp = Async.await(tasks).flatten()
+        targetsBlimp = Async.awaitAll(tasks).flatten()
     }
 
     private fun apply(targets: List<Target>, provider: (Target) -> BlockState) {
@@ -44,7 +44,7 @@ class BarrierService : Service() {
 
     override fun setup() {
         Async.run {
-            await(
+            awaitAll(
                 go(::setupArena),
                 go(::setupBlimp),
             )
@@ -63,7 +63,7 @@ class BarrierService : Service() {
     fun executeBlimpOpen(console: Console) {
         Async.run {
             val action = Editor.Action { state, _, _, _ -> if (state.block === Blocks.RED_STAINED_GLASS) blockAir else null }
-            await(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
+            awaitAll(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
             apply(targetsBlimp) { blockAir }
             console.sendInfo("Blimp barriers opened")
         }
@@ -71,7 +71,7 @@ class BarrierService : Service() {
     fun executeBlimpClose(console: Console) {
         Async.run {
             val action = Editor.Action { state, _, _, _ -> if (state.isAir) blockBarrier else null }
-            await(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
+            awaitAll(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
             apply(targetsBlimp, Target::stateClosed)
             console.sendInfo("Blimp barriers closed")
         }

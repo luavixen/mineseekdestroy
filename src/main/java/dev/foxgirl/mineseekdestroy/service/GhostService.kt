@@ -70,10 +70,10 @@ class GhostService : Service() {
                     playerEntity.removeStatusEffect(StatusEffects.INVISIBILITY)
                 }
 
-                playerEntities.values.forEach {
-                    val team = if (goingGhost) it.scoreboardTeam as? Team else player.scoreboardTeam
+                playerEntities.forEach { (_, targetEntity) ->
+                    val team = if (goingGhost) targetEntity.scoreboardTeam as? Team else player.scoreboardTeam
                     if (team != null) {
-                        it.networkHandler.sendPacket(TeamS2CPacket.changePlayerTeam(team, player.name, TeamS2CPacket.Operation.ADD))
+                        targetEntity.networkHandler.sendPacket(TeamS2CPacket.changePlayerTeam(team, player.name, TeamS2CPacket.Operation.ADD))
                     }
                 }
 
@@ -109,9 +109,12 @@ class GhostService : Service() {
         if (state.isPlaying) {
             for ((player, playerEntity) in playerEntitiesNormal) {
                 if (player.isGhost) {
-                    playerEntitiesIn.values.forEach {
-                        if (it.squaredDistanceTo(playerEntity) <= 20) {
-                            it.frozenTicks = Math.min(it.frozenTicks + 4, it.minFreezeDamageTicks + 20)
+                    playerEntitiesIn.forEach { (_, targetEntity) ->
+                        if (targetEntity.squaredDistanceTo(playerEntity) <= 20) {
+                            targetEntity.frozenTicks = Math.min(
+                                targetEntity.frozenTicks + 4,
+                                targetEntity.minFreezeDamageTicks + 20,
+                            )
                         }
                     }
                 }

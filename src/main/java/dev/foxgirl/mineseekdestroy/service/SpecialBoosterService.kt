@@ -24,7 +24,7 @@ class SpecialBoosterService : Service() {
     ) {
         private val entries = HashMap<GamePlayer, TrackerEntry>()
 
-        fun tick(playersEntities: Map<GamePlayer, ServerPlayerEntity>) {
+        fun tick(playersEntities: List<Pair<GamePlayer, ServerPlayerEntity>>) {
             playersEntities.forEach { (player, playerEntity) ->
                 entries
                     .computeIfAbsent(player) { TrackerEntry() }
