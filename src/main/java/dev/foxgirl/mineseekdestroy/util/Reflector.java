@@ -218,8 +218,6 @@ public final class Reflector {
      * @throws NullPointerException If any arguments are null.
      */
     public static @Nullable MethodHandle methodHandle(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<?>... params) {
-        Objects.requireNonNull(clazz, "Argument 'clazz'");
-        Objects.requireNonNull(name, "Argument 'name'");
         var key = new MethodKey(clazz, name, params);
         synchronized (HANDLES) {
             return HANDLES.computeIfAbsent(key, MethodFinder.INSTANCE);

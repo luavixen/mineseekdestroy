@@ -30,7 +30,7 @@ private inline fun createNbtCompound(size: Int, block: (HashMap<String, NbtEleme
 fun toNbtList(source: Collection<*>): NbtList =
     createNbtList(source.size) { source.mapTo(it, ::toNbtElement) }
 fun toNbtCompound(source: Map<*, *>): NbtCompound =
-    createNbtCompound(source.size) { source.forEach { (key, value) -> it[(key as CharSequence).toString()] = toNbtElement(value) } }
+    createNbtCompound(source.size) { source.forEach { (key, value) -> it[key as String] = toNbtElement(value) } }
 
 fun toNbt(value: NbtElement) = value
 
