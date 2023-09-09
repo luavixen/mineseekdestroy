@@ -66,7 +66,8 @@ class SpecialGhoulService : Service() {
     override fun setup() {
         if (properties != GameProperties.Macander) return
         Editor
-            .search(world, region) { it.block === Blocks.OCHRE_FROGLIGHT }
+            .queue(world, region)
+            .search { it.block === Blocks.OCHRE_FROGLIGHT }
             .thenApply { results ->
                 logger.info("SpecialGhoulService search for spawn positions returned ${results.size} result(s)")
                 spawnPositions = results.map { it.pos.let { Vec3d(it.x + 0.5, it.y + 1.0, it.z + 0.5) } }

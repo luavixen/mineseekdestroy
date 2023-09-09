@@ -15,7 +15,7 @@ class BarrierService : Service() {
 
     private fun search(name: String, template: Region, target: Region): CompletableFuture<List<Target>> =
         Async.go {
-            val results = Editor.search(world, template) { !it.isAir && it.block !== Blocks.MAGENTA_WOOL }.await()
+            val results = Editor.queue(world, template).search { !it.isAir && it.block !== Blocks.MAGENTA_WOOL }.await()
             logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
 
             val offset = target.start.subtract(template.start)
@@ -63,7 +63,7 @@ class BarrierService : Service() {
     fun executeBlimpOpen(console: Console) {
         Async.run {
             val action = Editor.Action { state, _, _, _ -> if (state.block === Blocks.RED_STAINED_GLASS) blockAir else null }
-            await(properties.regionBarrierBlimpFills.map { region -> Editor.edit(world, region, action) })
+            await(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
             apply(targetsBlimp) { blockAir }
             console.sendInfo("Blimp barriers opened")
         }
@@ -71,7 +71,7 @@ class BarrierService : Service() {
     fun executeBlimpClose(console: Console) {
         Async.run {
             val action = Editor.Action { state, _, _, _ -> if (state.isAir) blockBarrier else null }
-            await(properties.regionBarrierBlimpFills.map { region -> Editor.edit(world, region, action) })
+            await(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
             apply(targetsBlimp, Target::stateClosed)
             console.sendInfo("Blimp barriers closed")
         }

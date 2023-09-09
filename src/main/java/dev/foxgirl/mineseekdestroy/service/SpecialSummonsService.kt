@@ -221,7 +221,8 @@ class SpecialSummonsService : Service() {
                     )
 
                     Editor
-                        .edit(world, region) { state, _, _, _ ->
+                        .queue(world, region)
+                        .edit { state, _, _, _ ->
                             if (state.isAir || blocks.contains(state.block)) {
                                 Blocks.WATER.defaultState
                             } else if (state.contains(Properties.WATERLOGGED)) {
@@ -238,7 +239,8 @@ class SpecialSummonsService : Service() {
         }
         override fun stop() {
             Editor
-                .edit(world, properties.regionFlood) { state, _, _, _ ->
+                .queue(world, properties.regionFlood)
+                .edit { state, _, _, _ ->
                     if (state.block === Blocks.WATER) {
                         return@edit Blocks.AIR.defaultState
                     }
@@ -501,7 +503,8 @@ class SpecialSummonsService : Service() {
             )
 
             Editor
-                .edit(world, properties.regionPlayable) { state, _, _, _ ->
+                .queue(world, properties.regionPlayable)
+                .edit { state, _, _, _ ->
                     if (blocks.contains(state.block)) {
                         return@edit Blocks.AIR.defaultState
                     }
@@ -571,7 +574,9 @@ class SpecialSummonsService : Service() {
             findTheologyAt(pos.up()) ?: findTheologyAt(pos.down())
 
         Async.run {
-            altars = Editor.search(world, properties.regionAll) { it.block === Blocks.FLETCHING_TABLE }
+            altars = Editor
+                .queue(world, properties.regionAll)
+                .search { it.block === Blocks.FLETCHING_TABLE }
                 .await()
                 .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
                 .associateBy { it.pos }

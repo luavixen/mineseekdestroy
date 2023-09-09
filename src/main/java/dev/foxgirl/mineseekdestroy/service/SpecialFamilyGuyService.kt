@@ -44,7 +44,8 @@ class SpecialFamilyGuyService : Service() {
         val positions = ArrayList<BlockPos>(128)
 
         Editor
-            .edit(world, region) { _, y, x, z ->
+            .queue(world, region)
+            .edit { _, x, y, z ->
                 val pos = BlockPos(x, y, z)
                 val state = world.getBlockState(pos.subtract(offset))
                 if (state.isAir) {

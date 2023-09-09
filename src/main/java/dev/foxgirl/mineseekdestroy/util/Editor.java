@@ -2,14 +2,12 @@ package dev.foxgirl.mineseekdestroy.util;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
-import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +22,9 @@ public final class Editor {
     private Editor() {
     }
 
-    public record Result(@NotNull BlockPos pos, @NotNull BlockState state) {
+    @FunctionalInterface
+    public interface Action {
+        @Nullable BlockState apply(@NotNull BlockState state, int x, int y, int z);
     }
 
     @FunctionalInterface
@@ -32,9 +32,52 @@ public final class Editor {
         boolean test(@NotNull BlockState state);
     }
 
-    @FunctionalInterface
-    public interface Action {
-        @Nullable BlockState apply(@NotNull BlockState state, int y, int x, int z);
+    public record Result(@NotNull BlockPos pos, @NotNull BlockState state) {
+    }
+
+    public static final class Queue {
+        private final ArrayList<Operation> list = new ArrayList<>();
+
+        private Queue() {
+        }
+
+        private void add(Operation operation) {
+            synchronized (LOCK) {
+                list.add(operation);
+            }
+        }
+
+        private Operation[] operations() {
+            return list.toArray(new Operation[0]);
+        }
+
+        /**
+         * Enqueues an edit operation into this queue.
+         * @param action Action to perform.
+         * @return {@link CompletableFuture} that is resolved when the operation completes.
+         * @throws NullPointerException If {@code action} is null.
+         */
+        public @NotNull CompletableFuture<@Nullable Void> edit(@NotNull Action action) {
+            Objects.requireNonNull(action, "Argument 'action'");
+            var promise = new CompletableFuture<Void>();
+            var operation = new EditOperation(promise, action);
+            add(operation);
+            return promise;
+        }
+
+        /**
+         * Enqueues a search operation into this queue for specific blocks, filtered by the predicate.
+         * @param predicate Predicate to filter blocks by.
+         * @return {@link CompletableFuture} that is resolved with a list of search results.
+         * @throws NullPointerException If {@code predicate} is null.
+         */
+        public @NotNull CompletableFuture<@NotNull List<@NotNull Result>> search(@NotNull Predicate predicate) {
+            Objects.requireNonNull(predicate, "Argument 'predicate'");
+            var promise = new CompletableFuture<List<Result>>();
+            var operation = new SearchOperation(promise, predicate);
+            add(operation);
+            return promise;
+        }
     }
 
     private static final class Target {
@@ -95,14 +138,13 @@ public final class Editor {
 
     private static final class SearchOperation implements Operation, Action {
         private final CompletableFuture<List<Result>> promise;
-
         private final Predicate predicate;
-        private final ArrayList<Result> results;
+
+        private final ArrayList<Result> results = new ArrayList<>(64);
 
         private SearchOperation(CompletableFuture<List<Result>> promise, Predicate predicate) {
             this.promise = promise;
             this.predicate = predicate;
-            this.results = new ArrayList<>(64);
         }
 
         @Override
@@ -161,15 +203,15 @@ public final class Editor {
                 for (int y = 0; y < 16; y++) {
                     int posY = y + offsetY;
                     if (posMinY > posY || posMaxY < posY) continue;
-                    for (int x = 0; x < 16; x++) {
-                        int posX = x + offsetX;
-                        if (posMinX > posX || posMaxX < posX) continue;
-                        for (int z = 0; z < 16; z++) {
-                            int posZ = z + offsetZ;
-                            if (posMinZ > posZ || posMaxZ < posZ) continue;
+                    for (int z = 0; z < 16; z++) {
+                        int posZ = z + offsetZ;
+                        if (posMinZ > posZ || posMaxZ < posZ) continue;
+                        for (int x = 0; x < 16; x++) {
+                            int posX = x + offsetX;
+                            if (posMinX > posX || posMaxX < posX) continue;
                             var stateOld = section.getBlockState(x, y, z);
                             for (var action : actions) {
-                                var stateNew = action.apply(stateOld, posY, posX, posZ);
+                                var stateNew = action.apply(stateOld, posX, posY, posZ);
                                 if (stateNew != null) {
                                     section.setBlockState(x, y, z, stateNew);
                                     stateOld = stateNew;
@@ -256,19 +298,27 @@ public final class Editor {
         }
     }
 
-    private static final LinkedHashMap<Target, ArrayList<Operation>> operations = new LinkedHashMap<>();
-    private static final Object lock = new Object();
+    private static final Object LOCK = new Object();
+    private static final LinkedHashMap<Target, Queue> QUEUES = new LinkedHashMap<>();
 
-    private static void enqueue(ServerWorld world, Region region, Operation operation) {
-        synchronized (lock) {
-            operations
-                .computeIfAbsent(new Target(world, region), (key) -> new ArrayList<>())
-                .add(operation);
+    /**
+     * Creates a queue of operations for the given world and region.
+     * @param world World to perform operations in.
+     * @param region Region to perform operations in.
+     * @return Operation queue instance.
+     * @throws NullPointerException If either of the provided arguments are null.
+     */
+    public static @NotNull Queue queue(@NotNull ServerWorld world, @NotNull Region region) {
+        Objects.requireNonNull(world, "Argument 'world'");
+        Objects.requireNonNull(region, "Argument 'region'");
+        synchronized (LOCK) {
+            return QUEUES.computeIfAbsent(new Target(world, region), (key) -> new Queue());
         }
     }
 
     /**
-     * Executes all enqueued operations.
+     * Executes all enqueued operations, must be run on the main server thread.
+     * @throws IllegalStateException If invoked from the wrong thread.
      */
     public static void update() {
         var server = Game.getGame().getServer();
@@ -279,20 +329,20 @@ public final class Editor {
 
         ArrayList<Task> tasks;
 
-        synchronized (lock) {
-            if (operations.isEmpty()) {
+        synchronized (LOCK) {
+            if (QUEUES.isEmpty()) {
                 return;
             }
 
-            tasks = new ArrayList<>(operations.size());
+            tasks = new ArrayList<>(QUEUES.size());
 
-            for (var entry : operations.entrySet()) {
+            for (var entry : QUEUES.entrySet()) {
                 var target = entry.getKey();
-                var operations = entry.getValue().toArray(new Operation[0]);
-                tasks.add(new Task(target, operations));
+                var queue = entry.getValue();
+                tasks.add(new Task(target, queue.operations()));
             }
 
-            operations.clear();
+            QUEUES.clear();
         }
 
         tasks.sort(Comparator.comparingLong((task) -> task.target.region.getBlockCount()));
@@ -309,12 +359,12 @@ public final class Editor {
 
         if (chunkLists.isEmpty()) return;
 
-        var chunks = ImmutableSet.<WorldChunk>builder(chunkCount);
+        var chunks = new LinkedHashSet<WorldChunk>(chunkCount * 2);
         chunkLists.forEach(chunks::addAll);
 
         var distance = server.getPlayerManager().getViewDistance() + 4;
 
-        for (WorldChunk chunk : chunks.build()) {
+        for (WorldChunk chunk : chunks) {
             var world = (ServerWorld) chunk.getWorld();
             var packet = new ChunkDataS2CPacket(chunk, world.getChunkManager().getLightingProvider(), null, null);
             for (ServerPlayerEntity player : world.getPlayers()) {
@@ -322,46 +372,6 @@ public final class Editor {
                 player.networkHandler.sendPacket(packet);
             }
         }
-    }
-
-    /**
-     * Enqueues an edit operation in the given region.
-     * @param world World to search in.
-     * @param region Region to search in.
-     * @param action Action to perform.
-     * @return
-     *   {@link CompletableFuture} that is resolved when the operation
-     *   completes.
-     * @throws NullPointerException If any of the provided arguments are null.
-     */
-    public static @NotNull CompletableFuture<@Nullable Void> edit(@NotNull World world, @NotNull Region region, @NotNull Action action) {
-        Objects.requireNonNull(world, "Argument 'world'");
-        Objects.requireNonNull(region, "Argument 'region'");
-        Objects.requireNonNull(action, "Argument 'action'");
-
-        CompletableFuture<Void> promise = new CompletableFuture<>();
-        enqueue((ServerWorld) world, region, new EditOperation(promise, action));
-        return promise;
-    }
-
-    /**
-     * Enqueues a search operation in the given region for specific blocks, filtered by the predicate.
-     * @param world World to search in.
-     * @param region Region to search in.
-     * @param predicate Predicate to filter blocks by.
-     * @return
-     *   {@link CompletableFuture} that is resolved with a list of search
-     *   results.
-     * @throws NullPointerException If any of the provided arguments are null.
-     */
-    public static @NotNull CompletableFuture<@NotNull List<@NotNull Result>> search(@NotNull World world, @NotNull Region region, @NotNull Predicate predicate) {
-        Objects.requireNonNull(world, "Argument 'world'");
-        Objects.requireNonNull(region, "Argument 'region'");
-        Objects.requireNonNull(predicate, "Argument 'predicate'");
-
-        CompletableFuture<List<Result>> promise = new CompletableFuture<>();
-        enqueue((ServerWorld) world, region, new SearchOperation(promise, predicate));
-        return promise;
     }
 
 }

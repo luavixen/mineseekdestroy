@@ -37,9 +37,8 @@ class LootService : Service() {
 
     override fun setup() {
         Editor
-            .search(world, properties.regionAll) {
-                containerBlocks.contains(it.block)
-            }
+            .queue(world, properties.regionAll)
+            .search { containerBlocks.contains(it.block) }
             .thenApply { results ->
                 logger.info("LootService search for containers returned ${results.size} result(s)")
                 positions = results.map { it.pos }

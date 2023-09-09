@@ -23,7 +23,8 @@ class SmokerService : Service() {
 
     override fun setup() {
         Editor
-            .search(world, properties.regionAll) { it.block === Blocks.SMOKER }
+            .queue(world, properties.regionAll)
+            .search { it.block === Blocks.SMOKER }
             .thenApply { results ->
                 logger.info("SmokerService search for smokers returned ${results.size} result(s)")
                 positions = results.map { it.pos }
