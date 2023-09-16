@@ -118,7 +118,7 @@ class SoulService : Service() {
             ))
             playerEntity.addStatusEffect(StatusEffectInstance(
                 StatusEffects.SPEED, duration,
-                Rules.soulsConsumingEffectJumpStrength - 1,
+                Rules.soulsConsumingEffectSpeedStrength - 1,
             ))
             stack.decrement(1)
             return ActionResult.SUCCESS
