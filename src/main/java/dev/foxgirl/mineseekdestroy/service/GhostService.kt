@@ -77,9 +77,7 @@ class GhostService : Service() {
                     }
                 }
 
-                if (!game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
-                    healthValue.apply(healthAttribute)
-                }
+                healthValue.apply(healthAttribute)
 
             } else {
 
@@ -122,14 +120,13 @@ class GhostService : Service() {
         }
     }
 
-    fun handleDeath(
+    fun handleGhostDeath(
         player: GamePlayer,
         playerEntity: ServerPlayerEntity,
         attacker: GamePlayer,
         attackerEntity: ServerPlayerEntity,
     ) {
         if (attacker.team !== GameTeam.PLAYER_BLACK) return
-        if (game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) return
 
         Scheduler.now {
             attackerEntity.damage(
@@ -149,7 +146,7 @@ class GhostService : Service() {
         }
     }
 
-    fun handleInteract(player: GamePlayer, blockPos: BlockPos, blockState: BlockState): ActionResult {
+    fun handleGhostInteract(player: GamePlayer, blockPos: BlockPos, blockState: BlockState): ActionResult {
         if (properties.unstealableBlocks.contains(blockState.block)) return ActionResult.PASS
 
         val entity = player.entity
@@ -162,7 +159,7 @@ class GhostService : Service() {
         return ActionResult.SUCCESS
     }
 
-    fun shouldIgnoreDamage(key: RegistryKey<DamageType>?) = ignoredDamageTypes.contains(key)
+    fun shouldGhostIgnoreDamage(key: RegistryKey<DamageType>?) = ignoredDamageTypes.contains(key)
 
     fun executeSetBlackDeaths(console: Console, targets: Collection<GamePlayer>, value: Int) {
         for (target in targets) healthValue(target).value = value

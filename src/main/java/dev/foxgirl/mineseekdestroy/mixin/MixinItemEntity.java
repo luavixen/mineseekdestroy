@@ -37,7 +37,10 @@ public abstract class MixinItemEntity extends Entity {
         if (Game.ILLEGAL_ITEMS.contains(stack.getItem())) {
             discard();
             return true;
-        } else if (Game.DROPPED_ITEMS.contains(stack.getItem())) {
+        } else if (
+            (Game.DROPPED_ITEMS.contains(stack.getItem())) ||
+            (stack.hasNbt() && stack.getNbt().contains("MsdGlowing"))
+        ) {
             var context = Game.getGame().getContext();
             if (context != null) {
                 context.scoreboard.addPlayerToTeam(getEntityName(), context.getTeam(GameTeam.OPERATOR));

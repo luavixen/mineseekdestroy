@@ -105,7 +105,6 @@ internal fun setup() {
                     player1.isAlive = true
                     player2.isAlive = true
 
-                    player1.kills = 0
                     player1.teleport(properties.positionDuel1)
                     player2.teleport(properties.positionDuel2)
 
@@ -289,6 +288,79 @@ internal fun setup() {
             it.actionWithContext { args, context ->
                 val players = args.players(context).onEach { it.kills-- }
                 args.sendInfo("Updated kill count for ${players.size} player(s)")
+            }
+        }
+    }
+
+    Command.build("soul") {
+        it.params(argLiteral("give"), argPlayers(), argPlayer()) {
+            it.params(argLiteral("yellow")) {
+                it.actionWithContext { args, context ->
+                    context.soulService.executeSoulGive(args, args.players(context), args.player(context), GameTeam.PLAYER_YELLOW)
+                }
+            }
+            it.params(argLiteral("blue")) {
+                it.actionWithContext { args, context ->
+                    context.soulService.executeSoulGive(args, args.players(context), args.player(context), GameTeam.PLAYER_BLUE)
+                }
+            }
+            it.actionWithContext { args, context ->
+                context.soulService.executeSoulGive(args, args.players(context), args.player(context))
+            }
+        }
+        it.params(argLiteral("clear")) {
+            it.params(argPlayers()) {
+                it.actionWithContext { args, context ->
+                    context.soulService.executeSoulClear(args, args.players(context))
+                }
+            }
+            it.actionWithContext { args, context ->
+                context.soulService.executeSoulClear(args, context.players)
+            }
+        }
+        it.params(argLiteral("list")) {
+            it.params(argPlayers()) {
+                it.actionWithContext { args, context ->
+                    context.soulService.executeSoulList(args, args.players(context))
+                }
+            }
+            it.actionWithContext { args, context ->
+                context.soulService.executeSoulList(args, context.players)
+            }
+        }
+    }
+
+    Command.build("duel") {
+        it.params(argLiteral("open")) {
+            it.actionWithContext { args, context ->
+                context.soulService.executeDuelOpen(args)
+            }
+        }
+        it.params(argLiteral("close")) {
+            it.actionWithContext { args, context ->
+                context.soulService.executeDuelClose(args)
+            }
+        }
+        it.params(argLiteral("start")) {
+            it.params(argPlayer("aggressor"), argPlayer("victim")) {
+                it.params(argLiteral("force")) {
+                    it.actionWithContext { args, context ->
+                        context.soulService.executeDuelStart(args, args.player(context, "aggressor"), args.player(context, "victim"), true)
+                    }
+                }
+                it.actionWithContext { args, context ->
+                    context.soulService.executeDuelStart(args, args.player(context, "aggressor"), args.player(context, "victim"), false)
+                }
+            }
+        }
+        it.params(argLiteral("cancel"), argPlayer("aggressor"), argPlayer("victim")) {
+            it.actionWithContext { args, context ->
+                context.soulService.executeDuelCancel(args, args.player(context, "aggressor"), args.player(context, "victim"))
+            }
+        }
+        it.params(argLiteral("list")) {
+            it.actionWithContext { args, context ->
+                context.soulService.executeDuelList(args)
             }
         }
     }

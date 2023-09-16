@@ -233,16 +233,16 @@ class AutomationService : Service() {
 
         private class IpadNamedScreenHandlerFactory(private val inventory: Inventory) : NamedScreenHandlerFactory {
             override fun getDisplayName(): Text = text("child's ipad")
-            override fun createMenu(sync: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity?): ScreenHandler {
-                return IpadScreenHandler(sync, playerInventory, inventory)
+            override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity?): ScreenHandler {
+                return IpadScreenHandler(syncId, playerInventory, inventory)
             }
         }
 
         private class IpadScreenHandler(
-            sync: Int,
-            inventoryPlayer: PlayerInventory,
-            inventoryContainer: Inventory,
-        ) : GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, sync, inventoryPlayer, inventoryContainer, 6)
+            syncId: Int,
+            playerInventory: PlayerInventory,
+            containerInventory: Inventory,
+        ) : GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, playerInventory, containerInventory, 6)
 
         private class LiveInventory(parts: Iterable<InventoryPart>) : Inventory {
             private val mappings = arrayOfNulls<InventoryPart>(size())

@@ -134,6 +134,17 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SUMMONS_ENABLED =
         GameRuleRegistry.register("msdSummonsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_DROPPING_ENABLED =
+        GameRuleRegistry.register("msdSoulsDroppingEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_CONSUMING_ENABLED =
+        GameRuleRegistry.register("msdSoulsConsumingEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_SOULS_CONSUMING_EFFECT_DURATION =
+        GameRuleRegistry.register("msdSoulsConsumingEffectDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(10.0));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_SOULS_CONSUMING_EFFECT_JUMP_STRENGTH =
+        GameRuleRegistry.register("msdSoulsConsumingEffectJumpStrength", GameRules.Category.MISC, GameRuleFactory.createIntRule(8));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_SOULS_CONSUMING_EFFECT_SPEED_STRENGTH =
+        GameRuleRegistry.register("msdSoulsConsumingEffectSpeedStrength", GameRules.Category.MISC, GameRuleFactory.createIntRule(6));
+
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BUDDY_ENABLED =
         GameRuleRegistry.register("msdBuddyEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BUDDY_HEALTH_PENALTY =
@@ -220,6 +231,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.WRITABLE_BOOK,
         Items.KNOWLEDGE_BOOK,
         Items.ENCHANTED_BOOK,
+        Items.LANTERN,
+        Items.SOUL_LANTERN,
     });
 
     public static final @NotNull Set<@NotNull Item> DROPPED_ITEMS = ImmutableSet.copyOf(new Item[] {

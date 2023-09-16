@@ -856,19 +856,19 @@ class SpecialSummonsService : Service() {
             input.removeStack(1, 1)
         }
 
-        override fun onClosed(player: PlayerEntity) {
-            player.give(cursorStack)
+        override fun onClosed(playerEntity: PlayerEntity) {
+            playerEntity.give(cursorStack)
             cursorStack = ItemStack.EMPTY
 
-            player.give(input.removeStack(0))
-            player.give(input.removeStack(1))
+            playerEntity.give(input.removeStack(0))
+            playerEntity.give(input.removeStack(1))
         }
 
         override fun canTakeOutput(playerEntity: PlayerEntity, present: Boolean): Boolean {
             return theologies() != null
         }
 
-        override fun canUse(player: PlayerEntity?) = true
+        override fun canUse(playerEntity: PlayerEntity?) = true
         override fun canUse(state: BlockState?) = true
 
         override fun canInsertIntoSlot(slot: Slot?) = true

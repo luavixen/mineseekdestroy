@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
+import dev.foxgirl.mineseekdestroy.util.Inventories;
 import dev.foxgirl.mineseekdestroy.util.NbtKt;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
@@ -43,6 +44,7 @@ public final class GamePlayer {
     private boolean currentAlive = true;
     private GameTeam currentTeam = GameTeam.NONE;
 
+    private int statsSouls = 0;
     private int statsKills = 0;
     private int statsDeaths = 0;
 
@@ -71,16 +73,18 @@ public final class GamePlayer {
 
         currentAlive = NbtKt.toBoolean(nbt.get("Alive"));
         currentTeam = GameTeam.valueOf(NbtKt.toActualString(nbt.get("Team")));
+        statsSouls = NbtKt.toInt(nbt.get("Souls"));
         statsKills = NbtKt.toInt(nbt.get("Kills"));
         statsKills = NbtKt.toInt(nbt.get("Deaths"));
     }
 
     public @NotNull NbtCompound toNbt() {
-        var nbt = NbtKt.nbtCompound(8);
+        var nbt = NbtKt.nbtCompound(16);
         nbt.putUuid("UUID", uuid);
         nbt.putString("Name", name);
         nbt.putBoolean("Alive", currentAlive);
         nbt.putString("Team", currentTeam.name());
+        nbt.putInt("Souls", statsSouls);
         nbt.putInt("Kills", statsKills);
         nbt.putInt("Deaths", statsDeaths);
         return nbt;
@@ -109,6 +113,10 @@ public final class GamePlayer {
         currentAlive = alive;
     }
 
+    public int getSouls() {
+        return statsSouls;
+    }
+
     public int getKills() {
         return statsKills;
     }
@@ -134,6 +142,7 @@ public final class GamePlayer {
     }
 
     public void clearStats() {
+        statsSouls = 0;
         statsKills = 0;
         statsDeaths = 0;
     }
@@ -202,7 +211,7 @@ public final class GamePlayer {
     }
 
     private @NotNull ScoreboardObjective getScoreboardObjective() {
-        return context.scoreboardKills;
+        return context.scoreboardSouls;
     }
 
     private @Nullable Team getScoreboardAliveTeam() {
@@ -235,6 +244,21 @@ public final class GamePlayer {
         return Team.decorateName(getScoreboardAliveTeam(), Text.literal(getName()));
     }
 
+    private int getSoulsCurrent() {
+        var player = getEntity();
+        if (player != null) {
+            int count = 0;
+            for (var stack : Inventories.list(player.getInventory())) {
+                var nbt = stack.getNbt();
+                if (nbt != null && nbt.contains("MsdSoul")) {
+                    count += stack.getCount();
+                }
+            }
+            statsSouls = count;
+        }
+        return statsSouls;
+    }
+
     public void update() {
         var scoreboard = getScoreboard();
         var scoreboardObjective = getScoreboardObjective();
@@ -255,11 +279,11 @@ public final class GamePlayer {
         }
 
         if (isOnScoreboard() && !(isGhost() && Game.getGame().getState().isRunning())) {
-            var playerKills = getKills();
+            var playerSouls = getSoulsCurrent();
             var playerScore = scoreboard.getPlayerScore(playerName, scoreboardObjective);
 
-            if (playerScore.getScore() != playerKills) {
-                playerScore.setScore(playerKills);
+            if (playerScore.getScore() != playerSouls) {
+                playerScore.setScore(playerSouls);
             }
         } else {
             if (scoreboard.playerHasObjective(playerName, scoreboardObjective)) {

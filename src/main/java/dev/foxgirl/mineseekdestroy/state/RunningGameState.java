@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -67,13 +68,14 @@ public abstract class RunningGameState extends GameState {
                     attacker.countKill();
                 }
                 if (player.isGhost()) {
-                    context.ghostService.handleDeath(player, playerEntity, attacker, attackerEntity);
+                    context.ghostService.handleGhostDeath(player, playerEntity, attacker, attackerEntity);
                 }
                 Game.LOGGER.info(player.getName() + " was killed by " + attacker.getName());
             } else {
                 Game.LOGGER.info(player.getName() + " was killed with no valid attacker");
             }
 
+            context.soulService.handleDeath(player, playerEntity);
             context.specialBuddyService.handleDeath(player);
         }
 
@@ -95,8 +97,14 @@ public abstract class RunningGameState extends GameState {
                 }
             }
             if (
+                playerEntity.hasStatusEffect(StatusEffects.JUMP_BOOST) &&
+                damageSource.isOf(DamageTypes.FALL)
+            ) {
+                return false;
+            }
+            if (
                 player.isGhost() &&
-                context.ghostService.shouldIgnoreDamage(damageSource.getTypeRegistryEntry().getKey().orElse(null))
+                context.ghostService.shouldGhostIgnoreDamage(damageSource.getTypeRegistryEntry().getKey().orElse(null))
             ) {
                 return false;
             }

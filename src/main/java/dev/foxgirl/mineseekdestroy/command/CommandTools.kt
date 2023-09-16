@@ -86,7 +86,7 @@ fun <S : ServerCommandSource, T : ArgumentBuilder<S, *>> T.action(callback: (Com
             } catch (cause : CommandSyntaxException) {
                 throw cause
             } catch (cause : Throwable) {
-                cause.fillInStackTrace()
+                if (cause.stackTrace.isEmpty()) cause.fillInStackTrace()
                 Game.LOGGER.error("Unexpected exception while executing command \"${args.context.input}\"", cause)
                 args.context.source.sendError(Text.literal("[msd] Unexpected exception: $cause").formatted(Formatting.RED))
                 args.result = -1

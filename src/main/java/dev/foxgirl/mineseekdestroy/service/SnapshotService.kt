@@ -51,7 +51,7 @@ class SnapshotService : Service() {
         constructor(context: GameContext, nbt: NbtCompound) {
             player = context.getPlayer(nbt["Player"].asCompound())
 
-            snapshotTeam = GameTeam.valueOf(nbt["Team"].toActualString())
+            snapshotTeam = nbt["Team"].toEnum()
             snapshotAlive = nbt["Alive"].toBoolean()
             snapshotKills = nbt["Kills"].toInt()
             snapshotDeaths = nbt["Deaths"].toInt()
@@ -62,7 +62,7 @@ class SnapshotService : Service() {
         fun toNbt(): NbtCompound {
             val nbt = nbtCompoundOf(
                 "Player" to player,
-                "Team" to snapshotTeam.name,
+                "Team" to snapshotTeam,
                 "Alive" to snapshotAlive,
                 "Kills" to snapshotKills,
                 "Deaths" to snapshotDeaths,

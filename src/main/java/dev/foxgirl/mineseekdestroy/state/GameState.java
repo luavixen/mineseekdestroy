@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameItems;
+import dev.foxgirl.mineseekdestroy.GameTeam;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -96,9 +97,13 @@ public abstract class GameState {
     public ActionResult onUseBlock(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHit, BlockState blockState) {
         if (Game.getGame().isOperator(playerEntity)) {
             if (context != null && context.world == world) {
+                var player = context.getPlayer((ServerPlayerEntity) playerEntity);
                 if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
-                    var player = context.getPlayer((ServerPlayerEntity) playerEntity);
                     var result = context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                    if (result != ActionResult.PASS) return result;
+                }
+                if (blockState.getBlock() == Blocks.RESPAWN_ANCHOR) {
+                    var result = context.soulService.handleAnchorOpen(player);
                     if (result != ActionResult.PASS) return result;
                 }
             }
@@ -107,23 +112,31 @@ public abstract class GameState {
         if (context != null && context.world == world) {
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
-            if (
-                player.isPlaying() && player.isAlive() &&
-                properties.getInteractableBlocks().contains(blockState.getBlock()) &&
-                properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
-                properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
-                properties.getRegionBlimpBalloons().excludes(blockHit.getBlockPos())
-            ) {
-                var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
-                if (blockEntity instanceof LootableContainerBlockEntity) {
-                    var result = context.lootService.handleContainerOpen(blockEntity);
+            if (player.isPlaying() && player.isAlive()) {
+                if (
+                    properties.getInteractableBlocks().contains(blockState.getBlock()) &&
+                    properties.getRegionPlayable().contains(blockHit.getBlockPos()) &&
+                    properties.getRegionBlimp().excludes(blockHit.getBlockPos()) &&
+                    properties.getRegionBlimpBalloons().excludes(blockHit.getBlockPos())
+                ) {
+                    var blockEntity = blockState.hasBlockEntity() ? world.getBlockEntity(blockHit.getBlockPos()) : null;
+                    if (blockEntity instanceof LootableContainerBlockEntity) {
+                        var result = context.lootService.handleContainerOpen(blockEntity);
+                        if (result != ActionResult.PASS) return result;
+                    }
+                    if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
+                        var result = context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                        if (result != ActionResult.PASS) return result;
+                    }
+                    return ActionResult.PASS;
+                }
+                if (
+                    blockState.getBlock() == Blocks.RESPAWN_ANCHOR &&
+                    properties.getRegionBlimp().contains(blockHit.getBlockPos())
+                ) {
+                    var result = context.soulService.handleAnchorOpen(player);
                     if (result != ActionResult.PASS) return result;
                 }
-                if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
-                    var result = context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
-                    if (result != ActionResult.PASS) return result;
-                }
-                return ActionResult.PASS;
             }
             if (
                 blockState.getBlock() == Blocks.LEVER && (
@@ -186,6 +199,10 @@ public abstract class GameState {
         if (context != null) {
             var player = context.getPlayer(playerEntity);
             if (player.isPlaying() && Game.USABLE_ITEMS.contains(stack.getItem())) {
+                if (stack.getItem() == Items.LANTERN || stack.getItem() == Items.SOUL_LANTERN) {
+                    var result = context.soulService.handleSoulConsume(player, playerEntity, stack);
+                    if (result != ActionResult.PASS) return result;
+                }
                 return ActionResult.PASS;
             }
         }
@@ -222,7 +239,7 @@ public abstract class GameState {
                 properties.getRegionBlimp().excludes(blockPos) &&
                 properties.getRegionBlimpBalloons().excludes(blockPos)
             ) {
-                var result = context.ghostService.handleInteract(player, blockPos, blockState);
+                var result = context.ghostService.handleGhostInteract(player, blockPos, blockState);
                 if (result != ActionResult.PASS) return result;
             }
         }

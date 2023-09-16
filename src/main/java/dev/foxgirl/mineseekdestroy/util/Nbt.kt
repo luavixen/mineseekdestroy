@@ -62,6 +62,8 @@ fun toNbt(value: Item) = toNbt(Registries.ITEM.getId(value))
 fun toNbt(value: ItemStack): NbtCompound = nbtCompound(4).also(value::writeNbt)
 fun toNbt(value: Inventory): NbtCompound = Inventories.toNbt(value)
 
+fun toNbt(value: Enum<*>) = toNbt(value.name)
+
 fun toNbt(value: Collection<*>) = toNbtList(value)
 fun toNbt(value: Map<*, *>) = toNbtCompound(value)
 
@@ -91,6 +93,7 @@ private fun toNbtElementConversion(value: Any?): NbtElement {
         is Item -> toNbt(value)
         is ItemStack -> toNbt(value)
         is Inventory -> toNbt(value)
+        is Enum<*> -> toNbt(value)
         is Collection<*> -> toNbtList(value)
         is Map<*, *> -> toNbtCompound(value)
         else -> {
@@ -151,6 +154,9 @@ fun NbtElement?.toUUID(): UUID =
 fun NbtElement?.toBlockPos(): BlockPos =
     NbtHelper.toBlockPos(this.asCompound())
 
+inline fun <reified E : Enum<E>> NbtElement?.toEnum(): E =
+    Reflector.methodHandle(E::class.java, "valueOf", String::class.java)!!.invoke(this.toActualString()) as E
+
 fun nbtDecode(string: String): NbtElement =
     StringNbtReader(StringReader(string)).parseElement()
 fun nbtEncode(element: NbtElement): String =
@@ -197,6 +203,11 @@ operator fun NbtCompound.set(key: String, value: IntArray) {
 }
 operator fun NbtCompound.set(key: String, value: LongArray) {
     this.putLongArray(key, value)
+}
+
+operator fun NbtCompound.plus(other: NbtCompound): NbtCompound {
+    this.copyFrom(other)
+    return this
 }
 
 fun identifier(id: String) = Identifier(id)

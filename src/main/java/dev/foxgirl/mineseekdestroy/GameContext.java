@@ -29,8 +29,8 @@ import java.util.*;
 
 public final class GameContext {
 
-    private static final String scoreboardKillsName = "msd_kills";
-    private static final Text scoreboardKillsDisplayName = Text.of("Mine n Seek n Destroy");
+    private static final String scoreboardSoulsName = "msd_souls";
+    private static final Text scoreboardSoulsDisplayName = Text.of("Mine n Seek n Destroy");
 
     private static final String scoreboardHeartsName = "msd_hearts";
     private static final Text scoreboardHeartsDisplayName = Text.of("Health");
@@ -41,7 +41,7 @@ public final class GameContext {
     public final @NotNull ServerWorld world;
 
     public final @NotNull Scoreboard scoreboard;
-    public final @NotNull ScoreboardObjective scoreboardKills;
+    public final @NotNull ScoreboardObjective scoreboardSouls;
     public final @NotNull ScoreboardObjective scoreboardHearts;
 
     private final Map<String, Team> teamMap;
@@ -62,6 +62,7 @@ public final class GameContext {
     public final @NotNull ItemService itemService;
     public final @NotNull ShieldService shieldService;
     public final @NotNull GhostService ghostService;
+    public final @NotNull SoulService soulService;
     public final @NotNull SnapshotService snapshotService;
     public final @NotNull StormService stormService;
     public final @NotNull SmokerService smokerService;
@@ -99,19 +100,19 @@ public final class GameContext {
 
         scoreboard = server.getScoreboard();
 
-        var scoreboardKillsOld = scoreboard.getObjective(scoreboardKillsName);
+        var scoreboardKillsOld = scoreboard.getObjective(scoreboardSoulsName);
         if (scoreboardKillsOld != null) {
             scoreboard.removeObjective(scoreboardKillsOld);
         }
 
-        scoreboardKills = scoreboard.addObjective(
-            scoreboardKillsName,
+        scoreboardSouls = scoreboard.addObjective(
+            scoreboardSoulsName,
             ScoreboardCriterion.DUMMY,
-            scoreboardKillsDisplayName,
+            scoreboardSoulsDisplayName,
             ScoreboardCriterion.RenderType.INTEGER
         );
 
-        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, scoreboardKills);
+        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, scoreboardSouls);
 
         var scoreboardHeartsOld = scoreboard.getObjective(scoreboardHeartsName);
         if (scoreboardHeartsOld != null) {
@@ -166,6 +167,7 @@ public final class GameContext {
                 itemService = new ItemService(),
                 shieldService = new ShieldService(),
                 ghostService = new GhostService(),
+                soulService = new SoulService(),
                 snapshotService = new SnapshotService(),
                 stormService = new StormService(),
                 smokerService = new SmokerService(),
@@ -240,7 +242,7 @@ public final class GameContext {
     }
 
     public void destroy() {
-        scoreboard.removeObjective(scoreboardKills);
+        scoreboard.removeObjective(scoreboardSouls);
         scoreboard.removeObjective(scoreboardHearts);
 
         game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);

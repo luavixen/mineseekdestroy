@@ -73,7 +73,7 @@ fun ItemStack.dataDisplay(): NbtCompound {
     }
 }
 
-fun Inventory.asList(): List<ItemStack> = Inventories.list(this)
+fun Inventory.asList(): MutableList<ItemStack> = Inventories.list(this)
 
 fun Item.toNbt() = toNbt(this)
 fun ItemStack.toNbt() = toNbt(this)

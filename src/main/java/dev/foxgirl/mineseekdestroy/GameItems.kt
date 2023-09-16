@@ -181,7 +181,7 @@ object GameItems {
         arrowDeep = stackOf(
             TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("long_water_breathing")),
             text("Arrow of the ") + DEEP.displayName,
-            withDeep() + text("flood the map").format(DEEP.color) + "!",
+            withDeep() + text("flood the map").format(DEEP.color) + "! (" + text("requires soul").bold().italic() + ")",
             withOccult() + text("receive a ") + text("player-tracking compass").bold() + "!",
             withCosmos() + text("summon acid rain!"),
             withBarter() + text("poison all water!"),
@@ -191,7 +191,7 @@ object GameItems {
             TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("strong_healing")),
             text("Arrow of the ") + OCCULT.displayName,
             withDeep() + text("receive a ") + text("player-tracking compass").bold() + "!",
-            withOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "!",
+            withOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "! (" + text("requires soul").bold().italic() + ")",
             withCosmos() + text("gain night vision and blind your opponents!"),
             withBarter() + text("receive an OP sword!"),
             withFlame() + text("spawn ") + text("3 ghasts").bold() + "!",
@@ -201,7 +201,7 @@ object GameItems {
             text("Arrow of the ") + COSMOS.displayName,
             withDeep() + text("summon acid rain!"),
             withOccult() + text("gain night vision and blind your opponents!"),
-            withCosmos() + text("reduce gravity").format(COSMOS.color) + "!",
+            withCosmos() + text("reduce gravity").format(COSMOS.color) + "! (" + text("requires soul").bold().italic() + ")",
             withBarter() + text("receive ") + text("8 steak").bold() + "!",
             withFlame() + text("get an absorption heart!"),
         )
@@ -211,7 +211,7 @@ object GameItems {
             withDeep() + text("poison all water!"),
             withOccult() + text("receive an OP sword!"),
             withCosmos() + text("receive ") + text("8 steak").bold() + "!",
-            withBarter() + text("destroy all special items").formatted(BARTER.color) + "!",
+            withBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
             withFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
         )
         arrowFlame = stackOf(
@@ -221,7 +221,7 @@ object GameItems {
             withOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
             withCosmos() + text("get an absorption heart!"),
             withBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
-            withFlame() + text("make every block flammable").format(FLAME.color) + "!",
+            withFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
         )
     }
 
