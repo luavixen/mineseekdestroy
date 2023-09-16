@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.util.Broadcast;
+import dev.foxgirl.mineseekdestroy.util.Rules;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.Packet;
@@ -52,9 +53,9 @@ public class StartingGameState extends GameState {
         Broadcast.sendSoundPing();
     }
 
-    private final int ticksPreparing = (int) (Game.getGame().getRuleDouble(Game.RULE_PREPARING_DURATION) * 20.0);
-    private final int ticksStarting = (int) (Game.getGame().getRuleDouble(Game.RULE_STARTING_DURATION) * 20.0);
-    private final int ticksEffect = (int) (Game.getGame().getRuleDouble(Game.RULE_STARTING_EFFECT_DURATION) * 20.0);
+    private final int ticksPreparing = (int) (Rules.getPreparingDuration() * 20.0);
+    private final int ticksStarting = (int) (Rules.getStartingDuration() * 20.0);
+    private final int ticksEffect = (int) (Rules.getStartingEffectDuration() * 20.0);
 
     private int ticks = 0;
     private boolean flagBlink = false;

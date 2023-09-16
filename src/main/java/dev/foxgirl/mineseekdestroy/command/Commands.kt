@@ -28,10 +28,10 @@ internal fun setup() {
         it.params(argLiteral("start")) {
             fun register(properties: () -> GameProperties) {
                 val flags = mapOf<String, () -> Unit>(
-                    "noauto" to { game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false) },
-                    "noghosts" to { game.setRuleBoolean(Game.RULE_AUTOMATION_GHOSTS_ENABLED, false) },
-                    "nosummons" to { game.setRuleBoolean(Game.RULE_SUMMONS_ENABLED, false) },
-                    "chaos" to { game.setRuleBoolean(Game.RULE_CHAOS_ENABLED, true) },
+                    "noauto" to { Rules.automationEnabled = false },
+                    "noghosts" to { Rules.automationGhostsEnabled = false },
+                    "nosummons" to { Rules.summonsEnabled = false },
+                    "chaos" to { Rules.chaosEnabled = true },
                 )
 
                 fun registerFlags(it: ArgumentBuilder<ServerCommandSource, *>, enabled: Array<String>) {
@@ -202,13 +202,13 @@ internal fun setup() {
     Command.build("automation") {
         it.params(argLiteral("enable")) {
             it.actionWithContext { args, context ->
-                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, true)
+                Rules.automationEnabled = true
                 args.sendInfo("Automation enabled")
             }
         }
         it.params(argLiteral("disable")) {
             it.actionWithContext { args, context ->
-                game.setRuleBoolean(Game.RULE_AUTOMATION_ENABLED, false)
+                Rules.automationEnabled = false
                 args.sendInfo("Automation disabled")
             }
         }
@@ -513,7 +513,7 @@ internal fun setup() {
         it.params(argLiteral("start")) {
             it.params(argDouble("seconds")) {
                 it.actionWithContext { args, context ->
-                    game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, args["seconds"])
+                    Rules.borderCloseDuration = args["seconds"]
                     context.stormService.executeStormStart(args)
                 }
             }
@@ -537,13 +537,14 @@ internal fun setup() {
         it.params(argLiteral("buddy")) {
             it.params(argLiteral("enable")) {
                 it.actionWithContext { args, context ->
+                    Rules.buddyEnabled = true
                     game.setRuleBoolean(Game.RULE_BUDDY_ENABLED, true)
                     args.sendInfo("Buddy system enabled")
                 }
             }
             it.params(argLiteral("disable")) {
                 it.actionWithContext { args, context ->
-                    game.setRuleBoolean(Game.RULE_BUDDY_ENABLED, false)
+                    Rules.buddyEnabled = false
                     args.sendInfo("Buddy system disabled")
                 }
             }
@@ -609,7 +610,7 @@ internal fun setup() {
                     if (properties != GameProperties.Macander) {
                         args.sendError("Cannot manage ghouls for this arena")
                     } else {
-                        game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, true)
+                        Rules.ghoulsEnabled = true
                         args.sendInfo("Ghouls enabled")
                     }
                 }
@@ -619,7 +620,7 @@ internal fun setup() {
                     if (properties != GameProperties.Macander) {
                         args.sendError("Cannot manage ghouls for this arena")
                     } else {
-                        game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, false)
+                        Rules.ghoulsEnabled = false
                         args.sendInfo("Ghouls disabled")
                     }
                 }

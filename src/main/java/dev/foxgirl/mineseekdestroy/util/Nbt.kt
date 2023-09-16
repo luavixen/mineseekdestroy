@@ -14,18 +14,17 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import java.util.*
 
-fun nbtList(capacity: Int, type: Byte) = NbtList(ArrayList(capacity), type)
-fun nbtList(capacity: Int, type: Int) = nbtList(capacity, type.toByte())
-fun nbtList(capacity: Int) = nbtList(capacity, NbtElement.END_TYPE)
-fun nbtList() = nbtList(8)
+private fun createNbtList(capacity: Int, type: Byte = NbtElement.END_TYPE) = NbtList(ArrayList(capacity), type)
+private inline fun createNbtList(capacity: Int, type: Byte = NbtElement.END_TYPE, block: (NbtList) -> Unit) = createNbtList(capacity, type).also(block)
+private fun createNbtCompound(capacity: Int) = NbtCompound(HashMap(capacity, 1.0F))
+private inline fun createNbtCompound(capacity: Int, block: (NbtCompound) -> Unit) = createNbtCompound(capacity).also(block)
 
-fun nbtCompound(capacity: Int) = NbtCompound(HashMap(capacity))
-fun nbtCompound() = nbtCompound(8)
+fun nbtList(capacity: Int, type: Byte) = createNbtList(capacity, type)
+fun nbtList(capacity: Int) = createNbtList(capacity)
+fun nbtList() = createNbtList(8)
 
-private inline fun createNbtList(size: Int, block: (NbtList) -> Unit) =
-    nbtList(size).also(block)
-private inline fun createNbtCompound(size: Int, block: (HashMap<String, NbtElement>) -> Unit) =
-    NbtCompound(HashMap<String, NbtElement>(size.let { it + (it shr 1) }).apply(block))
+fun nbtCompound(capacity: Int) = createNbtCompound(capacity)
+fun nbtCompound() = createNbtCompound(8)
 
 fun toNbtList(source: Collection<*>): NbtList =
     createNbtList(source.size) { source.mapTo(it, ::toNbtElement) }
@@ -155,7 +154,7 @@ fun NbtElement?.toBlockPos(): BlockPos =
     NbtHelper.toBlockPos(this.asCompound())
 
 inline fun <reified E : Enum<E>> NbtElement?.toEnum(): E =
-    Reflector.methodHandle(E::class.java, "valueOf", String::class.java)!!.invoke(this.toActualString()) as E
+    Reflector.methodHandle(E::class.java, "valueOf", String::class.java)!!.invokeExact(this.toActualString()) as E
 
 fun nbtDecode(string: String): NbtElement =
     StringNbtReader(StringReader(string)).parseElement()

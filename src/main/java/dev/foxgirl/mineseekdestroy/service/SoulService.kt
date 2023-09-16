@@ -53,6 +53,10 @@ class SoulService : Service() {
             uuid = nbt["MsdSoulPlayer"].toUUID()
         }
 
+        val player get() = context.getPlayer(uuid)!!
+
+        val displayName: Text get() = text("Soul of", player.name) * kind.team
+
         fun toNbt() = nbtCompoundOf(
             "MsdGlowing" to true,
             "MsdSoul" to true,
@@ -60,11 +64,7 @@ class SoulService : Service() {
             "MsdSoulPlayer" to uuid,
         )
 
-        val player get() = context.getPlayer(uuid)!!
-
-        val displayName: Text get() = text("Soul of", player.name) * kind.team
-
-        fun stack(): ItemStack {
+        fun toStack(): ItemStack {
             val item = when (kind) {
                 SoulKind.YELLOW -> Items.LANTERN
                 SoulKind.BLUE -> Items.SOUL_LANTERN
@@ -104,21 +104,21 @@ class SoulService : Service() {
 
     fun handleDeath(player: GamePlayer, playerEntity: ServerPlayerEntity) {
         if (player.team === GameTeam.PLAYER_YELLOW || player.team === GameTeam.PLAYER_BLUE) {
-            if (!game.getRuleBoolean(Game.RULE_SOULS_DROPPING_ENABLED)) return
-            playerEntity.dropItem(createSoulFor(player).stack(), true, false)
+            if (!Rules.soulsDroppingEnabled) return
+            playerEntity.dropItem(createSoulFor(player).toStack(), true, false)
         }
     }
 
     fun handleSoulConsume(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
-        if (player.team === GameTeam.PLAYER_YELLOW && game.getRuleBoolean(Game.RULE_SOULS_CONSUMING_ENABLED)) {
-            val duration = (game.getRuleDouble(Game.RULE_SOULS_CONSUMING_EFFECT_DURATION) * 20.0).toInt()
+        if (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsConsumingEnabled) {
+            val duration = (Rules.soulsConsumingEffectDuration * 20.0).toInt()
             playerEntity.addStatusEffect(StatusEffectInstance(
                 StatusEffects.JUMP_BOOST, duration,
-                game.getRuleInt(Game.RULE_SOULS_CONSUMING_EFFECT_JUMP_STRENGTH) - 1,
+                Rules.soulsConsumingEffectJumpStrength - 1,
             ))
             playerEntity.addStatusEffect(StatusEffectInstance(
                 StatusEffects.SPEED, duration,
-                game.getRuleInt(Game.RULE_SOULS_CONSUMING_EFFECT_SPEED_STRENGTH) - 1,
+                Rules.soulsConsumingEffectJumpStrength - 1,
             ))
             stack.decrement(1)
             return ActionResult.SUCCESS
@@ -128,7 +128,7 @@ class SoulService : Service() {
 
     fun executeSoulGive(console: Console, players: List<GamePlayer>, soulPlayer: GamePlayer, soulTeam: GameTeam = soulPlayer.team) {
         val soul = createSoulFor(soulPlayer, soulTeam)
-        val stack = soul.stack()
+        val stack = soul.toStack()
         players.forEach { it.entity?.give(stack.copy()) }
         console.sendInfo("Gave", soul, "to ${players.size} player(s)")
     }
@@ -238,7 +238,7 @@ class SoulService : Service() {
 
         val aggressorEntity = duel.aggressor.entity
         if (aggressorEntity != null) {
-            aggressorEntity.give(createSoulFor(duel.victim).stack())
+            aggressorEntity.give(createSoulFor(duel.victim).toStack())
         } else {
             console.sendError("Duel", duel, "failed to return soul to aggressor while being cancelled")
         }

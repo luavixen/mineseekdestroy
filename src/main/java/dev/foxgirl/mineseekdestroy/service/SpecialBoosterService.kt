@@ -1,10 +1,10 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameProperties
 import dev.foxgirl.mineseekdestroy.util.Broadcast
 import dev.foxgirl.mineseekdestroy.util.Region
+import dev.foxgirl.mineseekdestroy.util.Rules
 import dev.foxgirl.mineseekdestroy.util.Selection
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -64,11 +64,11 @@ class SpecialBoosterService : Service() {
                 it.frozenTicks = 120
                 it.addStatusEffect(StatusEffectInstance(
                     StatusEffects.SLOW_FALLING,
-                    (game.getRuleDouble(Game.RULE_FANS_EFFECT_DURATION) * 20.0).toInt(),
+                    (Rules.fansEffectDuration * 20.0).toInt(),
                 ))
             },
             {
-                it.addVelocity(0.0, game.getRuleDouble(Game.RULE_FANS_KNOCKBACK), 0.0)
+                it.addVelocity(0.0, Rules.fansKnockback, 0.0)
                 it.networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(it))
                 it.velocityDirty = false
 
@@ -94,7 +94,7 @@ class SpecialBoosterService : Service() {
                         it.frozenTicks = 120
                         it.addStatusEffect(StatusEffectInstance(
                             StatusEffects.SLOW_FALLING,
-                            (game.getRuleDouble(Game.RULE_TOWER_EFFECT_DURATION) * 20.0).toInt(),
+                            (Rules.towerEffectDuration * 20.0).toInt(),
                         ))
                     },
                     {
@@ -109,7 +109,7 @@ class SpecialBoosterService : Service() {
                             pushY /= magnitude
                         }
 
-                        it.takeKnockback(game.getRuleDouble(Game.RULE_TOWER_KNOCKBACK), pushX, pushY)
+                        it.takeKnockback(Rules.towerKnockback, pushX, pushY)
                         it.networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(it))
                         it.velocityDirty = false
 

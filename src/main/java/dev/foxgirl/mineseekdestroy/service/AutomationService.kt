@@ -44,7 +44,7 @@ class AutomationService : Service() {
     fun handleRoundEnd(losingTeam: GameTeam) {
         val records = recordsTake()
 
-        if (!game.getRuleBoolean(Game.RULE_AUTOMATION_ENABLED)) return
+        if (!Rules.automationEnabled) return
 
         val tasks = mutableListOf<() -> Unit>()
 
@@ -52,7 +52,7 @@ class AutomationService : Service() {
 
         val teamSkip = GameTeam.SKIP
         val teamRemoved =
-            if (game.getRuleBoolean(Game.RULE_AUTOMATION_GHOSTS_ENABLED)) GameTeam.GHOST else GameTeam.NONE
+            if (Rules.automationGhostsEnabled) GameTeam.GHOST else GameTeam.NONE
 
         for (player in players) {
             val record = records[player] ?: continue
@@ -84,8 +84,8 @@ class AutomationService : Service() {
             }
         }
 
-        val secondsDelay = game.getRuleDouble(Game.RULE_AUTOMATION_DELAY_DURATION)
-        val secondsInterval = game.getRuleDouble(Game.RULE_AUTOMATION_INTERVAL_DURATION)
+        val secondsDelay = Rules.automationDelayDuration
+        val secondsInterval = Rules.automationIntervalDuration
 
         Async.run {
             delay(secondsDelay)
@@ -111,7 +111,7 @@ class AutomationService : Service() {
     fun handleDuelEnd(winningPlayers: List<GamePlayer>) {
         val records = recordsTake()
 
-        if (!game.getRuleBoolean(Game.RULE_AUTOMATION_ENABLED)) return
+        if (!Rules.automationEnabled) return
 
         val players = players.filter { it.team == GameTeam.PLAYER_DUEL }
 

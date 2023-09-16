@@ -639,7 +639,7 @@ class SpecialSummonsService : Service() {
     }
 
     private fun failCheck(options: Options): Failure? {
-        if (game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
+        if (Rules.chaosEnabled) {
             return null
         }
 
@@ -740,7 +740,7 @@ class SpecialSummonsService : Service() {
             summonPerform(options)
         }
 
-        if (game.getRuleBoolean(Game.RULE_CHAOS_ENABLED)) {
+        if (Rules.chaosEnabled) {
             timeoutReset()
         }
 
@@ -891,7 +891,7 @@ class SpecialSummonsService : Service() {
         if (!player.isOperator) {
             if (state.isWaiting) return ActionResult.PASS
             if (!player.isPlaying || !player.isAlive) return ActionResult.PASS
-            if (!game.getRuleBoolean(Game.RULE_SUMMONS_ENABLED)) return ActionResult.PASS
+            if (!Rules.summonsEnabled) return ActionResult.PASS
         }
 
         val altar: Altar? = altars[pos]

@@ -1,7 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Rules
 import net.minecraft.world.border.WorldBorder
 
 class StormService : Service() {
@@ -14,7 +14,7 @@ class StormService : Service() {
 
     private val center get() = properties.borderCenter
 
-    private val time get() = (game.getRuleDouble(Game.RULE_BORDER_CLOSE_DURATION) * 1000.0).toLong()
+    private val time get() = (Rules.borderCloseDuration * 1000.0).toLong()
 
     override fun setup() {
         border.damagePerBlock = 0.5

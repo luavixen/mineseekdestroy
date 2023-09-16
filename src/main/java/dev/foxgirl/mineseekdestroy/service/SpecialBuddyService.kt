@@ -18,7 +18,7 @@ class SpecialBuddyService : Service() {
                 .append(playerTarget.displayName)
     }
 
-    private val enabled get() = Game.getGame().getRuleBoolean(Game.RULE_BUDDY_ENABLED)
+    private val enabled get() = Rules.buddyEnabled
     private var warning = true
 
     private val buddies = mutableSetOf<Buddy>()
@@ -59,7 +59,7 @@ class SpecialBuddyService : Service() {
                 val playerFollowerEntity = playerFollower.entity
                 if (playerFollowerEntity != null) {
                     val damageSource = world.damageSources.create(Game.DAMAGE_TYPE_HEARTBREAK, playerTarget.entity, null)
-                    val damageAmount = game.getRuleDouble(Game.RULE_BUDDY_HEALTH_PENALTY).toFloat()
+                    val damageAmount = Rules.buddyHealthPenalty.toFloat()
                     Scheduler.now { playerFollowerEntity.damage(damageSource, damageAmount) }
                 }
             }
@@ -84,7 +84,7 @@ class SpecialBuddyService : Service() {
                             playerFollowerEntity.addStatusEffect(StatusEffectInstance(
                                 StatusEffects.ABSORPTION,
                                 StatusEffectInstance.INFINITE,
-                                game.getRuleInt(Game.RULE_BUDDY_ABSORPTION_STRENGTH) - 1,
+                                Rules.buddyAbsorptionStrength - 1,
                             ))
                             playerFollowerEntity.sendMessage(text(playerTarget, "won last game, so you got absorption").lightPurple())
                             Game.CONSOLE_OPERATORS.sendInfo("Player", playerFollower, "given absorption for", text(playerTarget.displayName) + "'s", "win")

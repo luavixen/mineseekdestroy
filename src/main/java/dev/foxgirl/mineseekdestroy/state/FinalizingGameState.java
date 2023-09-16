@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
+import dev.foxgirl.mineseekdestroy.util.Rules;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +15,7 @@ public class FinalizingGameState extends RunningGameState {
         return "finalizing";
     }
 
-    private final int ticksFinalizing = (int) (Game.getGame().getRuleDouble(Game.RULE_FINALIZING_DURATION) * 20.0);
+    private final int ticksFinalizing = (int) (Rules.getFinalizingDuration() * 20.0);
 
     private int ticks = 0;
 
