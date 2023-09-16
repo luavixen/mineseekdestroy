@@ -49,6 +49,7 @@ public class PlayingGameState extends RunningGameState {
             return null;
         }
 
+        context.lootService.handleRoundEnd();
         context.specialSummonsService.handleRoundEnd();
 
         return new FinalizingGameState();

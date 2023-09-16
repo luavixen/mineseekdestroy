@@ -46,6 +46,21 @@ class LootService : Service() {
             .terminate()
     }
 
+    fun handleRoundEnd() {
+        val lootStacks by lazy {
+            val template = template()
+            if (template != null) template.asList().filter { !it.isEmpty } else listOf()
+        }
+        for (container in containers()) {
+            val stacks = container.asList()
+            for (i in stacks.indices) {
+                if (stacks[i].nbt.let { it != null && "MsdSoul" in it }) {
+                    stacks[i] = lootStacks.randomOrNull()?.copy() ?: stackOf()
+                }
+            }
+        }
+    }
+
     fun executeClear(console: Console) {
         containers().forEach(Inventories::clear)
         console.sendInfo("Cleared all containers")
@@ -59,16 +74,16 @@ class LootService : Service() {
         }
 
         val lootCount = Rules.lootCount
-        val lootTable = template.asList().map(GameItems::replaceCopy)
-        if (lootTable.isEmpty()) {
+        val lootStacks = template.asList()
+        if (lootStacks.isEmpty()) {
             console.sendError("Cannot create loot table, template chest(s) at ${properties.templateLoottable} are empty")
             return
         }
 
-        containers().forEach { container ->
+        for (container in containers()) {
             val offset = container.size().let { if (it == 54) it / 4 + 9 else it / 2 } - lootCount / 2
             for (i in 0 until lootCount) {
-                container.setStack(i + offset, lootTable.random().copy())
+                container.setStack(i + offset, lootStacks.random().copy())
             }
         }
 
@@ -78,7 +93,7 @@ class LootService : Service() {
     fun executeDebugClean(console: Console) {
         val template = template()
         if (template == null) {
-            console.sendError("Failed to find template chest at ${properties.templateLoottable}")
+            console.sendError("Failed to find template chest(s) at ${properties.templateLoottable}")
             return
         }
 
