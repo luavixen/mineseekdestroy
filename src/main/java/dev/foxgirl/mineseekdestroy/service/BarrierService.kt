@@ -33,7 +33,7 @@ class BarrierService : Service() {
     private suspend fun setupBlimp() {
         val tasks = buildList<CompletableFuture<List<Target>>> {
             add(search("blimp", properties.regionBarrierBlimpTemplate, properties.regionBarrierBlimpTarget))
-            addAll(properties.regionBarrierBlimpBalloonTargets.map { template -> search("blimp-balloon", properties.regionBarrierBlimpBalloonTemplate, template) })
+            addAll(properties.regionBarrierBlimpBalloonTargets.mapIndexed { i, target -> search("blimp-balloon-${i}", properties.regionBarrierBlimpBalloonTemplate, target) })
         }
         targetsBlimp = Async.awaitAll(tasks).flatten()
     }

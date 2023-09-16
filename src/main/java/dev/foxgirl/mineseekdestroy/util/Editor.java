@@ -148,7 +148,7 @@ public final class Editor {
         }
 
         @Override
-        public @Nullable BlockState apply(@NotNull BlockState state, int y, int x, int z) {
+        public @Nullable BlockState apply(@NotNull BlockState state, int x, int y, int z) {
             if (predicate.test(state)) {
                 results.add(new Result(new BlockPos(x, y, z), state));
             }
