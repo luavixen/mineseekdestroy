@@ -14,9 +14,9 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import java.util.*
 
-private fun createNbtList(capacity: Int, type: Byte = NbtElement.END_TYPE) = NbtList(ArrayList(capacity), type)
+private fun createNbtList(capacity: Int, type: Byte = NbtElement.END_TYPE) = NbtList(ArrayList(capacity.coerceAtLeast(4)), type)
 private inline fun createNbtList(capacity: Int, type: Byte = NbtElement.END_TYPE, block: (NbtList) -> Unit) = createNbtList(capacity, type).also(block)
-private fun createNbtCompound(capacity: Int) = NbtCompound(HashMap(capacity, 1.0F))
+private fun createNbtCompound(capacity: Int) = NbtCompound(HashMap(capacity.coerceAtLeast(4), 1.0F))
 private inline fun createNbtCompound(capacity: Int, block: (NbtCompound) -> Unit) = createNbtCompound(capacity).also(block)
 
 fun nbtList(capacity: Int, type: Byte) = createNbtList(capacity, type)

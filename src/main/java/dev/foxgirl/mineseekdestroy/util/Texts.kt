@@ -62,18 +62,6 @@ inline fun MutableText.styleParent(block: (Style) -> Style?): MutableText {
     return this
 }
 
-private val reset =
-    Style.EMPTY
-        .withBold(false)
-        .withItalic(false)
-        .withUnderline(false)
-        .withStrikethrough(false)
-        .withObfuscated(false)
-        .withColor(Formatting.WHITE)
-
-fun MutableText.reset() = this.style { reset }
-fun MutableText.resetParent() = this.styleParent { reset }
-
 operator fun MutableText.plus(text: Text): MutableText {
     this.append(text)
     return this
@@ -127,11 +115,11 @@ fun MutableText.teamBlack() = this * GameTeam.PLAYER_BLACK
 fun MutableText.teamYellow() = this * GameTeam.PLAYER_YELLOW
 fun MutableText.teamBlue() = this * GameTeam.PLAYER_BLUE
 
-private val itemName = reset.withColor(Formatting.GREEN)
-private val itemLore = reset.withColor(Formatting.GREEN).withItalic(true)
+private val mnsndItemName = Style.EMPTY.withColor(Formatting.GREEN).withItalic(false)
+private val mnsndItemLore = Style.EMPTY.withColor(Formatting.GREEN).withItalic(true)
 
-fun MutableText.itemName() = this.styleParent { itemName }
-fun MutableText.itemLore() = this.styleParent { itemLore }
+fun MutableText.mnsndItemName() = this.styleParent { mnsndItemName }
+fun MutableText.mnsndItemLore() = this.styleParent { mnsndItemLore }
 
 fun Item.name(): MutableText = this.name.copy()
 fun ItemStack.name(): MutableText = this.name.copy()

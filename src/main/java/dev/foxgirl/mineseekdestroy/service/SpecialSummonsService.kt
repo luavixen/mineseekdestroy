@@ -30,7 +30,6 @@ import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
-import net.minecraft.potion.PotionUtil
 import net.minecraft.screen.AnvilScreenHandler
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
@@ -275,7 +274,7 @@ class SpecialSummonsService : Service() {
                 val target = target()
 
                 entity.give(GameItems.summonCompass.copy().apply {
-                    dataDisplay()["Name"] = toNbt((text("Sound of ").green() + target).resetParent())
+                    dataDisplay()["Name"] = toNbt((text("Sound of ") + target).mnsndItemName())
                     data()["LodestonePos"] = nbtSpawn
                     data()["LodestoneDimension"] = nbtDimension
                     data()["LodestoneTracked"] = true
@@ -463,6 +462,7 @@ class SpecialSummonsService : Service() {
         override fun perform() {
             val items = immutableSetOf<Item>(
                 SHIELD, CARROT_ON_A_STICK, FISHING_ROD, TIPPED_ARROW,
+                BOOK, ENCHANTED_BOOK, KNOWLEDGE_BOOK, WRITABLE_BOOK, WRITTEN_BOOK,
                 COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, WATER_BUCKET,
                 COMPASS, TARGET, FIREWORK_ROCKET, ENDER_PEARL, BLUE_ICE,
                 ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
@@ -812,23 +812,16 @@ class SpecialSummonsService : Service() {
     private inner class AltarScreenHandler(val altar: Altar, syncId: Int, playerInventory: PlayerInventory) : AnvilScreenHandler(syncId, playerInventory) {
         private fun theologies(): Theologies? {
             fun theologyFor(stack: ItemStack): Theology? {
-                if (stack.item !== TIPPED_ARROW) return null
-
-                for (effect in PotionUtil.getPotion(stack).effects) {
-                    val theology: Theology? = when (effect.effectType) {
-                        StatusEffects.WATER_BREATHING -> DEEP
-                        StatusEffects.INSTANT_HEALTH -> OCCULT
-                        StatusEffects.INVISIBILITY -> COSMOS
-                        StatusEffects.STRENGTH -> BARTER
-                        StatusEffects.FIRE_RESISTANCE -> FLAME
-                        else -> null
-                    }
-                    if (theology != null) return theology
+                val nbt = stack.nbt ?: return null
+                return try {
+                    if (nbt["MsdPageAction"].toActualString() == "summon")
+                        nbt["MsdPage"].toEnum<Theology>()
+                    else
+                        null
+                } catch (ignored : RuntimeException) {
+                    null
                 }
-
-                return null
             }
-
             return Theologies(
                 theologyFor(input.getStack(0)) ?: return null,
                 theologyFor(input.getStack(1)) ?: return null,
@@ -1035,7 +1028,6 @@ class SpecialSummonsService : Service() {
                     "Lore" to lore.asList(),
                 ),
                 "MsdIllegal" to true,
-                "MsdSummonItem" to true,
             ))
 
         private val summonItems = immutableMapOf<Theologies, ItemStack>(

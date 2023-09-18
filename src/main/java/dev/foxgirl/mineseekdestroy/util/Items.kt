@@ -37,10 +37,10 @@ private fun stackOfDisplay(item: ItemConvertible, count: Int, nbt: NbtCompound?,
             it.nbt = nbt
         }
         if (name != null) {
-            it.dataDisplay()["Name"] = toNbtElement(name.copy().itemName())
+            it.dataDisplay()["Name"] = toNbt(name.copy().mnsndItemName())
         }
         if (lore != null && !lore.isEmpty()) {
-            it.dataDisplay()["Lore"] = toNbtList(lore.map { lore -> lore.copy().itemLore() })
+            it.dataDisplay()["Lore"] = toNbt(lore.map { lore -> toNbt(lore.copy().mnsndItemLore()) })
         }
     }
 

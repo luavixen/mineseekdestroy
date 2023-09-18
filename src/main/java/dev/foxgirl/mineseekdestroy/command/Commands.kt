@@ -149,7 +149,7 @@ internal fun setup() {
                     for (i in 1..4) {
                         entity.give(stackOf(
                             Items.SPONGE, nbtCompoundOf("MsdTool${i}".intern() to true),
-                            text("Tool ${i}").reset().green(),
+                            text("Tool ${i}"),
                         ))
                     }
                     args.sendInfo("Added tools to inventory")

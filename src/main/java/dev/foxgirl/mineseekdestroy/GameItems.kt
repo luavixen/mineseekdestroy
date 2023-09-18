@@ -1,163 +1,139 @@
 package dev.foxgirl.mineseekdestroy
 
+import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theologies
 import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
-import dev.foxgirl.mineseekdestroy.util.collect.ImmutableMap
+import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableMap
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
+import net.minecraft.text.Text
 import kotlin.reflect.KProperty0
 
 object GameItems {
 
-    @JvmStatic
     val toolSkull = stackOf(
-        SKELETON_SKULL, SKELETON_SKULL.name.copy().reset(),
+        SKELETON_SKULL, SKELETON_SKULL.name.copy().white(),
         text("useless! useless! ghost dumb bitch!"),
     )
-    @JvmStatic
     val toolAxe = stackOf(
         IRON_AXE, null,
         text("OWIE!"),
         text("affects ghosts").bold(),
     )
-    @JvmStatic
     val toolSword = stackOf(
         IRON_SWORD, null,
         text("owie!"),
         text("affects ghosts").bold(),
     )
-    @JvmStatic
     val toolShovel = stackOf(
         IRON_SHOVEL, null,
         text("best for mining ") + text("concrete powder").bold(),
     )
-    @JvmStatic
     val toolPickaxe = stackOf(
         IRON_PICKAXE, null,
         text("best for mining ") + text("concrete").bold(),
     )
-    @JvmStatic
     val toolCrossbow = stackOf(
         CROSSBOW, null,
         text("PEW!"),
         text("does not affect ghosts").bold(),
     )
-    @JvmStatic
     val toolBow = stackOf(
         BOW, null,
         text("pew!"),
         text("does not affect ghosts").bold(),
     )
-    @JvmStatic
     val toolTrident = stackOf(
         TRIDENT, null,
         text("have fun with this"),
         text("does not affect ghosts").bold(),
     )
 
-    @JvmStatic
     val snowBlock = stackOf(
-        SNOW_BLOCK, text("Snow Block").reset(),
+        SNOW_BLOCK, text("Snow Block").white(),
         text("can be uncrafted into ") + text("4 snowballs").bold() + "!",
     )
-    @JvmStatic
     val eggBlock = stackOf(
-        BONE_BLOCK, text("Egg Block").reset(),
+        BONE_BLOCK, text("Egg Block").white(),
         text("can be uncrafted into ") + text("4 eggs").bold() + "!",
     )
-    @JvmStatic
     val ectoplasm = stackOf(
         SLIME_BLOCK, text("Ectogasm"),
         text("its... its just normal slime i swear"),
     )
 
-    @JvmStatic
     val potato = stackOf(
         POTATO, null,
         text("fun to eat!"),
         text("can be cooked at ") + text("shrines").bold(),
     )
-    @JvmStatic
     val bakedPotato = stackOf(
         BAKED_POTATO, null,
         text("funner to eat!"),
         text("was cooked at a ") + text("shrine").bold(),
     )
-    @JvmStatic
     val egg = stackOf(
         EGG, null,
         text("pulls players towards you!"),
         text("can be crafted in-inv into an ") + text("egg block").bold(),
         text("egg blocks").bold() + text(" are best mined with ") + text("pickaxes").bold(),
     )
-    @JvmStatic
     val snowball = stackOf(
         SNOWBALL, null,
         text("pushes players away from you!"),
         text("can be crafted in-inv into a ") + text("snow block").bold(),
         text("snow blocks").bold() + text(" are best mined with ") + text("shovels").bold(),
     )
-    @JvmStatic
     val spectralArrow = stackOf(
         SPECTRAL_ARROW, null,
         text("arrow... but glows..."),
         text("does not affect ghosts"),
     )
 
-    @JvmStatic
     val flintAndSteel = stackOf(
         FLINT_AND_STEEL, FLINT_AND_STEEL.name(),
         text("FFFFIIIIIIREEEEEEE!"),
     )
-    @JvmStatic
     val enderPearl = stackOf(
         ENDER_PEARL, ENDER_PEARL.name(),
         text("if it lands near a player, it will teleport them to you!").yellow(),
         text("functions normally for blue!").blue(),
         text("functions normally for black and duels!").teamBlack(),
     )
-    @JvmStatic
     val familyGuyBlock = stackOf(
         TARGET, text("Family Guy Block"),
         text("instantly spawns a concrete structure!"),
         text("contains tnt; can be lit & blown up"),
     )
-    @JvmStatic
     val shield = stackOf(
-        SHIELD,
-        nbtCompoundOf("BlockEntityTag" to nbtCompoundOf("id" to identifier("banner"), "Base" to 11)),
+        SHIELD, nbtDecode("{BlockEntityTag:{id:\"minecraft:banner\",Base:11}}").asCompound(),
         SHIELD.name().blue(),
         text("will not function for yellow!").yellow(),
         text("functions normally for blue!").blue(),
         text("functions normally for black and duels!").teamBlack(),
     )
-    @JvmStatic
     val fireworkRocket = stackOf(
-        FIREWORK_ROCKET,
-        nbtCompoundOf("Fireworks" to nbtDecode("{Explosions:[{Colors:[I;14602026],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}")),
+        FIREWORK_ROCKET, nbtDecode("{Fireworks:{Explosions:[{Colors:[I;14602026],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}}").asCompound(),
         text("Crossbow Rocket").yellow(),
         text("can be shot out of yellow’s crossbows!").yellow(),
         text("will damage blue if used to fly!").blue(),
     )
-    @JvmStatic
     val splashPotionSlowness = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),
         null,
         text("break their legs!"),
         text("affects ghosts").bold(),
     )
-    @JvmStatic
     val splashPotionPoison = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_poison")),
         null,
         text("will whittle your opponent down to half a heart!"),
         text("affects ghosts").bold(),
     )
-    @JvmStatic
     val splashPotionHarming = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_harming")),
         null,
@@ -165,73 +141,116 @@ object GameItems {
         text("affects ghosts").bold(),
     )
 
-    @JvmStatic val arrowDeep: ItemStack
-    @JvmStatic val arrowOccult: ItemStack
-    @JvmStatic val arrowCosmos: ItemStack
-    @JvmStatic val arrowBarter: ItemStack
-    @JvmStatic val arrowFlame: ItemStack
+    val bookDeep = stackOf(
+        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to DEEP),
+        text("Sunken Scroll") * DEEP.color,
+        text("right-click to receive 3 random ") + text("deep pages").format(DEEP.color) + "!",
+    )
+    val bookOccult = stackOf(
+        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to OCCULT),
+        text("Hymnal") * OCCULT.color,
+        text("right-click to receive 3 random ") + text("occult pages").format(OCCULT.color) + "!",
+    )
+    val bookCosmos = stackOf(
+        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to COSMOS),
+        text("Golden Disc") * COSMOS.color,
+        text("right-click to receive 3 random ") + text("cosmos pages").format(COSMOS.color) + "!",
+    )
+    val bookBarter = stackOf(
+        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to BARTER),
+        text("File Folder") * BARTER.color,
+        text("right-click to receive 3 random ") + text("barter pages").format(BARTER.color) + "!",
+    )
+    val bookFlame = stackOf(
+        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to FLAME),
+        text("VHS") * FLAME.color,
+        text("right-click to receive 3 random ") + text("flame pages").format(FLAME.color) + "!",
+    )
+
+    val pagesDeep: List<ItemStack>
+    val pagesOccult: List<ItemStack>
+    val pagesCosmos: List<ItemStack>
+    val pagesBarter: List<ItemStack>
+    val pagesFlame: List<ItemStack>
 
     init {
-        fun withDeep() = text("combine with a ") + text("deep arrow").format(DEEP.color) + " to "
-        fun withOccult() = text("combine with an ") + text("occult arrow").format(OCCULT.color) + " to "
-        fun withCosmos() = text("combine with a ") + text("cosmos arrow").format(COSMOS.color) + " to "
-        fun withBarter() = text("combine with a ") + text("barter arrow").format(BARTER.color) + " to "
-        fun withFlame() = text("combine with a ") + text("flame arrow").format(FLAME.color) + " to "
+        fun page(theology: SpecialSummonsService.Theology, action: String, name: Text?, vararg lore: Text) =
+            stackOf(PAPER, nbtCompoundOf("MsdPage" to theology, "MsdPageAction" to action), name, lore.asList())
 
-        arrowDeep = stackOf(
-            TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("long_water_breathing")),
-            text("Arrow of the ") + DEEP.displayName,
-            withDeep() + text("flood the map").format(DEEP.color) + "! (" + text("requires soul").bold().italic() + ")",
-            withOccult() + text("receive a ") + text("player-tracking compass").bold() + "!",
-            withCosmos() + text("summon acid rain!"),
-            withBarter() + text("poison all water!"),
-            withFlame() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
+        fun textSummonDeep() = text("combine with a ") + text("deep summon page").format(DEEP.color) + " to "
+        fun textSummonOccult() = text("combine with an ") + text("occult summon page").format(OCCULT.color) + " to "
+        fun textSummonCosmos() = text("combine with a ") + text("cosmos summon page").format(COSMOS.color) + " to "
+        fun textSummonBarter() = text("combine with a ") + text("barter summon page").format(BARTER.color) + " to "
+        fun textSummonFlame() = text("combine with a ") + text("flame summon page").format(FLAME.color) + " to "
+
+        pagesDeep = immutableListOf(
+            page(
+                DEEP, "summon", text("Deep Summon Page") * DEEP.color,
+                textSummonDeep() + text("flood the map").format(DEEP.color) + "! (" + text("requires soul").bold().italic() + ")",
+                textSummonOccult() + text("receive a ") + text("player-tracking compass").bold() + "!",
+                textSummonCosmos() + text("summon acid rain!"),
+                textSummonBarter() + text("poison all water!"),
+                textSummonFlame() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
+            ),
+            page(
+                DEEP, "health", text("Ambrosia Recipe: Deep"),
+                text("right-click to gain ") + text("1 heart").bold() + " of health!",
+                text("left-click on an opponent to deal ") + text("1 heart").bold() + " of damage!",
+            ),
+            page(
+                DEEP, "regen", text("Something Katara Read"),
+                text("right-click to activate!"),
+                text("gain regen for ") + text("15 seconds").bold() + "!",
+                text("drown for ") + text("10 seconds").bold() + "!",
+            ),
         )
-        arrowOccult = stackOf(
-            TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("strong_healing")),
-            text("Arrow of the ") + OCCULT.displayName,
-            withDeep() + text("receive a ") + text("player-tracking compass").bold() + "!",
-            withOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "! (" + text("requires soul").bold().italic() + ")",
-            withCosmos() + text("gain night vision and blind your opponents!"),
-            withBarter() + text("receive an OP sword!"),
-            withFlame() + text("spawn ") + text("3 ghasts").bold() + "!",
+        pagesOccult = immutableListOf(
+            page(
+                OCCULT, "summon", text("Occult Summon Page") * OCCULT.color,
+                textSummonDeep() + text("receive a ") + text("player-tracking compass").bold() + "!",
+                textSummonOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "! (" + text("requires soul").bold().italic() + ")",
+                textSummonCosmos() + text("majora the storm's center"),
+                textSummonBarter() + text("receive an OP sword!"),
+                textSummonFlame() + text("spawn ") + text("3 ghasts").bold() + "!",
+            ),
         )
-        arrowCosmos = stackOf(
-            TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("long_invisibility")),
-            text("Arrow of the ") + COSMOS.displayName,
-            withDeep() + text("summon acid rain!"),
-            withOccult() + text("gain night vision and blind your opponents!"),
-            withCosmos() + text("reduce gravity").format(COSMOS.color) + "! (" + text("requires soul").bold().italic() + ")",
-            withBarter() + text("receive ") + text("8 steak").bold() + "!",
-            withFlame() + text("get an absorption heart!"),
+        pagesCosmos = immutableListOf(
+            page(
+                COSMOS, "summon", text("Cosmos Summon Page") * COSMOS.color,
+                textSummonDeep() + text("poison all water!"),
+                textSummonOccult() + text("receive an OP sword!"),
+                textSummonCosmos() + text("receive ") + text("8 steak").bold() + "!",
+                textSummonBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
+                textSummonFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
+            ),
         )
-        arrowBarter = stackOf(
-            TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("strong_strength")),
-            text("Arrow of the ") + BARTER.displayName,
-            withDeep() + text("poison all water!"),
-            withOccult() + text("receive an OP sword!"),
-            withCosmos() + text("receive ") + text("8 steak").bold() + "!",
-            withBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
-            withFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
+        pagesBarter = immutableListOf(
+            page(
+                BARTER, "summon", text("Barter Summon Page") * BARTER.color,
+                textSummonDeep() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
+                textSummonOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
+                textSummonCosmos() + text("spawn fire at the storm's center!"),
+                textSummonBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
+                textSummonFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
+            ),
         )
-        arrowFlame = stackOf(
-            TIPPED_ARROW, nbtCompoundOf("Potion" to identifier("long_fire_resistance")),
-            text("Arrow of the ") + FLAME.displayName,
-            withDeep() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
-            withOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
-            withCosmos() + text("get an absorption heart!"),
-            withBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
-            withFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
+        pagesFlame = immutableListOf(
+            page(
+                FLAME, "summon", text("Flame Summon Page") * FLAME.color,
+                textSummonDeep() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
+                textSummonOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
+                textSummonCosmos() + text("spawn fire at the storm's center!"),
+                textSummonBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
+                textSummonFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
+            ),
         )
     }
 
-    @JvmStatic
     val summonSteak = stackOf(
         COOKED_BEEF, null,
         text("funnest to eat!"),
         text("was gained through ") + Theologies(COSMOS, BARTER).displayName,
     )
-    @JvmStatic
     val summonGoldenSword = stackOf(
         GOLDEN_SWORD, null,
         text("will mostly kill someone!"),
@@ -240,25 +259,21 @@ object GameItems {
         addEnchantment(Enchantments.SHARPNESS, 15)
         setDamage(32)
     }
-    @JvmStatic
     val summonBlueIce = stackOf(
         BLUE_ICE, null,
         text("its... its just normal ice i swear"),
         text("was gained through ") + Theologies(FLAME, BARTER).displayName,
     )
-    @JvmStatic
     val summonWaterBucket = stackOf(
         WATER_BUCKET, null,
         text("wotor"),
         text("was gained through ") + Theologies(DEEP, FLAME).displayName,
     )
-    @JvmStatic
     val summonChippedAnvil = stackOf(
         CHIPPED_ANVIL, null,
         text("forge this block onto the HEADS OF YOUR ENEMIES!"),
         text("was gained through ") + Theologies(DEEP, FLAME).displayName,
     )
-    @JvmStatic
     val summonCompass = stackOf(
         COMPASS, null,
         text("this item randomly selects an opp. player and tracks em!"),
@@ -266,18 +281,14 @@ object GameItems {
         text("was gained through ") + Theologies(DEEP, OCCULT).displayName,
     )
 
-    @JvmStatic
-    val replacements: Map<Item, ItemStack>
-    init {
-        val builder = ImmutableMap.builder<Item, ItemStack>(32)
-        for (stack in listOf<ItemStack>(
+    val replacements = buildImmutableMap<Item, ItemStack> {
+        for (stack in listOf(
             snowBlock, eggBlock, ectoplasm,
             potato, bakedPotato, egg, snowball, spectralArrow,
             flintAndSteel, enderPearl, familyGuyBlock, fireworkRocket,
         )) {
-            builder.put(stack.item, stack)
+            put(stack.item, stack)
         }
-        replacements = builder.build()
     }
 
     @JvmStatic
@@ -290,10 +301,6 @@ object GameItems {
             }
         }
     }
-    @JvmStatic
-    fun replaceCopy(stack: ItemStack): ItemStack {
-        return stack.copy().also(::replace)
-    }
 
     val properties = immutableListOf<KProperty0<ItemStack>>(
         ::toolSkull, ::toolAxe, ::toolSword, ::toolShovel, ::toolPickaxe,
@@ -301,8 +308,8 @@ object GameItems {
         ::ectoplasm, ::potato, ::bakedPotato, ::egg, ::snowball,
         ::spectralArrow, ::flintAndSteel, ::enderPearl, ::familyGuyBlock,
         ::shield, ::fireworkRocket, ::splashPotionSlowness,
-        ::splashPotionPoison, ::splashPotionHarming, ::arrowDeep,
-        ::arrowOccult, ::arrowCosmos, ::arrowBarter, ::arrowFlame,
+        ::splashPotionPoison, ::splashPotionHarming, ::bookDeep,
+        ::bookOccult, ::bookCosmos, ::bookBarter, ::bookFlame,
         ::summonSteak, ::summonGoldenSword, ::summonBlueIce,
         ::summonWaterBucket, ::summonChippedAnvil, ::summonCompass,
     )
