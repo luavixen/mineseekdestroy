@@ -4,7 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
+import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
@@ -49,7 +49,7 @@ import net.minecraft.world.World
 import java.time.Duration
 import java.time.Instant
 
-class SpecialSummonsService : Service() {
+class SummonsService : Service() {
 
     enum class Theology {
         DEEP { override val color get() = Formatting.DARK_AQUA },
@@ -136,7 +136,7 @@ class SpecialSummonsService : Service() {
                 true
             } catch (cause : Exception) {
                 Game.CONSOLE_OPERATORS.sendError("Summon encountered exception while $verb:", this.displayName)
-                Game.LOGGER.error("SpecialSummonsService exception while $verb ${javaClass.simpleName}", cause)
+                Game.LOGGER.error("SummonsService exception while $verb ${javaClass.simpleName}", cause)
                 false
             }
         }
@@ -581,7 +581,7 @@ class SpecialSummonsService : Service() {
                 .mapNotNull { Altar(it.pos, findTheology(it.pos) ?: return@mapNotNull null) }
                 .associateBy { it.pos }
 
-            logger.info("SpecialSummonService search for altars returned ${altars.size} result(s)")
+            logger.info("SummonService search for altars returned ${altars.size} result(s)")
         }
     }
 
@@ -840,7 +840,7 @@ class SpecialSummonsService : Service() {
         override fun onTakeOutput(playerEntity: PlayerEntity, stack: ItemStack) {
             val pair = theologies()
             if (pair != null) {
-                val player = this@SpecialSummonsService.context.getPlayer(playerEntity as ServerPlayerEntity)
+                val player = this@SummonsService.context.getPlayer(playerEntity as ServerPlayerEntity)
                 summon(Options(pair, altar, player))
             }
 

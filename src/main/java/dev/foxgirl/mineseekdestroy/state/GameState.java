@@ -98,7 +98,7 @@ public abstract class GameState {
             if (context != null && context.world == world) {
                 var player = context.getPlayer((ServerPlayerEntity) playerEntity);
                 if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
-                    var result = context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                    var result = context.summonsService.handleAltarOpen(player, blockHit.getBlockPos());
                     if (result != ActionResult.PASS) return result;
                 }
                 if (blockState.getBlock() == Blocks.RESPAWN_ANCHOR) {
@@ -124,7 +124,7 @@ public abstract class GameState {
                         if (result != ActionResult.PASS) return result;
                     }
                     if (blockState.getBlock() == Blocks.FLETCHING_TABLE) {
-                        var result = context.specialSummonsService.handleAltarOpen(player, blockHit.getBlockPos());
+                        var result = context.summonsService.handleAltarOpen(player, blockHit.getBlockPos());
                         if (result != ActionResult.PASS) return result;
                     }
                     return ActionResult.PASS;

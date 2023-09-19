@@ -1,8 +1,8 @@
 package dev.foxgirl.mineseekdestroy
 
-import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
-import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theologies
-import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService.Theology.*
+import dev.foxgirl.mineseekdestroy.service.SummonsService
+import dev.foxgirl.mineseekdestroy.service.SummonsService.Theologies
+import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableMap
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
@@ -174,7 +174,7 @@ object GameItems {
     val pagesFlame: List<ItemStack>
 
     init {
-        fun page(theology: SpecialSummonsService.Theology, action: String, name: Text?, vararg lore: Text) =
+        fun page(theology: SummonsService.Theology, action: String, name: Text?, vararg lore: Text) =
             stackOf(PAPER, nbtCompoundOf("MsdPage" to theology, "MsdPageAction" to action), name, lore.asList())
 
         fun textSummonDeep() = text("combine with a ") + text("deep summon page").format(DEEP.color) + " to "

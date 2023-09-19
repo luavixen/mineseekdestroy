@@ -40,7 +40,7 @@ public abstract class MixinFireBlock extends AbstractFireBlock {
         var block = state.getBlock();
         if (block == Blocks.TNT) return mineseekdestroy$CHANCE_ALWAYS;
 
-        if (context.specialSummonsService.isScaldingEarth()) {
+        if (context.summonsService.isScaldingEarth()) {
             return game.getProperties().getInflammableBlocks().contains(block)
                 ? mineseekdestroy$CHANCE_NONE
                 : mineseekdestroy$CHANCE_WOOD;

@@ -2,7 +2,7 @@ package dev.foxgirl.mineseekdestroy.command
 
 import com.mojang.brigadier.builder.ArgumentBuilder
 import dev.foxgirl.mineseekdestroy.*
-import dev.foxgirl.mineseekdestroy.service.SpecialSummonsService
+import dev.foxgirl.mineseekdestroy.service.SummonsService
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.command.EntitySelector
@@ -642,38 +642,38 @@ internal fun setup() {
             it.actionWithContext { args, context ->
                 fun theologyOf(string: String) =
                     try {
-                        SpecialSummonsService.Theology.valueOf(string.trim().uppercase(Locale.ROOT))
+                        SummonsService.Theology.valueOf(string.trim().uppercase(Locale.ROOT))
                     } catch (cause : IllegalArgumentException) {
                         args.sendError("Invalid theology '${string}'")
                         null
                     }
 
-                val kind = SpecialSummonsService.Theologies(
+                val kind = SummonsService.Theologies(
                     theologyOf(args["theology1"]) ?: return@actionWithContext,
                     theologyOf(args["theology2"]) ?: return@actionWithContext,
                 )
-                context.specialSummonsService.executeSummon(args, kind, args.player(context))
+                context.summonsService.executeSummon(args, kind, args.player(context))
             }
         }
         it.params(argLiteral("cleartimeout")) {
             it.actionWithContext { args, context ->
-                context.specialSummonsService.executeClearTimeout(args)
+                context.summonsService.executeClearTimeout(args)
             }
         }
         it.params(argLiteral("debug")) {
             it.params(argLiteral("print")) {
                 it.actionWithContext { args, context ->
-                    context.specialSummonsService.executeDebugPrint(args)
+                    context.summonsService.executeDebugPrint(args)
                 }
             }
             it.params(argLiteral("reset")) {
                 it.actionWithContext { args, context ->
-                    context.specialSummonsService.executeDebugReset(args)
+                    context.summonsService.executeDebugReset(args)
                 }
             }
             it.params(argLiteral("showtext")) {
                 it.actionWithContext { args, context ->
-                    context.specialSummonsService.executeDebugShowText(args)
+                    context.summonsService.executeDebugShowText(args)
                 }
             }
         }
