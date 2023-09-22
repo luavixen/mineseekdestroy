@@ -1,6 +1,6 @@
 package dev.foxgirl.mineseekdestroy
 
-import dev.foxgirl.mineseekdestroy.service.SummonsService
+import dev.foxgirl.mineseekdestroy.service.PagesService
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theologies
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
@@ -10,7 +10,6 @@ import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
-import net.minecraft.text.Text
 import kotlin.reflect.KProperty0
 
 object GameItems {
@@ -142,109 +141,30 @@ object GameItems {
     )
 
     val bookDeep = stackOf(
-        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to DEEP),
+        WRITTEN_BOOK, PagesService.BookMeta(DEEP).toNbt(),
         text("Sunken Scroll") * DEEP.color,
         text("right-click to receive 3 random ") + text("deep pages").format(DEEP.color) + "!",
     )
     val bookOccult = stackOf(
-        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to OCCULT),
+        WRITTEN_BOOK, PagesService.BookMeta(OCCULT).toNbt(),
         text("Hymnal") * OCCULT.color,
         text("right-click to receive 3 random ") + text("occult pages").format(OCCULT.color) + "!",
     )
     val bookCosmos = stackOf(
-        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to COSMOS),
+        WRITTEN_BOOK, PagesService.BookMeta(COSMOS).toNbt(),
         text("Golden Disc") * COSMOS.color,
         text("right-click to receive 3 random ") + text("cosmos pages").format(COSMOS.color) + "!",
     )
     val bookBarter = stackOf(
-        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to BARTER),
+        WRITTEN_BOOK, PagesService.BookMeta(BARTER).toNbt(),
         text("File Folder") * BARTER.color,
         text("right-click to receive 3 random ") + text("barter pages").format(BARTER.color) + "!",
     )
     val bookFlame = stackOf(
-        WRITTEN_BOOK, nbtCompoundOf("MsdBook" to FLAME),
+        WRITTEN_BOOK, PagesService.BookMeta(FLAME).toNbt(),
         text("VHS") * FLAME.color,
         text("right-click to receive 3 random ") + text("flame pages").format(FLAME.color) + "!",
     )
-
-    val pagesDeep: List<ItemStack>
-    val pagesOccult: List<ItemStack>
-    val pagesCosmos: List<ItemStack>
-    val pagesBarter: List<ItemStack>
-    val pagesFlame: List<ItemStack>
-
-    init {
-        fun page(theology: SummonsService.Theology, action: String, name: Text?, vararg lore: Text) =
-            stackOf(PAPER, nbtCompoundOf("MsdPage" to theology, "MsdPageAction" to action), name, lore.asList())
-
-        fun textSummonDeep() = text("combine with a ") + text("deep summon page").format(DEEP.color) + " to "
-        fun textSummonOccult() = text("combine with an ") + text("occult summon page").format(OCCULT.color) + " to "
-        fun textSummonCosmos() = text("combine with a ") + text("cosmos summon page").format(COSMOS.color) + " to "
-        fun textSummonBarter() = text("combine with a ") + text("barter summon page").format(BARTER.color) + " to "
-        fun textSummonFlame() = text("combine with a ") + text("flame summon page").format(FLAME.color) + " to "
-
-        pagesDeep = immutableListOf(
-            page(
-                DEEP, "summon", text("Deep Summon Page") * DEEP.color,
-                textSummonDeep() + text("flood the map").format(DEEP.color) + "! (" + text("requires soul").bold().italic() + ")",
-                textSummonOccult() + text("receive a ") + text("player-tracking compass").bold() + "!",
-                textSummonCosmos() + text("summon acid rain!"),
-                textSummonBarter() + text("poison all water!"),
-                textSummonFlame() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
-            ),
-            page(
-                DEEP, "health", text("Ambrosia Recipe: Deep"),
-                text("right-click to gain ") + text("1 heart").bold() + " of health!",
-                text("left-click on an opponent to deal ") + text("1 heart").bold() + " of damage!",
-            ),
-            page(
-                DEEP, "regen", text("Something Katara Read"),
-                text("right-click to activate!"),
-                text("gain regen for ") + text("15 seconds").bold() + "!",
-                text("drown for ") + text("10 seconds").bold() + "!",
-            ),
-        )
-        pagesOccult = immutableListOf(
-            page(
-                OCCULT, "summon", text("Occult Summon Page") * OCCULT.color,
-                textSummonDeep() + text("receive a ") + text("player-tracking compass").bold() + "!",
-                textSummonOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "! (" + text("requires soul").bold().italic() + ")",
-                textSummonCosmos() + text("majora the storm's center"),
-                textSummonBarter() + text("receive an OP sword!"),
-                textSummonFlame() + text("spawn ") + text("3 ghasts").bold() + "!",
-            ),
-        )
-        pagesCosmos = immutableListOf(
-            page(
-                COSMOS, "summon", text("Cosmos Summon Page") * COSMOS.color,
-                textSummonDeep() + text("poison all water!"),
-                textSummonOccult() + text("receive an OP sword!"),
-                textSummonCosmos() + text("receive ") + text("8 steak").bold() + "!",
-                textSummonBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
-                textSummonFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
-            ),
-        )
-        pagesBarter = immutableListOf(
-            page(
-                BARTER, "summon", text("Barter Summon Page") * BARTER.color,
-                textSummonDeep() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
-                textSummonOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
-                textSummonCosmos() + text("spawn fire at the storm's center!"),
-                textSummonBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
-                textSummonFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
-            ),
-        )
-        pagesFlame = immutableListOf(
-            page(
-                FLAME, "summon", text("Flame Summon Page") * FLAME.color,
-                textSummonDeep() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
-                textSummonOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
-                textSummonCosmos() + text("spawn fire at the storm's center!"),
-                textSummonBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
-                textSummonFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
-            ),
-        )
-    }
 
     val summonSteak = stackOf(
         COOKED_BEEF, null,

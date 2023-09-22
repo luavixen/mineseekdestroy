@@ -154,7 +154,7 @@ fun NbtElement?.toBlockPos(): BlockPos =
     NbtHelper.toBlockPos(this.asCompound())
 
 inline fun <reified E : Enum<E>> NbtElement?.toEnum(): E =
-    Reflector.methodHandle(E::class.java, "valueOf", String::class.java)!!.invokeExact(this.toActualString()) as E
+    Reflector.methodHandle(E::class.java, "valueOf", String::class.java)!!.invoke(this.toActualString()) as E
 
 fun nbtDecode(string: String): NbtElement =
     StringNbtReader(StringReader(string)).parseElement()

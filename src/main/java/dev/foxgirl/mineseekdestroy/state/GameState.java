@@ -202,6 +202,14 @@ public abstract class GameState {
                     var result = context.soulService.handleSoulConsume(player, playerEntity, stack);
                     if (result != ActionResult.PASS) return result;
                 }
+                if (stack.getItem() == Items.WRITTEN_BOOK) {
+                    var result = context.pagesService.handleBookUse(playerEntity, stack);
+                    if (result != ActionResult.PASS) return result;
+                }
+                if (stack.getItem() == Items.PAPER) {
+                    var result = context.pagesService.handlePageUse(playerEntity, stack);
+                    if (result != ActionResult.PASS) return result;
+                }
                 return ActionResult.PASS;
             }
         }

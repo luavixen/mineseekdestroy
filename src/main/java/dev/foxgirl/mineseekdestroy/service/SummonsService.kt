@@ -812,15 +812,8 @@ class SummonsService : Service() {
     private inner class AltarScreenHandler(val altar: Altar, syncId: Int, playerInventory: PlayerInventory) : AnvilScreenHandler(syncId, playerInventory) {
         private fun theologies(): Theologies? {
             fun theologyFor(stack: ItemStack): Theology? {
-                val nbt = stack.nbt ?: return null
-                return try {
-                    if (nbt["MsdPageAction"].toActualString() == "summon")
-                        nbt["MsdPage"].toEnum<Theology>()
-                    else
-                        null
-                } catch (ignored : RuntimeException) {
-                    null
-                }
+                val meta = PagesService.pageMetaFor(stack)
+                return if (meta != null && meta.action === PagesService.Action.SUMMON) meta.theology else null
             }
             return Theologies(
                 theologyFor(input.getStack(0)) ?: return null,

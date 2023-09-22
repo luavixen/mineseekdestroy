@@ -7,6 +7,7 @@ import sun.misc.Unsafe;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
@@ -191,12 +192,18 @@ public final class Reflector {
         @Override
         public MethodHandle apply(MethodKey key) {
             key.trust();
+            Method method;
             try {
-                var method = forceAccessible(key.clazz.getDeclaredMethod(key.name, key.params));
-                var handle = LOOKUP.unreflect(method);
-                return handle;
-            } catch (NoSuchMethodException ignored) {
-                return null;
+                method = key.clazz.getMethod(key.name, key.params);
+            } catch (NoSuchMethodException ignored1) {
+                try {
+                    method = key.clazz.getDeclaredMethod(key.name, key.params);
+                } catch (NoSuchMethodException ignored2) {
+                    return null;
+                }
+            }
+            try {
+                return LOOKUP.unreflect(forceAccessible(method));
             } catch (IllegalAccessException cause) {
                 throw new RuntimeException(cause);
             }

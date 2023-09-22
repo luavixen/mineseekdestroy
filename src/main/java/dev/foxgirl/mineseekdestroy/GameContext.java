@@ -67,9 +67,10 @@ public final class GameContext {
     public final @NotNull StormService stormService;
     public final @NotNull SmokerService smokerService;
     public final @NotNull AutomationService automationService;
+    public final @NotNull PagesService pagesService;
+    public final @NotNull SummonsService summonsService;
     public final @NotNull SpecialGhoulService specialGhoulService;
     public final @NotNull SpecialCarService specialCarService;
-    public final @NotNull SummonsService summonsService;
     public final @NotNull SpecialPianoService specialPianoService;
     public final @NotNull SpecialFamilyGuyService specialFamilyGuyService;
     public final @NotNull SpecialBuddyService specialBuddyService;
@@ -172,9 +173,10 @@ public final class GameContext {
                 stormService = new StormService(),
                 smokerService = new SmokerService(),
                 automationService = new AutomationService(),
+                summonsService = new SummonsService(),
+                pagesService = new PagesService(),
                 specialGhoulService = new SpecialGhoulService(),
                 specialCarService = new SpecialCarService(),
-                summonsService = new SummonsService(),
                 specialPianoService = new SpecialPianoService(),
                 specialFamilyGuyService = new SpecialFamilyGuyService(),
                 specialBuddyService = new SpecialBuddyService(),
