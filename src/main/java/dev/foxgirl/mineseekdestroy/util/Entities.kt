@@ -41,7 +41,7 @@ fun PlayerEntity.give(stack: ItemStack, drop: Boolean): Boolean {
 
 fun Entity.play(
     sound: SoundEvent,
-    category: SoundCategory = SoundCategory.MASTER,
+    category: SoundCategory = SoundCategory.PLAYERS,
     volume: Double = 1.0,
     pitch: Double = 1.0,
 ) {

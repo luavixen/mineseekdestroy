@@ -37,17 +37,22 @@ public final class Editor {
 
     public static final class Queue {
         private final ArrayList<Operation> list = new ArrayList<>();
+        private boolean consumed = false;
 
         private Queue() {
         }
 
         private void add(Operation operation) {
             synchronized (LOCK) {
+                if (consumed) {
+                    throw new IllegalStateException("Queue has been consumed, cannot enqueue new operations");
+                }
                 list.add(operation);
             }
         }
 
-        private Operation[] operations() {
+        private Operation[] consume() {
+            consumed = true;
             return list.toArray(new Operation[0]);
         }
 
@@ -55,6 +60,7 @@ public final class Editor {
          * Enqueues an edit operation into this queue.
          * @param action Action to perform.
          * @return {@link CompletableFuture} that is resolved when the operation completes.
+         * @throws IllegalStateException If the queue has already been consumed.
          * @throws NullPointerException If {@code action} is null.
          */
         public @NotNull CompletableFuture<@Nullable Void> edit(@NotNull Action action) {
@@ -69,6 +75,7 @@ public final class Editor {
          * Enqueues a search operation into this queue for specific blocks, filtered by the predicate.
          * @param predicate Predicate to filter blocks by.
          * @return {@link CompletableFuture} that is resolved with a list of search results.
+         * @throws IllegalStateException If the queue has already been consumed.
          * @throws NullPointerException If {@code predicate} is null.
          */
         public @NotNull CompletableFuture<@NotNull List<@NotNull Result>> search(@NotNull Predicate predicate) {
@@ -212,7 +219,7 @@ public final class Editor {
                             var stateOld = section.getBlockState(x, y, z);
                             for (var action : actions) {
                                 var stateNew = action.apply(stateOld, posX, posY, posZ);
-                                if (stateNew != null) {
+                                if (stateNew != null && stateNew != stateOld) {
                                     section.setBlockState(x, y, z, stateNew);
                                     stateOld = stateNew;
                                     mutated = true;
@@ -303,6 +310,7 @@ public final class Editor {
 
     /**
      * Creates a queue of operations for the given world and region.
+     * Note that queues should be used immediately and discarded, as they become invalid after the next tick.
      * @param world World to perform operations in.
      * @param region Region to perform operations in.
      * @return Operation queue instance.
@@ -339,7 +347,7 @@ public final class Editor {
             for (var entry : QUEUES.entrySet()) {
                 var target = entry.getKey();
                 var queue = entry.getValue();
-                tasks.add(new Task(target, queue.operations()));
+                tasks.add(new Task(target, queue.consume()));
             }
 
             QUEUES.clear();

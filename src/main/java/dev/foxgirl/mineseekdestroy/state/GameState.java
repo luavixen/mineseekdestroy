@@ -263,6 +263,7 @@ public abstract class GameState {
                 if (entity instanceof PlayerEntity || entity instanceof MobEntity) {
                     return ActionResult.PASS;
                 }
+
             }
         }
         return ActionResult.FAIL;

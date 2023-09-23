@@ -6,7 +6,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class IdlingGameState extends GameState {
+public class IdlingGameState extends WaitingGameState {
 
     @Override
     public @NotNull String getName() {

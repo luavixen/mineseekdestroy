@@ -111,6 +111,14 @@ class ItemService : Service() {
                     inventory.setStack(i, ItemStack.EMPTY)
                     return@forEach
                 }
+
+                if (
+                    (bookItems.contains(item)) &&
+                    (nbt == null || (!nbt.contains("MsdBook") && !nbt.contains("MsdPage")))
+                ) {
+                    inventory.setStack(i, ItemStack.EMPTY)
+                    return@forEach
+                }
             }
         }
     }
@@ -141,6 +149,14 @@ class ItemService : Service() {
             RED_CONCRETE_POWDER, RED_CONCRETE,
             BLACK_CONCRETE_POWDER, BLACK_CONCRETE,
             WHITE_TERRACOTTA, LIGHT_GRAY_TERRACOTTA,
+        )
+
+        private val bookItems = immutableSetOf(
+            PAPER, BOOK,
+            WRITTEN_BOOK,
+            WRITABLE_BOOK,
+            KNOWLEDGE_BOOK,
+            ENCHANTED_BOOK,
         )
 
         private enum class Tool {

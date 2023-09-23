@@ -169,6 +169,25 @@ internal fun setup() {
                 }
             }
         }
+        it.params(argLiteral("givebooks")) {
+            it.action { args ->
+                val entity = args.context.source.entity
+                if (entity is ServerPlayerEntity) {
+                    for (stack in listOf(
+                        GameItems.bookDeep,
+                        GameItems.bookOccult,
+                        GameItems.bookCosmos,
+                        GameItems.bookBarter,
+                        GameItems.bookFlame,
+                    )) {
+                        entity.give(stack.copy())
+                    }
+                    args.sendInfo("Added all books to inventory")
+                } else {
+                    args.sendError("Cannot give books, command source has no entity")
+                }
+            }
+        }
         it.params(argLiteral("cleanloot")) {
             it.actionWithContext { args, context ->
                 context.lootService.executeDebugClean(args)
