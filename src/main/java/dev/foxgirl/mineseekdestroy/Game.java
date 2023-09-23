@@ -231,6 +231,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.WRITABLE_BOOK,
         Items.KNOWLEDGE_BOOK,
         Items.ENCHANTED_BOOK,
+        Items.PAPER,
         Items.LANTERN,
         Items.SOUL_LANTERN,
     });

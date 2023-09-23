@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy.util
 
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemConvertible
@@ -78,18 +77,3 @@ fun Inventory.asList(): MutableList<ItemStack> = Inventories.list(this)
 fun Item.toNbt() = toNbt(this)
 fun ItemStack.toNbt() = toNbt(this)
 fun Inventory.toNbt() = toNbt(this)
-
-fun PlayerEntity.give(stack: ItemStack) = this.give(stack, true)
-fun PlayerEntity.give(stack: ItemStack, drop: Boolean): Boolean {
-    if (stack.isEmpty) return true
-    if (giveItemStack(stack)) return true
-    if (drop) {
-        val entity = dropItem(stack, false)
-        if (entity != null) {
-            entity.resetPickupDelay()
-            entity.setOwner(uuid)
-            return true
-        }
-    }
-    return false
-}

@@ -1,6 +1,5 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.service.PagesService.Action.*
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology
@@ -11,8 +10,11 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.sound.SoundCategory
+import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import kotlin.random.Random
 
 class PagesService : Service() {
 
@@ -30,28 +32,33 @@ class PagesService : Service() {
 
             val stack = stackOf(Items.PAPER, PageMeta(theology, action).toNbt(), name, lore.asList())
 
-            open fun use(playerEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
-            open fun attack(playerEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
+            open fun use(userEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
+            open fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
         }
 
-        fun use(playerEntity: ServerPlayerEntity): ActionResult {
-            Game.CONSOLE_PLAYERS.sendInfo(playerEntity.displayName, "used book", stack.name(), "with theology", theology)
-            /*
+        fun use(userEntity: ServerPlayerEntity): ActionResult {
+            fun randomAction(exclude: Array<Action?>, times: Int = 1): Action {
+                if (Random.nextDouble() <= 0.10 && BUSTED !in exclude) return BUSTED
+                if (Random.nextDouble() <= 0.20 && AREA !in exclude) return AREA
+                if (Random.nextDouble() <= 0.25 && REGEN !in exclude) return REGEN
+                if (Random.nextDouble() <= 0.33 && HEALTH !in exclude) return HEALTH
+                if (Random.nextDouble() <= 0.50 && SUMMON !in exclude) return SUMMON
+                if (times >= 5) return SUMMON
+                return randomAction(exclude, times + 1)
+            }
             Async.run {
-                val pages = pages.values.toList()
-                delay(0.666)
-                playerEntity.give(pages[1].stack)
-                Game.CONSOLE_PLAYERS.sendInfo(playerEntity.displayName, "got page", pages[1].stack.name())
-                delay(0.666)
-                playerEntity.give(pages[2].stack)
-                Game.CONSOLE_PLAYERS.sendInfo(playerEntity.displayName, "got page", pages[2].stack.name())
-                delay(0.666)
-                playerEntity.give(pages[0].stack)
-                Game.CONSOLE_PLAYERS.sendInfo(playerEntity.displayName, "got page", pages[0].stack.name())
+                val actions = arrayOfNulls<Action>(3).also {
+                    it[0] = randomAction(it)
+                    it[1] = randomAction(it)
+                    it[2] = randomAction(it)
+                }
+                for (action in actions) {
+                    delay(0.666)
+                    userEntity.give(pages[action]!!.stack.copy())
+                    userEntity.play(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.PLAYERS, 1.0, Random.nextDouble(0.9, 1.1))
+                }
             }
             return ActionResult.SUCCESS
-            */
-            return ActionResult.PASS
         }
     }
 
@@ -60,17 +67,17 @@ class PagesService : Service() {
     private fun pageFor(stack: ItemStack) =
         pageMetaFor(stack)?.let { (theology, action) -> books[theology]?.let { it.pages[action] } }
 
-    fun handleBookUse(playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
+    fun handleBookUse(userEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
         val book = bookFor(stack) ?: return ActionResult.PASS
-        return book.use(playerEntity).also { if (it.shouldIncrementStat()) stack.count-- }
+        return book.use(userEntity).also { if (it.shouldIncrementStat()) stack.count-- }
     }
-    fun handlePageUse(playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
+    fun handlePageUse(userEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
         val page = pageFor(stack) ?: return ActionResult.PASS
-        return page.use(playerEntity).also { if (it.shouldIncrementStat()) stack.count-- }
+        return page.use(userEntity).also { if (it.shouldIncrementStat()) stack.count-- }
     }
-    fun handlePageAttack(playerEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
+    fun handlePageAttack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
         val page = pageFor(stack) ?: return ActionResult.PASS
-        return page.attack(playerEntity, victimEntity).also { if (it.shouldIncrementStat()) stack.count-- }
+        return page.attack(userEntity, victimEntity).also { if (it.shouldIncrementStat()) stack.count-- }
     }
 
     data class BookMeta(val theology: Theology) {
@@ -115,13 +122,41 @@ class PagesService : Service() {
                 HEALTH, text("Ambrosia Recipe: Deep"),
                 text("right-click to gain ") + text("1 heart").bold() + " of health!",
                 text("left-click on an opponent to deal ") + text("1 heart").bold() + " of damage!",
-            ) {}
+            ) {
+                override fun use(userEntity: ServerPlayerEntity): ActionResult {
+                    if (userEntity.healHearts(1.0)) {
+                        userEntity.play(SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS)
+                        return ActionResult.SUCCESS
+                    }
+                    return ActionResult.PASS
+                }
+                override fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
+                    if (victimEntity.hurtHearts(1.0) { it.playerAttack(userEntity) }) {
+                        userEntity.play(SoundEvents.ENTITY_PLAYER_ATTACK_CRIT, SoundCategory.PLAYERS)
+                        return ActionResult.SUCCESS
+                    }
+                    return ActionResult.PASS
+                }
+            }
 
             object : Page(
                 REGEN, text("Something Katara Read"),
                 text("right-click to activate!"),
                 text("gain regen for ") + text("15 seconds").bold() + "!",
                 text("drown for ") + text("10 seconds").bold() + "!",
+            ) {}
+
+            object : Page(
+                AREA, text("Claustrophilia: Deep"),
+                text("right-click to activate!"),
+                text("turn all blocks in a ") + text("3 block radius").bold() + " into water!",
+            ) {}
+
+            object : Page(
+                BUSTED, text("The Ocean; in Writing"),
+                text("right-click to activate!"),
+                text("allows the user to swim in air!"),
+                text("once activated, the user will begin to drown").bold() + "!",
             ) {}
 
         } }
@@ -137,6 +172,48 @@ class PagesService : Service() {
                 loreWithFlame() + text("spawn ") + text("3 ghasts").bold() + "!",
             ) {}
 
+            object : Page(
+                HEALTH, text("Ambrosia Recipe: Occult"),
+                text("right-click to gain ") + text("1 heart").bold() + " of health!",
+                text("left-click on an opponent to deal ") + text("4 hearts").bold() + " of damage!",
+            ) {
+                override fun use(userEntity: ServerPlayerEntity): ActionResult {
+                    userEntity.healHearts(1.0)
+                    return ActionResult.SUCCESS
+                }
+                override fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
+                    victimEntity.hurtHearts(4.0) { it.playerAttack(userEntity) }
+                    return ActionResult.SUCCESS
+                }
+            }
+
+            object : Page(
+                REGEN, text("Death's Love Song"),
+                text("right-click to activate!"),
+                text("for ") + text("10 seconds").bold() + ", gain " + text("1.5 hearts").bold() + " upon taking damage!",
+            ) {}
+
+            object : Page(
+                AREA, text("Claustrophilia: Occult"),
+                text("right-click to activate!"),
+                text("cause all players in a ") + text("5 block radius").bold() + " to freeze in place!",
+                text("lasts ") + text("10 seconds!").bold() + "!",
+            ) {}
+
+            object : Page(
+                BUSTED, text("Gruesome Gospel"),
+                text("right-click to activate!"),
+                text("gain ") + "speed 4" + " for " + text("15 seconds").bold() + "!",
+                text("gain ") + "haste 2" + " for " + text("15 seconds").bold() + "!",
+                text("gain ") + "strength 2" + " for " + text("15 seconds").bold() + "!",
+                text("gain ") + "jump boost 2" + " for " + text("15 seconds").bold() + "!",
+                text("gain ") + "resistance 1" + " for " + text("15 seconds").bold() + "!",
+                text("gain ") + "night vision" + " for " + text("15 seconds").bold() + "!",
+                text("gain ") + "fire resistance" + " for " + text("15 seconds").bold() + "!",
+                text("gain ") + "water breathing" + " for " + text("15 seconds").bold() + "!",
+                text("all living teammates instantly die").bold() + "!",
+            ) {}
+
         } }
 
         object : Book(COSMOS, GameItems.bookCosmos) { init {
@@ -148,6 +225,46 @@ class PagesService : Service() {
                 loreWithCosmos() + text("receive ") + text("8 steak").bold() + "!",
                 loreWithBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
                 loreWithFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
+            ) {}
+
+            object : Page(
+                HEALTH, text("Ambrosia Recipe: Cosmos"),
+                text("right-click to gain ") + text("2.5 hearts").bold() + " of health!",
+                text("left-click on an opponent to deal ") + text("2.5 hearts").bold() + " of damage!",
+            ) {
+                override fun use(userEntity: ServerPlayerEntity): ActionResult {
+                    userEntity.healHearts(2.5)
+                    return ActionResult.SUCCESS
+                }
+                override fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
+                    victimEntity.hurtHearts(2.5) { it.playerAttack(userEntity) }
+                    return ActionResult.SUCCESS
+                }
+            }
+
+            object : Page(
+                REGEN, text("Found Superman"),
+                text("right-click to activate!"),
+                text("gain ") + text("4 absorption hearts").bold() + "!",
+                text("gain ") + text("absorption") + "!",
+                text("lose the ability to heal for the rest of the round") + "!",
+            ) {}
+
+            object : Page(
+                AREA, text("Claustrophilia: Cosmos"),
+                text("right-click to activate!"),
+                text("SUCK all players in a ") + text("5 block radius").bold() + "!",
+                text("will not teleport players through walls!"),
+            ) {}
+
+            object : Page(
+                BUSTED, text("Gruesome Gospel"),
+                text("right-click to activate!"),
+                text("all teammates gain night vision for the remainder of the round!"),
+                text("all opponents gain blindness for the remainder of the round!"),
+                text("receive ") + text("10 family guy blocks").bold() + "!",
+                text("receive ") + text("5 flint & steel").bold() + "!",
+                text("user dies upon activation").bold() + "!",
             ) {}
 
         } }
@@ -163,6 +280,46 @@ class PagesService : Service() {
                 loreWithFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
             ) {}
 
+            object : Page(
+                HEALTH, text("Ambrosia Recipe: Barter"),
+                text("right-click to gain ") + text("2.5 hearts").bold() + " of health!",
+                text("left-click on an opponent to deal ") + text("2.5 hearts").bold() + " of damage!",
+                text("both effects have a 25% chance to backfire").bold() + "!",
+            ) {
+                override fun use(userEntity: ServerPlayerEntity): ActionResult {
+                    // TODO: Backfire
+                    userEntity.healHearts(2.5)
+                    return ActionResult.SUCCESS
+                }
+                override fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
+                    // TODO: Backfire
+                    victimEntity.hurtHearts(2.5) { it.playerAttack(userEntity) }
+                    return ActionResult.SUCCESS
+                }
+            }
+
+            object : Page(
+                REGEN, text("Das Stoks Baybee"),
+                text("right-click to activate!"),
+                text("heal ") + text("1 heart").bold() + " for every connecting full-swing hit!",
+                text("take ") + text("1 heart of damage").bold() + " for every connecting incomplete hit!",
+                text("take ") + text("1 heart of damage").bold() + " for every disconnecting hit!",
+                text("lasts ") + text("30 seconds").bold() + "!",
+            ) {}
+
+            object : Page(
+                AREA, text("Claustrophilia: Barter"),
+                text("right-click to activate!"),
+                text("launch all players in a ") + text("5 block radius").bold() + "!",
+            ) {}
+
+            object : Page(
+                BUSTED, text("Midas’ Records"),
+                text("right-click to activate!"),
+                text("ghostable blocks disappear upon contact!"),
+                text("user becomes a ghost upon death or round end").bold() + "!",
+            ) {}
+
         } }
 
         object : Book(FLAME, GameItems.bookFlame) { init {
@@ -174,6 +331,46 @@ class PagesService : Service() {
                 loreWithCosmos() + text("spawn fire at the storm's center!"),
                 loreWithBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
                 loreWithFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
+            ) {}
+
+            object : Page(
+                HEALTH, text("Ambrosia Recipe: Flame"),
+                text("right-click to gain ") + text("4 hearts").bold() + " of health!",
+                text("left-click on an opponent to deal ") + text("1 heart").bold() + " of damage!",
+            ) {
+                override fun use(userEntity: ServerPlayerEntity): ActionResult {
+                    userEntity.healHearts(4.0)
+                    return ActionResult.SUCCESS
+                }
+                override fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
+                    victimEntity.hurtHearts(1.0) { it.playerAttack(userEntity) }
+                    return ActionResult.SUCCESS
+                }
+            }
+
+            object : Page(
+                REGEN, text("Sun's At-Home Workout"),
+                text("right-click to activate!"),
+                text("gain regen for ") + text("15 seconds").bold() + "!",
+                text("burn for ") + text("10 seconds").bold() + "!",
+            ) {}
+
+            object : Page(
+                AREA, text("Claustrophilia: Flame"),
+                text("right-click to activate!"),
+                text("turn all blocks in a ") + text("4 block radius").bold() + " into fire!",
+            ) {}
+
+            object : Page(
+                BUSTED, text("Burning Infomercial"),
+                text("right-click to activate!"),
+                text("gain ") + "speed 4" + "!",
+                text("gain ") + "haste 2" + "!",
+                text("gain ") + "strength 2" + "!",
+                text("gain ") + "jump boost 2" + "!",
+                text("gain ") + "resistance 1" + "!",
+                text("gain ") + "night vision" + "!",
+                text("gain permanent wither until death").bold() + "!",
             ) {}
 
         } }
