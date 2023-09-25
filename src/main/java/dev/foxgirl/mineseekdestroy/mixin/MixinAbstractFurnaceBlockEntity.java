@@ -31,6 +31,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
 
     @Inject(method = "tick", at = @At("HEAD"))
     private static void mineseekdestroy$hookTick$0(World world, BlockPos blockPos, BlockState blockState, AbstractFurnaceBlockEntity blockEntity, CallbackInfo info) {
+        if (!Game.getGame().getRuleBoolean(Game.RULE_ENHANCED_FURNACES)) return;
         var stack = blockEntity.getStack(1);
         if (stack.getCount() != 1 || stack.getItem() != Items.BAMBOO) {
             blockEntity.setStack(1, new ItemStack(Items.BAMBOO));
@@ -40,6 +41,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
 
     @Inject(method = "tick", at = @At("RETURN"))
     private static void mineseekdestroy$hookTick$1(World world, BlockPos blockPos, BlockState blockState, AbstractFurnaceBlockEntity blockEntity, CallbackInfo info) {
+        if (!Game.getGame().getRuleBoolean(Game.RULE_ENHANCED_FURNACES)) return;
         var self = (MixinAbstractFurnaceBlockEntity) (Object) blockEntity;
         if (blockState.get(AbstractFurnaceBlock.LIT)) {
             var entity = self.mineseekdestroy$shulker;

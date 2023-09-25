@@ -7,6 +7,7 @@
     },
     "server": [
         "MixinAbstractFurnaceBlockEntity",
+        "MixinArrowItem",
         "MixinCraftingResultInventory",
         "MixinDamageSource",
         "MixinEggEntity",

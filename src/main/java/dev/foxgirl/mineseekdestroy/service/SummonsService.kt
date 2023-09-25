@@ -812,8 +812,8 @@ class SummonsService : Service() {
     private inner class AltarScreenHandler(val altar: Altar, syncId: Int, playerInventory: PlayerInventory) : AnvilScreenHandler(syncId, playerInventory) {
         private fun theologies(): Theologies? {
             fun theologyFor(stack: ItemStack): Theology? {
-                val meta = PagesService.pageMetaFor(stack)
-                return if (meta != null && meta.action === PagesService.Action.SUMMON) meta.theology else null
+                val type = PagesService.pageTypeFor(stack)
+                return if (type != null && type.action === PagesService.Action.SUMMON) type.theology else null
             }
             return Theologies(
                 theologyFor(input.getStack(0)) ?: return null,

@@ -87,6 +87,14 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FINALIZING_DURATION =
         GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(10.0));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_ENHANCED_FURNACES =
+        GameRuleRegistry.register("msdEnhancedFurnaces", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLUE_MELEE_CRITS =
+        GameRuleRegistry.register("msdBlueMeleeCrits", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLUE_ARROW_CRITS =
+        GameRuleRegistry.register("msdBlueArrowCrits", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(5));
 
@@ -232,6 +240,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.KNOWLEDGE_BOOK,
         Items.ENCHANTED_BOOK,
         Items.PAPER,
+        Items.WHITE_BANNER,
         Items.LANTERN,
         Items.SOUL_LANTERN,
     });

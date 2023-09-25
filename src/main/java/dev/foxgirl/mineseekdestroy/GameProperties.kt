@@ -148,9 +148,11 @@ sealed interface GameProperties {
         override val unstealableBlocks = buildImmutableSet<Block> {
             addAll(interactableBlocks)
             addAll(listOf(
+                FIRE, AIR, CAVE_AIR,
                 BEACON,
                 DARK_OAK_TRAPDOOR,
                 DIAMOND_BLOCK,
+                GOLD_BLOCK,
                 IRON_BLOCK,
                 NETHER_BRICKS,
                 OBSIDIAN,

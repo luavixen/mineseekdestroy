@@ -172,7 +172,7 @@ class SoulService : Service() {
             player.entity?.openHandledScreen(DuelScreenHandlerFactory())
             return ActionResult.SUCCESS
         }
-        return ActionResult.PASS
+        return ActionResult.FAIL
     }
 
     private fun updateAnchors(enabled: Boolean) {
@@ -302,7 +302,11 @@ class SoulService : Service() {
         }
 
         private fun onUpdateResult() {
-            val soul = createSoulFrom(inventory.getStack(0)) ?: return
+            val soul = createSoulFrom(inventory.getStack(0))
+            if (soul == null) {
+                inventory.setStack(2, stackOf())
+                return
+            }
             val nbt = soul.toNbt() + nbtCompoundOf(
                 "SkullOwner" to soul.player.name,
                 "MsdIllegal" to true,

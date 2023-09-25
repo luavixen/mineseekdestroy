@@ -20,6 +20,10 @@ repositories {
         name = 'ViaVersion'
         url = uri 'https://repo.viaversion.com/'
     }
+    maven {
+        name = 'EngineHub'
+        url = uri 'https://maven.enginehub.org/repo/'
+    }
 }
 
 configurations {

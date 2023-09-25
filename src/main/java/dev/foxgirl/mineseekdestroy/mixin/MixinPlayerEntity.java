@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameTeam;
+import dev.foxgirl.mineseekdestroy.util.Rules;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
@@ -35,12 +36,12 @@ public abstract class MixinPlayerEntity {
         at = @At("STORE"), ordinal = 2
     )
     private boolean mineseekdestroy$hookAttack(boolean value) {
-        var context = Game.getGame().getContext();
-        if (
-            context != null &&
-            context.getPlayer((ServerPlayerEntity) (Object) this).getTeam() == GameTeam.PLAYER_BLUE
-        ) {
-            return true;
+        if (Rules.getBlueMeleeCrits()) {
+            var context = Game.getGame().getContext();
+            if (
+                context != null &&
+                context.getPlayer((ServerPlayerEntity) (Object) this).getTeam() == GameTeam.PLAYER_BLUE
+            ) return true;
         }
         return value;
     }

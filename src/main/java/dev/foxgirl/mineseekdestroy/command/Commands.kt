@@ -154,7 +154,7 @@ internal fun setup() {
                     }
                     args.sendInfo("Added tools to inventory")
                 } else {
-                    args.sendError("Cannot give tools, command source has no entity")
+                    args.sendError("Cannot give tools, command source is not a player")
                 }
             }
         }
@@ -165,7 +165,7 @@ internal fun setup() {
                     GameItems.properties.forEach { entity.give(it().copy()) }
                     args.sendInfo("Added all game items to inventory")
                 } else {
-                    args.sendError("Cannot give special items, command source has no entity")
+                    args.sendError("Cannot give special items, command source is not a player")
                 }
             }
         }
@@ -184,13 +184,63 @@ internal fun setup() {
                     }
                     args.sendInfo("Added all books to inventory")
                 } else {
-                    args.sendError("Cannot give books, command source has no entity")
+                    args.sendError("Cannot give books, command source is not a player")
                 }
             }
         }
         it.params(argLiteral("cleanloot")) {
             it.actionWithContext { args, context ->
                 context.lootService.executeDebugClean(args)
+            }
+        }
+        it.params(argLiteral("removeunexposed")) {
+            it.action { args ->
+                val entity = args.context.source.entity
+                if (entity !is ServerPlayerEntity) {
+                    args.sendError("Cannot remove unexposed blocks, command source is not a player")
+                    return@action
+                }
+                args.sendError("Unimplemented")
+                /*
+                val sessionManager = WorldEdit.getInstance().getSessionManager().get(FabricAdapter.adaptPlayer(entity))
+                val region = sessionManager.selection.let {
+                    Region(
+                        it.minimumPoint.let { BlockPos(it.x, it.y, it.z) },
+                        it.maximumPoint.let { BlockPos(it.x, it.y, it.z) },
+                    )
+                }
+                val world = FabricAdapter.adapt(sessionManager.selectionWorld) as ServerWorld
+                Async.run {
+                    args.sendInfo("Starting task for ${region.blockCount} block(s)")
+                    val positions = HashSet<BlockPos>(region.blockCount.toInt())
+                    fun isOpaqueFullCube(pos: BlockPos) = world.getBlockState(pos).isOpaqueFullCube(world, pos)
+                    Editor
+                        .queue(world, region)
+                        .edit { state, x, y, z ->
+                            val pos = BlockPos(x, y, z)
+                            if (
+                                state.isOpaque &&
+                                isOpaqueFullCube(pos.down()) &&
+                                isOpaqueFullCube(pos.up()) &&
+                                isOpaqueFullCube(pos.north()) &&
+                                isOpaqueFullCube(pos.south()) &&
+                                isOpaqueFullCube(pos.west()) &&
+                                isOpaqueFullCube(pos.east())
+                            ) {
+                                positions.add(pos)
+                            }
+                            null
+                        }
+                        .await()
+                    Editor
+                        .queue(world, region)
+                        .edit { _, x, y, z ->
+                            if (positions.contains(BlockPos(x, y, z))) Blocks.AIR.defaultState else null
+                        }
+                        .await()
+                    args.sendInfo("Completed task for ${region.blockCount} block(s)")
+                }
+                */
             }
         }
     }

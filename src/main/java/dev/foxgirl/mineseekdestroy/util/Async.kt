@@ -92,7 +92,7 @@ object Async {
     suspend fun thread(executor: Executor): Unit =
         suspendCoroutine { executor.execute { it.resume(Unit) } }
 
-    suspend fun until(condition: suspend () -> Boolean) = until(0.0, condition)
+    suspend fun until(condition: suspend () -> Boolean) = until(0.01, condition)
     suspend fun until(seconds: Double, condition: suspend () -> Boolean) {
         while (!condition()) delay(seconds)
     }

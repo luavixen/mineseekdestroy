@@ -68,7 +68,6 @@ object GameItems {
     val potato = stackOf(
         POTATO, null,
         text("fun to eat!"),
-        text("can be cooked at ") + text("shrines").bold(),
     )
     val bakedPotato = stackOf(
         BAKED_POTATO, null,
@@ -141,27 +140,27 @@ object GameItems {
     )
 
     val bookDeep = stackOf(
-        WRITTEN_BOOK, PagesService.BookMeta(DEEP).toNbt(),
+        WRITTEN_BOOK, PagesService.BookType(DEEP).toNbt(),
         text("Sunken Scroll") * DEEP.color,
         text("right-click to receive 3 random ") + text("deep pages").format(DEEP.color) + "!",
     )
     val bookOccult = stackOf(
-        WRITTEN_BOOK, PagesService.BookMeta(OCCULT).toNbt(),
+        WRITTEN_BOOK, PagesService.BookType(OCCULT).toNbt(),
         text("Hymnal") * OCCULT.color,
         text("right-click to receive 3 random ") + text("occult pages").format(OCCULT.color) + "!",
     )
     val bookCosmos = stackOf(
-        WRITTEN_BOOK, PagesService.BookMeta(COSMOS).toNbt(),
+        WRITTEN_BOOK, PagesService.BookType(COSMOS).toNbt(),
         text("Golden Disc") * COSMOS.color,
         text("right-click to receive 3 random ") + text("cosmos pages").format(COSMOS.color) + "!",
     )
     val bookBarter = stackOf(
-        WRITTEN_BOOK, PagesService.BookMeta(BARTER).toNbt(),
+        WRITTEN_BOOK, PagesService.BookType(BARTER).toNbt(),
         text("File Folder") * BARTER.color,
         text("right-click to receive 3 random ") + text("barter pages").format(BARTER.color) + "!",
     )
     val bookFlame = stackOf(
-        WRITTEN_BOOK, PagesService.BookMeta(FLAME).toNbt(),
+        WRITTEN_BOOK, PagesService.BookType(FLAME).toNbt(),
         text("VHS") * FLAME.color,
         text("right-click to receive 3 random ") + text("flame pages").format(FLAME.color) + "!",
     )

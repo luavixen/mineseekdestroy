@@ -17,8 +17,11 @@ fun LivingEntity.hurtHearts(hearts: Double, source: (DamageSources) -> DamageSou
 fun LivingEntity.healHearts(hearts: Double): Boolean =
     health.also { heal((hearts * 2.0).toFloat()) } != health
 
-fun LivingEntity.addEffect(type: StatusEffect, seconds: Double, strength: Int = 1): StatusEffectInstance =
-    StatusEffectInstance(type, (seconds * 20.0).toInt(), (strength - 1).coerceAtLeast(0)).also(::addStatusEffect)
+fun LivingEntity.addEffect(type: StatusEffect, seconds: Double, strength: Int = 1): StatusEffectInstance {
+    val duration = if (seconds < Int.MAX_VALUE.toDouble()) (seconds * 20.0).toInt() else StatusEffectInstance.INFINITE
+    val amplifier = (strength - 1).coerceAtLeast(0)
+    return StatusEffectInstance(type, duration, amplifier).also(::addStatusEffect)
+}
 fun LivingEntity.hasEffect(type: StatusEffect): Boolean =
     hasStatusEffect(type)
 fun LivingEntity.removeEffect(type: StatusEffect): Boolean =

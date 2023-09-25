@@ -1,14 +1,14 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GameItems
+import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.PagesService.Action.*
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
-import net.minecraft.block.Block
 import net.minecraft.block.Blocks
-import net.minecraft.block.FireBlock
+import net.minecraft.entity.EntityType
 import net.minecraft.entity.effect.StatusEffects.*
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -21,6 +21,7 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Direction
 import kotlin.random.Random
 
 class PagesService : Service() {
@@ -32,12 +33,14 @@ class PagesService : Service() {
     private abstract inner class Book(val theology: Theology, val stack: ItemStack) {
         init { check(books.putIfAbsent(theology, this) == null) { "Duplicate book" } }
 
+        val type = BookType(theology)
         val pages = enumMapOf<Action, Page>()
 
         abstract inner class Page(val action: Action, name: Text, vararg lore: Text) {
             init { check(pages.putIfAbsent(action, this) == null) { "Duplicate page" } }
 
-            val stack = stackOf(Items.PAPER, PageMeta(theology, action).toNbt(), name, lore.asList())
+            val type = PageType(theology, action)
+            val stack = stackOf(Items.WHITE_BANNER, type.toNbt() + pageBannerNbt[type]!!, name, lore.asList())
 
             open fun use(userEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
             open fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
@@ -70,11 +73,12 @@ class PagesService : Service() {
     }
 
     private fun bookFor(stack: ItemStack) =
-        bookMetaFor(stack)?.let { (theology) -> books[theology] }
+        bookTypeFor(stack)?.let { (theology) -> books[theology] }
     private fun pageFor(stack: ItemStack) =
-        pageMetaFor(stack)?.let { (theology, action) -> books[theology]?.let { it.pages[action] } }
+        pageTypeFor(stack)?.let { (theology, action) -> books[theology]?.let { it.pages[action] } }
 
     private fun isPageUsageBlocked(userEntity: ServerPlayerEntity): Boolean {
+        return false
         if (state.isWaiting) {
             userEntity.sendMessage(text("Cannot use pages while waiting for next round").red())
             return true
@@ -110,23 +114,67 @@ class PagesService : Service() {
         return page.attack(userEntity, victimEntity).also { if (it.shouldIncrementStat()) stack.count-- }
     }
 
-    data class BookMeta(val theology: Theology) {
+    data class BookType(val theology: Theology) {
         fun toNbt() = nbtCompoundOf("MsdBook" to true, "MsdBookTheology" to theology)
     }
-    data class PageMeta(val theology: Theology, val action: Action) {
+    data class PageType(val theology: Theology, val action: Action) {
         fun toNbt() = nbtCompoundOf("MsdPage" to true, "MsdPageTheology" to theology, "MsdPageAction" to action)
     }
 
     companion object {
-        fun bookMetaFor(stack: ItemStack) = bookMetaFor(stack.nbt)
-        fun bookMetaFor(nbt: NbtCompound?): BookMeta? =
-            try { BookMeta(nbt!!["MsdBookTheology"].toEnum()) }
-            catch (ignored : RuntimeException) { null }
+        fun bookTypeFor(stack: ItemStack): BookType? {
+            val nbt = stack.nbt ?: return null
+            val nbtTheology = nbt["MsdBookTheology"] ?: return null
+            return try { BookType(nbtTheology.toEnum()) } catch (ignored : RuntimeException) { null }
+        }
+        fun pageTypeFor(stack: ItemStack): PageType? {
+            val nbt = stack.nbt ?: return null
+            val nbtTheology = nbt["MsdPageTheology"] ?: return null
+            val nbtAction = nbt["MsdPageAction"] ?: return null
+            return try { PageType(nbtTheology.toEnum(), nbtAction.toEnum()) } catch (ignored : RuntimeException) { null }
+        }
 
-        fun pageMetaFor(stack: ItemStack) = pageMetaFor(stack.nbt)
-        fun pageMetaFor(nbt: NbtCompound?): PageMeta? =
-            try { PageMeta(nbt!!["MsdPageTheology"].toEnum(), nbt["MsdPageAction"].toEnum()) }
-            catch (ignored : RuntimeException) { null }
+        private var pageBannerNbt = mapOf<PageType, NbtCompound>()
+
+        init {
+            try {
+                pageBannerNbt = mapOf<PageType, NbtCompound>(
+                    // Deep
+                    PageType(DEEP, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:9,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(DEEP, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:9,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(DEEP, REGEN) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:9,Pattern:\"moj\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(DEEP, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:9,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(DEEP, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:9,Pattern:\"gra\"},{Color:9,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    // Occult
+                    PageType(OCCULT, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:2,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(OCCULT, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:2,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(OCCULT, REGEN) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:2,Pattern:\"moj\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(OCCULT, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:2,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(OCCULT, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:2,Pattern:\"gra\"},{Color:2,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    // Cosmos
+                    PageType(COSMOS, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:11,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(COSMOS, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:11,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(COSMOS, REGEN) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:11,Pattern:\"moj\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(COSMOS, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:11,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(COSMOS, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:11,Pattern:\"gra\"},{Color:11,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    // Barter
+                    PageType(BARTER, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, REGEN) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"moj\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"gra\"},{Color:1,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    // Flame
+                    PageType(FLAME, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:14,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(FLAME, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:14,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(FLAME, REGEN) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:14,Pattern:\"moj\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(FLAME, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:14,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(FLAME, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:14,Pattern:\"gra\"},{Color:14,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
+                )
+            } catch (cause: Throwable) {
+                if (cause.stackTrace.isNullOrEmpty()) cause.fillInStackTrace()
+                cause.printStackTrace()
+            }
+        }
 
         private fun loreWithDeep() = text("combine with a ") + text("deep summon page").format(DEEP.color) + " to "
         private fun loreWithOccult() = text("combine with an ") + text("occult summon page").format(OCCULT.color) + " to "
@@ -153,18 +201,13 @@ class PagesService : Service() {
             return ActionResult.SUCCESS
         }
 
-        internal fun ServerPlayerEntity.sparkles(sound: SoundEvent = SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, particles: Boolean = true) {
-            val world = world
-            val pos = pos
-            if (particles) {
-                Broadcast.sendParticles(ParticleTypes.CRIT, 0.25F, 12, world, pos)
+        internal fun ServerPlayerEntity.sparkles(sound: SoundEvent = SoundEvents.ITEM_TOTEM_USE, effects: Boolean = true) {
+            val pos = pos.offset(Direction.UP, 1.25)
+            if (effects) {
+                addEffect(GLOWING, 8.0)
+                Broadcast.sendParticles(ParticleTypes.FLASH, 1.0F, 1, world, pos)
             }
-            Async.run {
-                for (i in 0..<3) {
-                    Broadcast.sendSound(sound, SoundCategory.PLAYERS, 1.25F, Random.nextDouble(0.9, 1.1).toFloat(), world, pos)
-                    delay(0.333)
-                }
-            }
+            Broadcast.sendSound(sound, SoundCategory.PLAYERS, 1.0F, Random.nextDouble(0.9, 1.1).toFloat(), world, pos)
         }
 
         internal fun BlockPos.around(radius: Double) = around(radius, radius, radius)
@@ -187,7 +230,7 @@ class PagesService : Service() {
         object : Book(DEEP, GameItems.bookDeep) { init {
 
             object : Page(
-                SUMMON, text("deep summon page") * DEEP.color,
+                SUMMON, text("Deep Summon Page") * DEEP.color,
                 loreWithDeep() + text("flood the map").format(DEEP.color) + "! (" + text("requires soul").bold().italic() + ")",
                 loreWithOccult() + text("receive a ") + text("player-tracking compass").bold() + "!",
                 loreWithCosmos() + text("summon acid rain!"),
@@ -196,7 +239,7 @@ class PagesService : Service() {
             ) {}
 
             object : Page(
-                HEALTH, text("Ambrosia Recipe: Deep"),
+                HEALTH, text("Ambrosia Recipe: Deep") * DEEP.color,
                 text("right-click to gain ") + text("1 heart").bold() + " of health!",
                 text("left-click on an opponent to deal ") + text("1 heart").bold() + " of damage!",
             ) {
@@ -205,9 +248,9 @@ class PagesService : Service() {
             }
 
             object : Page(
-                REGEN, text("Something Katara Read"),
+                REGEN, text("Something Katara Read") * DEEP.color,
                 text("right-click to activate!"),
-                text("gain regen for ") + text("15 seconds").bold() + "!",
+                text("gain regen 3 for ") + text("15 seconds").bold() + "!",
                 text("drown for ") + text("10 seconds").bold() + "!",
             ) {
                 override fun use(userEntity: ServerPlayerEntity): ActionResult {
@@ -215,21 +258,21 @@ class PagesService : Service() {
                         val user = context.getPlayer(userEntity)
                         for (i in 0..<10) {
                             delay(0.5); if (!user.isAlive) break
-                            userEntity.air = -40
+                            userEntity.air = -10
                             delay(0.5); if (!user.isAlive) break
-                            userEntity.air = -40
+                            userEntity.air = -10
                             userEntity.hurtHearts(1.0) { it.drown() }
                         }
                         userEntity.air = 0
                     }
-                    userEntity.addEffect(REGENERATION, 15.0)
+                    userEntity.addEffect(REGENERATION, 15.0, 3)
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
                 }
             }
 
             object : Page(
-                AREA, text("Claustrophilia: Deep"),
+                AREA, text("Claustrophilia: Deep") * DEEP.color,
                 text("right-click to activate!"),
                 text("turn all blocks in a ") + text("3 block radius").bold() + " into water!",
             ) {
@@ -241,7 +284,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                BUSTED, text("The Ocean; in Writing"),
+                BUSTED, text("The Ocean; in Writing") * DEEP.color,
                 text("right-click to activate!"),
                 text("allows the user to swim in air!"),
                 text("once activated, the user will begin to drown").bold() + "!",
@@ -254,7 +297,7 @@ class PagesService : Service() {
         object : Book(OCCULT, GameItems.bookOccult) { init {
 
             object : Page(
-                SUMMON, text("occult summon page") * OCCULT.color,
+                SUMMON, text("Occult Summon Page") * OCCULT.color,
                 loreWithDeep() + text("receive a ") + text("player-tracking compass").bold() + "!",
                 loreWithOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "! (" + text("requires soul").bold().italic() + ")",
                 loreWithCosmos() + text("majora the storm's center"),
@@ -263,7 +306,7 @@ class PagesService : Service() {
             ) {}
 
             object : Page(
-                HEALTH, text("Ambrosia Recipe: Occult"),
+                HEALTH, text("Ambrosia Recipe: Occult") * OCCULT.color,
                 text("right-click to gain ") + text("1 heart").bold() + " of health!",
                 text("left-click on an opponent to deal ") + text("4 hearts").bold() + " of damage!",
             ) {
@@ -272,7 +315,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                REGEN, text("Death's Love Song"),
+                REGEN, text("Death's Love Song") * OCCULT.color,
                 text("right-click to activate!"),
                 text("for ") + text("10 seconds").bold() + ", gain " + text("1.5 hearts").bold() + " upon taking damage!",
             )  {
@@ -280,15 +323,15 @@ class PagesService : Service() {
             }
 
             object : Page(
-                AREA, text("Claustrophilia: Occult"),
+                AREA, text("Claustrophilia: Occult") * OCCULT.color,
                 text("right-click to activate!"),
                 text("cause all players in a ") + text("5 block radius").bold() + " to freeze in place!",
-                text("lasts ") + text("10 seconds!").bold() + "!",
+                text("lasts ") + text("5 seconds!").bold() + "!",
             ) {
                 override fun use(userEntity: ServerPlayerEntity): ActionResult {
                     for ((_, playerEntity) in playerEntitiesIn) {
                         if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 25.0) {
-                            playerEntity.addEffect(SLOWNESS, 10.0, 7)
+                            playerEntity.addEffect(SLOWNESS, 5.0, 7)
                             playerEntity.removeEffect(JUMP_BOOST)
                         }
                     }
@@ -298,7 +341,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                BUSTED, text("Gruesome Gospel"),
+                BUSTED, text("Gruesome Gospel") * OCCULT.color,
                 text("right-click to activate!"),
                 text("gain ") + "speed 4" + " for " + text("15 seconds").bold() + "!",
                 text("gain ") + "haste 2" + " for " + text("15 seconds").bold() + "!",
@@ -335,16 +378,16 @@ class PagesService : Service() {
         object : Book(COSMOS, GameItems.bookCosmos) { init {
 
             object : Page(
-                SUMMON, text("cosmos summon page") * COSMOS.color,
-                loreWithDeep() + text("poison all water!"),
-                loreWithOccult() + text("receive an OP sword!"),
-                loreWithCosmos() + text("receive ") + text("8 steak").bold() + "!",
-                loreWithBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
-                loreWithFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
+                SUMMON, text("Cosmos Summon Page") * COSMOS.color,
+                loreWithDeep() + text("summon acid rain!"),
+                loreWithOccult() + text("gain night vision and blind your opponents!"),
+                loreWithCosmos() + text("reduce gravity").format(COSMOS.color) + "! (" + text("requires soul").bold().italic() + ")",
+                loreWithBarter() + text("receive ") + text("8 steak").bold() + "!",
+                loreWithFlame() + text("get an absorption heart!"),
             ) {}
 
             object : Page(
-                HEALTH, text("Ambrosia Recipe: Cosmos"),
+                HEALTH, text("Ambrosia Recipe: Cosmos") * COSMOS.color,
                 text("right-click to gain ") + text("2.5 hearts").bold() + " of health!",
                 text("left-click on an opponent to deal ") + text("2.5 hearts").bold() + " of damage!",
             ) {
@@ -353,17 +396,42 @@ class PagesService : Service() {
             }
 
             object : Page(
-                REGEN, text("Found Superman"),
+                REGEN, text("Found Superman") * COSMOS.color,
                 text("right-click to activate!"),
                 text("gain ") + text("4 absorption hearts").bold() + "!",
                 text("gain ") + text("absorption") + "!",
                 text("lose the ability to heal for the rest of the round") + "!",
             ) {
-                override fun use(userEntity: ServerPlayerEntity) = pageUnimplemented(userEntity)
+                override fun use(userEntity: ServerPlayerEntity): ActionResult {
+                    Async.run {
+                        var running = true
+                        var minimumHealth = userEntity.health
+
+                        go {
+                            val user = context.getPlayer(userEntity)
+                            until { state.isWaiting || !userEntity.isAlive || !user.isAlive }
+                            if (userEntity.isAlive) userEntity.removeEffect(ABSORPTION)
+                            running = false
+                        }
+
+                        while (running) {
+                            val currentHealth = userEntity.health
+                            if (currentHealth > minimumHealth) {
+                                userEntity.damage(userEntity.damageSources.magic(), (currentHealth - minimumHealth) + 0.05F)
+                            } else if (currentHealth < minimumHealth) {
+                                minimumHealth = currentHealth
+                            }
+                            delay(0.1)
+                        }
+                    }
+                    userEntity.addEffect(ABSORPTION, Double.MAX_VALUE)
+                    userEntity.sparkles()
+                    return ActionResult.SUCCESS
+                }
             }
 
             object : Page(
-                AREA, text("Claustrophilia: Cosmos"),
+                AREA, text("Claustrophilia: Cosmos") * COSMOS.color,
                 text("right-click to activate!"),
                 text("SUCK all players in a ") + text("5 block radius").bold() + "!",
                 text("will not teleport players through walls!"),
@@ -381,7 +449,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                BUSTED, text("Gruesome Gospel"),
+                BUSTED, text("Gruesome Gospel") * COSMOS.color,
                 text("right-click to activate!"),
                 text("all teammates gain night vision for the remainder of the round!"),
                 text("all opponents gain blindness for the remainder of the round!"),
@@ -428,16 +496,16 @@ class PagesService : Service() {
         object : Book(BARTER, GameItems.bookBarter) { init {
 
             object : Page(
-                SUMMON, text("barter summon page") * BARTER.color,
-                loreWithDeep() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
-                loreWithOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
-                loreWithCosmos() + text("spawn fire at the storm's center!"),
-                loreWithBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
-                loreWithFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
+                SUMMON, text("Barter Summon Page") * BARTER.color,
+                loreWithDeep() + text("poison all water!"),
+                loreWithOccult() + text("receive an OP sword!"),
+                loreWithCosmos() + text("receive ") + text("8 steak").bold() + "!",
+                loreWithBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
+                loreWithFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
             ) {}
 
             object : Page(
-                HEALTH, text("Ambrosia Recipe: Barter"),
+                HEALTH, text("Ambrosia Recipe: Barter") * BARTER.color,
                 text("right-click to gain ") + text("2.5 hearts").bold() + " of health!",
                 text("left-click on an opponent to deal ") + text("2.5 hearts").bold() + " of damage!",
                 text("both effects have a 25% chance to backfire").bold() + "!",
@@ -453,7 +521,7 @@ class PagesService : Service() {
                 override fun attack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
                     if (Random.nextDouble() <= 0.25) {
                         victimEntity.healHearts(2.5)
-                        victimEntity.sparkles()
+                        userEntity.sparkles()
                         return ActionResult.SUCCESS
                     }
                     return pageAmbrosiaAttack(1.0, userEntity, victimEntity)
@@ -461,7 +529,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                REGEN, text("Das Stoks Baybee"),
+                REGEN, text("Das Stoks Baybee") * BARTER.color,
                 text("right-click to activate!"),
                 text("heal ") + text("1 heart").bold() + " for every connecting full-swing hit!",
                 text("take ") + text("1 heart of damage").bold() + " for every connecting incomplete hit!",
@@ -472,7 +540,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                AREA, text("Claustrophilia: Barter"),
+                AREA, text("Claustrophilia: Barter") * BARTER.color,
                 text("right-click to activate!"),
                 text("launch all players in a ") + text("5 block radius").bold() + "!",
             ) {
@@ -489,31 +557,56 @@ class PagesService : Service() {
             }
 
             object : Page(
-                BUSTED, text("Midas’ Records"),
+                BUSTED, text("Midas’ Records") * BARTER.color,
                 text("right-click to activate!"),
                 text("ghostable blocks disappear upon contact!"),
                 text("user becomes a ghost upon death or round end").bold() + "!",
             ) {
-                override fun use(userEntity: ServerPlayerEntity) = pageUnimplemented(userEntity)
-                /*
                 override fun use(userEntity: ServerPlayerEntity): ActionResult {
                     Async.run {
-                        while (true) {
-                            for (pos in userEntity.blockPos.around(2.0)) {
-                                val state = world.getBlockState(pos)
+                        val blocks = mutableMapOf<BlockPos, Pair<Long, Int>>()
+
+                        var running = true
+                        var iteration = 0L
+
+                        go {
+                            val user = context.getPlayer(userEntity)
+                            until { state.isWaiting || !userEntity.isAlive || !user.isAlive }
+                            user.team = GameTeam.GHOST
+                            running = false
+                        }
+
+                        while (running) {
+                            blocks.values.removeIf { (blockIteration) -> blockIteration < iteration - 20 }
+
+                            for (blockPos in userEntity.blockPos.around(2.0)) {
+                                val blockState = world.getBlockState(blockPos)
                                 if (
-                                    state.block !in properties.unstealableBlocks &&
-                                    userEntity.collidesWithStateAtPos(pos, state)
+                                    blockState.block !in properties.unstealableBlocks && !blockState.isAir &&
+                                    blockPos.toCenterPos().let {
+                                        userEntity.pos.add(0.0, 0.5, 0.0).squaredDistanceTo(it) <= 2.75 ||
+                                        userEntity.pos.add(0.0, 1.5, 0.0).squaredDistanceTo(it) <= 2.75
+                                    }
                                 ) {
+                                    val blockProgress = blocks.get(blockPos)?.second ?: 0
+                                    if (blockProgress >= 9) {
+                                        world.setBlockState(blockPos, Blocks.GOLD_BLOCK.defaultState)
+                                        world.breakBlock(blockPos, true)
+                                        blocks.remove(blockPos)
+                                    } else {
+                                        world.setBlockBreakingInfo(0, blockPos, blockProgress + 1)
+                                        blocks.set(blockPos, iteration to blockProgress + 1)
+                                    }
                                 }
                             }
-                            delay()
+
+                            iteration += 1
+                            delay(0.025)
                         }
                     }
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
                 }
-                */
             }
 
         } }
@@ -521,7 +614,7 @@ class PagesService : Service() {
         object : Book(FLAME, GameItems.bookFlame) { init {
 
             object : Page(
-                SUMMON, text("flame summon page") * FLAME.color,
+                SUMMON, text("Flame Summon Page") * FLAME.color,
                 loreWithDeep() + text("receive an ") + text("anvil").bold() + text(" & ") + text("water bucket").bold() + "!",
                 loreWithOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
                 loreWithCosmos() + text("spawn fire at the storm's center!"),
@@ -530,7 +623,7 @@ class PagesService : Service() {
             ) {}
 
             object : Page(
-                HEALTH, text("Ambrosia Recipe: Flame"),
+                HEALTH, text("Ambrosia Recipe: Flame") * FLAME.color,
                 text("right-click to gain ") + text("4 hearts").bold() + " of health!",
                 text("left-click on an opponent to deal ") + text("1 heart").bold() + " of damage!",
             ) {
@@ -539,43 +632,42 @@ class PagesService : Service() {
             }
 
             object : Page(
-                REGEN, text("Sun's At-Home Workout"),
+                REGEN, text("Sun's At-Home Workout") * FLAME.color,
                 text("right-click to activate!"),
-                text("gain regen for ") + text("15 seconds").bold() + "!",
+                text("gain regen 3 for ") + text("15 seconds").bold() + "!",
                 text("burn for ") + text("10 seconds").bold() + "!",
             ) {
                 override fun use(userEntity: ServerPlayerEntity): ActionResult {
-                    userEntity.addEffect(REGENERATION, 15.0)
                     userEntity.setOnFireFor(10)
+                    userEntity.addEffect(REGENERATION, 15.0, 3)
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
                 }
             }
 
             object : Page(
-                AREA, text("Claustrophilia: Flame"),
+                AREA, text("Claustrophilia: Flame") * FLAME.color,
                 text("right-click to activate!"),
                 text("turn all blocks in a ") + text("4 block radius").bold() + " into fire!",
             ) {
                 override fun use(userEntity: ServerPlayerEntity): ActionResult {
                     Async.run {
-                        val state = Blocks.FIRE.defaultState
-                        val sphereCenter = userEntity.blockPos.up()
-                        val sphereRegion = sphereCenter.let {
+                        var running = true; go { delay(3.0); running = false }
+                        val center = userEntity.blockPos.up()
+                        val region = center.let {
                             Region(
                                 it.add(+3, +3, +3),
                                 it.add(-3, -3, -3),
                             )
                         }
-                        val spherePositions = sphereCenter.around(3.0).toHashSet()
-                        var running = true; go { delay(3.0); running = false }
+                        val positions = center.around(3.0).toHashSet()
                         while (running) {
                             Editor
-                                .queue(world, sphereRegion)
-                                .edit { _, x, y, z -> if (BlockPos(x, y, z) in spherePositions) state else null }
+                                .queue(world, region)
+                                .edit { _, x, y, z -> if (BlockPos(x, y, z) in positions) Blocks.FIRE.defaultState else null }
                                 .await()
                         }
-                        world.setBlockState(sphereCenter, Blocks.AIR.defaultState)
+                        world.setBlockState(center, Blocks.AIR.defaultState)
                     }
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
@@ -583,7 +675,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                BUSTED, text("Burning Infomercial"),
+                BUSTED, text("Burning Infomercial") * FLAME.color,
                 text("right-click to activate!"),
                 text("gain ") + "speed 4" + "!",
                 text("gain ") + "haste 2" + "!",
@@ -594,13 +686,25 @@ class PagesService : Service() {
                 text("gain permanent wither until death").bold() + "!",
             ) {
                 override fun use(userEntity: ServerPlayerEntity): ActionResult {
-                    userEntity.addEffect(SPEED, 6000.0, 4)
-                    userEntity.addEffect(HASTE, 6000.0, 2)
-                    userEntity.addEffect(STRENGTH, 6000.0, 2)
-                    userEntity.addEffect(JUMP_BOOST, 6000.0, 2)
-                    userEntity.addEffect(RESISTANCE, 6000.0)
-                    userEntity.addEffect(NIGHT_VISION, 6000.0)
-                    userEntity.addEffect(WITHER, 6000.0)
+                    Async.run {
+                        until { state.isWaiting || !userEntity.isAlive }
+                        if (userEntity.isAlive) {
+                            userEntity.removeEffect(SPEED)
+                            userEntity.removeEffect(HASTE)
+                            userEntity.removeEffect(STRENGTH)
+                            userEntity.removeEffect(JUMP_BOOST)
+                            userEntity.removeEffect(RESISTANCE)
+                            userEntity.removeEffect(NIGHT_VISION)
+                            userEntity.removeEffect(WITHER)
+                        }
+                    }
+                    userEntity.addEffect(SPEED, Double.MAX_VALUE, 4)
+                    userEntity.addEffect(HASTE, Double.MAX_VALUE, 2)
+                    userEntity.addEffect(STRENGTH, Double.MAX_VALUE, 2)
+                    userEntity.addEffect(JUMP_BOOST, Double.MAX_VALUE, 2)
+                    userEntity.addEffect(RESISTANCE, Double.MAX_VALUE)
+                    userEntity.addEffect(NIGHT_VISION, Double.MAX_VALUE)
+                    userEntity.addEffect(WITHER, Double.MAX_VALUE)
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
                 }

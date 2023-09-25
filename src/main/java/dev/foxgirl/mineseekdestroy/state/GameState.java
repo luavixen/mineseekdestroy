@@ -197,17 +197,25 @@ public abstract class GameState {
         }
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            if (player.isPlaying() && Game.USABLE_ITEMS.contains(stack.getItem())) {
-                if (stack.getItem() == Items.LANTERN || stack.getItem() == Items.SOUL_LANTERN) {
-                    var result = context.soulService.handleSoulConsume(player, playerEntity, stack);
+            if (player.isPlaying()) {
+                if (Game.USABLE_ITEMS.contains(stack.getItem())) {
+                    if (stack.getItem() == Items.LANTERN || stack.getItem() == Items.SOUL_LANTERN) {
+                        var result = context.soulService.handleSoulConsume(player, playerEntity, stack);
+                        if (result != ActionResult.PASS) return result;
+                    }
+                    if (stack.getItem() == Items.WRITTEN_BOOK) {
+                        var result = context.pagesService.handleBookUse(playerEntity, stack);
+                        if (result != ActionResult.PASS) return result;
+                    }
+                }
+                var stack1 = playerEntity.getMainHandStack();
+                if (stack1.getItem() == Items.WHITE_BANNER) {
+                    var result = context.pagesService.handlePageUse(playerEntity, stack1);
                     if (result != ActionResult.PASS) return result;
                 }
-                if (stack.getItem() == Items.WRITTEN_BOOK) {
-                    var result = context.pagesService.handleBookUse(playerEntity, stack);
-                    if (result != ActionResult.PASS) return result;
-                }
-                if (stack.getItem() == Items.PAPER) {
-                    var result = context.pagesService.handlePageUse(playerEntity, stack);
+                var stack2 = playerEntity.getOffHandStack();
+                if (stack2.getItem() == Items.WHITE_BANNER) {
+                    var result = context.pagesService.handlePageUse(playerEntity, stack2);
                     if (result != ActionResult.PASS) return result;
                 }
                 return ActionResult.PASS;
@@ -260,10 +268,22 @@ public abstract class GameState {
         if (context != null) {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
-                if (entity instanceof PlayerEntity || entity instanceof MobEntity) {
+                if (entity instanceof ServerPlayerEntity) {
+                    var stack1 = playerEntity.getMainHandStack();
+                    if (stack1.getItem() == Items.WHITE_BANNER) {
+                        var result = context.pagesService.handlePageAttack((ServerPlayerEntity) playerEntity, (ServerPlayerEntity) entity, stack1);
+                        if (result != ActionResult.PASS) return result;
+                    }
+                    var stack2 = playerEntity.getOffHandStack();
+                    if (stack2.getItem() == Items.WHITE_BANNER) {
+                        var result = context.pagesService.handlePageAttack((ServerPlayerEntity) playerEntity, (ServerPlayerEntity) entity, stack2);
+                        if (result != ActionResult.PASS) return result;
+                    }
                     return ActionResult.PASS;
                 }
-
+                if (entity instanceof MobEntity) {
+                    return ActionResult.PASS;
+                }
             }
         }
         return ActionResult.FAIL;
