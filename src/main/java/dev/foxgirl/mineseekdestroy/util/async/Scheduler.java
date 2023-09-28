@@ -1,10 +1,9 @@
-package dev.foxgirl.mineseekdestroy.util;
+package dev.foxgirl.mineseekdestroy.util.async;
 
 import dev.foxgirl.mineseekdestroy.Game;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.PriorityQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -45,18 +44,6 @@ public final class Scheduler {
         void invoke(@NotNull Schedule schedule);
     }
 
-    private static final Object lock = new Object();
-    private static final AtomicBoolean running = new AtomicBoolean(true);
-
-    private static PriorityQueue<Task> queue = new PriorityQueue<>(128);
-    private static TaskThread thread = new TaskThread();
-
-    static {
-        thread.setName("MnSnD-Scheduler");
-        thread.setDaemon(true);
-        thread.start();
-    }
-
     private static final class Task implements Comparable<Task>, Schedule {
         private long time;
         private final long period;
@@ -69,18 +56,11 @@ public final class Scheduler {
         }
 
         private void execute() {
-            Executor executor;
             try {
-                executor = Game.getGame().getServer();
-            } catch (NullPointerException cause) {
-                Game.LOGGER.error("Scheduler failed to execute task, server not ready", cause);
-                return;
-            }
-            try {
-                executor.execute(new TaskRunnable(this));
-            } catch (Exception cause) {
-                Game.LOGGER.error("Scheduler failed to execute task", cause);
-                return;
+                this.callback.invoke(this);
+            } catch (Throwable cause) {
+                Game.LOGGER.error("Unhandled exception in scheduled task", cause);
+                cancel();
             }
         }
 
@@ -95,55 +75,59 @@ public final class Scheduler {
         }
     }
 
-    private static final class TaskRunnable implements Runnable {
-        private final Task task;
-
-        private TaskRunnable(Task task) {
-            this.task = task;
+    private static final long timeBase = System.nanoTime();
+    private static long timeNow() {
+        return System.nanoTime() - timeBase;
+    }
+    private static long timeConvert(double seconds) {
+        if (!Double.isFinite(seconds)) {
+            throw new IllegalArgumentException("Argument 'seconds' is not finite");
         }
-
-        @Override
-        public void run() {
-            Task task = this.task;
-            try {
-                task.callback.invoke(task);
-            } catch (Exception cause) {
-                Game.LOGGER.error("Scheduler encountered exception while executing task", cause);
-            }
+        if (seconds < 0) {
+            throw new IllegalArgumentException("Argument 'seconds' is negative");
         }
+        long ns = (long) (seconds * 1e+9);
+        if (ns < 0) {
+            throw new IllegalStateException("Converted time value is invalid");
+        }
+        return ns;
     }
 
-    private static final class TaskThread extends Thread {
-        @Override
-        public void run() {
-            try {
-                while (running.get()) {
-                    Task task;
+    private static final Object LOCK = new Object();
+    private static final AtomicBoolean RUNNING = new AtomicBoolean(true);
 
-                    synchronized (lock) {
-                        while (queue.size() == 0) lock.wait();
-                        task = queue.peek();
+    private static final PriorityQueue<Task> QUEUE = new PriorityQueue<>(128);
 
-                        long timeCurrent = System.currentTimeMillis();
-                        long timeExecution = task.time;
+    /**
+     * Executes this scheduler's currently scheduled tasks that are ready to
+     * be executed. Must be called from the main server thread.
+     * @throws IllegalStateException If invoked from the wrong thread.
+     */
+    public static void update() {
+        if (!Game.getGame().getServer().isOnThread()) {
+            throw new IllegalStateException("Scheduler execution started from the wrong thread");
+        }
 
-                        if (timeExecution > timeCurrent) {
-                            lock.wait(timeExecution - timeCurrent);
-                            continue;
-                        }
+        while (RUNNING.get()) {
+            Task task;
 
-                        queue.poll();
+            synchronized (LOCK) {
+                if (QUEUE.isEmpty()) return;
+                task = QUEUE.peek();
 
-                        if (task.period >= 0) {
-                            task.time += task.period;
-                            queue.offer(task);
-                        }
-                    }
+                long timeCurrent = timeNow();
+                long timeExecution = task.time;
+                if (timeExecution > timeCurrent) return;
 
-                    task.execute();
+                QUEUE.poll();
+
+                if (task.period >= 0) {
+                    task.time += task.period;
+                    QUEUE.offer(task);
                 }
-            } catch (InterruptedException err) {
             }
+
+            task.execute();
         }
     }
 
@@ -151,54 +135,31 @@ public final class Scheduler {
      * Terminates this scheduler, discarding any currently scheduled tasks.
      */
     public static void stop() {
-        if (!running.getAndSet(false)) {
+        if (!RUNNING.getAndSet(false)) {
             return;
         }
-        try {
-            thread.interrupt();
-            thread.join();
-        } catch (InterruptedException err) {
-            throw new RuntimeException(err);
-        } finally {
-            thread = null;
-            queue.clear();
-            queue = null;
+        synchronized (LOCK) {
+            QUEUE.clear();
         }
     }
 
     private static Task schedule(Task task) {
-        if (!running.get()) {
-            throw new IllegalStateException("Attempted to schedule new task on stopped Scheduler");
+        if (!RUNNING.get()) {
+            throw new IllegalStateException("Cannot schedule new task on stopped scheduler");
         }
-        synchronized (lock) {
-            queue.offer(task);
-            if (queue.peek() == task) lock.notify();
+        synchronized (LOCK) {
+            QUEUE.offer(task);
         }
         return task;
     }
 
     private static boolean remove(Task task) {
-        if (!running.get()) {
+        if (!RUNNING.get()) {
             return false;
         }
-        synchronized (lock) {
-            return queue.remove(task);
+        synchronized (LOCK) {
+            return QUEUE.remove(task);
         }
-    }
-
-    private static long timeNow() {
-        return System.currentTimeMillis();
-    }
-
-    private static long timeConvert(double seconds) {
-        if (!Double.isFinite(seconds)) {
-            throw new IllegalArgumentException("Argument 'seconds' is invalid");
-        }
-        long ms = (long) (seconds * 1000.0D);
-        if (ms < 0) {
-            throw new IllegalArgumentException("Argument 'seconds' is negative");
-        }
-        return ms;
     }
 
     /**
@@ -226,8 +187,8 @@ public final class Scheduler {
         if (callback == null) {
             throw new NullPointerException("Argument 'callback'");
         }
-        long ms = timeConvert(seconds);
-        return schedule(new Task(timeNow() + ms, -1, callback));
+        long ns = timeConvert(seconds);
+        return schedule(new Task(timeNow() + ns, -1, callback));
     }
 
     /**
@@ -242,8 +203,8 @@ public final class Scheduler {
         if (callback == null) {
             throw new NullPointerException("Argument 'callback'");
         }
-        long ms = timeConvert(seconds);
-        return schedule(new Task(timeNow() + ms, ms, callback));
+        long ns = timeConvert(seconds);
+        return schedule(new Task(timeNow() + ns, ns, callback));
     }
 
 }

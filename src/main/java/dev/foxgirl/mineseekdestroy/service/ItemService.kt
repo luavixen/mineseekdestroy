@@ -3,7 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.util.Async
+import dev.foxgirl.mineseekdestroy.util.async.Async
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.data
@@ -42,7 +42,7 @@ class ItemService : Service() {
 
     fun addStackToInventory(entity: ServerPlayerEntity, stack: ItemStack, wait: Boolean) {
         val copy = stack.copy()
-        Async.run {
+        Async.go {
             if (wait) {
                 delay(1.0)
             }

@@ -5,7 +5,7 @@ import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.Console
-import dev.foxgirl.mineseekdestroy.util.Scheduler
+import dev.foxgirl.mineseekdestroy.util.async.Scheduler
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.BlockState

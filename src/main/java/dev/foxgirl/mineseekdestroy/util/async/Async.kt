@@ -1,22 +1,23 @@
-package dev.foxgirl.mineseekdestroy.util
+package dev.foxgirl.mineseekdestroy.util.async
 
 import dev.foxgirl.mineseekdestroy.Game
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.function.BiConsumer
 import kotlin.coroutines.*
 
 object Async {
 
-    fun <T> go(coroutine: suspend () -> T): CompletableFuture<T> =
-        AsyncSupport.execute(EmptyCoroutineContext, coroutine)
-    fun <T> go(context: CoroutineContext, coroutine: suspend () -> T): CompletableFuture<T> =
-        AsyncSupport.execute(context, coroutine)
+    private class CompletableFutureContinuation<T> : CompletableFuture<T>(), Continuation<T> {
+        override val context get() = EmptyCoroutineContext
+        override fun resumeWith(result: Result<T>) {
+            result.fold(::complete, ::completeExceptionally)
+        }
+    }
 
-    fun <T> run(coroutine: suspend Async.() -> T): Unit =
-        terminate(go(suspend { coroutine(this) }))
-    fun <T> run(context: CoroutineContext, coroutine: suspend Async.() -> T): Unit =
-        terminate(go(context, suspend { coroutine(this) }))
+    fun <T> execute(coroutine: suspend () -> T): CompletableFuture<T> =
+        CompletableFutureContinuation<T>().also { coroutine.startCoroutine(it) }
+    fun <T> go(coroutine: suspend Async.() -> T): Unit =
+        CompletableFutureContinuation<T>().also { coroutine.startCoroutine(this, it) }.terminate()
 
     internal fun <T> terminate(promise: CompletableFuture<T>) {
         promise.whenComplete { _, cause -> if (cause != null) Game.LOGGER.error("Unhandled exception in async task", cause) }
@@ -84,15 +85,41 @@ object Async {
         }
     }
 
+    private val queue = mutableListOf<Continuation<Unit>>()
+    private fun enqueue(continuation: Continuation<Unit>) {
+        synchronized(queue) { queue.add(continuation) }
+    }
+
+    @JvmStatic
+    fun update() {
+        if (!Game.getGame().server.isOnThread) {
+            throw IllegalStateException("Async loop execution started from the wrong thread")
+        }
+
+        val continuations: Array<Continuation<Unit>>
+
+        synchronized(queue) {
+            continuations = queue.toTypedArray()
+            queue.clear()
+        }
+
+        for (continuation in continuations) {
+            try {
+                continuation.resume(Unit)
+            } catch (cause: Throwable) {
+                Game.LOGGER.error("Unhandled exception resuming continuation in async loop", cause)
+            }
+        }
+    }
+
     suspend fun delay(): Unit =
-        suspendCoroutine { Scheduler.now { _ -> it.resume(Unit) } }
+        suspendCoroutine { enqueue(it) }
     suspend fun delay(seconds: Double): Unit =
-        suspendCoroutine { Scheduler.delay(seconds) { _ -> it.resume(Unit) } }
+        suspendCoroutine { Scheduler.delay(seconds) { _ -> enqueue(it) } }
 
-    suspend fun thread(executor: Executor): Unit =
-        suspendCoroutine { executor.execute { it.resume(Unit) } }
-
-    suspend fun until(condition: suspend () -> Boolean) = until(0.01, condition)
+    suspend fun until(condition: suspend () -> Boolean) {
+        while (!condition()) delay()
+    }
     suspend fun until(seconds: Double, condition: suspend () -> Boolean) {
         while (!condition()) delay(seconds)
     }

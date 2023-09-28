@@ -6,7 +6,8 @@ import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Editor;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
-import dev.foxgirl.mineseekdestroy.util.Scheduler;
+import dev.foxgirl.mineseekdestroy.util.async.Async;
+import dev.foxgirl.mineseekdestroy.util.async.Scheduler;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -239,8 +240,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.WRITABLE_BOOK,
         Items.KNOWLEDGE_BOOK,
         Items.ENCHANTED_BOOK,
-        Items.PAPER,
-        Items.WHITE_BANNER,
         Items.LANTERN,
         Items.SOUL_LANTERN,
     });
@@ -528,6 +527,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         updateContext();
         updateBounds();
 
+        Async.update();
+        Scheduler.update();
         Editor.update();
     }
 

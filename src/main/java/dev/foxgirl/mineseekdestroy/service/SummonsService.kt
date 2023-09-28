@@ -6,6 +6,10 @@ import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.async.Async
+import dev.foxgirl.mineseekdestroy.util.async.Scheduler
+import dev.foxgirl.mineseekdestroy.util.async.await
+import dev.foxgirl.mineseekdestroy.util.async.terminate
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
@@ -48,6 +52,7 @@ import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import java.time.Duration
 import java.time.Instant
+import kotlin.random.Random
 
 class SummonsService : Service() {
 
@@ -209,7 +214,7 @@ class SummonsService : Service() {
                 Blocks.TRIPWIRE,
             )
 
-            Async.run {
+            Async.go {
                 val (start, end) = properties.regionFlood
                 for (y in start.y..end.y) {
                     delay(1.0)
@@ -373,26 +378,10 @@ class SummonsService : Service() {
 
     private inner class OccultCosmosSummon(options: Options) : Summon(options) {
         override val timeout get() = Duration.ofSeconds(90)
-        override val isRoundOnly get() = true
         override fun perform() {
-            for ((player, entity) in playerEntitiesIn) {
-                if (player.team === team) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.NIGHT_VISION, 20000000))
-                } else {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.BLINDNESS, 30 * 20))
-                }
-            }
-        }
-        override fun update() {
-            for ((_, entity) in playerEntitiesOut) {
-                entity.removeStatusEffect(StatusEffects.NIGHT_VISION)
-                entity.removeStatusEffect(StatusEffects.BLINDNESS)
-            }
-        }
-        override fun stop() {
-            for ((_, entity) in playerEntitiesNormal) {
-                entity.removeStatusEffect(StatusEffects.NIGHT_VISION)
-                entity.removeStatusEffect(StatusEffects.BLINDNESS)
+            summonListGame.find { it.kind == Theologies(COSMOS, FLAME) }?.destroy()
+            for (pos in BlockPos.ofFloored(properties.borderCenter).around(4.0)) {
+                world.setBlockState(pos, (if (Random.nextBoolean()) Blocks.SNOW_BLOCK else Blocks.BONE_BLOCK).defaultState)
             }
         }
     }
@@ -452,9 +441,21 @@ class SummonsService : Service() {
     private inner class CosmosFlameSummon(options: Options) : Summon(options) {
         override val timeout get() = Duration.ofSeconds(60)
         override fun perform() {
-            for ((player, entity) in playerEntitiesNormal) {
-                if (player.team === team) entity.absorptionAmount += 2.0F
+            summonListGame.find { it.kind == Theologies(COSMOS, OCCULT) }?.destroy()
+        }
+        override fun update() {
+            val center = BlockPos.ofFloored(properties.borderCenter)
+            val region = center.let {
+                Region(
+                    it.add(+4, +4, +4),
+                    it.add(-4, -4, -4),
+                )
             }
+            val positions = center.around(4.0).toHashSet()
+            Editor
+                .queue(world, region)
+                .edit { _, x, y, z -> if (BlockPos(x, y, z) in positions) Blocks.FIRE.defaultState else null }
+                .terminate()
         }
     }
 
@@ -481,7 +482,7 @@ class SummonsService : Service() {
             val kinds = immutableListOf(Theologies(FLAME, FLAME), Theologies(DEEP, DEEP), Theologies(COSMOS, COSMOS))
             val summons = summonListGame.filter { kinds.contains(it.kind) }
 
-            summons.forEach(Summon::destroy)
+            summons.forEach { it.destroy() }
         }
     }
 
@@ -573,7 +574,7 @@ class SummonsService : Service() {
         fun findTheology(pos: BlockPos): Theology? =
             findTheologyAt(pos.up()) ?: findTheologyAt(pos.down())
 
-        Async.run {
+        Async.go {
             altars = Editor
                 .queue(world, properties.regionAll)
                 .search { it.block === Blocks.FLETCHING_TABLE }
@@ -1005,8 +1006,10 @@ class SummonsService : Service() {
             Theologies(DEEP, OCCULT),
             Theologies(DEEP, BARTER),
             Theologies(OCCULT, OCCULT),
+            Theologies(OCCULT, COSMOS),
             Theologies(OCCULT, BARTER),
             Theologies(COSMOS, COSMOS),
+            Theologies(COSMOS, FLAME),
             Theologies(FLAME,  FLAME),
         )
         private val theologiesOncePerRound = immutableListOf<Theologies>(

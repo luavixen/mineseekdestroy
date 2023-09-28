@@ -1,7 +1,12 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.Broadcast
+import dev.foxgirl.mineseekdestroy.util.Editor
+import dev.foxgirl.mineseekdestroy.util.Region
+import dev.foxgirl.mineseekdestroy.util.async.Async
+import dev.foxgirl.mineseekdestroy.util.async.Scheduler
+import dev.foxgirl.mineseekdestroy.util.async.await
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import net.minecraft.block.Blocks
 import net.minecraft.entity.player.PlayerEntity
@@ -17,7 +22,7 @@ class SpecialFamilyGuyService : Service() {
 
     fun handleFamilyGuyBlockPlaced(player: GamePlayer, blockHit: BlockHitResult) {
         val playerEntity = player.entity ?: return
-        Async.run { handleFamilyGuyBlockPlacedAsync(player, playerEntity, blockHit) }
+        Async.go { handleFamilyGuyBlockPlacedAsync(player, playerEntity, blockHit) }
     }
 
     private suspend fun handleFamilyGuyBlockPlacedAsync(player: GamePlayer, playerEntity: PlayerEntity, blockHit: BlockHitResult) {

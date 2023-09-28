@@ -3,7 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories
-import dev.foxgirl.mineseekdestroy.util.terminate
+import dev.foxgirl.mineseekdestroy.util.async.terminate
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity
 import net.minecraft.item.ItemStack

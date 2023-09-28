@@ -1,6 +1,10 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Editor
+import dev.foxgirl.mineseekdestroy.util.Region
+import dev.foxgirl.mineseekdestroy.util.async.Async
+import dev.foxgirl.mineseekdestroy.util.async.await
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
@@ -14,7 +18,7 @@ class BarrierService : Service() {
     private var targetsBlimp = listOf<Target>()
 
     private fun search(name: String, template: Region, target: Region): CompletableFuture<List<Target>> =
-        Async.go {
+        Async.execute {
             val results = Editor.queue(world, template).search { !it.isAir && it.block !== Blocks.MAGENTA_WOOL }.await()
             logger.info("BarrierService search in barrier template \"${name}\" returned ${results.size} result(s)")
 
@@ -43,10 +47,10 @@ class BarrierService : Service() {
     }
 
     override fun setup() {
-        Async.run {
+        Async.go {
             awaitAll(
-                go(::setupArena),
-                go(::setupBlimp),
+                execute(::setupArena),
+                execute(::setupBlimp),
             )
         }
     }
@@ -61,7 +65,7 @@ class BarrierService : Service() {
     }
 
     fun executeBlimpOpen(console: Console) {
-        Async.run {
+        Async.go {
             val action = Editor.Action { state, _, _, _ -> if (state.block === Blocks.RED_STAINED_GLASS) blockAir else null }
             awaitAll(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
             apply(targetsBlimp) { blockAir }
@@ -69,7 +73,7 @@ class BarrierService : Service() {
         }
     }
     fun executeBlimpClose(console: Console) {
-        Async.run {
+        Async.go {
             val action = Editor.Action { state, _, _, _ -> if (state.isAir) blockBarrier else null }
             awaitAll(properties.regionBarrierBlimpFills.map { region -> Editor.queue(world, region).edit(action) })
             apply(targetsBlimp, Target::stateClosed)

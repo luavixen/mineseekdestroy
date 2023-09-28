@@ -146,6 +146,8 @@ public abstract class GameState {
             ) {
                 return ActionResult.PASS;
             }
+            var result = context.pagesService.handleGenericUse((ServerPlayerEntity) playerEntity);
+            if (result != ActionResult.PASS) return result;
         } else {
             if (
                 blockState.getBlock() == Blocks.LEVER &&
@@ -208,16 +210,8 @@ public abstract class GameState {
                         if (result != ActionResult.PASS) return result;
                     }
                 }
-                var stack1 = playerEntity.getMainHandStack();
-                if (stack1.getItem() == Items.WHITE_BANNER) {
-                    var result = context.pagesService.handlePageUse(playerEntity, stack1);
-                    if (result != ActionResult.PASS) return result;
-                }
-                var stack2 = playerEntity.getOffHandStack();
-                if (stack2.getItem() == Items.WHITE_BANNER) {
-                    var result = context.pagesService.handlePageUse(playerEntity, stack2);
-                    if (result != ActionResult.PASS) return result;
-                }
+                var result = context.pagesService.handleGenericUse(playerEntity);
+                if (result != ActionResult.PASS) return result;
                 return ActionResult.PASS;
             }
         }
@@ -269,16 +263,8 @@ public abstract class GameState {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
                 if (entity instanceof ServerPlayerEntity) {
-                    var stack1 = playerEntity.getMainHandStack();
-                    if (stack1.getItem() == Items.WHITE_BANNER) {
-                        var result = context.pagesService.handlePageAttack((ServerPlayerEntity) playerEntity, (ServerPlayerEntity) entity, stack1);
-                        if (result != ActionResult.PASS) return result;
-                    }
-                    var stack2 = playerEntity.getOffHandStack();
-                    if (stack2.getItem() == Items.WHITE_BANNER) {
-                        var result = context.pagesService.handlePageAttack((ServerPlayerEntity) playerEntity, (ServerPlayerEntity) entity, stack2);
-                        if (result != ActionResult.PASS) return result;
-                    }
+                    var result = context.pagesService.handleGenericAttack((ServerPlayerEntity) playerEntity, (ServerPlayerEntity) entity);
+                    if (result != ActionResult.PASS) return result;
                     return ActionResult.PASS;
                 }
                 if (entity instanceof MobEntity) {

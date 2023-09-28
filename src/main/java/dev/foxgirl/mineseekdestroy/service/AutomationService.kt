@@ -5,6 +5,8 @@ import dev.foxgirl.mineseekdestroy.GameContext
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.async.Async
+import dev.foxgirl.mineseekdestroy.util.async.Scheduler
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
@@ -87,7 +89,7 @@ class AutomationService : Service() {
         val secondsDelay = Rules.automationDelayDuration
         val secondsInterval = Rules.automationIntervalDuration
 
-        Async.run {
+        Async.go {
             delay(secondsDelay)
 
             players.forEach { it.isAlive = true }
@@ -202,7 +204,7 @@ class AutomationService : Service() {
             }
         }
 
-        Async.run {
+        Async.go {
             while (true) {
                 delay(1.0)
                 if (!buttonState.ready()) continue

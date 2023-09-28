@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.async.terminate
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.Blocks
 import net.minecraft.block.ChestBlock

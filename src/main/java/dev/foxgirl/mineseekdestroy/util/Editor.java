@@ -332,7 +332,7 @@ public final class Editor {
         var server = Game.getGame().getServer();
 
         if (!server.isOnThread()) {
-            throw new IllegalStateException("Editor update started from wrong thread");
+            throw new IllegalStateException("Editor execution started from wrong thread");
         }
 
         ArrayList<Task> tasks;
