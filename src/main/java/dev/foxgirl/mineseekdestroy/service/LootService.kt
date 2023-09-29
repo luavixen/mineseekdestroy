@@ -55,8 +55,11 @@ class LootService : Service() {
         for (container in containers()) {
             val stacks = container.asList()
             for (i in stacks.indices) {
-                if (stacks[i].nbt.let { it != null && "MsdSoul" in it }) {
+                val nbt = stacks[i].nbt ?: continue
+                if ("MsdSoul" in nbt) {
                     stacks[i] = lootStacks.randomOrNull()?.copy() ?: stackOf()
+                } else if ("MsdBookCobbled" in nbt) {
+                    stacks[i] = context.pagesService.randomBook()
                 }
             }
         }

@@ -78,6 +78,8 @@ class PagesService : Service() {
         }
     }
 
+    fun randomBook(): ItemStack = books.values.random().stack.copy()
+
     private fun bookFor(stack: ItemStack) =
         bookTypeFor(stack)?.let { (theology) -> books[theology] }
     private fun pageFor(stack: ItemStack) =
@@ -110,14 +112,14 @@ class PagesService : Service() {
     }
 
     fun handleBookUse(userEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
-        val book = bookFor(stack) ?: return ActionResult.PASS
+        val book = bookFor(stack) ?: return ActionResult.FAIL
         return resultApplyToStack(stack) { book.use(userEntity) }
     }
 
-    data class ValueGenericUse(val user: GamePlayer, val userEntity: ServerPlayerEntity)
-    data class ValueGenericAttack(val user: GamePlayer, val userEntity: ServerPlayerEntity, val victimEntity: ServerPlayerEntity)
-    val eventGenericUse = Event<ValueGenericUse>()
-    val eventGenericAttack = Event<ValueGenericAttack>()
+    private data class ValueGenericUse(val user: GamePlayer, val userEntity: ServerPlayerEntity)
+    private data class ValueGenericAttack(val user: GamePlayer, val userEntity: ServerPlayerEntity, val victimEntity: ServerPlayerEntity)
+    private val eventGenericUse = Event<ValueGenericUse>()
+    private val eventGenericAttack = Event<ValueGenericAttack>()
 
     fun handleGenericUse(userEntity: ServerPlayerEntity): ActionResult {
         val user = context.getPlayer(userEntity)

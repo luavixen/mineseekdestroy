@@ -383,6 +383,7 @@ class SummonsService : Service() {
             for (pos in BlockPos.ofFloored(properties.borderCenter).around(4.0)) {
                 world.setBlockState(pos, (if (Random.nextBoolean()) Blocks.SNOW_BLOCK else Blocks.BONE_BLOCK).defaultState)
             }
+            Broadcast.sendSound(SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 2.0F, 1.0F, world, properties.borderCenter)
         }
     }
 
@@ -442,6 +443,7 @@ class SummonsService : Service() {
         override val timeout get() = Duration.ofSeconds(60)
         override fun perform() {
             summonListGame.find { it.kind == Theologies(COSMOS, OCCULT) }?.destroy()
+            Broadcast.sendSound(SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 2.0F, 1.0F, world, properties.borderCenter)
         }
         override fun update() {
             val center = BlockPos.ofFloored(properties.borderCenter)

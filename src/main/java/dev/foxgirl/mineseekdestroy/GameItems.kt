@@ -143,26 +143,37 @@ object GameItems {
         WRITTEN_BOOK, PagesService.BookType(DEEP).toNbt(),
         text("Sunken Scroll") * DEEP.color,
         text("right-click to receive 3 random ") + text("deep pages").format(DEEP.color) + "!",
+        text("4 random pages of ANY TYPE can be crafted into a ") + text("cobbled book").bold() + "!",
     )
     val bookOccult = stackOf(
         WRITTEN_BOOK, PagesService.BookType(OCCULT).toNbt(),
         text("Hymnal") * OCCULT.color,
         text("right-click to receive 3 random ") + text("occult pages").format(OCCULT.color) + "!",
+        text("4 random pages of ANY TYPE can be crafted into a ") + text("cobbled book").bold() + "!",
     )
     val bookCosmos = stackOf(
         WRITTEN_BOOK, PagesService.BookType(COSMOS).toNbt(),
         text("Golden Disc") * COSMOS.color,
         text("right-click to receive 3 random ") + text("cosmos pages").format(COSMOS.color) + "!",
+        text("4 random pages of ANY TYPE can be crafted into a ") + text("cobbled book").bold() + "!",
     )
     val bookBarter = stackOf(
         WRITTEN_BOOK, PagesService.BookType(BARTER).toNbt(),
         text("File Folder") * BARTER.color,
         text("right-click to receive 3 random ") + text("barter pages").format(BARTER.color) + "!",
+        text("4 random pages of ANY TYPE can be crafted into a ") + text("cobbled book").bold() + "!",
     )
     val bookFlame = stackOf(
         WRITTEN_BOOK, PagesService.BookType(FLAME).toNbt(),
         text("VHS") * FLAME.color,
         text("right-click to receive 3 random ") + text("flame pages").format(FLAME.color) + "!",
+        text("4 random pages of ANY TYPE can be crafted into a ") + text("cobbled book").bold() + "!",
+    )
+    val bookCobbled = stackOf(
+        WRITTEN_BOOK, PagesService.BookType(OPERATOR).toNbt() + nbtCompoundOf("MsdBookCobbled" to true),
+        text("Cobbled Book"),
+        text("if placed in a chest, this book will be replaced with another random book!"),
+        text("this only happens the moment a round starts - stash me away asap!"),
     )
 
     val summonSteak = stackOf(
