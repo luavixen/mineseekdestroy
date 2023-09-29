@@ -650,6 +650,7 @@ class PagesService : Service() {
                             blocks.values.removeIf { (blockIteration) -> blockIteration < iteration - 20 }
 
                             for (blockPos in userEntity.blockPos.around(2.0)) {
+                                if (blockPos in properties.regionBlimp || blockPos in properties.regionBlimpBalloons) continue
                                 val blockState = world.getBlockState(blockPos)
                                 if (
                                     blockState.block !in properties.unstealableBlocks && !blockState.isAir &&
@@ -727,7 +728,7 @@ class PagesService : Service() {
                                 it.add(-3, -3, -3),
                             )
                         }
-                        val positions = center.around(3.0).toHashSet()
+                        val positions = center.around(3.0).toMutableSet()
                         while (running) {
                             Editor
                                 .queue(world, region)

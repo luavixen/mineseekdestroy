@@ -57,7 +57,6 @@ public final class GameContext {
     public final @NotNull ArmorService armorService;
     public final @NotNull InvisibilityService invisibilityService;
     public final @NotNull BarrierService barrierService;
-    public final @NotNull SaturationService saturationService;
     public final @NotNull GlowService glowService;
     public final @NotNull ItemService itemService;
     public final @NotNull ShieldService shieldService;
@@ -163,7 +162,6 @@ public final class GameContext {
                 armorService = new ArmorService(),
                 invisibilityService = new InvisibilityService(),
                 barrierService = new BarrierService(),
-                saturationService = new SaturationService(),
                 glowService = new GlowService(),
                 itemService = new ItemService(),
                 shieldService = new ShieldService(),

@@ -58,10 +58,10 @@ class SoulService : Service() {
         val displayName: Text get() = text("Soul of", player.name) * kind.team
 
         fun toNbt() = nbtCompoundOf(
-            "MsdGlowing" to true,
             "MsdSoul" to true,
             "MsdSoulKind" to kind,
             "MsdSoulPlayer" to uuid,
+            "MsdGlowing" to true,
         )
 
         fun toStack(): ItemStack {

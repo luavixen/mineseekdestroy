@@ -25,9 +25,9 @@ public class FinalizingGameState extends RunningGameState {
             ticks++;
         } else {
             var properties = Game.getGameProperties();
-            for (var pair : context.getPlayerEntitiesNormal()) {
-                var player = pair.getFirst();
-                var playerEntity = pair.getSecond();
+            for (var playerPair : context.getPlayerEntitiesNormal()) {
+                var player = playerPair.getFirst();
+                var playerEntity = playerPair.getSecond();
                 if (
                     properties.getRegionBlimp().excludes(playerEntity) &&
                     properties.getRegionBlimpBalloons().excludes(playerEntity)
@@ -35,10 +35,8 @@ public class FinalizingGameState extends RunningGameState {
                     player.teleport(properties.getPositionBlimp());
                 }
             }
-
             return new WaitingGameState();
         }
-
         return null;
     }
 

@@ -137,6 +137,7 @@ internal fun setup() {
                 }
             }
             register("waiting") { WaitingGameState() }
+            register("skirmishing") { SkirmishingGameState() }
             register("finalizing") { FinalizingGameState() }
             register("starting") { StartingGameState() }
             register("playing") { PlayingGameState() }
