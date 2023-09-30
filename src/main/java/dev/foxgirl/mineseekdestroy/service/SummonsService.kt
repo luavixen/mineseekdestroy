@@ -15,6 +15,7 @@ import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
+import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
 import net.minecraft.entity.boss.BossBar
@@ -43,6 +44,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameRules
 import net.minecraft.world.World
 import java.time.Duration
@@ -461,6 +463,7 @@ class SummonsService : Service() {
             val items = immutableSetOf<Item>(
                 SHIELD, CARROT_ON_A_STICK, FISHING_ROD, TIPPED_ARROW,
                 BOOK, ENCHANTED_BOOK, KNOWLEDGE_BOOK, WRITABLE_BOOK, WRITTEN_BOOK,
+                WHITE_BANNER, PAPER,
                 COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, WATER_BUCKET,
                 COMPASS, TARGET, FIREWORK_ROCKET, ENDER_PEARL, BLUE_ICE,
                 ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
@@ -716,6 +719,20 @@ class SummonsService : Service() {
         lightning.setPosition(options.altar.pos.toCenterPos())
         lightning.setCosmetic(true)
         world.spawnEntity(lightning)
+
+        Async.go {
+            val shulker = EntityType.SHULKER.create(world)!!
+            shulker.setPosition(options.altar.pos.let { Vec3d(it.x.toDouble() + 0.5, it.y.toDouble(), it.z.toDouble() + 0.5) })
+            shulker.isAiDisabled = true
+            shulker.isInvulnerable = true
+            world.spawnEntity(shulker)
+            shulker.isInvisible = true
+            shulker.isGlowing = true
+            context.scoreboard.addPlayerToTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+            delay(Rules.summonsAltarGlowDuration)
+            context.scoreboard.removePlayerFromTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+            shulker.remove(Entity.RemovalReason.DISCARDED)
+        }
     }
 
     private fun summon(options: Options) {

@@ -177,6 +177,27 @@ class PagesService : Service() {
         fun toNbt() = nbtCompoundOf("MsdPage" to true, "MsdPageTheology" to theology, "MsdPageAction" to action)
     }
 
+    fun executeBookGive(console: Console, players: List<GamePlayer>, type: BookType) {
+        val stack = books[type.theology]!!.stack
+        players.forEach { it.entity?.give(stack.copy()) }
+        console.sendInfo("Gave book", stack.name(), "to ${players.size} player(s)")
+    }
+    fun executePageGive(console: Console, players: List<GamePlayer>, type: PageType) {
+        val stack = books[type.theology]!!.pages[type.action]!!.stack
+        players.forEach { it.entity?.give(stack.copy()) }
+        console.sendInfo("Gave page", stack.name(), "to ${players.size} player(s)")
+    }
+
+    fun executeUse(console: Console, players: List<GamePlayer>, type: PageType) {
+        val page = books[type.theology]!!.pages[type.action]!!
+        players.forEach { user ->
+            user.entity?.let { userEntity ->
+                page.use(user, userEntity)
+                Game.CONSOLE_PLAYERS.sendInfo(user, "used page", page.name)
+            }
+        }
+    }
+
     override fun update() {
         for ((_, playerEntity) in playerEntitiesIn) {
             if (playerEntity.air < -20) {

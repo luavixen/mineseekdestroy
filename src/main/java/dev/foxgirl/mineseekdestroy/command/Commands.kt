@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.command
 
 import com.mojang.brigadier.builder.ArgumentBuilder
 import dev.foxgirl.mineseekdestroy.*
+import dev.foxgirl.mineseekdestroy.service.PagesService
 import dev.foxgirl.mineseekdestroy.service.SummonsService
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.*
@@ -431,6 +432,54 @@ internal fun setup() {
         it.params(argLiteral("list")) {
             it.actionWithContext { args, context ->
                 context.soulService.executeDuelList(args)
+            }
+        }
+    }
+
+    Command.build("pages") {
+        fun <T : ArgumentBuilder<ServerCommandSource, *>> T.theologies(callback: (ArgumentBuilder<ServerCommandSource, *>, SummonsService.Theology) -> Unit): T {
+            for (theology in SummonsService.Theology.entries) {
+                params(argLiteral(theology.name.lowercase())) { callback(it, theology) }
+            }
+            return this
+        }
+        fun <T : ArgumentBuilder<ServerCommandSource, *>> T.actions(callback: (ArgumentBuilder<ServerCommandSource, *>, PagesService.Action) -> Unit): T {
+            for (action in PagesService.Action.entries) {
+                params(argLiteral(action.name.lowercase())) { callback(it, action) }
+            }
+            return this
+        }
+        it.params(argLiteral("give")) {
+            it.params(argLiteral("book")) {
+                it.theologies { it, theology ->
+                    it.params(argPlayers()) {
+                        it.actionWithContext { args, context ->
+                            context.pagesService.executeBookGive(args, args.players(context), PagesService.BookType(theology))
+                        }
+                    }
+                }
+            }
+            it.params(argLiteral("page")) {
+                it.theologies { it, theology ->
+                    it.actions { it, action ->
+                        it.params(argPlayers()) {
+                            it.actionWithContext { args, context ->
+                                context.pagesService.executePageGive(args, args.players(context), PagesService.PageType(theology, action))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        it.params(argLiteral("use")) {
+            it.theologies { it, theology ->
+                it.actions { it, action ->
+                    it.params(argPlayers()) {
+                        it.actionWithContext { args, context ->
+                            context.pagesService.executeUse(args, args.players(context), PagesService.PageType(theology, action))
+                        }
+                    }
+                }
             }
         }
     }

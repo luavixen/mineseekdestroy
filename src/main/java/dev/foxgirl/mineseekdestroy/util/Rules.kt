@@ -60,6 +60,7 @@ object Rules {
     @JvmStatic var carsSpeed by DoubleRuleProperty(RULE_CARS_SPEED)
 
     @JvmStatic var summonsEnabled by BooleanRuleProperty(RULE_SUMMONS_ENABLED)
+    @JvmStatic var summonsAltarGlowDuration by DoubleRuleProperty(RULE_SUMMONS_ALTAR_GLOW_DURATION)
 
     @JvmStatic var soulsDroppingEnabled by BooleanRuleProperty(RULE_SOULS_DROPPING_ENABLED)
     @JvmStatic var soulsConsumingEnabled by BooleanRuleProperty(RULE_SOULS_CONSUMING_ENABLED)
