@@ -15,10 +15,7 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.screen.NamedScreenHandlerFactory
-import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerType
-import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
@@ -85,6 +82,13 @@ class SoulService : Service() {
         }
     }
 
+    companion object {
+        fun containsSoulNbt(stack: ItemStack): Boolean {
+            val nbt = stack.nbt
+            return nbt != null && nbt.contains("MsdSoul")
+        }
+    }
+
     private fun createSoulFor(player: GamePlayer, team: GameTeam = player.team): Soul {
         val kind = when (team) {
             GameTeam.PLAYER_YELLOW -> SoulKind.YELLOW
@@ -92,11 +96,6 @@ class SoulService : Service() {
             else -> if (Random.nextBoolean()) SoulKind.YELLOW else SoulKind.BLUE
         }
         return Soul(kind, player.uuid)
-    }
-
-    private fun containsSoulNbt(stack: ItemStack): Boolean {
-        val nbt = stack.nbt
-        return nbt != null && nbt.contains("MsdSoul")
     }
     private fun createSoulFrom(stack: ItemStack): Soul? {
         return if (containsSoulNbt(stack)) Soul(stack.nbt!!) else null
@@ -253,55 +252,49 @@ class SoulService : Service() {
         }
     }
 
-    private inner class DuelScreenHandlerFactory : NamedScreenHandlerFactory {
-        override fun getDisplayName() = text("baby fight")
-        override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity): ScreenHandler {
-            return DuelScreenHandler(syncId, playerInventory)
-        }
+    private inner class DuelScreenHandlerFactory : DynamicScreenHandlerFactory<DuelScreenHandler>() {
+        override val name get() = text("baby fight")
+        override fun construct(sync: Int, playerInventory: PlayerInventory) = DuelScreenHandler(sync, playerInventory)
     }
 
-    private inner class DuelScreenHandler : ScreenHandler {
-        private val inventory: Inventory
+    private inner class DuelScreenHandler(sync: Int, playerInventory: PlayerInventory)
+        : DynamicScreenHandler(ScreenHandlerType.GRINDSTONE, sync, playerInventory)
+    {
+        override val inventory: Inventory
 
-        constructor(syncId: Int, playerInventory: PlayerInventory) : super(ScreenHandlerType.GRINDSTONE, syncId) {
+        init {
             inventory = Inventories.create(3)
             inventory.setStack(1, stackOf(
                 Items.NETHERITE_SWORD,
                 nbtCompoundOf("MsdIllegal" to true),
             ))
 
-            addSlot(object : Slot(inventory, 0, 49, 19) {
+            addSlot(object : InputSlot(0, 49, 19) {
                 override fun canInsert(stack: ItemStack) = containsSoulNbt(stack)
                 override fun canTakeItems(playerEntity: PlayerEntity) = true
-                override fun markDirty() {
-                    super.markDirty()
-                    onUpdateResult()
-                }
             })
-            addSlot(object : Slot(inventory, 1, 49, 40) {
+            addSlot(object : InputSlot(1, 49, 40) {
                 override fun canInsert(stack: ItemStack) = false
                 override fun canTakeItems(playerEntity: PlayerEntity) = false
             })
-            addSlot(object : Slot(inventory, 2, 129, 34) {
-                override fun canInsert(stack: ItemStack) = false
-                override fun canTakeItems(playerEntity: PlayerEntity) = true
-                override fun onTakeItem(playerEntity: PlayerEntity, stack: ItemStack) {
-                    super.onTakeItem(playerEntity, stack)
-                    onTakeResult(playerEntity, stack)
-                }
-            })
-
-            for (x in 0 until 9) {
-                for (y in 0 until 3) {
-                    addSlot(Slot(playerInventory, x + y * 9 + 9, 8 + x * 18, 84 + y * 18))
-                }
-            }
-            for (x in 0 until 9) {
-                addSlot(Slot(playerInventory, x, 8 + x * 18, 142))
-            }
+            addSlot(OutputSlot(2, 129, 34))
+            addPlayerInventorySlots()
         }
 
-        private fun onUpdateResult() {
+        override fun handleTakeResult(stack: ItemStack) {
+            val soul = createSoulFrom(stack) ?: return
+            val player = context.getPlayer(playerEntity)
+
+            stack.count = 0
+            inventory.removeStack(0, 1)
+
+            val duel = Duel(player, soul.player)
+            duels.add(duel)
+
+            Game.CONSOLE_OPERATORS.sendInfo("Duel submitted:", duel.message())
+        }
+
+        override fun handleUpdateResult() {
             val soul = createSoulFrom(inventory.getStack(0))
             if (soul == null) {
                 inventory.setStack(2, stackOf())
@@ -321,27 +314,9 @@ class SoulService : Service() {
             inventory.setStack(2, stackOf(Items.PLAYER_HEAD, nbt, title, lore))
         }
 
-        private fun onTakeResult(playerEntity: PlayerEntity, stack: ItemStack) {
-            val player = context.getPlayer(playerEntity) ?: return
-            val soul = createSoulFrom(stack) ?: return
-
-            stack.count = 0
-            inventory.removeStack(0, 1)
-
-            val duel = Duel(player, soul.player)
-            duels.add(duel)
-
-            Game.CONSOLE_OPERATORS.sendInfo("Duel submitted:", duel.message())
-        }
-
-        override fun onClosed(playerEntity: PlayerEntity) {
+        override fun handleClosed() {
             playerEntity.give(inventory.removeStack(0))
-            playerEntity.give(cursorStack)
-            cursorStack = ItemStack.EMPTY
         }
-
-        override fun quickMove(playerEntity: PlayerEntity, slotIndex: Int): ItemStack = ItemStack.EMPTY
-        override fun canUse(playerEntity: PlayerEntity) = true
     }
 
 }

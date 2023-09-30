@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.util.async
 
 import dev.foxgirl.mineseekdestroy.Game
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.BiConsumer
 import kotlin.coroutines.*
 
@@ -26,11 +27,26 @@ object Async {
     suspend fun <T> await(promise: CompletableFuture<T>): T =
         suspendCoroutine { promise.whenComplete { value, cause -> it.resumeWith(if (cause != null) Result.failure(cause) else Result.success(value)) } }
 
+    suspend fun <T> awaitAny(vararg promises: CompletableFuture<T>): T = awaitAnyImpl(promises)
+    suspend fun <T> awaitAny(promises: Collection<CompletableFuture<T>>): T = awaitAnyImpl(promises.toTypedArray())
+
     suspend fun <T> awaitAll(vararg promises: CompletableFuture<T>): List<T> = awaitAllImpl(promises)
     suspend fun <T> awaitAll(promises: Collection<CompletableFuture<T>>): List<T> = awaitAllImpl(promises.toTypedArray())
 
     suspend fun <T> awaitAllSettled(vararg promises: CompletableFuture<T>): List<Result<T>> = awaitAllSettledImpl(promises)
     suspend fun <T> awaitAllSettled(promises: Collection<CompletableFuture<T>>): List<Result<T>> = awaitAllSettledImpl(promises.toTypedArray())
+
+    private suspend fun <T> awaitAnyImpl(promises: Array<out CompletableFuture<T>>): T {
+        return suspendCoroutine {
+            val done = AtomicBoolean()
+            promises.forEach { promise ->
+                promise.whenComplete { value, cause ->
+                    if (done.getAndSet(true)) return@whenComplete
+                    it.resumeWith(if (cause != null) Result.failure(cause) else Result.success(value))
+                }
+            }
+        }
+    }
 
     private suspend fun <T> awaitAllImpl(promises: Array<out CompletableFuture<T>>): List<T> {
         val results = awaitAllSettledImpl(promises)
@@ -63,8 +79,8 @@ object Async {
         private val promises: Array<out CompletableFuture<T>>,
         private val continuation: Continuation<List<Result<T>>>,
     ) {
-        @JvmField val results = arrayOfNulls<Result<T>>(promises.size)
-        @JvmField var count = 0
+        @JvmField internal val results = arrayOfNulls<Result<T>>(promises.size)
+        @JvmField internal var count = 0
 
         private inner class Handler(private val i: Int) : BiConsumer<T, Throwable?> {
             override fun accept(value: T, cause: Throwable?) {

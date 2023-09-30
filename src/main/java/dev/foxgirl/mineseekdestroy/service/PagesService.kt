@@ -19,6 +19,8 @@ import net.minecraft.entity.effect.StatusEffects.*
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
@@ -27,7 +29,10 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Direction
+import net.minecraft.world.chunk.ChunkStatus
+import net.minecraft.world.chunk.WorldChunk
 import kotlin.random.Random
 
 class PagesService : Service() {
@@ -47,6 +52,13 @@ class PagesService : Service() {
 
             val type = PageType(theology, action)
             val stack = stackOf(Items.WHITE_BANNER, type.toNbt() + pageBannerNbt[type]!!, name, lore.asList())
+
+            protected fun lockDelay(user: GamePlayer, seconds: Double) {
+                lock(user)
+                Scheduler.delay(seconds) { unlock(user) }
+            }
+            protected fun lock(user: GamePlayer) = user.activePages().add(type)
+            protected fun unlock(user: GamePlayer) = user.activePages().remove(type)
 
             open fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
             open fun attack(user: GamePlayer, userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult = ActionResult.PASS
@@ -90,7 +102,10 @@ class PagesService : Service() {
     private fun pageStackPairFor(userEntity: ServerPlayerEntity): Pair<Book.Page, ItemStack>? =
         pageStackPairFor(userEntity.mainHandStack) ?: pageStackPairFor(userEntity.offHandStack)
 
-    private fun isPageUsageBlocked(userEntity: ServerPlayerEntity): Boolean {
+    private val activePages = mutableMapOf<GamePlayer, MutableSet<PageType>>()
+    private fun GamePlayer.activePages(): MutableSet<PageType> = activePages.getOrPut(this, ::mutableSetOf)
+
+    private fun isPageUsageBlocked(userEntity: ServerPlayerEntity, page: Book.Page): Boolean {
         if (state.isWaiting) {
             userEntity.sendMessage(text("Cannot use pages while waiting for next round").red())
             return true
@@ -103,9 +118,17 @@ class PagesService : Service() {
             userEntity.sendMessage(text("Cannot use pages while in the blimp or out of bounds").red())
             return true
         }
+        if (userEntity.world !== world) {
+            userEntity.sendMessage(text("Cannot use pages while in another dimension").red())
+            return true
+        }
         val user = context.getPlayer(userEntity)
         if (!user.isAlive || !user.isPlaying) {
             userEntity.sendMessage(text("Cannot use pages while dead/ghost/etc.").red())
+            return true
+        }
+        if (page.type in user.activePages()) {
+            userEntity.sendMessage(text("Cannot use page, effect already active").red())
             return true
         }
         return false
@@ -126,12 +149,12 @@ class PagesService : Service() {
         eventGenericUse.publish(ValueGenericUse(user, userEntity))
         val (page, stack) = pageStackPairFor(userEntity) ?: return ActionResult.PASS
         return resultApplyToStack(stack) {
-            if (isPageUsageBlocked(userEntity)) {
+            if (isPageUsageBlocked(userEntity, page)) {
                 ActionResult.FAIL
             } else {
                 val result = page.use(user, userEntity)
                 if (result.shouldIncrementStat()) {
-                    Game.CONSOLE_PLAYERS.sendInfo(user, "used page", text().append(page.name.copy()).append("!"))
+                    Game.CONSOLE_PLAYERS.sendInfo(user, "used page", page.name)
                 }
                 result
             }
@@ -142,7 +165,7 @@ class PagesService : Service() {
         eventGenericAttack.publish(ValueGenericAttack(user, userEntity, victimEntity))
         val (page, stack) = pageStackPairFor(userEntity) ?: return ActionResult.PASS
         return resultApplyToStack(stack) {
-            if (isPageUsageBlocked(userEntity)) ActionResult.FAIL
+            if (isPageUsageBlocked(userEntity, page)) ActionResult.FAIL
             else page.attack(user, userEntity, victimEntity)
         }
     }
@@ -152,6 +175,36 @@ class PagesService : Service() {
     }
     data class PageType(val theology: Theology, val action: Action) {
         fun toNbt() = nbtCompoundOf("MsdPage" to true, "MsdPageTheology" to theology, "MsdPageAction" to action)
+    }
+
+    override fun update() {
+        for ((_, playerEntity) in playerEntitiesIn) {
+            if (playerEntity.air < -20) {
+                playerEntity.air = 0
+                playerEntity.hurtHearts(1.0) { it.drown() }
+                if (playerEntity.isSubmergedInWater) {
+                    for (i in 0..<4) {
+                        playerEntity.particles(ParticleTypes.BUBBLE, 1.0, 2) {
+                            it.add(
+                                Random.nextDouble(-0.5, 0.5),
+                                Random.nextDouble(1.5, 2.0),
+                                Random.nextDouble(-0.5, 0.5),
+                            )
+                        }
+                    }
+                } else {
+                    for (i in 0..<8) {
+                        playerEntity.particles(ParticleTypes.FALLING_WATER, 1.0, 2) {
+                            it.add(
+                                Random.nextDouble(-0.3, 0.3),
+                                Random.nextDouble(1.5, 1.75),
+                                Random.nextDouble(-0.3, 0.3),
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 
     companion object {
@@ -235,7 +288,7 @@ class PagesService : Service() {
                 userEntity.sparkles()
                 return ActionResult.SUCCESS
             }
-            return ActionResult.PASS
+            return ActionResult.FAIL
         }
         private fun pageAmbrosiaAttack(hearts: Double, userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
             victimEntity.hurtHearts(hearts) { it.playerAttack(userEntity) }
@@ -249,7 +302,7 @@ class PagesService : Service() {
                 addEffect(GLOWING, 8.0)
                 Broadcast.sendParticles(ParticleTypes.FLASH, 1.0F, 1, world, pos)
             }
-            Broadcast.sendSound(sound, SoundCategory.PLAYERS, 1.0F, Random.nextDouble(0.9, 1.1).toFloat(), world, pos)
+            play(sound, SoundCategory.PLAYERS, 1.0, Random.nextDouble(0.9, 1.1))
         }
     }
 
@@ -282,17 +335,19 @@ class PagesService : Service() {
                 text("drown for ") + text("10 seconds").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lock(user)
                     Async.go {
-                        for (i in 0..<10) {
-                            delay(0.5); if (!user.isAlive) break
+                        var running = true
+                        go { delay(10.0); running = false }
+                        go { until { state.isWaiting || !user.isAlive }; running = false }
+                        while (true) {
+                            delay(0.5); if (!running) break
                             user.entity?.air = -10
-                            delay(0.5); if (!user.isAlive) break
-                            user.entity?.let {
-                                it.air = -10
-                                it.hurtHearts(1.0) { it.drown() }
-                            }
+                            delay(0.5); if (!running) break
+                            user.entity?.let { if (it.air > -20) it.air = -40 }
                         }
                         user.entity?.air = 0
+                        unlock(user)
                     }
                     userEntity.addEffect(REGENERATION, 15.0, 3)
                     userEntity.sparkles()
@@ -319,13 +374,68 @@ class PagesService : Service() {
                 text("once activated, the user will begin to drown").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
-                    // TODO: Implement this!
-                    // I think it would make sense to continually send fake block placement packets to the player,
-                    // placing an imaginary bubble of water around their position constantly. Then, I can keep track of
-                    // all the chunks that end of getting fake placements in them, and when the effect is over I can
-                    // simply resend all those chunks. I'll also give the player levitation so that they don't get
-                    // kicked for flying. Maybe also try clearing old fake block placements, but probably not required.
-                    return pageUnimplemented(userEntity)
+                    lock(user)
+                    Async.go {
+                        val blockPositions = HashSet<BlockPos>()
+                        val chunkPositions = HashSet<ChunkPos>()
+
+                        while (true) {
+                            delay(0.1)
+
+                            if (state.isWaiting || !user.isAlive) break
+                            val userEntity = user.entity ?: continue
+                            if (userEntity.world !== world) continue
+
+                            val newPositions = userEntity.blockPos
+                                .around(5.5)
+                                .filter { pos ->
+                                    if (properties.regionPlayable.excludes(pos)) return@filter false
+                                    if (properties.regionBlimp.contains(pos) || properties.regionBlimpBalloons.contains(pos)) return@filter false
+                                    world.getBlockState(pos).isAir
+                                }
+                                .toList()
+
+                            for (pos in newPositions) {
+                                userEntity.networkHandler.sendPacket(BlockUpdateS2CPacket(pos, Blocks.WATER.defaultState))
+                                blockPositions.add(pos)
+                                chunkPositions.add(ChunkPos(pos))
+                            }
+
+                            val oldPositionIterator = blockPositions.iterator()
+                            while (oldPositionIterator.hasNext()) {
+                                val pos = oldPositionIterator.next()
+                                if (pos in newPositions) continue
+                                oldPositionIterator.remove()
+                                userEntity.networkHandler.sendPacket(BlockUpdateS2CPacket(pos, world.getBlockState(pos)))
+                            }
+
+                            userEntity.air -= 21
+                            userEntity.addEffect(LEVITATION, 10.5)
+                            userEntity.particles(ParticleTypes.FALLING_WATER, 1.0, 5) {
+                                it.add(
+                                    Random.nextDouble(-0.4, 0.4),
+                                    Random.nextDouble(0.5, 2.25),
+                                    Random.nextDouble(-0.4, 0.4),
+                                )
+                            }
+                        }
+
+                        val userEntity = user.entity
+                        if (userEntity != null && userEntity.world == world) {
+                            val viewDistance = server.playerManager.viewDistance + 4
+                            for (chunkPos in chunkPositions.sortedWith { a, b -> a.toLong() compareTo b.toLong() }) {
+                                val viewPos = userEntity.chunkPos
+                                if (viewPos.getChebyshevDistance(chunkPos) > viewDistance) continue
+                                val chunk = world.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, true) as WorldChunk
+                                val chunkPacket = ChunkDataS2CPacket(chunk, world.lightingProvider, null, null)
+                                userEntity.networkHandler.sendPacket(chunkPacket)
+                            }
+                        }
+
+                        unlock(user)
+                    }
+                    userEntity.sparkles()
+                    return ActionResult.SUCCESS
                 }
             }
 
@@ -357,6 +467,7 @@ class PagesService : Service() {
                 text("for ") + text("10 seconds").bold() + ", gain " + text("1.5 hearts").bold() + " upon taking damage!",
             )  {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lock(user)
                     Async.go {
                         var running = true
                         var previousHealth = userEntity.health
@@ -369,9 +480,18 @@ class PagesService : Service() {
                             val userEntity = user.entity ?: continue
                             if (userEntity.health < previousHealth) {
                                 userEntity.healHearts(1.5)
+                                go {
+                                    userEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1.0, 0.5)
+                                    userEntity.particles(ParticleTypes.NOTE)
+                                    delay(0.5)
+                                    userEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1.0, 1.0)
+                                    userEntity.particles(ParticleTypes.NOTE)
+                                }
                             }
                             previousHealth = userEntity.health
                         }
+
+                        unlock(user)
                     }
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
@@ -385,6 +505,7 @@ class PagesService : Service() {
                 text("lasts ") + text("5 seconds!").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lockDelay(user, 5.0)
                     for ((_, playerEntity) in playerEntitiesIn) {
                         if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 25.0) {
                             playerEntity.addEffect(SLOWNESS, 5.0, 7)
@@ -410,6 +531,7 @@ class PagesService : Service() {
                 text("all living teammates instantly die").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lockDelay(user, 15.0)
                     for ((player, playerEntity) in playerEntitiesIn) {
                         if (player.team === user.team && player != user) {
                             playerEntity.hurtHearts(500.0) { it.indirectMagic(userEntity, userEntity) }
@@ -458,18 +580,16 @@ class PagesService : Service() {
                 text("lose the ability to heal for the rest of the round") + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lock(user)
                     Async.go {
-                        var running = true
                         var minimumHealth = userEntity.health
 
-                        go {
-                            until { state.isWaiting || !user.isAlive }; running = false
-                            user.entity?.removeEffect(ABSORPTION)
-                        }
-
-                        while (running) {
+                        while (true) {
                             delay()
+
+                            if (state.isWaiting || !user.isAlive) break
                             val userEntity = user.entity ?: continue
+
                             val currentHealth = userEntity.health
                             if (currentHealth > minimumHealth) {
                                 userEntity.damage(userEntity.damageSources.magic(), (currentHealth - minimumHealth) + 0.05F)
@@ -477,6 +597,10 @@ class PagesService : Service() {
                                 minimumHealth = currentHealth
                             }
                         }
+
+                        user.entity?.removeEffect(ABSORPTION)
+
+                        unlock(user)
                     }
                     userEntity.addEffect(ABSORPTION, Double.MAX_VALUE)
                     userEntity.sparkles()
@@ -493,7 +617,7 @@ class PagesService : Service() {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     for ((_, playerEntity) in playerEntitiesIn) {
                         if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 25.0) {
-                            playerEntity.takeKnockback(4.0, userEntity.x - playerEntity.x, userEntity.z - playerEntity.z)
+                            playerEntity.knockback(2.0, playerEntity.x - userEntity.x, playerEntity.z - userEntity.z)
                             playerEntity.play(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP)
                         }
                     }
@@ -590,18 +714,31 @@ class PagesService : Service() {
                 text("lasts ") + text("30 seconds").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lock(user)
                     Async.go {
                         val subscription = eventGenericAttack.subscribe { (evUser, evUserEntity, evVictimEntity) ->
                             if (context.getPlayer(evVictimEntity).let { !it.isAlive || !it.isPlayingOrGhost }) return@subscribe
                             if (evUser != user) return@subscribe
                             if (evUserEntity.getAttackCooldownProgress(0.0F) > 0.95F) {
                                 evUserEntity.healHearts(1.0)
+                                Async.go {
+                                    delay(0.1)
+                                    evUserEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.PLAYERS, 0.333, 0.75)
+                                }
                             } else {
                                 evUserEntity.hurtHearts(1.0) { it.magic() }
+                                Async.go {
+                                    delay(0.1)
+                                    evUserEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.PLAYERS, 0.333, 0.25)
+                                }
                             }
                         }
-                        go { delay(30.0); subscription.unsubscribe() }
-                        go { until(1.0) { state.isWaiting || !user.isAlive }; subscription.unsubscribe() }
+                        awaitAny(
+                            execute { delay(30.0) },
+                            execute { until(1.0) { state.isWaiting || !user.isAlive } },
+                        )
+                        subscription.unsubscribe()
+                        unlock(user)
                     }
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
@@ -616,7 +753,7 @@ class PagesService : Service() {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     for ((_, playerEntity) in playerEntitiesIn) {
                         if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 25.0) {
-                            playerEntity.takeKnockback(4.0, playerEntity.x - userEntity.x, playerEntity.z - userEntity.z)
+                            playerEntity.knockback(2.0, userEntity.x - playerEntity.x, userEntity.z - playerEntity.z)
                             playerEntity.play(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP)
                         }
                     }
@@ -632,21 +769,15 @@ class PagesService : Service() {
                 text("user becomes a ghost upon death or round end").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lock(user)
                     Async.go {
                         val blocks = mutableMapOf<BlockPos, Pair<Long, Int>>()
-
-                        var running = true
                         var iteration = 0L
-
-                        go {
-                            until { state.isWaiting || !user.isAlive }; running = false
-                            user.team = GameTeam.GHOST
-                        }
-
-                        while (running) {
+                        while (true) {
                             delay()
                             iteration += 1
 
+                            if (state.isWaiting || !user.isAlive) break
                             val userEntity = user.entity ?: continue
 
                             blocks.values.removeIf { (blockIteration) -> blockIteration < iteration - 20 }
@@ -673,6 +804,8 @@ class PagesService : Service() {
                                 }
                             }
                         }
+                        user.team = GameTeam.GHOST
+                        unlock(user)
                     }
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
@@ -708,6 +841,7 @@ class PagesService : Service() {
                 text("burn for ") + text("10 seconds").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lockDelay(user, 15.0)
                     userEntity.setOnFireFor(10)
                     userEntity.addEffect(REGENERATION, 15.0, 3)
                     userEntity.sparkles()
@@ -757,6 +891,7 @@ class PagesService : Service() {
                 text("gain permanent wither until death").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
+                    lock(user)
                     Async.go {
                         until { state.isWaiting || !user.isAlive }
                         user.entity?.let {
@@ -768,6 +903,7 @@ class PagesService : Service() {
                             it.removeEffect(NIGHT_VISION)
                             it.removeEffect(WITHER)
                         }
+                        unlock(user)
                     }
                     userEntity.addEffect(SPEED, Double.MAX_VALUE, 4)
                     userEntity.addEffect(HASTE, Double.MAX_VALUE, 2)

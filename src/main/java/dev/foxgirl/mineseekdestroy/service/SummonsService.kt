@@ -14,7 +14,6 @@ import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.Block
-import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
@@ -34,11 +33,7 @@ import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
-import net.minecraft.screen.AnvilScreenHandler
-import net.minecraft.screen.NamedScreenHandlerFactory
-import net.minecraft.screen.ScreenHandler
-import net.minecraft.screen.slot.Slot
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
@@ -812,68 +807,108 @@ class SummonsService : Service() {
         textClear()
     }
 
-    private inner class AltarScreenHandler(val altar: Altar, syncId: Int, playerInventory: PlayerInventory) : AnvilScreenHandler(syncId, playerInventory) {
+    private inner class AltarScreenHandlerFactory(private val altar: Altar)
+        : DynamicScreenHandlerFactory<AltarScreenHandler>()
+    {
+        override val name get() = text("Altar of the ") + altar.theology.displayName
+        override fun construct(sync: Int, playerInventory: PlayerInventory) = AltarScreenHandler(altar, sync, playerInventory)
+    }
+
+    private inner class AltarScreenHandler(private val altar: Altar, sync: Int, playerInventory: PlayerInventory)
+        : DynamicScreenHandler(ScreenHandlerType.SMITHING, sync, playerInventory)
+    {
+        override val inventory = Inventories.create(4)
+
+        init {
+            addSlot(object : InputSlot(0, 8, 48) {
+                override fun canInsert(stack: ItemStack) = theologyFor(stack) != null
+                override fun getMaxItemCount() = 1
+            })
+            addSlot(object : InputSlot(1, 26, 48) {
+                override fun canInsert(stack: ItemStack) = theologyFor(stack) != null
+                override fun getMaxItemCount() = 1
+            })
+            addSlot(object : InputSlot(2, 44, 48) {
+                override fun canInsert(stack: ItemStack) = hasSoul(stack)
+                override fun getMaxItemCount() = 1
+            })
+            addSlot(object : OutputSlot(3, 98, 48) {
+                override fun canTakeItems(playerEntity: PlayerEntity): Boolean {
+                    val nbt = inventory.getStack(3).nbt
+                    return nbt != null && nbt.contains("MsdSummonItem")
+                }
+            })
+            addPlayerInventorySlots()
+        }
+
+        private fun theologyFor(stack: ItemStack): Theology? {
+            val type = PagesService.pageTypeFor(stack)
+            return if (type != null && type.action === PagesService.Action.SUMMON) type.theology else null
+        }
         private fun theologies(): Theologies? {
-            fun theologyFor(stack: ItemStack): Theology? {
-                val type = PagesService.pageTypeFor(stack)
-                return if (type != null && type.action === PagesService.Action.SUMMON) type.theology else null
-            }
             return Theologies(
-                theologyFor(input.getStack(0)) ?: return null,
-                theologyFor(input.getStack(1)) ?: return null,
+                theologyFor(inventory.getStack(0)) ?: return null,
+                theologyFor(inventory.getStack(1)) ?: return null,
             )
         }
 
-        override fun updateResult() {
-            val pair = theologies()
-            if (pair != null) {
-                output.setStack(0, summonItems[pair]!!.copy())
-            } else {
-                output.setStack(0, stackOf())
-            }
-        }
+        private fun hasSoul(stack: ItemStack = inventory.getStack(2)) = SoulService.containsSoulNbt(stack)
 
-        override fun onTakeOutput(playerEntity: PlayerEntity, stack: ItemStack) {
-            val pair = theologies()
-            if (pair != null) {
-                val player = this@SummonsService.context.getPlayer(playerEntity as ServerPlayerEntity)
-                summon(Options(pair, altar, player))
-            }
-
+        override fun handleTakeResult(stack: ItemStack) {
             stack.count = 0
-            input.removeStack(0, 1)
-            input.removeStack(1, 1)
+
+            val pair = theologies() ?: return
+            if (pair.isDouble && !hasSoul()) return
+
+            val player = context.getPlayer(playerEntity)
+            summon(Options(pair, altar, player))
+
+            inventory.removeStack(0, 1)
+            inventory.removeStack(1, 1)
+            inventory.removeStack(2, 1)
+            inventory.setStack(3, stackOf())
         }
 
-        override fun onClosed(playerEntity: PlayerEntity) {
-            playerEntity.give(cursorStack)
-            cursorStack = ItemStack.EMPTY
-
-            playerEntity.give(input.removeStack(0))
-            playerEntity.give(input.removeStack(1))
+        override fun handleUpdateResult() {
+            val pair = theologies()
+            if (pair == null) {
+                inventory.setStack(3, stackOf(
+                    BARRIER, nbtCompoundOf(
+                        "display" to nbtCompoundOf(
+                            "Name" to text("summon pages required").red(),
+                            "Lore" to listOf(
+                                text("put two summon pages into the first two slots"),
+                                text("if the summon pages are the same, you need a soul"),
+                            ),
+                        ),
+                        "MsdIllegal" to true,
+                    ),
+                ))
+                return
+            }
+            if (pair.isDouble && !hasSoul()) {
+                inventory.setStack(3, stackOf(
+                    BARRIER, nbtCompoundOf(
+                        "display" to nbtCompoundOf(
+                            "Name" to text("soul required").red(),
+                            "Lore" to listOf(
+                                text("you are trying to perform a pure summon (same pages)"),
+                                text("this requires a player's soul in the third slot"),
+                            ),
+                        ),
+                        "MsdIllegal" to true,
+                    ),
+                ))
+                return
+            }
+            inventory.setStack(3, summonItems[pair]!!.copy())
         }
 
-        override fun canTakeOutput(playerEntity: PlayerEntity, present: Boolean): Boolean {
-            return theologies() != null
+        override fun handleClosed() {
+            playerEntity.give(inventory.removeStack(0))
+            playerEntity.give(inventory.removeStack(1))
+            playerEntity.give(inventory.removeStack(2))
         }
-
-        override fun canUse(playerEntity: PlayerEntity?) = true
-        override fun canUse(state: BlockState?) = true
-
-        override fun canInsertIntoSlot(slot: Slot?) = true
-        override fun canInsertIntoSlot(stack: ItemStack?, slot: Slot?) = true
-
-        override fun setNewItemName(newItemName: String?): Boolean {
-            updateResult()
-            return true
-        }
-    }
-
-    private inner class AltarNamedScreenHandlerFactory(val altar: Altar) : NamedScreenHandlerFactory {
-        override fun getDisplayName(): Text =
-            text("Altar of the ").append(altar.theology.displayName)
-        override fun createMenu(syncId: Int, playerInventory: PlayerInventory, playerEntity: PlayerEntity): ScreenHandler =
-            AltarScreenHandler(altar, syncId, playerInventory)
     }
 
     fun handleAltarOpen(player: GamePlayer, pos: BlockPos): ActionResult {
@@ -885,7 +920,7 @@ class SummonsService : Service() {
 
         val altar: Altar? = altars[pos]
         if (altar != null) {
-            player.entity?.openHandledScreen(AltarNamedScreenHandlerFactory(altar))
+            player.entity?.openHandledScreen(AltarScreenHandlerFactory(altar))
             return ActionResult.SUCCESS
         } else {
             return ActionResult.PASS
@@ -1026,6 +1061,7 @@ class SummonsService : Service() {
                     "Lore" to lore.asList(),
                 ),
                 "MsdIllegal" to true,
+                "MsdSummonItem" to true,
             ))
 
         private val summonItems = immutableMapOf<Theologies, ItemStack>(
@@ -1034,7 +1070,7 @@ class SummonsService : Service() {
                 text("Flood the entire map?"),
             ),
             summonItem(
-                Theologies(BARTER, BARTER), BARRIER,
+                Theologies(BARTER, BARTER), STRUCTURE_VOID,
                 text("Destroy all special items?"),
             ),
             summonItem(
@@ -1058,13 +1094,12 @@ class SummonsService : Service() {
                 text("Receive some really hot blocks"),
             ),
             summonItem(
-                Theologies(FLAME, COSMOS), GOLDEN_APPLE,
-                text("Bonus absorption heart"),
+                Theologies(FLAME, COSMOS), SUNFLOWER,
+                text("Call upon the unstoppable power of the sun"),
             ),
             summonItem(
-                Theologies(COSMOS, OCCULT), SCULK,
-                text("Night vision for your team"),
-                text("(Blindness for others)"),
+                Theologies(COSMOS, OCCULT), END_STONE,
+                text("Call upon the beautiful power of the moon"),
             ),
             summonItem(
                 Theologies(DEEP, FLAME), ANVIL,
@@ -1127,11 +1162,11 @@ class SummonsService : Service() {
             } },
             Theologies(OCCULT, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
-                    text("A creeping void floods the maze...")
+                    text("The full moon is upon us!")
                 override val subtitle =
-                    text(options.team, "has gained fullbright and blinded everyone else.")
+                    text(options.team, "has pulled a moon away the stars.")
                 override val tooltip =
-                    text(options.team, "has fullbright visibility.")
+                    text(options.team, "summoned a moon to the arena's center.")
             } },
             Theologies(OCCULT, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
@@ -1143,11 +1178,11 @@ class SummonsService : Service() {
             } },
             Theologies(OCCULT, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    text("Horrifying screams come from below!")
+                    text("The unmatched power of the sun!")
                 override val subtitle =
-                    text(options.team, "has summoned some ghasts!")
+                    text(options.team, "has pulled a star out of the sky.")
                 override val tooltip =
-                    text(options.team, "summoned some ghasts!")
+                    text(options.team, "summoned a flaming star to the arena's center.")
             } },
             Theologies(COSMOS, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =

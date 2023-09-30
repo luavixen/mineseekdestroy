@@ -8,8 +8,12 @@ import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket
+import net.minecraft.particle.ParticleEffect
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
+import net.minecraft.util.math.Vec3d
 
 fun LivingEntity.hurtHearts(hearts: Double, source: (DamageSources) -> DamageSource = { it.generic() }): Boolean =
     damage(source(damageSources), (hearts * 2.0).toFloat())
@@ -42,6 +46,14 @@ fun PlayerEntity.give(stack: ItemStack, drop: Boolean): Boolean {
     return false
 }
 
+fun LivingEntity.knockback(strength: Double, x: Double, z: Double) {
+    takeKnockback(strength, x, z)
+    if (this is ServerPlayerEntity) {
+        networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(this))
+        velocityDirty = false
+    }
+}
+
 fun Entity.play(
     sound: SoundEvent,
     category: SoundCategory = SoundCategory.PLAYERS,
@@ -49,4 +61,12 @@ fun Entity.play(
     pitch: Double = 1.0,
 ) {
     Broadcast.sendSound(sound, category, volume.toFloat(), pitch.toFloat(), world, pos)
+}
+fun Entity.particles(
+    particle: ParticleEffect,
+    speed: Double = 1.0,
+    count: Int = 1,
+    position: (Vec3d) -> Vec3d = { it.add(0.0, 1.0, 0.0) },
+) {
+    Broadcast.sendParticles(particle, speed.toFloat(), count, world, position(pos))
 }
