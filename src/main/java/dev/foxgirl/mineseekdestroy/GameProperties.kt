@@ -205,7 +205,7 @@ sealed interface GameProperties {
         override val regionFlood = Region(BlockPos(-24, -50, 51), BlockPos(175, -30, -169))
 
         override val borderSize = 200.0
-        override val borderCenter = Vec3d(70.5, 0.0, -55.5)
+        override val borderCenter = Vec3d(70.5, -33.5, -55.5)
 
         override val interactableBlocks = buildImmutableSet<Block> {
             addAll(Base.interactableBlocks)
@@ -278,7 +278,7 @@ sealed interface GameProperties {
         override val regionFlood = Region(BlockPos(788, -4, -170), BlockPos(974, 13, 30))
 
         override val borderSize = 250.0
-        override val borderCenter = Vec3d(870.0, 0.0, -65.0)
+        override val borderCenter = Vec3d(870.0, 12.5, -65.0)
 
         override val interactableBlocks = buildImmutableSet<Block> {
             addAll(Base.interactableBlocks)
@@ -354,7 +354,7 @@ sealed interface GameProperties {
         override val regionFlood = Region(BlockPos(-1125, -16, 20), BlockPos(-1440, 67, 355))
 
         override val borderSize = 333.0
-        override val borderCenter = Region(BlockPos(-1280, 62, 172), BlockPos(-1309, 62, 145)).center
+        override val borderCenter = Region(BlockPos(-1280, 74, 172), BlockPos(-1309, 74, 145)).center
 
         override val interactableBlocks = buildImmutableSet<Block> {
             addAll(Base.interactableBlocks)
@@ -431,7 +431,7 @@ sealed interface GameProperties {
         override val regionFlood = Region(BlockPos(-18, -64, 701), BlockPos(-206, -52, 913))
 
         override val borderSize = 200.0
-        override val borderCenter = Vec3d(-112.0, -52.0, 828.5)
+        override val borderCenter = Vec3d(-112.0, -43.5, 828.5)
 
         override val interactableBlocks = buildImmutableSet<Block> {
             addAll(Base.interactableBlocks)
@@ -506,7 +506,7 @@ sealed interface GameProperties {
         override val regionFlood = Region(BlockPos(159, -16, -1328), BlockPos(-152, -2, -1065))
 
         override val borderSize = 275.0
-        override val borderCenter = Vec3d(4.5, 17.0, -1193.5)
+        override val borderCenter = Vec3d(4.5, 22.5, -1193.5)
 
         override val interactableBlocks = buildImmutableSet<Block> {
             addAll(Base.interactableBlocks)
