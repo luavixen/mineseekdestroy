@@ -154,7 +154,7 @@ class PagesService : Service() {
             } else {
                 val result = page.use(user, userEntity)
                 if (result.shouldIncrementStat()) {
-                    Game.CONSOLE_PLAYERS.sendInfo(user, "used page", page.name)
+                    Game.CONSOLE_PLAYERS.sendInfo(user, text("used page").white(), page.name)
                 }
                 result
             }
@@ -193,7 +193,7 @@ class PagesService : Service() {
         players.forEach { user ->
             user.entity?.let { userEntity ->
                 page.use(user, userEntity)
-                Game.CONSOLE_PLAYERS.sendInfo(user, "used page", page.name)
+                Game.CONSOLE_PLAYERS.sendInfo(user, text("used page").white(), page.name)
             }
         }
     }
@@ -293,7 +293,7 @@ class PagesService : Service() {
             if (result.shouldIncrementStat()) {
                 stack.count--
             } else if (result === ActionResult.FAIL) {
-                stack.count++; Scheduler.now { stack.count-- }
+                stack.count--; Scheduler.now { stack.count++ }
             }
             return result
         }
@@ -360,7 +360,7 @@ class PagesService : Service() {
                     Async.go {
                         var running = true
                         go { delay(10.0); running = false }
-                        go { until { state.isWaiting || !user.isAlive }; running = false }
+                        go { until { state.isWaiting || !user.isAlive || !running }; running = false }
                         while (true) {
                             delay(0.5); if (!running) break
                             user.entity?.air = -10
@@ -491,27 +491,19 @@ class PagesService : Service() {
                     lock(user)
                     Async.go {
                         var running = true
-                        var previousHealth = userEntity.health
-
                         go { delay(10.0); running = false }
                         go { until { state.isWaiting || !user.isAlive || !running }; running = false }
-
+                        var previousHealth = userEntity.health
                         while (running) {
                             delay()
                             val userEntity = user.entity ?: continue
                             if (userEntity.health < previousHealth) {
                                 userEntity.healHearts(1.5)
-                                go {
-                                    userEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1.0, 0.5)
-                                    userEntity.particles(ParticleTypes.NOTE)
-                                    delay(0.5)
-                                    userEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1.0, 1.0)
-                                    userEntity.particles(ParticleTypes.NOTE)
-                                }
+                                userEntity.particles(ParticleTypes.NOTE, 1.0, 6)
+                                userEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1.0, 0.5)
                             }
                             previousHealth = userEntity.health
                         }
-
                         unlock(user)
                     }
                     userEntity.sparkles()
@@ -527,8 +519,8 @@ class PagesService : Service() {
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lockDelay(user, 5.0)
-                    for ((_, playerEntity) in playerEntitiesIn) {
-                        if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 25.0) {
+                    for ((_, playerEntity) in playerEntitiesNormal) {
+                        if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 42.0) {
                             playerEntity.addEffect(SLOWNESS, 5.0, 7)
                             playerEntity.removeEffect(JUMP_BOOST)
                         }
@@ -604,13 +596,10 @@ class PagesService : Service() {
                     lock(user)
                     Async.go {
                         var minimumHealth = userEntity.health
-
                         while (true) {
                             delay()
-
                             if (state.isWaiting || !user.isAlive) break
                             val userEntity = user.entity ?: continue
-
                             val currentHealth = userEntity.health
                             if (currentHealth > minimumHealth) {
                                 userEntity.damage(userEntity.damageSources.magic(), (currentHealth - minimumHealth) + 0.05F)
@@ -618,9 +607,7 @@ class PagesService : Service() {
                                 minimumHealth = currentHealth
                             }
                         }
-
                         user.entity?.removeEffect(ABSORPTION)
-
                         unlock(user)
                     }
                     userEntity.addEffect(ABSORPTION, Double.MAX_VALUE)
@@ -636,8 +623,8 @@ class PagesService : Service() {
                 text("will not teleport players through walls!"),
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
-                    for ((_, playerEntity) in playerEntitiesIn) {
-                        if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 25.0) {
+                    for ((_, playerEntity) in playerEntitiesNormal) {
+                        if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 64.0) {
                             playerEntity.knockback(2.0, playerEntity.x - userEntity.x, playerEntity.z - userEntity.z)
                             playerEntity.play(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP)
                         }
@@ -648,7 +635,7 @@ class PagesService : Service() {
             }
 
             object : Page(
-                BUSTED, text("Gruesome Gospel") * COSMOS.color,
+                BUSTED, text("From The Stars") * COSMOS.color,
                 text("right-click to activate!"),
                 text("all teammates gain night vision for the remainder of the round!"),
                 text("all opponents gain blindness for the remainder of the round!"),
@@ -742,14 +729,12 @@ class PagesService : Service() {
                             if (evUser != user) return@subscribe
                             if (evUserEntity.getAttackCooldownProgress(0.0F) > 0.95F) {
                                 evUserEntity.healHearts(1.0)
-                                Async.go {
-                                    delay(0.1)
+                                Scheduler.delay(0.1) {
                                     evUserEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.PLAYERS, 0.333, 0.75)
                                 }
                             } else {
                                 evUserEntity.hurtHearts(1.0) { it.magic() }
-                                Async.go {
-                                    delay(0.1)
+                                Scheduler.delay(0.1) {
                                     evUserEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.PLAYERS, 0.333, 0.25)
                                 }
                             }
@@ -772,8 +757,8 @@ class PagesService : Service() {
                 text("launch all players in a ") + text("5 block radius").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
-                    for ((_, playerEntity) in playerEntitiesIn) {
-                        if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 25.0) {
+                    for ((_, playerEntity) in playerEntitiesNormal) {
+                        if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 64.0) {
                             playerEntity.knockback(2.0, userEntity.x - playerEntity.x, userEntity.z - playerEntity.z)
                             playerEntity.play(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP)
                         }

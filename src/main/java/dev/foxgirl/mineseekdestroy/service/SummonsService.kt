@@ -377,7 +377,7 @@ class SummonsService : Service() {
         override val timeout get() = Duration.ofSeconds(90)
         override fun perform() {
             summonListGame.find { it.kind == Theologies(COSMOS, FLAME) }?.destroy()
-            for (pos in BlockPos.ofFloored(properties.borderCenter).around(4.0)) {
+            for (pos in BlockPos.ofFloored(properties.borderCenter).around(7.0)) {
                 world.setBlockState(pos, (if (Random.nextBoolean()) Blocks.SNOW_BLOCK else Blocks.BONE_BLOCK).defaultState)
             }
             Broadcast.sendSound(SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 2.0F, 1.0F, world, properties.borderCenter)
@@ -450,7 +450,7 @@ class SummonsService : Service() {
                     it.add(-4, -4, -4),
                 )
             }
-            val positions = center.around(4.0).toHashSet()
+            val positions = center.around(7.0).toHashSet()
             Editor
                 .queue(world, region)
                 .edit { _, x, y, z -> if (BlockPos(x, y, z) in positions) Blocks.FIRE.defaultState else null }
@@ -725,13 +725,23 @@ class SummonsService : Service() {
             shulker.setPosition(options.altar.pos.let { Vec3d(it.x.toDouble() + 0.5, it.y.toDouble(), it.z.toDouble() + 0.5) })
             shulker.isAiDisabled = true
             shulker.isInvulnerable = true
+
             world.spawnEntity(shulker)
-            shulker.isInvisible = true
-            shulker.isGlowing = true
             context.scoreboard.addPlayerToTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+
+            go {
+                while (true) {
+                    if (!shulker.isAlive) break
+                    shulker.isInvisible = true
+                    shulker.isGlowing = true
+                    delay()
+                }
+            }
+
             delay(Rules.summonsAltarGlowDuration)
-            context.scoreboard.removePlayerFromTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+
             shulker.remove(Entity.RemovalReason.DISCARDED)
+            context.scoreboard.removePlayerFromTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
         }
     }
 
