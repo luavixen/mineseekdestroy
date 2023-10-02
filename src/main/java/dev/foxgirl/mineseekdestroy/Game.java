@@ -528,6 +528,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public void onStartTick(MinecraftServer server) {
         updateContext();
         updateBounds();
+        updateHunger();
 
         Async.update();
         Scheduler.update();
@@ -587,6 +588,18 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         playerEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 40));
                     }
                 }
+            }
+        }
+    }
+
+    private void updateHunger() {
+        if (context == null) {
+            for (var playerEntity : server.getPlayerManager().getPlayerList()) {
+                if (!playerEntity.isAlive()) continue;
+                var hungerManager = playerEntity.getHungerManager();
+                hungerManager.setFoodLevel(20);
+                hungerManager.setSaturationLevel(5.0F);
+                hungerManager.setExhaustion(0.0F);
             }
         }
     }
