@@ -108,6 +108,17 @@ class SoulService : Service() {
         }
     }
 
+    fun handleRoundEnd() {
+        for ((player, playerEntity) in playerEntitiesNormal) {
+            if (
+                (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsGiveYellowOwnSoulEnabled) ||
+                (player.team === GameTeam.PLAYER_BLUE && Rules.soulsGiveBlueOwnSoulEnabled)
+            ) {
+                playerEntity.give(createSoulFor(player).toStack())
+            }
+        }
+    }
+
     fun handleSoulConsume(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
         if (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsConsumingEnabled) {
             val duration = (Rules.soulsConsumingEffectDuration * 20.0).toInt()

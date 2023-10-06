@@ -67,6 +67,8 @@ object Rules {
     @JvmStatic var soulsConsumingEffectDuration by DoubleRuleProperty(RULE_SOULS_CONSUMING_EFFECT_DURATION)
     @JvmStatic var soulsConsumingEffectJumpStrength by IntRuleProperty(RULE_SOULS_CONSUMING_EFFECT_JUMP_STRENGTH)
     @JvmStatic var soulsConsumingEffectSpeedStrength by IntRuleProperty(RULE_SOULS_CONSUMING_EFFECT_SPEED_STRENGTH)
+    @JvmStatic var soulsGiveYellowOwnSoulEnabled by BooleanRuleProperty(RULE_SOULS_GIVE_YELLOW_OWN_SOUL_ENABLED)
+    @JvmStatic var soulsGiveBlueOwnSoulEnabled by BooleanRuleProperty(RULE_SOULS_GIVE_BLUE_OWN_SOUL_ENABLED)
 
     @JvmStatic var buddyEnabled by BooleanRuleProperty(RULE_BUDDY_ENABLED)
     @JvmStatic var buddyHealthPenalty by DoubleRuleProperty(RULE_BUDDY_HEALTH_PENALTY)

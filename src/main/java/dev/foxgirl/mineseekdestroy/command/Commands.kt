@@ -69,6 +69,7 @@ internal fun setup() {
             register { GameProperties.Lights }
             register { GameProperties.Station }
             register { GameProperties.Horror }
+            register { GameProperties.Island }
         }
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->
@@ -466,17 +467,6 @@ internal fun setup() {
                             it.actionWithContext { args, context ->
                                 context.pagesService.executePageGive(args, args.players(context), PagesService.PageType(theology, action))
                             }
-                        }
-                    }
-                }
-            }
-        }
-        it.params(argLiteral("use")) {
-            it.theologies { it, theology ->
-                it.actions { it, action ->
-                    it.params(argPlayers()) {
-                        it.actionWithContext { args, context ->
-                            context.pagesService.executeUse(args, args.players(context), PagesService.PageType(theology, action))
                         }
                     }
                 }

@@ -20,7 +20,7 @@ class Event<T> {
     fun subscribe(callback: (T) -> Unit) = Subscription(callback)
 
     fun publish(value: T) {
-        subscriptions.toTypedArray().forEach { it.callback(value) }
+        synchronized(subscriptions) { subscriptions.toTypedArray() }.forEach { it.callback(value) }
     }
 
 }

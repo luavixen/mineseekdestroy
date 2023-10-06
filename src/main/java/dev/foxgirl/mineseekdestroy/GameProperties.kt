@@ -73,7 +73,7 @@ sealed interface GameProperties {
         override val regionBarrierArenaTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
-        override val regionBarrierBlimpBalloonTemplate = Region(BlockPos(1, -20, -532), BlockPos(-9, -17, -542))
+        override val regionBarrierBlimpBalloonTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
         override val regionBarrierBlimpBalloonTargets = Region.Set()
         override val regionBarrierBlimpFills = Region.Set()
         override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
@@ -629,6 +629,73 @@ sealed interface GameProperties {
         override val inflammableBlocks = Base.inflammableBlocks
 
         override val unstealableBlocks = Base.unstealableBlocks
+
+    }
+
+    object Island : GameProperties {
+
+        override val name = "island"
+
+        override val positionSpawn = BlockPos(1070, 65, -1117)
+
+        override val positionBlimp = Vec3d(0.0, 0.0, 0.0)
+        override val positionArena = Vec3d(0.0, 0.0, 0.0)
+        override val positionDuel1 = Vec3d(0.0, 0.0, 0.0)
+        override val positionDuel2 = Vec3d(0.0, 0.0, 0.0)
+        override val positionHell = Vec3d(0.0, 0.0, 0.0)
+
+        override val templateInventory = BlockPos(0, 0, 0)
+        override val templateLoottable = BlockPos(0, 0, 0)
+
+        override val regionAll = Region(BlockPos(1167, 210, -997), BlockPos(800, -22, -1312))
+        override val regionLegal = Region(BlockPos(1167, 65536, -997), BlockPos(800, -64, -1312))
+        override val regionPlayable = Region(BlockPos(1167, 210, -997), BlockPos(800, -22, -1312))
+        override val regionBlimp = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBlimpBalloons = Region.Set()
+        override val regionBlimpFans = Region.Set()
+        override val regionBarrierArenaTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierArenaTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpTarget = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpBalloonTemplate = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+        override val regionBarrierBlimpBalloonTargets = Region.Set()
+        override val regionBarrierBlimpFills = Region.Set()
+        override val regionFlood = Region(BlockPos(0, 0, 0), BlockPos(0, 0, 0))
+
+        override val borderSize = 0.0
+        override val borderCenter = Vec3d(0.0, 0.0, 0.0)
+
+        override val interactableBlocks = buildImmutableSet<Block> {
+            addAll(Base.interactableBlocks)
+            addAll(listOf(
+                SPRUCE_DOOR, SPRUCE_TRAPDOOR, SPRUCE_FENCE_GATE,
+                BIRCH_DOOR, BIRCH_TRAPDOOR, BIRCH_FENCE_GATE,
+                JUNGLE_DOOR, JUNGLE_TRAPDOOR, JUNGLE_FENCE_GATE,
+                ACACIA_DOOR, ACACIA_TRAPDOOR, ACACIA_FENCE_GATE,
+                CHERRY_DOOR, CHERRY_TRAPDOOR, CHERRY_FENCE_GATE,
+                DARK_OAK_DOOR, DARK_OAK_TRAPDOOR, DARK_OAK_FENCE_GATE,
+                MANGROVE_DOOR, MANGROVE_TRAPDOOR, MANGROVE_FENCE_GATE,
+                BAMBOO_DOOR, BAMBOO_TRAPDOOR, BAMBOO_FENCE_GATE,
+                CRIMSON_DOOR, CRIMSON_TRAPDOOR, CRIMSON_FENCE_GATE,
+                WARPED_DOOR, WARPED_TRAPDOOR, WARPED_FENCE_GATE,
+                DARK_OAK_BUTTON,
+                // TODO
+            ))
+        }
+
+        override val inflammableBlocks = buildImmutableSet<Block> {
+            addAll(Base.inflammableBlocks)
+            addAll(listOf(
+                // TODO
+            ))
+        }
+
+        override val unstealableBlocks = buildImmutableSet<Block> {
+            addAll(Base.unstealableBlocks)
+            addAll(listOf(
+                // TODO
+            ))
+        }
 
     }
 

@@ -136,7 +136,7 @@ class PagesService : Service() {
 
     fun handleBookUse(userEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
         val book = bookFor(stack) ?: return ActionResult.FAIL
-        return resultApplyToStack(stack) { book.use(userEntity) }
+        return resultApplyToStack(userEntity, stack) { book.use(userEntity) }
     }
 
     private data class ValueGenericUse(val user: GamePlayer, val userEntity: ServerPlayerEntity)
@@ -148,26 +148,24 @@ class PagesService : Service() {
         val user = context.getPlayer(userEntity)
         eventGenericUse.publish(ValueGenericUse(user, userEntity))
         val (page, stack) = pageStackPairFor(userEntity) ?: return ActionResult.PASS
-        return resultApplyToStack(stack) {
-            if (isPageUsageBlocked(userEntity, page)) {
-                ActionResult.FAIL
-            } else {
-                val result = page.use(user, userEntity)
-                if (result.shouldIncrementStat()) {
-                    Game.CONSOLE_PLAYERS.sendInfo(user, text("used page").white(), page.name)
-                }
-                result
-            }
+        val result = resultApplyToStack(userEntity, stack) {
+            if (isPageUsageBlocked(userEntity, page)) ActionResult.FAIL
+            else page.use(user, userEntity)
         }
+        if (result.shouldIncrementStat()) {
+            Game.CONSOLE_PLAYERS.sendInfo(user, text("used page").white(), page.name)
+        }
+        return result
     }
     fun handleGenericAttack(userEntity: ServerPlayerEntity, victimEntity: ServerPlayerEntity): ActionResult {
         val user = context.getPlayer(userEntity)
         eventGenericAttack.publish(ValueGenericAttack(user, userEntity, victimEntity))
         val (page, stack) = pageStackPairFor(userEntity) ?: return ActionResult.PASS
-        return resultApplyToStack(stack) {
+        val result = resultApplyToStack(userEntity, stack) {
             if (isPageUsageBlocked(userEntity, page)) ActionResult.FAIL
             else page.attack(user, userEntity, victimEntity)
         }
+        return result
     }
 
     data class BookType(val theology: Theology) {
@@ -186,16 +184,6 @@ class PagesService : Service() {
         val stack = books[type.theology]!!.pages[type.action]!!.stack
         players.forEach { it.entity?.give(stack.copy()) }
         console.sendInfo("Gave page", stack.name(), "to ${players.size} player(s)")
-    }
-
-    fun executeUse(console: Console, players: List<GamePlayer>, type: PageType) {
-        val page = books[type.theology]!!.pages[type.action]!!
-        players.forEach { user ->
-            user.entity?.let { userEntity ->
-                page.use(user, userEntity)
-                Game.CONSOLE_PLAYERS.sendInfo(user, text("used page").white(), page.name)
-            }
-        }
     }
 
     override fun update() {
@@ -288,13 +276,18 @@ class PagesService : Service() {
         private fun loreWithBarter() = text("combine with a ") + text("barter summon page").format(BARTER.color) + " to "
         private fun loreWithFlame() = text("combine with a ") + text("flame summon page").format(FLAME.color) + " to "
 
-        private fun resultApplyToStack(stack: ItemStack, action: () -> ActionResult): ActionResult {
+        private fun resultApplyToStack(userEntity: ServerPlayerEntity, stack: ItemStack, action: () -> ActionResult): ActionResult {
             val result = action()
             if (result.shouldIncrementStat()) {
-                stack.count--
-            } else if (result === ActionResult.FAIL) {
-                stack.count--; Scheduler.now { stack.count++ }
+                val inventory = userEntity.inventory
+                val slot = inventory.indexOf(stack)
+                if (slot >= 0) {
+                    inventory.removeStack(slot, 1)
+                } else {
+                    stack.decrement(1)
+                }
             }
+            Scheduler.now { userEntity.playerScreenHandler.syncState() }
             return result
         }
 
