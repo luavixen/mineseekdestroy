@@ -66,13 +66,14 @@ class PagesService : Service() {
 
         fun use(userEntity: ServerPlayerEntity): ActionResult {
             fun randomAction(exclude: Array<Action?>, times: Int = 1): Action {
-                if (Random.nextDouble() <= 0.10 && BUSTED !in exclude) return BUSTED
-                if (Random.nextDouble() <= 0.20 && AREA !in exclude) return AREA
-                if (Random.nextDouble() <= 0.25 && REGEN !in exclude) return REGEN
-                if (Random.nextDouble() <= 0.33 && HEALTH !in exclude) return HEALTH
-                if (Random.nextDouble() <= 0.50 && SUMMON !in exclude) return SUMMON
-                if (times >= 5) return SUMMON
-                return randomAction(exclude, times + 1)
+                when (Random.nextInt(0, 100)) {
+                    in 0..<4 -> if (BUSTED !in exclude) return BUSTED
+                    in 4..<13 -> if (AREA !in exclude) return AREA
+                    in 13..<30 -> if (REGEN !in exclude) return REGEN
+                    in 30..<53 -> if (HEALTH !in exclude) return HEALTH
+                    in 53..<100 -> if (SUMMON !in exclude) return SUMMON
+                }
+                return if (times >= 5) SUMMON else randomAction(exclude, times + 1)
             }
             Async.go {
                 val actions = arrayOfNulls<Action>(3).also {

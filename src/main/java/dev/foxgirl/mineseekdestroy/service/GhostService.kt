@@ -154,7 +154,7 @@ class GhostService : Service() {
             context.itemService.addStackToInventory(entity, GameItems.ectoplasm, false)
         }
 
-        world.setBlockState(blockPos, Blocks.MAGENTA_CONCRETE_POWDER.defaultState)
+        world.setBlockState(blockPos, Blocks.LIGHT_GRAY_CONCRETE_POWDER.defaultState)
 
         return ActionResult.SUCCESS
     }
