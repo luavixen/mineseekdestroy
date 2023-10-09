@@ -246,8 +246,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.WRITABLE_BOOK,
         Items.KNOWLEDGE_BOOK,
         Items.ENCHANTED_BOOK,
-        Items.LANTERN,
-        Items.SOUL_LANTERN,
     });
 
     public static final @NotNull Set<@NotNull Item> DROPPED_ITEMS = ImmutableSet.copyOf(new Item[] {

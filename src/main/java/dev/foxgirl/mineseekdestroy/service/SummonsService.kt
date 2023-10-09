@@ -213,12 +213,16 @@ class SummonsService : Service() {
 
             Async.go {
                 val (start, end) = properties.regionFlood
-                for (y in start.y..end.y) {
-                    delay(1.0)
+                var y = start.y; while (y < end.y) {
+                    delay(3.0)
+
+                    val yMin = (y)
+                    val yMax = (y + 3).coerceAtMost(end.y)
+                    y = yMax
 
                     val region = Region(
-                        BlockPos(start.x, y, start.z),
-                        BlockPos(end.x, y, end.z),
+                        BlockPos(start.x, yMin, start.z),
+                        BlockPos(end.x, yMax, end.z),
                     )
 
                     Editor
@@ -740,8 +744,10 @@ class SummonsService : Service() {
 
             delay(Rules.summonsAltarGlowDuration)
 
-            shulker.remove(Entity.RemovalReason.DISCARDED)
-            context.scoreboard.removePlayerFromTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+            try {
+                context.scoreboard.removePlayerFromTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+                shulker.remove(Entity.RemovalReason.DISCARDED)
+            } catch (ignored: IllegalStateException) {}
         }
     }
 
@@ -970,7 +976,7 @@ class SummonsService : Service() {
         console.sendInfo("summonListGame:")
         sendSummons(summonListGame)
         console.sendInfo("summonListRound:")
-        sendSummons(summonListGame)
+        sendSummons(summonListRound)
 
         console.sendInfo("timeout:", timeoutRemaining().seconds, "seconds")
         console.sendInfo("timeoutDuration:", timeoutDuration.seconds, "seconds")

@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameItems;
+import dev.foxgirl.mineseekdestroy.util.async.Scheduler;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -109,6 +110,8 @@ public abstract class GameState {
             return ActionResult.PASS;
         }
         if (context != null && context.world == world) {
+            var pageResult = context.pagesService.handleGenericUse((ServerPlayerEntity) playerEntity);
+            if (pageResult != ActionResult.PASS) return pageResult;
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlaying() && player.isAlive()) {
@@ -156,6 +159,7 @@ public abstract class GameState {
                 return ActionResult.PASS;
             }
         }
+        Scheduler.now((schedule) -> playerEntity.currentScreenHandler.syncState());
         return ActionResult.FAIL;
     }
 
@@ -164,6 +168,8 @@ public abstract class GameState {
             return ActionResult.PASS;
         }
         if (context != null && context.world == world) {
+            var pageResult = context.pagesService.handleGenericUse((ServerPlayerEntity) playerEntity);
+            if (pageResult != ActionResult.PASS) return pageResult;
             var properties = Game.getGameProperties();
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlayingOrGhost() && player.isAlive()) {
@@ -195,23 +201,31 @@ public abstract class GameState {
 
     public ActionResult onUseItem(@Nullable GameContext context, ServerPlayerEntity playerEntity, World world, Hand hand, ItemStack stack) {
         if (Game.getGame().isOperator(playerEntity)) {
+            if (context != null) {
+                var pageResult = context.pagesService.handleGenericUse(playerEntity);
+                if (pageResult != ActionResult.PASS) return pageResult;
+                if (stack.getItem() == Items.WRITTEN_BOOK) {
+                    var result = context.pagesService.handleBookUse(playerEntity, stack);
+                    if (result != ActionResult.PASS) return result;
+                }
+            }
             return ActionResult.PASS;
         }
         if (context != null) {
+            var pageResult = context.pagesService.handleGenericUse(playerEntity);
+            if (pageResult != ActionResult.PASS) return pageResult;
             var player = context.getPlayer(playerEntity);
             if (player.isPlaying()) {
                 if (Game.USABLE_ITEMS.contains(stack.getItem())) {
-                    if (stack.getItem() == Items.LANTERN || stack.getItem() == Items.SOUL_LANTERN) {
-                        var result = context.soulService.handleSoulConsume(player, playerEntity, stack);
-                        if (result != ActionResult.PASS) return result;
-                    }
                     if (stack.getItem() == Items.WRITTEN_BOOK) {
                         var result = context.pagesService.handleBookUse(playerEntity, stack);
                         if (result != ActionResult.PASS) return result;
                     }
                 }
-                var result = context.pagesService.handleGenericUse(playerEntity);
-                if (result != ActionResult.PASS) return result;
+                if (stack.getItem() == Items.LANTERN || stack.getItem() == Items.SOUL_LANTERN) {
+                    var result = context.soulService.handleSoulConsume(player, playerEntity, stack);
+                    if (result != ActionResult.PASS) return result;
+                }
                 return ActionResult.PASS;
             }
         }

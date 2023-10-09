@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableSet
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks.*
+import net.minecraft.registry.Registries
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
@@ -84,7 +85,6 @@ sealed interface GameProperties {
         override val interactableBlocks = immutableSetOf<Block>(
             CHEST,
             BARREL,
-            SMOKER,
             SHULKER_BOX,
             WHITE_SHULKER_BOX,
             ORANGE_SHULKER_BOX,
@@ -154,6 +154,8 @@ sealed interface GameProperties {
                 DIAMOND_BLOCK,
                 GOLD_BLOCK,
                 IRON_BLOCK,
+                LIGHT_GRAY_CONCRETE_POWDER,
+                LIGHT_GRAY_CONCRETE,
                 NETHER_BRICKS,
                 OBSIDIAN,
                 WARPED_PLANKS,
@@ -691,29 +693,51 @@ sealed interface GameProperties {
         override val interactableBlocks = buildImmutableSet<Block> {
             addAll(Base.interactableBlocks)
             addAll(listOf(
-                SPRUCE_DOOR, SPRUCE_TRAPDOOR, SPRUCE_FENCE_GATE,
-                BIRCH_DOOR, BIRCH_TRAPDOOR, BIRCH_FENCE_GATE,
-                JUNGLE_DOOR, JUNGLE_TRAPDOOR, JUNGLE_FENCE_GATE,
-                ACACIA_DOOR, ACACIA_TRAPDOOR, ACACIA_FENCE_GATE,
-                CHERRY_DOOR, CHERRY_TRAPDOOR, CHERRY_FENCE_GATE,
-                DARK_OAK_DOOR, DARK_OAK_TRAPDOOR, DARK_OAK_FENCE_GATE,
-                MANGROVE_DOOR, MANGROVE_TRAPDOOR, MANGROVE_FENCE_GATE,
-                BAMBOO_DOOR, BAMBOO_TRAPDOOR, BAMBOO_FENCE_GATE,
-                CRIMSON_DOOR, CRIMSON_TRAPDOOR, CRIMSON_FENCE_GATE,
-                WARPED_DOOR, WARPED_TRAPDOOR, WARPED_FENCE_GATE,
-                DARK_OAK_BUTTON,
+                OAK_DOOR, OAK_TRAPDOOR, OAK_FENCE_GATE, OAK_BUTTON,
+                SPRUCE_DOOR, SPRUCE_TRAPDOOR, SPRUCE_FENCE_GATE, SPRUCE_BUTTON,
+                BIRCH_DOOR, BIRCH_TRAPDOOR, BIRCH_FENCE_GATE, BIRCH_BUTTON,
+                JUNGLE_DOOR, JUNGLE_TRAPDOOR, JUNGLE_FENCE_GATE, JUNGLE_BUTTON,
+                ACACIA_DOOR, ACACIA_TRAPDOOR, ACACIA_FENCE_GATE, ACACIA_BUTTON,
+                CHERRY_DOOR, CHERRY_TRAPDOOR, CHERRY_FENCE_GATE, CHERRY_BUTTON,
+                DARK_OAK_DOOR, DARK_OAK_TRAPDOOR, DARK_OAK_FENCE_GATE, DARK_OAK_BUTTON,
+                MANGROVE_DOOR, MANGROVE_TRAPDOOR, MANGROVE_FENCE_GATE, MANGROVE_BUTTON,
+                BAMBOO_DOOR, BAMBOO_TRAPDOOR, BAMBOO_FENCE_GATE, BAMBOO_BUTTON,
+                CRIMSON_DOOR, CRIMSON_TRAPDOOR, CRIMSON_FENCE_GATE, CRIMSON_BUTTON,
+                WARPED_DOOR, WARPED_TRAPDOOR, WARPED_FENCE_GATE, WARPED_BUTTON,
+                STONE_BUTTON, LEVER,
             ))
         }
 
-        override val inflammableBlocks = buildImmutableSet<Block> {
-            addAll(Base.inflammableBlocks)
-            addAll(listOf(RED_CONCRETE, RED_NETHER_BRICKS, OBSIDIAN))
+        override val inflammableBlocks = object : AbstractSet<Block>() {
+            private val flammableBlocks = immutableSetOf<Block>(
+                STONE, DIRT, GRASS_BLOCK, PODZOL, SAND, GRAVEL, FARMLAND,
+                OAK_LEAVES, SPRUCE_LEAVES, BIRCH_LEAVES, JUNGLE_LEAVES,
+                ACACIA_LEAVES, DARK_OAK_LEAVES, MANGROVE_LEAVES,
+                CHERRY_LEAVES, AZALEA_LEAVES, FLOWERING_AZALEA_LEAVES,
+                OAK_SAPLING, SPRUCE_SAPLING, BIRCH_SAPLING, JUNGLE_SAPLING,
+                ACACIA_SAPLING, DARK_OAK_SAPLING, MANGROVE_PROPAGULE,
+                CHERRY_SAPLING, AZALEA, FLOWERING_AZALEA, BROWN_MUSHROOM,
+                RED_MUSHROOM, CRIMSON_FUNGUS, WARPED_FUNGUS, GRASS,
+                TALL_GRASS, FERN, DEAD_BUSH, DANDELION, POPPY, BLUE_ORCHID,
+                ALLIUM, AZURE_BLUET, RED_TULIP, ORANGE_TULIP, WHITE_TULIP,
+                PINK_TULIP, OXEYE_DAISY, CORNFLOWER, LILY_OF_THE_VALLEY,
+                TORCHFLOWER, WITHER_ROSE, PINK_PETALS, SPORE_BLOSSOM, BAMBOO,
+                SUGAR_CANE, CACTUS, CRIMSON_ROOTS, WARPED_ROOTS,
+                NETHER_SPROUTS, WEEPING_VINES, TWISTING_VINES, CAVE_VINES,
+                LARGE_FERN, SUNFLOWER, LILAC, ROSE_BUSH, PEONY, PITCHER_PLANT,
+                BIG_DRIPLEAF, BIG_DRIPLEAF_STEM, SMALL_DRIPLEAF, CHORUS_PLANT,
+                CHORUS_FLOWER, GLOW_LICHEN, HANGING_ROOTS, WHEAT, COCOA,
+                PUMPKIN, PUMPKIN_STEM, MELON, MELON_STEM, BEETROOTS,
+                PITCHER_CROP, SWEET_BERRY_BUSH, NETHER_WART, LILY_PAD,
+                SEAGRASS, TALL_SEAGRASS, SEA_PICKLE, KELP,
+            )
+            private val allBlocks get() = Registries.BLOCK
+            override val size get() = allBlocks.size() - flammableBlocks.size
+            override fun iterator() = allBlocks.asSequence().filter(::contains).iterator()
+            override fun contains(block: Block) = block !in flammableBlocks
         }
 
-        override val unstealableBlocks = buildImmutableSet<Block> {
-            addAll(Base.unstealableBlocks)
-            addAll(listOf(RED_CONCRETE, RED_NETHER_BRICKS, OBSIDIAN))
-        }
+        override val unstealableBlocks = Base.unstealableBlocks
 
     }
 

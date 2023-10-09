@@ -26,6 +26,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.sound.SoundEvents
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
@@ -33,6 +34,7 @@ import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.chunk.ChunkStatus
 import net.minecraft.world.chunk.WorldChunk
+import java.util.*
 import kotlin.random.Random
 
 class PagesService : Service() {
@@ -103,10 +105,30 @@ class PagesService : Service() {
     private fun pageStackPairFor(userEntity: ServerPlayerEntity): Pair<Book.Page, ItemStack>? =
         pageStackPairFor(userEntity.mainHandStack) ?: pageStackPairFor(userEntity.offHandStack)
 
+    private val lockedPlayers = mutableSetOf<UUID>()
+
     private val activePages = mutableMapOf<GamePlayer, MutableSet<PageType>>()
     private fun GamePlayer.activePages(): MutableSet<PageType> = activePages.getOrPut(this, ::mutableSetOf)
 
+    private fun resultApplyToStack(userEntity: ServerPlayerEntity, stack: ItemStack, action: () -> ActionResult): ActionResult {
+        if (lockedPlayers.contains(userEntity.uuid)) { return ActionResult.FAIL }; lockedPlayers.add(userEntity.uuid)
+        val result = action()
+        if (result.shouldIncrementStat()) {
+            val inventory = userEntity.inventory
+            val slot = inventory.indexOf(stack)
+            if (slot >= 0) {
+                inventory.removeStack(slot, 1)
+            } else {
+                stack.decrement(1)
+            }
+        }
+        Scheduler.now { userEntity.playerScreenHandler.syncState() }
+        return result
+    }
+
     private fun isPageUsageBlocked(userEntity: ServerPlayerEntity, page: Book.Page): Boolean {
+        val user = context.getPlayer(userEntity)
+        if (user.isOperator) return true
         if (state.isWaiting) {
             userEntity.sendMessage(text("Cannot use pages while waiting for next round").red())
             return true
@@ -123,7 +145,6 @@ class PagesService : Service() {
             userEntity.sendMessage(text("Cannot use pages while in another dimension").red())
             return true
         }
-        val user = context.getPlayer(userEntity)
         if (!user.isAlive || !user.isPlaying) {
             userEntity.sendMessage(text("Cannot use pages while dead/ghost/etc.").red())
             return true
@@ -154,7 +175,10 @@ class PagesService : Service() {
             else page.use(user, userEntity)
         }
         if (result.shouldIncrementStat()) {
-            Game.CONSOLE_PLAYERS.sendInfo(user, text("used page").white(), page.name)
+            Game.CONSOLE_PLAYERS.sendInfo(
+                text(user), text("used page").white(),
+                text(page.name).style { it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_ITEM, HoverEvent.ItemStackContent(page.stack))) },
+            )
         }
         return result
     }
@@ -215,15 +239,18 @@ class PagesService : Service() {
                 }
             }
         }
+        lockedPlayers.clear()
     }
 
     companion object {
         fun bookTypeFor(stack: ItemStack): BookType? {
+            if (stack.isEmpty) return null
             val nbt = stack.nbt ?: return null
             val nbtTheology = nbt["MsdBookTheology"] ?: return null
             return try { BookType(nbtTheology.toEnum()) } catch (ignored : RuntimeException) { null }
         }
         fun pageTypeFor(stack: ItemStack): PageType? {
+            if (stack.isEmpty) return null
             val nbt = stack.nbt ?: return null
             val nbtTheology = nbt["MsdPageTheology"] ?: return null
             val nbtAction = nbt["MsdPageAction"] ?: return null
@@ -276,21 +303,6 @@ class PagesService : Service() {
         private fun loreWithCosmos() = text("combine with a ") + text("cosmos summon page").format(COSMOS.color) + " to "
         private fun loreWithBarter() = text("combine with a ") + text("barter summon page").format(BARTER.color) + " to "
         private fun loreWithFlame() = text("combine with a ") + text("flame summon page").format(FLAME.color) + " to "
-
-        private fun resultApplyToStack(userEntity: ServerPlayerEntity, stack: ItemStack, action: () -> ActionResult): ActionResult {
-            val result = action()
-            if (result.shouldIncrementStat()) {
-                val inventory = userEntity.inventory
-                val slot = inventory.indexOf(stack)
-                if (slot >= 0) {
-                    inventory.removeStack(slot, 1)
-                } else {
-                    stack.decrement(1)
-                }
-            }
-            Scheduler.now { userEntity.playerScreenHandler.syncState() }
-            return result
-        }
 
         private fun pageUnimplemented(userEntity: ServerPlayerEntity): ActionResult {
             userEntity.sendMessage(text("Sorry, this page is unimplemented").red())

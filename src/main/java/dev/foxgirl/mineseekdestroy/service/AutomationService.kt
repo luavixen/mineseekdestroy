@@ -119,7 +119,7 @@ class AutomationService : Service() {
 
         val team = players
             .map { player -> records[player]?.team ?: GameTeam.PLAYER_BLACK }
-            .find { team -> team != GameTeam.PLAYER_BLACK } ?: GameTeam.SKIP
+            .find { team -> team !== GameTeam.PLAYER_BLACK } ?: GameTeam.SKIP
 
         for (player in players) {
             player.isAlive = true

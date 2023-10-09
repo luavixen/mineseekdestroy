@@ -7,7 +7,6 @@ import dev.foxgirl.mineseekdestroy.state.DuelingGameState
 import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.block.Blocks
 import net.minecraft.block.RespawnAnchorBlock
-import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -15,8 +14,10 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.particle.ParticleTypes
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.sound.SoundEvents
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
@@ -121,15 +122,10 @@ class SoulService : Service() {
 
     fun handleSoulConsume(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
         if (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsConsumingEnabled) {
-            val duration = (Rules.soulsConsumingEffectDuration * 20.0).toInt()
-            playerEntity.addStatusEffect(StatusEffectInstance(
-                StatusEffects.JUMP_BOOST, duration,
-                Rules.soulsConsumingEffectJumpStrength - 1,
-            ))
-            playerEntity.addStatusEffect(StatusEffectInstance(
-                StatusEffects.SPEED, duration,
-                Rules.soulsConsumingEffectSpeedStrength - 1,
-            ))
+            playerEntity.addEffect(StatusEffects.JUMP_BOOST, Rules.soulsConsumingEffectDuration, Rules.soulsConsumingEffectJumpStrength)
+            playerEntity.addEffect(StatusEffects.SPEED, Rules.soulsConsumingEffectDuration, Rules.soulsConsumingEffectSpeedStrength)
+            playerEntity.particles(ParticleTypes.FLASH)
+            playerEntity.play(SoundEvents.ENTITY_GENERIC_EAT)
             stack.decrement(1)
             return ActionResult.SUCCESS
         }
@@ -224,6 +220,8 @@ class SoulService : Service() {
             console.sendError("Duel", duel, "is not available, cannot start")
             return
         }
+
+        context.automationService.handleDuelPrepare()
 
         aggressor.team = GameTeam.PLAYER_DUEL
         aggressor.isAlive = true
