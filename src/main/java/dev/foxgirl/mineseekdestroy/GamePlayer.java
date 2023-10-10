@@ -192,6 +192,10 @@ public final class GamePlayer {
         return currentTeam.isOnScoreboard();
     }
 
+    public boolean isCannon() {
+        return currentTeam.isCannon();
+    }
+
     public void teleport(@NotNull Position position) {
         var player = getEntity();
         if (player != null) {

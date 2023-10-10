@@ -6,6 +6,8 @@ import dev.foxgirl.mineseekdestroy.GameTeam;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumSet;
+
 public class PlayingGameState extends RunningGameState {
 
     @Override
@@ -27,26 +29,25 @@ public class PlayingGameState extends RunningGameState {
 
     @Override
     protected @Nullable GameState onUpdate(@NotNull GameContext context) {
-        int aliveYellow = 0;
-        int aliveBlue = 0;
+        var teamsCurrentlyAlive = EnumSet.noneOf(GameTeam.class);
 
         for (var player : context.getPlayersIn()) {
-            switch (player.getTeam()) {
-                case PLAYER_YELLOW -> aliveYellow++;
-                case PLAYER_BLUE -> aliveBlue++;
-            }
+            var team = player.getTeam();
+            if (team.isCannon()) teamsCurrentlyAlive.add(team);
         }
 
-        if (aliveYellow == 0 && aliveBlue == 0) {
-            context.game.sendInfo("Round over! Both teams died at the exact same time, nobody wins!");
-        } else if (aliveYellow == 0) {
-            context.game.sendInfo("Round over!", GameTeam.PLAYER_BLUE.getDisplayName(), "wins!");
-            context.automationService.handleRoundEnd(GameTeam.PLAYER_YELLOW);
-        } else if (aliveBlue == 0) {
-            context.game.sendInfo("Round over!", GameTeam.PLAYER_YELLOW.getDisplayName(), "wins!");
-            context.automationService.handleRoundEnd(GameTeam.PLAYER_BLUE);
-        } else {
-            return null;
+        switch (teamsCurrentlyAlive.size()) {
+            case 1 -> {
+                var team = teamsCurrentlyAlive.iterator().next();
+                context.game.sendInfo("Round over!", team.getDisplayName(), "wins!");
+                context.automationService.handleRoundEnd(team == GameTeam.PLAYER_YELLOW ? GameTeam.PLAYER_BLUE : GameTeam.PLAYER_YELLOW);
+            }
+            case 0 -> {
+                context.game.sendInfo("Round over! Both teams died at the exact same time, nobody wins!");
+            }
+            default -> {
+                return null;
+            }
         }
 
         context.lootService.handleRoundEnd();

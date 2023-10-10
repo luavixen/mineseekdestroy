@@ -9,7 +9,6 @@ import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.data
 import dev.foxgirl.mineseekdestroy.util.give
 import dev.foxgirl.mineseekdestroy.util.set
-import net.minecraft.enchantment.Enchantments
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -206,8 +205,7 @@ class ItemService : Service() {
                 Tool.Tool1.stack(GameItems.toolAxe),
                 Tool.Tool2.stack(GameItems.toolShovel),
                 Tool.Tool3.stack(GameItems.toolBow),
-                Tool.Tool4.stack(GameItems.toolTrident)
-                    .also { (_, stack) -> stack.addEnchantment(Enchantments.LOYALTY, 3) },
+                Tool.Tool4.stack(GameItems.toolTrident),
             ),
             GameTeam.PLAYER_YELLOW to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolAxe),
@@ -220,6 +218,24 @@ class ItemService : Service() {
                 Tool.Tool2.stack(GameItems.toolPickaxe),
                 Tool.Tool3.stack(GameItems.toolBow),
                 Tool.Tool4.stack(GameItems.toolBow),
+            ),
+            GameTeam.PLAYER_CRAB to enumMapOf(
+                Tool.Tool1.stack(GameItems.toolBow),
+                Tool.Tool2.stack(GameItems.toolCrossbow),
+                Tool.Tool3.stack(GameItems.toolCrossbow),
+                Tool.Tool4.stack(GameItems.toolTrident),
+            ),
+            GameTeam.PLAYER_ARMADILLO to enumMapOf(
+                Tool.Tool1.stack(GameItems.toolSword),
+                Tool.Tool2.stack(GameItems.toolPickaxe),
+                Tool.Tool3.stack(GameItems.toolShovel),
+                Tool.Tool4.stack(GameItems.toolHoe),
+            ),
+            GameTeam.PLAYER_PENGUIN to enumMapOf(
+                Tool.Tool1.stack(GameItems.toolAxe),
+                Tool.Tool2.stack(GameItems.toolPickaxe),
+                Tool.Tool3.stack(GameItems.toolShovel),
+                Tool.Tool4.stack(GameItems.toolRod),
             ),
         )
 

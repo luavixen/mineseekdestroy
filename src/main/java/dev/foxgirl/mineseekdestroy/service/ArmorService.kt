@@ -8,10 +8,10 @@ import dev.foxgirl.mineseekdestroy.util.Reflector
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.dataDisplay
 import dev.foxgirl.mineseekdestroy.util.set
+import dev.foxgirl.mineseekdestroy.util.stackOf
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.item.ArmorItem
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.item.trim.*
@@ -41,14 +41,8 @@ class ArmorService : Service() {
             return (r shl 16) or (g shl 8) or b
         }
 
-        val colorBlack = convertColor(DyeColor.BLACK)
-        val colorYellow = convertColor(DyeColor.YELLOW)
-        val colorBlue = convertColor(DyeColor.BLUE)
-
-        fun stack(item: Item) = ItemStack(item)
-
-        fun ItemStack.color(color: Int) =
-            this.also { stack -> stack.dataDisplay()["color"] = color }
+        fun ItemStack.color(color: DyeColor) =
+            this.also { stack -> stack.dataDisplay()["color"] = convertColor(color) }
         fun ItemStack.enchant(enchantment: Enchantment, level: Int) =
             this.also { stack -> stack.addEnchantment(enchantment, level) }
 
@@ -65,75 +59,95 @@ class ArmorService : Service() {
                 ArmorTrim.apply(registryManager, stack, trim)
             }
 
-        val loadoutEmpty: Array<ItemStack> = run {
-            Array(4) { ItemStack.EMPTY }
-        }
-        val loadoutDuel: Array<ItemStack> = run {
-            arrayOf(
-                stack(LEATHER_BOOTS)
-                    .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SNOUT),
-                stack(CHAINMAIL_LEGGINGS)
-                    .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.HOST)
-                    .enchant(Enchantments.SWIFT_SNEAK, 3),
-                stack(CHAINMAIL_CHESTPLATE)
-                    .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.HOST),
-                stack(LEATHER_HELMET)
-                    .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SHAPER),
-            )
-        }
-        val loadoutWarden: Array<ItemStack> = run {
-            arrayOf(
-                stack(NETHERITE_BOOTS)
-                    .enchant(Enchantments.FEATHER_FALLING, 4)
-                    .enchant(Enchantments.FROST_WALKER, 2),
-                stack(NETHERITE_LEGGINGS)
-                    .enchant(Enchantments.SWIFT_SNEAK, 3),
-                stack(NETHERITE_CHESTPLATE)
-                    .enchant(Enchantments.THORNS, 3),
-                stack(NETHERITE_HELMET)
-                    .enchant(Enchantments.RESPIRATION, 3)
-                    .enchant(Enchantments.THORNS, 3),
-            )
-        }
-        val loadoutBlack: Array<ItemStack> = run {
-            arrayOf(
-                stack(LEATHER_BOOTS)
-                    .color(colorBlack).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.SNOUT),
-                stack(LEATHER_LEGGINGS)
-                    .color(colorBlack).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.HOST)
-                    .enchant(Enchantments.THORNS, 3)
-                    .enchant(Enchantments.SWIFT_SNEAK, 3),
-                stack(LEATHER_CHESTPLATE)
-                    .color(colorBlack).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.HOST),
-                stack(LEATHER_HELMET)
-                    .color(colorBlack).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.SHAPER),
-            )
-        }
-        val loadoutYellow: Array<ItemStack> = run {
-            arrayOf(
-                stack(LEATHER_BOOTS)
-                    .color(colorYellow).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.SNOUT),
-                stack(LEATHER_LEGGINGS)
-                    .color(colorYellow).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.HOST)
-                    .enchant(Enchantments.SWIFT_SNEAK, 3),
-                stack(LEATHER_CHESTPLATE)
-                    .color(colorYellow).trim(ArmorTrimMaterials.NETHERITE, ArmorTrimPatterns.SILENCE),
-                stack(LEATHER_HELMET)
-                    .color(colorYellow).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.SHAPER),
-            )
-        }
-        val loadoutBlue: Array<ItemStack> = run {
-            arrayOf(
-                stack(LEATHER_BOOTS)
-                    .color(colorBlue).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.SNOUT),
-                stack(LEATHER_LEGGINGS)
-                    .color(colorBlue).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.HOST)
-                    .enchant(Enchantments.SWIFT_SNEAK, 3),
-                stack(ELYTRA),
-                stack(LEATHER_HELMET)
-                    .color(colorBlue).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.SHAPER),
-            )
-        }
+        val loadoutEmpty = Array(4) { ItemStack.EMPTY }
+        val loadoutDuel = arrayOf(
+            stackOf(LEATHER_BOOTS)
+                .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SNOUT),
+            stackOf(CHAINMAIL_LEGGINGS)
+                .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.HOST)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(CHAINMAIL_CHESTPLATE)
+                .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.HOST),
+            stackOf(LEATHER_HELMET)
+                .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SHAPER),
+        )
+        val loadoutWarden = arrayOf(
+            stackOf(NETHERITE_BOOTS)
+                .enchant(Enchantments.FEATHER_FALLING, 4)
+                .enchant(Enchantments.FROST_WALKER, 2),
+            stackOf(NETHERITE_LEGGINGS)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(NETHERITE_CHESTPLATE)
+                .enchant(Enchantments.THORNS, 3),
+            stackOf(NETHERITE_HELMET)
+                .enchant(Enchantments.RESPIRATION, 3)
+                .enchant(Enchantments.THORNS, 3),
+        )
+        val loadoutBlack = arrayOf(
+            stackOf(LEATHER_BOOTS)
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.SNOUT),
+            stackOf(LEATHER_LEGGINGS)
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.HOST)
+                .enchant(Enchantments.THORNS, 3)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(LEATHER_CHESTPLATE)
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.HOST),
+            stackOf(LEATHER_HELMET)
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.SHAPER),
+        )
+        val loadoutYellow = arrayOf(
+            stackOf(LEATHER_BOOTS)
+                .color(DyeColor.YELLOW).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.SNOUT),
+            stackOf(LEATHER_LEGGINGS)
+                .color(DyeColor.YELLOW).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.HOST)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(LEATHER_CHESTPLATE)
+                .color(DyeColor.YELLOW).trim(ArmorTrimMaterials.NETHERITE, ArmorTrimPatterns.SILENCE),
+            stackOf(LEATHER_HELMET)
+                .color(DyeColor.YELLOW).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.SHAPER),
+        )
+        val loadoutBlue = arrayOf(
+            stackOf(LEATHER_BOOTS)
+                .color(DyeColor.BLUE).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.SNOUT),
+            stackOf(LEATHER_LEGGINGS)
+                .color(DyeColor.BLUE).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.HOST)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(ELYTRA),
+            stackOf(LEATHER_HELMET)
+                .color(DyeColor.BLUE).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.SHAPER),
+        )
+        val loadoutCrab = arrayOf(
+            stackOf(LEATHER_BOOTS)
+                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.COAST),
+            stackOf(LEATHER_LEGGINGS)
+                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.SNOUT)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(LEATHER_CHESTPLATE)
+                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.SILENCE),
+            stackOf(LEATHER_HELMET)
+                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.EYE),
+        )
+        val loadoutArmadillo = arrayOf(
+            stackOf(LEATHER_BOOTS)
+                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE),
+            stackOf(LEATHER_LEGGINGS)
+                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(LEATHER_CHESTPLATE)
+                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE),
+            stackOf(LEATHER_HELMET)
+                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE),
+        )
+        val loadoutPenguin = arrayOf(
+            stackOf(LEATHER_BOOTS)
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.QUARTZ, ArmorTrimPatterns.WILD),
+            stackOf(LEATHER_LEGGINGS)
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.QUARTZ, ArmorTrimPatterns.VEX)
+                .enchant(Enchantments.SWIFT_SNEAK, 3),
+            stackOf(ELYTRA),
+            stackOf(LEATHER_HELMET)
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.VEX),
+        )
 
         loadouts = enumMapOf(
             NONE to loadoutEmpty,
@@ -145,6 +159,9 @@ class ArmorService : Service() {
             PLAYER_YELLOW to loadoutYellow,
             PLAYER_BLUE to loadoutBlue,
             PLAYER_BLACK to loadoutBlack,
+            PLAYER_CRAB to loadoutCrab,
+            PLAYER_ARMADILLO to loadoutArmadillo,
+            PLAYER_PENGUIN to loadoutPenguin,
         )
     }
 

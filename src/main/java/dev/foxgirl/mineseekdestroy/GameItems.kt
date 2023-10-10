@@ -36,6 +36,10 @@ object GameItems {
         IRON_PICKAXE, null,
         text("best for mining ") + text("concrete").bold(),
     )
+    val toolHoe = stackOf(
+        IRON_HOE, null,
+        text("just for fun, good luck using this"),
+    )
     val toolCrossbow = stackOf(
         CROSSBOW, null,
         text("PEW!"),
@@ -49,6 +53,13 @@ object GameItems {
     val toolTrident = stackOf(
         TRIDENT, null,
         text("have fun with this"),
+        text("does not affect ghosts").bold(),
+    ).apply {
+        addEnchantment(Enchantments.LOYALTY, 3)
+    }
+    val toolRod = stackOf(
+        FISHING_ROD, null,
+        text("yoink!"),
         text("does not affect ghosts").bold(),
     )
 

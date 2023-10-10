@@ -734,7 +734,7 @@ sealed interface GameProperties {
             private val allBlocks get() = Registries.BLOCK
             override val size get() = allBlocks.size() - flammableBlocks.size
             override fun iterator() = allBlocks.asSequence().filter(::contains).iterator()
-            override fun contains(block: Block) = block !in flammableBlocks
+            override fun contains(element: Block) = element !in flammableBlocks
         }
 
         override val unstealableBlocks = Base.unstealableBlocks

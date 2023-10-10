@@ -23,7 +23,10 @@ public enum GameTeam {
     PLAYER_WARDEN(Text.of("WARDEN"), "msd_warden", "msd_warden_dead", "msd_warden_damaged", Formatting.RED, Formatting.DARK_RED),
     PLAYER_BLACK(Text.of("BLACK"), "msd_black", "msd_black_dead", "msd_black_damaged", Formatting.DARK_PURPLE, Formatting.DARK_GRAY),
     PLAYER_YELLOW(Text.of("YELLOW"), "msd_yellow", "msd_yellow_dead", "msd_yellow_damaged", Formatting.YELLOW, Formatting.GOLD),
-    PLAYER_BLUE(Text.of("BLUE"), "msd_blue", "msd_blue_dead", "msd_blue_damaged", Formatting.AQUA, Formatting.BLUE);
+    PLAYER_BLUE(Text.of("BLUE"), "msd_blue", "msd_blue_dead", "msd_blue_damaged", Formatting.AQUA, Formatting.BLUE),
+    PLAYER_CRAB(Text.of("CRAB"), "msd_crab", "msd_crab_dead", "msd_crab_damaged", Formatting.RED, Formatting.GRAY),
+    PLAYER_ARMADILLO(Text.of("ARMADILLO"), "msd_armadillo", "msd_armadillo_dead", "msd_armadillo_damaged", Formatting.GOLD, Formatting.GRAY),
+    PLAYER_PENGUIN(Text.of("PENGUIN"), "msd_penguin", "msd_penguin_dead", "msd_penguin_damaged", Formatting.AQUA, Formatting.GRAY);
 
     private final Text displayName;
     private final String nameAlive;
@@ -70,6 +73,13 @@ public enum GameTeam {
 
     public boolean isOnScoreboard() {
         return this != NONE && this != GHOST && this != OPERATOR;
+    }
+
+    public boolean isCannon() {
+        return switch (this) {
+            case PLAYER_YELLOW, PLAYER_BLUE, PLAYER_CRAB, PLAYER_ARMADILLO, PLAYER_PENGUIN -> true;
+            default -> false;
+        };
     }
 
     public @Nullable String getName() {
