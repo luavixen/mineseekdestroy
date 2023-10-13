@@ -4,13 +4,13 @@ import com.viaversion.viaversion.api.Via
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
-import dev.foxgirl.mineseekdestroy.util.Reflector
+import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
-import dev.foxgirl.mineseekdestroy.util.dataDisplay
-import dev.foxgirl.mineseekdestroy.util.set
-import dev.foxgirl.mineseekdestroy.util.stackOf
+import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.Enchantments
+import net.minecraft.entity.attribute.EntityAttributeModifier
+import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.item.ArmorItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
@@ -24,6 +24,7 @@ import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.DyeColor
 import net.minecraft.util.collection.DefaultedList
+import java.util.*
 
 class ArmorService : Service() {
 
@@ -166,56 +167,80 @@ class ArmorService : Service() {
     }
 
     override fun update() {
-        for ((player, entity) in playerEntities) {
-            if (game.isOperator(entity)) continue
+        for ((player, playerEntity) in playerEntities) {
+            if (game.isOperator(playerEntity)) continue
 
-            val inventory = entity.inventory!!
-            var inventoryDirty = false
+            val inventory = playerEntity.inventory!!
 
-            if (armorRemove(inventory.main)) {
-                inventoryDirty = true
-            }
-            if (armorRemove(inventory.offHand)) {
-                inventoryDirty = true
-            }
+            armorRemove(inventory.main)
+            armorRemove(inventory.offHand)
 
-            if (player.team.isPlayingOrGhost) {
-                if (armorSet(inventory.armor, player)) {
-                    inventoryDirty = true
-                }
+            val armorAttribute = playerEntity.getAttributeInstance(EntityAttributes.GENERIC_ARMOR)!!
+            var armorModifierType = ArmorModifierType.NONE
+
+            if (Rules.hiddenArmorEnabled) {
+                armorModifierType = armorSetHidden(inventory.armor, player)
             } else {
-                if (armorRemove(inventory.armor)) {
-                    inventoryDirty = true
+                if (player.team.isPlayingOrGhost) {
+                    armorSet(inventory.armor, player)
+                } else {
+                    armorRemove(inventory.armor)
                 }
             }
 
-            if (inventoryDirty) {
-                inventory.markDirty()
+            for ((type, modifier) in armorModifiers) {
+                if (armorAttribute.hasModifier(modifier)) {
+                    if (armorModifierType !== type) armorAttribute.removeModifier(modifier)
+                } else {
+                    if (armorModifierType === type) armorAttribute.addPersistentModifier(modifier)
+                }
             }
         }
     }
 
-    private fun armorSet(list: MutableList<ItemStack>, player: GamePlayer): Boolean {
+    private fun armorSet(list: MutableList<ItemStack>, player: GamePlayer) {
         val loadout = loadouts[player.team]!!
-        var dirty = false
         for (i in list.indices) {
             if (ItemStack.areEqual(list[i], loadout[i])) continue
             list[i] = loadout[i].copy()
-            dirty = true
         }
-        return dirty
     }
 
-    private fun armorRemove(list: MutableList<ItemStack>): Boolean {
-        var dirty = false
+    private fun armorRemove(list: MutableList<ItemStack>, ignoreElytra: Boolean = false) {
         for (i in list.indices) {
             val stack = list[i]
             val item = stack.item
-            if (item !is ArmorItem && item !== ELYTRA) continue
+            if (item !is ArmorItem && (item !== ELYTRA || ignoreElytra)) continue
             list[i] = ItemStack.EMPTY
-            dirty = true
         }
-        return dirty
+    }
+
+    private fun armorSetHidden(list: MutableList<ItemStack>, player: GamePlayer): ArmorModifierType {
+        val stack = loadouts[player.team]!![2]
+        return if (stack.item === ELYTRA) {
+            if (!ItemStack.areEqual(list[2], stack)) list[2] = stack.copy()
+            armorRemove(list, true)
+            ArmorModifierType.ELYTRA
+        } else {
+            armorRemove(list, false)
+            ArmorModifierType.FULL
+        }
+    }
+
+    private enum class ArmorModifierType { NONE, ELYTRA, FULL }
+
+    private companion object {
+
+        private val armorModifierFull =
+            EntityAttributeModifier(UUID.fromString("a459f091-7fc2-42b0-b44f-eb33fddee8c3"), "msd_armor_full", 7.0, EntityAttributeModifier.Operation.ADDITION)
+        private val armorModifierElytra =
+            EntityAttributeModifier(UUID.fromString("442563b0-7d6a-4b18-b82f-01ecc5e6bc77"), "msd_armor_elytra", 4.0, EntityAttributeModifier.Operation.ADDITION)
+
+        private val armorModifiers = immutableListOf(
+            ArmorModifierType.FULL to armorModifierFull,
+            ArmorModifierType.ELYTRA to armorModifierElytra,
+        )
+
     }
 
     fun handlePacket(packet: Packet<*>, playerEntity: ServerPlayerEntity): Packet<*>? {

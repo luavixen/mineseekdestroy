@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "key": {
+        "I": [
+            { "item": "minecraft:egg" },
+            { "item": "minecraft:snowball" },
+            { "item": "minecraft:splash_potion" },
+            { "item": "minecraft:spectral_arrow" }
+        ]
+    },
+    "pattern": [
+        "I  ",
+        "   ",
+        "   "
+    ],
+    "result": {
+        "item": "minecraft:baked_potato",
+        "count": 1
+    }
+}

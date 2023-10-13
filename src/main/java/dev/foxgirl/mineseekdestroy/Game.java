@@ -88,8 +88,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_FINALIZING_DURATION =
         GameRuleRegistry.register("msdFinalizingSeconds", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(10.0));
 
-    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_ENHANCED_FURNACES =
-        GameRuleRegistry.register("msdEnhancedFurnaces", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_HIDDEN_ARMOR_ENABLED =
+        GameRuleRegistry.register("msdHiddenArmorEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_ENHANCED_FURNACES_ENABLED =
+        GameRuleRegistry.register("msdEnhancedFurnacesEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLUE_MELEE_CRITS =
         GameRuleRegistry.register("msdBlueMeleeCrits", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));

@@ -28,7 +28,9 @@ object Rules {
 
     @JvmStatic var finalizingDuration by DoubleRuleProperty(RULE_FINALIZING_DURATION)
 
-    @JvmStatic var enhancedFurnaces by BooleanRuleProperty(RULE_ENHANCED_FURNACES)
+    @JvmStatic var hiddenArmorEnabled by BooleanRuleProperty(RULE_HIDDEN_ARMOR_ENABLED)
+
+    @JvmStatic var enhancedFurnacesEnabled by BooleanRuleProperty(RULE_ENHANCED_FURNACES_ENABLED)
 
     @JvmStatic var blueMeleeCrits by BooleanRuleProperty(RULE_BLUE_MELEE_CRITS)
     @JvmStatic var blueArrowCrits by BooleanRuleProperty(RULE_BLUE_ARROW_CRITS)

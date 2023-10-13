@@ -32,6 +32,7 @@ internal fun setup() {
                     "noauto" to { Rules.automationEnabled = false },
                     "noghosts" to { Rules.automationGhostsEnabled = false },
                     "nosummons" to { Rules.summonsEnabled = false },
+                    "hiddenarmor" to { Rules.hiddenArmorEnabled = true },
                     "chaos" to { Rules.chaosEnabled = true },
                 )
 
