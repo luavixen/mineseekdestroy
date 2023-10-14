@@ -563,7 +563,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
             if (playerEntity.interactionManager.getGameMode() != GameMode.SURVIVAL) {
                 LOGGER.info("Player '" + playerEntity.getEntityName() + "' in incorrect gamemode");
                 playerEntity.interactionManager.changeGameMode(GameMode.SURVIVAL);
-                playerEntity.kill();
+                playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), Float.MAX_VALUE);
                 playerEntity.setHealth(0.0F);
             } else if (playerEntity.isAlive()) {
                 if (
@@ -578,7 +578,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         playerEntity.getYaw(), playerEntity.getPitch()
                     );
                     Scheduler.now((schedule) -> {
-                        playerEntity.kill();
+                        playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), Float.MAX_VALUE);
                         playerEntity.setHealth(0.0F);
                     });
                 } else if (context != null && getState().isPlaying()) {

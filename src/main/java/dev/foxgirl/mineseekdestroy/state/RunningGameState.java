@@ -44,6 +44,10 @@ public abstract class RunningGameState extends GameState {
 
         var player = context.getPlayer(playerEntity);
         if (player.isPlayingOrGhost() && player.isAlive()) {
+            if (damageSource.isOf(DamageTypes.GENERIC_KILL)) {
+                return false;
+            }
+
             player.setAlive(false);
             player.countDeath();
 
@@ -95,6 +99,9 @@ public abstract class RunningGameState extends GameState {
                 } else {
                     context.specialCarService.cooldownActivate((PigEntity) vehicle);
                 }
+            }
+            if (damageSource.isOf(DamageTypes.GENERIC_KILL)) {
+                return false;
             }
             if (
                 playerEntity.hasStatusEffect(StatusEffects.JUMP_BOOST) &&

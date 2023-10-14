@@ -1211,11 +1211,11 @@ class SummonsService : Service() {
             } },
             Theologies(OCCULT, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    text("The unmatched power of the sun!")
+                    text("Horrifying screams come from below!")
                 override val subtitle =
-                    text(options.team, "has pulled a star out of the sky.")
+                    text(options.team, "has summoned some ghasts!")
                 override val tooltip =
-                    text(options.team, "summoned a flaming star to the arena's center.")
+                    text(options.team, "summoned some ghasts!")
             } },
             Theologies(COSMOS, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
@@ -1227,11 +1227,11 @@ class SummonsService : Service() {
             } },
             Theologies(COSMOS, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
-                    text("A lingering flame burns inside!")
+                    text("The unmatched power of the sun!")
                 override val subtitle =
-                    text(options.team, "has gained additional health.")
+                    text(options.team, "has pulled a star out of the sky.")
                 override val tooltip =
-                    text(options.team, "gained a health bonus.")
+                    text(options.team, "summoned a flaming star to the arena's center.")
             } },
             Theologies(BARTER, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
