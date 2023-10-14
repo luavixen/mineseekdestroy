@@ -323,9 +323,6 @@ internal fun setup() {
         register("black", GameTeam.PLAYER_BLACK)
         register("yellow", GameTeam.PLAYER_YELLOW)
         register("blue", GameTeam.PLAYER_BLUE)
-        register("crab", GameTeam.PLAYER_CRAB)
-        register("armadillo", GameTeam.PLAYER_ARMADILLO)
-        register("penguin", GameTeam.PLAYER_PENGUIN)
     }
 
     Command.build("score") {

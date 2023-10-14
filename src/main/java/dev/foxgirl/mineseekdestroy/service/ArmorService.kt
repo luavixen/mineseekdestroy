@@ -117,38 +117,6 @@ class ArmorService : Service() {
             stackOf(LEATHER_HELMET)
                 .color(DyeColor.BLUE).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.SHAPER),
         )
-        val loadoutCrab = arrayOf(
-            stackOf(LEATHER_BOOTS)
-                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.COAST),
-            stackOf(LEATHER_LEGGINGS)
-                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.SNOUT)
-                .enchant(Enchantments.SWIFT_SNEAK, 3),
-            stackOf(LEATHER_CHESTPLATE)
-                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.SILENCE),
-            stackOf(LEATHER_HELMET)
-                .color(DyeColor.ORANGE).trim(ArmorTrimMaterials.LAPIS, ArmorTrimPatterns.EYE),
-        )
-        val loadoutArmadillo = arrayOf(
-            stackOf(LEATHER_BOOTS)
-                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE),
-            stackOf(LEATHER_LEGGINGS)
-                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE)
-                .enchant(Enchantments.SWIFT_SNEAK, 3),
-            stackOf(LEATHER_CHESTPLATE)
-                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE),
-            stackOf(LEATHER_HELMET)
-                .color(DyeColor.PINK).trim(ArmorTrimMaterials.COPPER, ArmorTrimPatterns.SILENCE),
-        )
-        val loadoutPenguin = arrayOf(
-            stackOf(LEATHER_BOOTS)
-                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.QUARTZ, ArmorTrimPatterns.WILD),
-            stackOf(LEATHER_LEGGINGS)
-                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.QUARTZ, ArmorTrimPatterns.VEX)
-                .enchant(Enchantments.SWIFT_SNEAK, 3),
-            stackOf(ELYTRA),
-            stackOf(LEATHER_HELMET)
-                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.GOLD, ArmorTrimPatterns.VEX),
-        )
 
         loadouts = enumMapOf(
             NONE to loadoutEmpty,
@@ -160,9 +128,6 @@ class ArmorService : Service() {
             PLAYER_YELLOW to loadoutYellow,
             PLAYER_BLUE to loadoutBlue,
             PLAYER_BLACK to loadoutBlack,
-            PLAYER_CRAB to loadoutCrab,
-            PLAYER_ARMADILLO to loadoutArmadillo,
-            PLAYER_PENGUIN to loadoutPenguin,
         )
     }
 

@@ -121,7 +121,7 @@ class SoulService : Service() {
     }
 
     fun handleSoulConsume(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
-        if (Rules.soulsConsumingEnabled && (player.team === GameTeam.PLAYER_YELLOW || player.team === GameTeam.PLAYER_CRAB)) {
+        if (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsConsumingEnabled) {
             playerEntity.addEffect(StatusEffects.JUMP_BOOST, Rules.soulsConsumingEffectDuration, Rules.soulsConsumingEffectJumpStrength)
             playerEntity.addEffect(StatusEffects.SPEED, Rules.soulsConsumingEffectDuration, Rules.soulsConsumingEffectSpeedStrength)
             playerEntity.particles(ParticleTypes.FLASH)
