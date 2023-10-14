@@ -11,10 +11,7 @@ import net.minecraft.entity.damage.DamageType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.Team;
+import net.minecraft.scoreboard.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -100,7 +97,7 @@ public final class GameContext {
 
         scoreboard = server.getScoreboard();
 
-        var scoreboardKillsOld = scoreboard.getObjective(scoreboardSoulsName);
+        var scoreboardKillsOld = scoreboard.getNullableObjective(scoreboardSoulsName);
         if (scoreboardKillsOld != null) {
             scoreboard.removeObjective(scoreboardKillsOld);
         }
@@ -112,9 +109,9 @@ public final class GameContext {
             ScoreboardCriterion.RenderType.INTEGER
         );
 
-        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, scoreboardSouls);
+        scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, scoreboardSouls);
 
-        var scoreboardHeartsOld = scoreboard.getObjective(scoreboardHeartsName);
+        var scoreboardHeartsOld = scoreboard.getNullableObjective(scoreboardHeartsName);
         if (scoreboardHeartsOld != null) {
             scoreboard.removeObjective(scoreboardHeartsOld);
         }
@@ -126,7 +123,7 @@ public final class GameContext {
             ScoreboardCriterion.RenderType.HEARTS
         );
 
-        scoreboard.setObjectiveSlot(Scoreboard.LIST_DISPLAY_SLOT_ID, scoreboardHearts);
+        scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.LIST, scoreboardHearts);
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 

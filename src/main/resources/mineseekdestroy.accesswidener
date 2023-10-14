@@ -4,6 +4,8 @@ accessible method net/minecraft/entity/Entity isBeingRainedOn ()Z
 
 accessible field net/minecraft/entity/LivingEntity lastDamageTime J
 
+accessible method net/minecraft/entity/attribute/EntityAttributeInstance removeModifier (Lnet/minecraft/entity/attribute/EntityAttributeModifier;)V
+
 accessible field net/minecraft/item/ItemUsageContext player Lnet/minecraft/entity/player/PlayerEntity;
 accessible field net/minecraft/item/ItemUsageContext hand Lnet/minecraft/util/Hand;
 accessible field net/minecraft/item/ItemUsageContext hit Lnet/minecraft/util/hit/BlockHitResult;
