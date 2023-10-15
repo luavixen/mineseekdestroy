@@ -3,9 +3,12 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
-import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.Rules
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
+import dev.foxgirl.mineseekdestroy.util.dataDisplay
+import dev.foxgirl.mineseekdestroy.util.set
+import dev.foxgirl.mineseekdestroy.util.stackOf
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.attribute.EntityAttributeModifier
@@ -14,15 +17,9 @@ import net.minecraft.item.ArmorItem
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items.*
 import net.minecraft.item.trim.*
-import net.minecraft.network.packet.Packet
-import net.minecraft.network.packet.s2c.play.EntityEquipmentUpdateS2CPacket
-import net.minecraft.network.packet.s2c.play.InventoryS2CPacket
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.DyeColor
-import net.minecraft.util.collection.DefaultedList
 import java.util.*
 
 class ArmorService : Service() {
