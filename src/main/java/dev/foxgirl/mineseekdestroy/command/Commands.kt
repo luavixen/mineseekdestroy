@@ -758,7 +758,7 @@ internal fun setup() {
                         null
                     }
 
-                val kind = SummonsService.Theologies(
+                val kind = SummonsService.Prayer(
                     theologyOf(args["theology1"]) ?: return@actionWithContext,
                     theologyOf(args["theology2"]) ?: return@actionWithContext,
                 )

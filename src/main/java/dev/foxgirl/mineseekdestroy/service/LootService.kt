@@ -78,7 +78,7 @@ class LootService : Service() {
         }
 
         val lootCount = Rules.lootCount
-        val lootStacks = template.asList()
+        val lootStacks = template.asList().map { it.copy().also(GameItems::replace) }
         if (lootStacks.isEmpty()) {
             console.sendError("Cannot create loot table, template chest(s) at ${properties.templateLoottable} are empty")
             return

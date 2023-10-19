@@ -1,7 +1,7 @@
 package dev.foxgirl.mineseekdestroy
 
 import dev.foxgirl.mineseekdestroy.service.PagesService
-import dev.foxgirl.mineseekdestroy.service.SummonsService.Theologies
+import dev.foxgirl.mineseekdestroy.service.SummonsService.Prayer
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
 import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableMap
@@ -83,7 +83,7 @@ object GameItems {
     val bakedPotato = stackOf(
         BAKED_POTATO, null,
         text("funner to eat!"),
-        text("was cooked at a ") + text("shrine").bold(),
+        text("how'd you get this?"),
     )
     val egg = stackOf(
         EGG, null,
@@ -190,12 +190,12 @@ object GameItems {
     val summonSteak = stackOf(
         COOKED_BEEF, null,
         text("funnest to eat!"),
-        text("was gained through ") + Theologies(COSMOS, BARTER).displayName,
+        text("was gained through ") + Prayer(COSMOS, BARTER).displayName,
     )
     val summonGoldenSword = stackOf(
         GOLDEN_SWORD, null,
         text("will mostly kill someone!"),
-        text("was gained through ") + Theologies(OCCULT, BARTER).displayName,
+        text("was gained through ") + Prayer(OCCULT, BARTER).displayName,
     ).apply {
         addEnchantment(Enchantments.SHARPNESS, 15)
         setDamage(32)
@@ -203,23 +203,23 @@ object GameItems {
     val summonBlueIce = stackOf(
         BLUE_ICE, null,
         text("its... its just normal ice i swear"),
-        text("was gained through ") + Theologies(FLAME, BARTER).displayName,
+        text("was gained through ") + Prayer(FLAME, BARTER).displayName,
     )
     val summonWaterBucket = stackOf(
         WATER_BUCKET, null,
         text("wotor"),
-        text("was gained through ") + Theologies(DEEP, FLAME).displayName,
+        text("was gained through ") + Prayer(DEEP, FLAME).displayName,
     )
     val summonChippedAnvil = stackOf(
         CHIPPED_ANVIL, null,
         text("forge this block onto the HEADS OF YOUR ENEMIES!"),
-        text("was gained through ") + Theologies(DEEP, FLAME).displayName,
+        text("was gained through ") + Prayer(DEEP, FLAME).displayName,
     )
     val summonCompass = stackOf(
         COMPASS, null,
         text("this item randomly selects an opp. player and tracks em!"),
         text("every compass currently in play tracks a different player!"),
-        text("was gained through ") + Theologies(DEEP, OCCULT).displayName,
+        text("was gained through ") + Prayer(DEEP, OCCULT).displayName,
     )
 
     val replacements = buildImmutableMap<Item, ItemStack> {

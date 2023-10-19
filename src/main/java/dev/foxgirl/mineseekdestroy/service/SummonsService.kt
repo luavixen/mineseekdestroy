@@ -20,7 +20,6 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.SpawnReason
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.entity.damage.DamageSource
-import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
@@ -57,16 +56,16 @@ class SummonsService : Service() {
         DEEP { override val color get() = Formatting.DARK_AQUA },
         OCCULT { override val color get() = Formatting.LIGHT_PURPLE },
         COSMOS { override val color get() = Formatting.BLUE },
-        BARTER { override val color get() = Formatting.GOLD },
+        BARTER { override val color get() = Formatting.YELLOW },
         FLAME { override val color get() = Formatting.RED },
         OPERATOR { override val color get() = Formatting.GREEN };
 
         abstract val color: Formatting
 
-        val displayName: Text get() = text(name).formatted(color)
+        val displayName: Text get() = text(name) * color
     }
 
-    class Theologies(theology1: Theology, theology2: Theology) {
+    class Prayer(theology1: Theology, theology2: Theology) {
         val theology1: Theology
         val theology2: Theology
 
@@ -82,8 +81,8 @@ class SummonsService : Service() {
 
         val isDouble get() = theology1 === theology2
 
-        val isOncePerGame get() = theologiesOncePerGame.contains(this)
-        val isOncePerRound get() = theologiesOncePerRound.contains(this)
+        val isOncePerGame get() = prayersOncePerGame.contains(this)
+        val isOncePerRound get() = prayersOncePerRound.contains(this)
 
         val displayName: Text get() =
             Text.empty()
@@ -95,7 +94,7 @@ class SummonsService : Service() {
 
         override fun hashCode() = 31 * theology1.hashCode() + theology2.hashCode()
         override fun equals(other: Any?) =
-            other === this || (other is Theologies && other.theology1 === theology1 && other.theology2 === theology2)
+            other === this || (other is Prayer && other.theology1 === theology1 && other.theology2 === theology2)
     }
 
     private class Altar(
@@ -104,7 +103,7 @@ class SummonsService : Service() {
     )
 
     private class Options(
-        val kind: Theologies,
+        val kind: Prayer,
         val altar: Altar,
         val player: GamePlayer,
     ) {
@@ -132,6 +131,9 @@ class SummonsService : Service() {
 
         private var state = State.WAITING
 
+        val isWaiting get() = state === State.WAITING
+        val isReady get() = state === State.READY
+
         private inline fun tryAction(verb: String, action: () -> Unit): Boolean {
             return try {
                 action()
@@ -144,7 +146,7 @@ class SummonsService : Service() {
         }
 
         fun tryPerform(): Boolean {
-            if (state == State.WAITING) {
+            if (isWaiting) {
                 val success = tryAction("performing", ::perform)
                 if (success) {
                     state = State.READY
@@ -155,7 +157,7 @@ class SummonsService : Service() {
             return false
         }
         fun tryStop(): Boolean {
-            if (state == State.READY) {
+            if (isReady) {
                 val success = tryAction("stopping", ::stop)
                 if (success) {
                     state = State.DEAD
@@ -166,7 +168,7 @@ class SummonsService : Service() {
             return false
         }
         fun tryUpdate(): Boolean {
-            if (state == State.READY) {
+            if (isReady) {
                 return tryAction("updating", ::update)
             }
             return false
@@ -214,7 +216,7 @@ class SummonsService : Service() {
             Async.go {
                 val (start, end) = properties.regionFlood
                 var y = start.y; while (y < end.y) {
-                    delay(3.0)
+                    delay(3.0); if (!isReady) break
 
                     val yMin = (y)
                     val yMax = (y + 3).coerceAtMost(end.y)
@@ -224,6 +226,8 @@ class SummonsService : Service() {
                         BlockPos(start.x, yMin, start.z),
                         BlockPos(end.x, yMax, end.z),
                     )
+
+                    logger.info("DeepDeepSummon performing edit for ${region}")
 
                     Editor
                         .queue(world, region)
@@ -238,6 +242,7 @@ class SummonsService : Service() {
                         }
                         .await()
                 }
+                logger.info("DeepDeepSummon completed")
             }
 
             world.setWeatherRain()
@@ -267,6 +272,8 @@ class SummonsService : Service() {
             val targets = playersIn.filter { it.team !== team }
             val targetsPool = targets.toMutableList().apply { shuffle() }
 
+            logger.info("DeepOccultSummon found ${targets.size} targets")
+
             if (targets.isEmpty()) return
 
             fun target() = targetsPool.removeLastOrNull() ?: targets.random()
@@ -286,6 +293,8 @@ class SummonsService : Service() {
                     data()["LodestoneTracked"] = true
                     data()["MsdTargetPlayer"] = target.uuid
                 })
+
+                logger.info("DeepOccultSummon gave tracker for ${target.name} to ${player.name}")
             }
         }
         override fun update() {
@@ -317,8 +326,8 @@ class SummonsService : Service() {
         }
         override fun update() {
             for ((_, entity) in playerEntitiesIn) {
-                if (entity.isBeingRainedOn && !entity.hasStatusEffect(StatusEffects.POISON)) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.POISON, 40))
+                if (entity.isBeingRainedOn && !entity.hasEffect(StatusEffects.POISON)) {
+                    entity.addEffect(StatusEffects.POISON, 2.0)
                 }
             }
         }
@@ -331,8 +340,8 @@ class SummonsService : Service() {
         override val timeout get() = Duration.ofSeconds(30)
         override fun update() {
             for ((_, entity) in playerEntitiesIn) {
-                if (entity.isTouchingWater && !entity.hasStatusEffect(StatusEffects.POISON)) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.POISON, 60))
+                if (entity.isTouchingWater && !entity.hasEffect(StatusEffects.POISON)) {
+                    entity.addEffect(StatusEffects.POISON, 3.0)
                 }
             }
         }
@@ -380,7 +389,7 @@ class SummonsService : Service() {
     private inner class OccultCosmosSummon(options: Options) : Summon(options) {
         override val timeout get() = Duration.ofSeconds(90)
         override fun perform() {
-            summonListGame.find { it.kind == Theologies(COSMOS, FLAME) }?.destroy()
+            summonListGame.find { it.kind == Prayer(COSMOS, FLAME) }?.destroy()
             for (pos in BlockPos.ofFloored(properties.borderCenter).around(7.0)) {
                 world.setBlockState(pos, (if (Random.nextBoolean()) Blocks.SNOW_BLOCK else Blocks.BONE_BLOCK).defaultState)
             }
@@ -415,18 +424,18 @@ class SummonsService : Service() {
     private inner class CosmosCosmosSummon(options: Options) : Summon(options) {
         override fun update() {
             for ((_, entity) in playerEntitiesNormal) {
-                if (!entity.hasStatusEffect(StatusEffects.SLOW_FALLING)) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOW_FALLING, 80))
+                if (!entity.hasEffect(StatusEffects.SLOW_FALLING)) {
+                    entity.addEffect(StatusEffects.SLOW_FALLING, 4.5)
                 }
-                if (!entity.hasStatusEffect(StatusEffects.JUMP_BOOST)) {
-                    entity.addStatusEffect(StatusEffectInstance(StatusEffects.JUMP_BOOST, 80, 5))
+                if (!entity.hasEffect(StatusEffects.JUMP_BOOST)) {
+                    entity.addEffect(StatusEffects.JUMP_BOOST, 4.5, 5)
                 }
             }
         }
         override fun stop() {
             for ((_, entity) in playerEntitiesNormal) {
-                entity.removeStatusEffect(StatusEffects.SLOW_FALLING)
-                entity.removeStatusEffect(StatusEffects.JUMP_BOOST)
+                entity.removeEffect(StatusEffects.SLOW_FALLING)
+                entity.removeEffect(StatusEffects.JUMP_BOOST)
             }
         }
     }
@@ -443,15 +452,15 @@ class SummonsService : Service() {
     private inner class CosmosFlameSummon(options: Options) : Summon(options) {
         override val timeout get() = Duration.ofSeconds(60)
         override fun perform() {
-            summonListGame.find { it.kind == Theologies(COSMOS, OCCULT) }?.destroy()
+            summonListGame.find { it.kind == Prayer(COSMOS, OCCULT) }?.destroy()
             Broadcast.sendSound(SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 2.0F, 1.0F, world, properties.borderCenter)
         }
         override fun update() {
             val center = BlockPos.ofFloored(properties.borderCenter)
             val region = center.let {
                 Region(
-                    it.add(+4, +4, +4),
-                    it.add(-4, -4, -4),
+                    it.add(+7, +7, +7),
+                    it.add(-7, -7, -7),
                 )
             }
             val positions = center.around(7.0).toHashSet()
@@ -483,7 +492,7 @@ class SummonsService : Service() {
                 }
             }
 
-            val kinds = immutableListOf(Theologies(FLAME, FLAME), Theologies(DEEP, DEEP), Theologies(COSMOS, COSMOS))
+            val kinds = immutableListOf(Prayer(FLAME, FLAME), Prayer(DEEP, DEEP), Prayer(COSMOS, COSMOS))
             val summons = summonListGame.filter { kinds.contains(it.kind) }
 
             summons.forEach { it.destroy() }
@@ -528,22 +537,22 @@ class SummonsService : Service() {
         }
     }
 
-    private val summons = immutableMapOf<Theologies, (Options) -> Summon>(
-        Theologies(DEEP, DEEP) to ::DeepDeepSummon,
-        Theologies(DEEP, OCCULT) to ::DeepOccultSummon,
-        Theologies(DEEP, COSMOS) to ::DeepCosmosSummon,
-        Theologies(DEEP, BARTER) to ::DeepBarterSummon,
-        Theologies(DEEP, FLAME) to ::DeepFlameSummon,
-        Theologies(OCCULT, OCCULT) to ::OccultOccultSummon,
-        Theologies(OCCULT, COSMOS) to ::OccultCosmosSummon,
-        Theologies(OCCULT, BARTER) to ::OccultBarterSummon,
-        Theologies(OCCULT, FLAME) to ::OccultFlameSummon,
-        Theologies(COSMOS, COSMOS) to ::CosmosCosmosSummon,
-        Theologies(COSMOS, BARTER) to ::CosmosBarterSummon,
-        Theologies(COSMOS, FLAME) to ::CosmosFlameSummon,
-        Theologies(BARTER, BARTER) to ::BarterBarterSummon,
-        Theologies(BARTER, FLAME) to :: BarterFlameSummon,
-        Theologies(FLAME, FLAME) to ::FlameFlameSummon,
+    private val summons = immutableMapOf<Prayer, (Options) -> Summon>(
+        Prayer(DEEP, DEEP) to ::DeepDeepSummon,
+        Prayer(DEEP, OCCULT) to ::DeepOccultSummon,
+        Prayer(DEEP, COSMOS) to ::DeepCosmosSummon,
+        Prayer(DEEP, BARTER) to ::DeepBarterSummon,
+        Prayer(DEEP, FLAME) to ::DeepFlameSummon,
+        Prayer(OCCULT, OCCULT) to ::OccultOccultSummon,
+        Prayer(OCCULT, COSMOS) to ::OccultCosmosSummon,
+        Prayer(OCCULT, BARTER) to ::OccultBarterSummon,
+        Prayer(OCCULT, FLAME) to ::OccultFlameSummon,
+        Prayer(COSMOS, COSMOS) to ::CosmosCosmosSummon,
+        Prayer(COSMOS, BARTER) to ::CosmosBarterSummon,
+        Prayer(COSMOS, FLAME) to ::CosmosFlameSummon,
+        Prayer(BARTER, BARTER) to ::BarterBarterSummon,
+        Prayer(BARTER, FLAME) to :: BarterFlameSummon,
+        Prayer(FLAME, FLAME) to ::FlameFlameSummon,
     )
 
     private val summonListGame = mutableListOf<Summon>()
@@ -568,8 +577,8 @@ class SummonsService : Service() {
             return when (world.getBlockState(pos).block) {
                 Blocks.WARPED_PLANKS -> DEEP
                 Blocks.DARK_OAK_TRAPDOOR -> OCCULT
-                Blocks.OBSIDIAN -> COSMOS
-                Blocks.WAXED_CUT_COPPER -> BARTER
+                Blocks.BLACKSTONE -> COSMOS
+                Blocks.GOLD_BLOCK -> BARTER
                 Blocks.NETHER_BRICKS -> FLAME
                 Blocks.COMMAND_BLOCK -> OPERATOR
                 else -> null
@@ -594,16 +603,13 @@ class SummonsService : Service() {
         timeout = Instant.now()
         timeoutDuration = Duration.ZERO
     }
-
     private fun timeoutSet(duration: Duration) {
         timeout = Instant.now().plus(duration)
         timeoutDuration = duration
     }
-
     private fun timeoutRemaining(): Duration {
         return Duration.between(Instant.now(), timeout)
     }
-
     private fun timeoutCheck(): Boolean {
         return timeout.isAfter(Instant.now())
     }
@@ -618,7 +624,6 @@ class SummonsService : Service() {
         }
         textTimeUpdate()
     }
-
     private fun textUpdateTooltip() {
         val textProvider = textProvider
         if (textProvider != null) {
@@ -626,15 +631,12 @@ class SummonsService : Service() {
         }
         textTimeUpdate()
     }
-
     private fun textClear() {
         textProvider = null
     }
-
     private fun textTimeUpdate() {
         textLastUpdate = Instant.now()
     }
-
     private fun textTimeCheck(): Boolean {
         return Duration.between(textLastUpdate, Instant.now()).toMillis() >= 500
     }
@@ -677,7 +679,7 @@ class SummonsService : Service() {
     private fun failPerform(options: Options) {
         for (player in players) {
             if (player.team === options.team) {
-                player.entity?.addStatusEffect(StatusEffectInstance(StatusEffects.GLOWING, 80))
+                player.entity?.addEffect(StatusEffects.GLOWING, 4.0)
             }
         }
 
@@ -793,11 +795,11 @@ class SummonsService : Service() {
 
     private fun updateActive() {
         val active = summonListGame.map { it.kind }
-        isScaldingEarth = active.contains(Theologies(FLAME, FLAME))
-        isFlashFlood = active.contains(Theologies(DEEP, DEEP))
-        isPollutedWater = active.contains(Theologies(DEEP, BARTER))
-        isAcidRain = active.contains(Theologies(DEEP, COSMOS))
-        isTracking = active.contains(Theologies(DEEP, OCCULT))
+        isScaldingEarth = active.contains(Prayer(FLAME, FLAME))
+        isFlashFlood = active.contains(Prayer(DEEP, DEEP))
+        isPollutedWater = active.contains(Prayer(DEEP, BARTER))
+        isAcidRain = active.contains(Prayer(DEEP, COSMOS))
+        isTracking = active.contains(Prayer(DEEP, OCCULT))
     }
 
     private fun updateBar() {
@@ -878,8 +880,8 @@ class SummonsService : Service() {
             val type = PagesService.pageTypeFor(stack)
             return if (type != null && type.action === PagesService.Action.SUMMON) type.theology else null
         }
-        private fun theologies(): Theologies? {
-            return Theologies(
+        private fun theologies(): Prayer? {
+            return Prayer(
                 theologyFor(inventory.getStack(0)) ?: return null,
                 theologyFor(inventory.getStack(1)) ?: return null,
             )
@@ -909,7 +911,7 @@ class SummonsService : Service() {
                     BARRIER, nbtCompoundOf(
                         "display" to nbtCompoundOf(
                             "Name" to text("summon pages required").red(),
-                            "Lore" to listOf(
+                            "Lore" to nbtListOf(
                                 text("put two summon pages into the first two slots"),
                                 text("if the summon pages are the same, you need a soul"),
                             ),
@@ -924,7 +926,7 @@ class SummonsService : Service() {
                     BARRIER, nbtCompoundOf(
                         "display" to nbtCompoundOf(
                             "Name" to text("soul required").red(),
-                            "Lore" to listOf(
+                            "Lore" to nbtListOf(
                                 text("you are trying to perform a pure summon (same pages)"),
                                 text("this requires a player's soul in the third slot"),
                             ),
@@ -934,7 +936,7 @@ class SummonsService : Service() {
                 ))
                 return
             }
-            inventory.setStack(3, summonItems[pair]!!.copy())
+            inventory.setStack(3, summonIcons[pair]!!.copy())
         }
 
         override fun handleClosed() {
@@ -1007,7 +1009,7 @@ class SummonsService : Service() {
         console.sendInfo("Displaying all summon TextProviders")
 
         val iterator = iterator {
-            fun options() = Options(Theologies(DEEP, FLAME), altars.values.random(), players.random())
+            fun options() = Options(Prayer(DEEP, FLAME), altars.values.random(), players.random())
 
             for ((key, provider) in textProvidersSuccess) {
                 yield(text(key) to provider(options()))
@@ -1040,7 +1042,7 @@ class SummonsService : Service() {
         timeoutReset()
     }
 
-    fun executeSummon(console: Console, kind: Theologies, player: GamePlayer) {
+    fun executeSummon(console: Console, kind: Prayer, player: GamePlayer) {
         console.sendInfo("Performing summon", kind, "manually")
 
         val altar: Altar = try {
@@ -1071,97 +1073,97 @@ class SummonsService : Service() {
             setWeather(24000 * 10, 0, false, false)
         }
 
-        private val theologiesOncePerGame = immutableListOf<Theologies>(
-            Theologies(DEEP, DEEP),
-            Theologies(DEEP, OCCULT),
-            Theologies(DEEP, BARTER),
-            Theologies(OCCULT, OCCULT),
-            Theologies(OCCULT, COSMOS),
-            Theologies(OCCULT, BARTER),
-            Theologies(COSMOS, COSMOS),
-            Theologies(COSMOS, FLAME),
-            Theologies(FLAME,  FLAME),
+        private val prayersOncePerGame = immutableListOf<Prayer>(
+            Prayer(DEEP, DEEP),
+            Prayer(DEEP, BARTER),
+            Prayer(OCCULT, OCCULT),
+            Prayer(OCCULT, BARTER),
+            Prayer(COSMOS, COSMOS),
+            Prayer(COSMOS, FLAME),
+            Prayer(FLAME,  FLAME),
         )
-        private val theologiesOncePerRound = immutableListOf<Theologies>(
-            Theologies(DEEP, COSMOS),
-            Theologies(BARTER, BARTER),
+        private val prayersOncePerRound = immutableListOf<Prayer>(
+            Prayer(DEEP, OCCULT),
+            Prayer(DEEP, COSMOS),
+            Prayer(OCCULT, COSMOS),
+            Prayer(BARTER, BARTER),
         )
 
-        private fun summonItem(kind: Theologies, item: Item, vararg lore: Text): Pair<Theologies, ItemStack> =
+        private fun summonIconFor(kind: Prayer, item: Item, vararg lore: Text): Pair<Prayer, ItemStack> =
             kind to stackOf(item, nbtCompoundOf(
                 "display" to nbtCompoundOf(
-                    "Name" to kind.displayName,
+                    "Name" to kind,
                     "Lore" to lore.asList(),
                 ),
                 "MsdIllegal" to true,
                 "MsdSummonItem" to true,
             ))
 
-        private val summonItems = immutableMapOf<Theologies, ItemStack>(
-            summonItem(
-                Theologies(DEEP, DEEP), WATER_BUCKET,
+        private val summonIcons = immutableMapOf<Prayer, ItemStack>(
+            summonIconFor(
+                Prayer(DEEP, DEEP), WATER_BUCKET,
                 text("Flood the entire map?"),
             ),
-            summonItem(
-                Theologies(BARTER, BARTER), STRUCTURE_VOID,
+            summonIconFor(
+                Prayer(BARTER, BARTER), STRUCTURE_VOID,
                 text("Destroy all special items?"),
             ),
-            summonItem(
-                Theologies(FLAME, FLAME), FIRE_CHARGE,
+            summonIconFor(
+                Prayer(FLAME, FLAME), FIRE_CHARGE,
                 text("All blocks become flammable?"),
             ),
-            summonItem(
-                Theologies(COSMOS, COSMOS), RABBIT_FOOT,
+            summonIconFor(
+                Prayer(COSMOS, COSMOS), RABBIT_FOOT,
                 text("Gravity greatly reduced?"),
             ),
-            summonItem(
-                Theologies(OCCULT, OCCULT), WITHER_SKELETON_SKULL,
+            summonIconFor(
+                Prayer(OCCULT, OCCULT), WITHER_SKELETON_SKULL,
                 text("Black team wins?"),
             ),
-            summonItem(
-                Theologies(DEEP, BARTER), POTION,
+            summonIconFor(
+                Prayer(DEEP, BARTER), POTION,
                 text("Water blocks deal poison damage"),
             ),
-            summonItem(
-                Theologies(BARTER, FLAME), MAGMA_BLOCK,
+            summonIconFor(
+                Prayer(BARTER, FLAME), MAGMA_BLOCK,
                 text("Receive some really hot blocks"),
             ),
-            summonItem(
-                Theologies(FLAME, COSMOS), SUNFLOWER,
+            summonIconFor(
+                Prayer(FLAME, COSMOS), SUNFLOWER,
                 text("Call upon the unstoppable power of the sun"),
             ),
-            summonItem(
-                Theologies(COSMOS, OCCULT), END_STONE,
+            summonIconFor(
+                Prayer(COSMOS, OCCULT), END_STONE,
                 text("Call upon the beautiful power of the moon"),
             ),
-            summonItem(
-                Theologies(DEEP, FLAME), ANVIL,
+            summonIconFor(
+                Prayer(DEEP, FLAME), ANVIL,
                 text("Receive water buckets and anvils"),
             ),
-            summonItem(
-                Theologies(BARTER, COSMOS), COOKED_BEEF,
+            summonIconFor(
+                Prayer(BARTER, COSMOS), COOKED_BEEF,
                 text("Receive some steak"),
             ),
-            summonItem(
-                Theologies(FLAME, OCCULT), GHAST_SPAWN_EGG,
+            summonIconFor(
+                Prayer(FLAME, OCCULT), GHAST_SPAWN_EGG,
                 text("Spawn ghasts in the arena"),
             ),
-            summonItem(
-                Theologies(DEEP, COSMOS), PRISMARINE_SHARD,
+            summonIconFor(
+                Prayer(DEEP, COSMOS), PRISMARINE_SHARD,
                 text("Acid rain starts pouring down"),
             ),
-            summonItem(
-                Theologies(BARTER, OCCULT), GOLDEN_SWORD,
+            summonIconFor(
+                Prayer(BARTER, OCCULT), GOLDEN_SWORD,
                 text("Receive very powerful swords"),
             ),
-            summonItem(
-                Theologies(DEEP, OCCULT), COMPASS,
+            summonIconFor(
+                Prayer(DEEP, OCCULT), COMPASS,
                 text("Reveal the locations of your enemies"),
             )
         )
 
-        private val textProvidersSuccess = immutableMapOf<Theologies, (Options) -> TextProvider>(
-            Theologies(DEEP, OCCULT) to { object : DefaultTextProvider(it) {
+        private val textProvidersSuccess = immutableMapOf<Prayer, (Options) -> TextProvider>(
+            Prayer(DEEP, OCCULT) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("Star & compass, map & sextant;")
                 override val subtitle =
@@ -1169,7 +1171,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "received trackers for enemy players.")
             } },
-            Theologies(DEEP, COSMOS) to { object : DefaultTextProvider(it) {
+            Prayer(DEEP, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("Whirling clouds cast a stinging spittle!")
                 override val subtitle =
@@ -1177,7 +1179,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "summoned stinging rain.")
             } },
-            Theologies(DEEP, BARTER) to { object : DefaultTextProvider(it) {
+            Prayer(DEEP, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("Flowing waters boil and bubble...")
                 override val subtitle =
@@ -1185,7 +1187,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "poisoned the water.")
             } },
-            Theologies(DEEP, FLAME) to { object : DefaultTextProvider(it) {
+            Prayer(DEEP, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("From the heart of the forge,")
                 override val subtitle =
@@ -1193,7 +1195,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "summoned water buckets and anvils.")
             } },
-            Theologies(OCCULT, COSMOS) to { object : DefaultTextProvider(it) {
+            Prayer(OCCULT, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("The full moon is upon us!")
                 override val subtitle =
@@ -1201,7 +1203,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "summoned a moon to the arena's center.")
             } },
-            Theologies(OCCULT, BARTER) to { object : DefaultTextProvider(it) {
+            Prayer(OCCULT, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("You only have one shot.")
                 override val subtitle =
@@ -1209,7 +1211,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "was granted powerful swords.")
             } },
-            Theologies(OCCULT, FLAME) to { object : DefaultTextProvider(it) {
+            Prayer(OCCULT, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("Horrifying screams come from below!")
                 override val subtitle =
@@ -1217,7 +1219,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "summoned some ghasts!")
             } },
-            Theologies(COSMOS, BARTER) to { object : DefaultTextProvider(it) {
+            Prayer(COSMOS, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("A feast fit for royals!")
                 override val subtitle =
@@ -1225,7 +1227,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "summoned a steak feast.")
             } },
-            Theologies(COSMOS, FLAME) to { object : DefaultTextProvider(it) {
+            Prayer(COSMOS, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("The unmatched power of the sun!")
                 override val subtitle =
@@ -1233,7 +1235,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "summoned a flaming star to the arena's center.")
             } },
-            Theologies(BARTER, FLAME) to { object : DefaultTextProvider(it) {
+            Prayer(BARTER, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("The weather outside is frightful...")
                 override val subtitle =
@@ -1241,7 +1243,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(options.team, "gained blocks of ice.")
             } },
-            Theologies(DEEP, DEEP) to { object : DefaultTextProvider(it) {
+            Prayer(DEEP, DEEP) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("FLASH FLOOD") * DEEP.color
                 override val subtitle =
@@ -1249,7 +1251,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text("The map is flooding.")
             } },
-            Theologies(OCCULT, OCCULT) to { object : DefaultTextProvider(it) {
+            Prayer(OCCULT, OCCULT) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("DESPERATION") * OCCULT.color
                 override val subtitle =
@@ -1257,7 +1259,7 @@ class SummonsService : Service() {
                 override val tooltip =
                     text(GameTeam.PLAYER_BLACK, "players gained two kills.")
             } },
-            Theologies(COSMOS, COSMOS) to { object : DefaultTextProvider(it) {
+            Prayer(COSMOS, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("FINAL FRONTIER") * COSMOS.color
                 override val subtitle =
@@ -1265,15 +1267,15 @@ class SummonsService : Service() {
                 override val tooltip =
                     text("Gravity is significantly reduced.")
             } },
-            Theologies(BARTER, BARTER) to { object : DefaultTextProvider(it) {
+            Prayer(BARTER, BARTER) to { object : DefaultTextProvider(it) {
                 override val title =
-                    text("MARKET CRASH") * BARTER.color
+                    text("THE I.R.S.") * BARTER.color
                 override val subtitle =
                     text("All special items have been lost!")
                 override val tooltip =
                     text("All special items have been lost.")
             } },
-            Theologies(FLAME, FLAME) to { object : DefaultTextProvider(it) {
+            Prayer(FLAME, FLAME) to { object : DefaultTextProvider(it) {
                 override val title =
                     text("INFERNO") * FLAME.color
                 override val subtitle =

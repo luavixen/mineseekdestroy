@@ -130,7 +130,7 @@ class PagesService : Service() {
         val user = context.getPlayer(userEntity)
         if (user.isOperator) return true
         if (state.isWaiting) {
-            userEntity.sendMessage(text("Cannot use pages while waiting for next round").red())
+            userEntity.sendMessage(text("Cannot use page while waiting for next round").red())
             return true
         }
         if (
@@ -138,15 +138,15 @@ class PagesService : Service() {
             properties.regionBlimpBalloons.contains(userEntity) ||
             properties.regionPlayable.excludes(userEntity)
         ) {
-            userEntity.sendMessage(text("Cannot use pages while in the blimp or out of bounds").red())
+            userEntity.sendMessage(text("Cannot use page while in the blimp or out of bounds").red())
             return true
         }
         if (userEntity.world !== world) {
-            userEntity.sendMessage(text("Cannot use pages while in another dimension").red())
+            userEntity.sendMessage(text("Cannot use page while in another dimension").red())
             return true
         }
         if (!user.isAlive || !user.isPlaying) {
-            userEntity.sendMessage(text("Cannot use pages while dead/ghost/etc.").red())
+            userEntity.sendMessage(text("Cannot use page while dead/ghost/etc.").red())
             return true
         }
         if (page.type in user.activePages()) {
@@ -280,11 +280,11 @@ class PagesService : Service() {
                     PageType(COSMOS, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:11,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
                     PageType(COSMOS, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:11,Pattern:\"gra\"},{Color:11,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
                     // Barter
-                    PageType(BARTER, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
-                    PageType(BARTER, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
-                    PageType(BARTER, REGEN) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"moj\"}],id:\"minecraft:banner\"}}").asCompound(),
-                    PageType(BARTER, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
-                    PageType(BARTER, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:1,Pattern:\"gra\"},{Color:1,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:4,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:4,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, REGEN) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:4,Pattern:\"moj\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, AREA) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:4,Pattern:\"cbo\"}],id:\"minecraft:banner\"}}").asCompound(),
+                    PageType(BARTER, BUSTED) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:4,Pattern:\"gra\"},{Color:4,Pattern:\"gru\"},{Color:0,Pattern:\"sku\"}],id:\"minecraft:banner\"}}").asCompound(),
                     // Flame
                     PageType(FLAME, SUMMON) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:14,Pattern:\"gru\"}],id:\"minecraft:banner\"}}").asCompound(),
                     PageType(FLAME, HEALTH) to nbtDecode("{BlockEntityTag:{Patterns:[{Color:15,Pattern:\"bri\"},{Color:0,Pattern:\"bo\"},{Color:14,Pattern:\"sc\"}],id:\"minecraft:banner\"}}").asCompound(),
@@ -436,7 +436,10 @@ class PagesService : Service() {
                                 userEntity.networkHandler.sendPacket(BlockUpdateS2CPacket(pos, world.getBlockState(pos)))
                             }
 
-                            userEntity.air -= 21
+                            if (userEntity.health > 1.0F) {
+                                userEntity.air -= 21
+                            }
+
                             userEntity.addEffect(LEVITATION, 10.5)
                             userEntity.particles(ParticleTypes.FALLING_WATER, 1.0, 5) {
                                 it.add(
