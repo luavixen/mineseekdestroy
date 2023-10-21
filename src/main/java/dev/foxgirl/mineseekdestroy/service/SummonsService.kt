@@ -1092,7 +1092,7 @@ class SummonsService : Service() {
         private fun summonIconFor(kind: Prayer, item: Item, vararg lore: Text): Pair<Prayer, ItemStack> =
             kind to stackOf(item, nbtCompoundOf(
                 "display" to nbtCompoundOf(
-                    "Name" to kind,
+                    "Name" to kind.displayName,
                     "Lore" to lore.asList(),
                 ),
                 "MsdIllegal" to true,
