@@ -27,9 +27,9 @@
         "MixinProjectileEntity",
         "MixinRecipeManager",
         "MixinSaddledComponent",
-        "MixinServerCommonNetworkHandler",
         "MixinServerPlayerEntity",
         "MixinServerPlayerInteractionManager",
+        "MixinServerPlayNetworkHandler",
         "MixinSharedConstants",
         "MixinTeam",
         "MixinTeamMsgCommand"
