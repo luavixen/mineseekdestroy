@@ -146,22 +146,32 @@ internal fun setup() {
                     }
                 }
             }
-            it.params(argLiteral("dump"), argString("player")) {
-                it.actionWithContext { args, context ->
-                    val player = context.getPlayer(args.get<String>("player"))
-                    if (player != null) {
-                        args.sendInfo("Player", text(player.displayName).styleParent { it.withColor(Formatting.WHITE) }, player.uuid)
-                        args.sendInfo("    team:", player.team)
-                        args.sendInfo("    isPlaying:", player.isPlaying)
-                        args.sendInfo("    isCannon:", player.isCannon)
-                        args.sendInfo("    souls:", player.souls)
-                        args.sendInfo("    kills:", player.kills)
-                        args.sendInfo("    deaths:", player.deaths)
-                        args.sendInfo("    isAlive:", player.isAlive)
-                        args.sendInfo("    isLiving:", player.isLiving)
-                        args.sendInfo("    entity:", player.entity.toString().asText().formatted(Formatting.WHITE))
-                    } else {
-                        args.sendError("Player not found")
+            it.params(argLiteral("dump")) {
+                fun dump(console: Console, player: GamePlayer) {
+                    console.sendInfo("Player", text(player.displayName).styleParent { it.withColor(Formatting.WHITE) }, player.uuid)
+                    console.sendInfo("  - team:", player.team)
+                    console.sendInfo("  - isPlaying:", player.isPlaying)
+                    console.sendInfo("  - isCannon:", player.isCannon)
+                    console.sendInfo("  - souls:", player.souls)
+                    console.sendInfo("  - kills:", player.kills)
+                    console.sendInfo("  - deaths:", player.deaths)
+                    console.sendInfo("  - isAlive:", player.isAlive)
+                    console.sendInfo("  - isLiving:", player.isLiving)
+                    console.sendInfo("  - entity:", player.entity.toString().asText().formatted(Formatting.WHITE))
+                }
+                it.params(argPlayer()) {
+                    it.actionWithContext { args, context ->
+                        dump(args, args.player(context))
+                    }
+                }
+                it.params(argLiteral("specific"), argString("player")) {
+                    it.actionWithContext { args, context ->
+                        val player = context.getPlayer(args.get<String>("player"))
+                        if (player != null) {
+                            dump(args, player)
+                        } else {
+                            args.sendError("Player not found")
+                        }
                     }
                 }
             }
