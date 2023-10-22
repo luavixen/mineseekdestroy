@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.state.DuelingGameState
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.async.Async
 import net.minecraft.block.Blocks
 import net.minecraft.block.RespawnAnchorBlock
 import net.minecraft.entity.effect.StatusEffects
@@ -228,8 +229,14 @@ class SoulService : Service() {
         victim.team = GameTeam.PLAYER_DUEL
         victim.isAlive = true
 
-        aggressor.teleport(properties.positionDuel1)
-        victim.teleport(properties.positionDuel2)
+        Async.go {
+            var running = true; go { delay(0.1); running = false }
+            do {
+                aggressor.teleport(properties.positionDuel1)
+                victim.teleport(properties.positionDuel2)
+                delay()
+            } while (running)
+        }
 
         state = DuelingGameState()
         context.snapshotService.executeSnapshotSave(console)

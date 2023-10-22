@@ -54,13 +54,13 @@ class SpecialPianoService : Service() {
             notesAdd(index)
 
             if (notesCheck(songAllStar)) {
-                logger.info("Player ${player.name} played piano song All-Star")
+                logger.info("Player '${player.name}' played piano song All-Star")
                 player.entity?.networkHandler?.disconnect(Text.of("get out"))
             } else if (notesCheck(songSongOfTime)) {
-                logger.info("Player ${player.name} played piano song Song of Time")
+                logger.info("Player '${player.name}' played piano song Song of Time")
                 player.entity?.giveItemStack(ItemStack(Items.CLOCK))
             } else if (notesCheck(songMegalovania) || notesCheck(songSongOfStorms)) {
-                logger.info("Player ${player.name} played piano song Megalovania / Song of Storms")
+                logger.info("Player '${player.name}' played piano song Megalovania / Song of Storms")
                 player.entity?.let { entity ->
                     entity.damage(entity.damageSources.outOfWorld(), Float.MAX_VALUE)
                     EntityType.LIGHTNING_BOLT.spawn(world, entity.blockPos, SpawnReason.COMMAND)

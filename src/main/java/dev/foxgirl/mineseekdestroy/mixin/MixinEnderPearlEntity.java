@@ -50,6 +50,8 @@ public abstract class MixinEnderPearlEntity extends ThrownItemEntity {
                     .orElse(null);
 
                 if (targetEntity != null) {
+                    Game.LOGGER.info("Grapple pearl teleporting target '{}' to user '{}", targetEntity.getName(), playerEntity.getEntityName());
+
                     refreshPositionAfterTeleport(playerEntity.getPos());
 
                     Broadcast.sendParticles(ParticleTypes.POOF, 0.1F, 5, getWorld(), targetEntity.getPos());
@@ -57,11 +59,14 @@ public abstract class MixinEnderPearlEntity extends ThrownItemEntity {
 
                     return targetEntity;
                 } else {
+                    Game.LOGGER.info("Grapple pearl from user '{}' missed", playerEntity.getEntityName());
+
                     Broadcast.sendParticles(ParticleTypes.POOF, 0.1F, 3, getWorld(), getPos());
 
                     return null;
                 }
             } else {
+                Game.LOGGER.info("Normal pearl teleporting user '{}'", playerEntity.getEntityName());
                 Broadcast.sendSound(SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1.0F, 1.0F, getWorld(), getPos());
                 Broadcast.sendParticles(ParticleTypes.POOF, 0.1F, 5, playerEntity.getWorld(), playerEntity.getPos());
             }

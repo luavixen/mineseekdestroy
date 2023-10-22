@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 public class PlayingGameState extends RunningGameState {
 
@@ -29,7 +30,7 @@ public class PlayingGameState extends RunningGameState {
 
     @Override
     protected @Nullable GameState onUpdate(@NotNull GameContext context) {
-        var teamsCurrentlyAlive = EnumSet.noneOf(GameTeam.class);
+        Set<GameTeam> teamsCurrentlyAlive = EnumSet.noneOf(GameTeam.class);
 
         for (var player : context.getPlayersIn()) {
             var team = player.getTeam();

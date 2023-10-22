@@ -19,6 +19,7 @@
         "MixinFireBlock",
         "MixinItem",
         "MixinItemEntity",
+        "MixinLivingEntity",
         "MixinMessageCommand",
         "MixinMinecraftServer",
         "MixinPigEntity",

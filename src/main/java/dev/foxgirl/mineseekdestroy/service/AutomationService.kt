@@ -62,7 +62,7 @@ class AutomationService : Service() {
                 if (player.kills > record.kills) {
                     tasks.add {
                         player.team = teamSkip
-                        logger.info("Automation assigned " + player.name + " to skip")
+                        logger.info("Automation assigned '" + player.name + "' to skip")
                     }
                 } else {
                     tasks.add {
@@ -71,7 +71,7 @@ class AutomationService : Service() {
                             text(player).darkRed(),
                             text("has been removed from the game!").red(),
                         )
-                        logger.info("Automation removed " + player.name + " from the game")
+                        logger.info("Automation removed '" + player.name + "' from the game")
                     }
                 }
             }
@@ -81,7 +81,7 @@ class AutomationService : Service() {
             if (player.team == losingTeam) {
                 tasks.add {
                     player.team = GameTeam.PLAYER_BLACK
-                    logger.info("Automation assigned " + player.name + " to black")
+                    logger.info("Automation assigned '" + player.name + "' to black")
                 }
             }
         }
@@ -350,7 +350,7 @@ class AutomationService : Service() {
                     val player = context.getPlayer(name)
                     if (player != null) {
                         player.team = team
-                        Game.LOGGER.info("Automation iPad assigned " + player.name + " to team " + team)
+                        Game.LOGGER.info("Automation iPad assigned '" + player.name + "' to team " + team)
                     }
                 }
             }

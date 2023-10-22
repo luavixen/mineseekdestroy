@@ -61,6 +61,8 @@ class SpecialBoosterService : Service() {
         trackers += Tracker(
             properties.regionBlimpFans,
             {
+                logger.info("Player '${it.entityName}' entered blimp fans")
+
                 it.frozenTicks = 120
                 it.addStatusEffect(StatusEffectInstance(
                     StatusEffects.SLOW_FALLING,
@@ -68,6 +70,8 @@ class SpecialBoosterService : Service() {
                 ))
             },
             {
+                logger.info("Player '${it.entityName}' launched by blimp fans")
+
                 it.addVelocity(0.0, Rules.fansKnockback, 0.0)
                 it.networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(it))
                 it.velocityDirty = false
@@ -91,6 +95,8 @@ class SpecialBoosterService : Service() {
                 trackers += Tracker(
                     region,
                     {
+                        logger.info("Player '${it.entityName}' entered tower")
+
                         it.frozenTicks = 120
                         it.addStatusEffect(StatusEffectInstance(
                             StatusEffects.SLOW_FALLING,
@@ -98,6 +104,8 @@ class SpecialBoosterService : Service() {
                         ))
                     },
                     {
+                        logger.info("Player '${it.entityName}' launched by tower")
+
                         val p1 = region.center
                         val p2 = it.pos
 

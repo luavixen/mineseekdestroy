@@ -9,24 +9,30 @@ import net.minecraft.text.Style
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 
-fun text(): MutableText = Text.empty()
-fun text(string: String): MutableText = Text.literal(string)
+inline fun text(): MutableText = Text.empty()
+inline fun text(string: String): MutableText = Text.literal(string)
 
 fun text(value: Any?): MutableText {
-    if (value == null) {
-        return text("null")
+    return when (value) {
+        null -> text("null")
+        is Text -> value.copy()
+        is String -> value.asText()
+        is Boolean -> value.toString().asText().format(if (value) Formatting.GREEN else Formatting.RED)
+        is Number -> value.toString().asText().format(Formatting.YELLOW)
+        else -> {
+            val clazz = value::class.java
+            val handle = Reflector.methodHandle(clazz, "getDisplayName")
+            if (handle != null) {
+                val result = handle.invoke(value)
+                if (result !is Text) {
+                    throw IllegalStateException("Method getDisplayName of class ${clazz.simpleName} returned ${result::class.java.simpleName} instead of Text")
+                }
+                result.copy()
+            } else {
+                value.toString().asText().format(Formatting.WHITE)
+            }
+        }
     }
-    if (value is Text) {
-        return value.copy()
-    }
-    if (value is String) {
-        return value.asText()
-    }
-    val handle = Reflector.methodHandle(value::class.java, "getDisplayName")
-    if (handle != null) {
-        return (handle.invoke(value) as Text).copy()
-    }
-    return value.toString().asText()
 }
 fun text(vararg values: Any?): MutableText {
     val message = text()

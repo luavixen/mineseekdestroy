@@ -561,26 +561,25 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         for (var playerEntity : playerEntities) {
             if (hasOperator(playerEntity)) continue;
             if (playerEntity.interactionManager.getGameMode() != GameMode.SURVIVAL) {
-                LOGGER.info("Player '" + playerEntity.getEntityName() + "' in incorrect gamemode");
+                LOGGER.info("OOB Player '{}' in incorrect gamemode", playerEntity.getEntityName());
+                LOGGER.info("OOB Switching player '{}' to survival gamemode", playerEntity.getEntityName());
                 playerEntity.interactionManager.changeGameMode(GameMode.SURVIVAL);
-                playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), Float.MAX_VALUE);
+                LOGGER.info("OOB Killing player '{}'", playerEntity.getEntityName());
+                playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), 5000.0F);
                 playerEntity.setHealth(0.0F);
             } else if (playerEntity.isAlive()) {
                 if (
-                    (playerEntity.getWorld() != world) || (playerEntity.getY() < -256.0) ||
-                    (getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) && properties.getRegionLegal().excludes(playerEntity))
+                    (playerEntity.getWorld() != world) || (playerEntity.getY() < -256.0) || (
+                        getRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED) &&
+                        properties.getRegionAll().excludes(playerEntity) &&
+                        properties.getRegionLegal().excludes(playerEntity) &&
+                        properties.getRegionPlayable().excludes(playerEntity)
+                    )
                 ) {
-                    LOGGER.info("Player '" + playerEntity.getEntityName() + "' entered out of bounds killzone or is out of the world");
-                    var position = properties.getPositionSpawn().toCenterPos();
-                    playerEntity.teleport(
-                        world,
-                        position.getX(), position.getY(), position.getZ(),
-                        playerEntity.getYaw(), playerEntity.getPitch()
-                    );
-                    Scheduler.now((schedule) -> {
-                        playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), Float.MAX_VALUE);
-                        playerEntity.setHealth(0.0F);
-                    });
+                    LOGGER.info("OOB Player '{}' entered out of bounds killzone or is out of the world", playerEntity.getEntityName());
+                    LOGGER.info("OOB Killing player '{}'", playerEntity.getEntityName());
+                    playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), 5000.0F);
+                    playerEntity.setHealth(0.0F);
                 } else if (context != null && getState().isPlaying()) {
                     var player = context.getPlayer(playerEntity);
                     if (

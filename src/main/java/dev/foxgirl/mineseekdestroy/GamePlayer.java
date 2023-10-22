@@ -20,8 +20,8 @@ public final class GamePlayer {
 
     private final GameContext context;
 
-    private final UUID uuid;
     private final String name;
+    private final UUID uuid;
 
     private final int hash;
 
@@ -48,27 +48,27 @@ public final class GamePlayer {
     private int statsKills = 0;
     private int statsDeaths = 0;
 
-    private GamePlayer(@NotNull GameContext context, UUID uuid, String name) {
+    private GamePlayer(@NotNull GameContext context, String name, UUID uuid) {
         Objects.requireNonNull(context, "Argument 'context'");
         this.context = context;
-        this.uuid = uuid;
         this.name = name;
+        this.uuid = uuid;
         this.hash = uuid.hashCode();
     }
 
     GamePlayer(@NotNull GameContext context, @NotNull ServerPlayerEntity player) {
         this(
             context,
-            Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'"),
-            Objects.requireNonNull(player.getEntityName(), "Expression 'player.getEntityName()'")
+            Objects.requireNonNull(player.getEntityName(), "Expression 'player.getEntityName()'"),
+            Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'")
         );
     }
 
     GamePlayer(@NotNull GameContext context, @NotNull NbtCompound nbt) {
         this(
             context,
-            NbtKt.toUUID(nbt.get("UUID")),
-            NbtKt.toActualString(nbt.get("Name"))
+            NbtKt.toActualString(nbt.get("Name")),
+            NbtKt.toUUID(nbt.get("UUID"))
         );
 
         currentAlive = NbtKt.toBoolean(nbt.get("Alive"));
@@ -80,8 +80,8 @@ public final class GamePlayer {
 
     public @NotNull NbtCompound toNbt() {
         var nbt = NbtKt.nbtCompound(16);
-        nbt.putUuid("UUID", uuid);
         nbt.putString("Name", name);
+        nbt.putUuid("UUID", uuid);
         nbt.putBoolean("Alive", currentAlive);
         nbt.putString("Team", currentTeam.name());
         nbt.putInt("Souls", statsSouls);
@@ -152,8 +152,8 @@ public final class GamePlayer {
     }
 
     public @Nullable PlayerInventory getInventory() {
-        var player = getEntity();
-        return player != null ? player.getInventory() : null;
+        var entity = getEntity();
+        return entity != null ? entity.getInventory() : null;
     }
 
     public boolean isAlive() {
@@ -162,8 +162,8 @@ public final class GamePlayer {
 
     public boolean isLiving() {
         if (currentAlive) {
-            var player = getEntity();
-            return player != null && player.isAlive() && player.networkHandler.isConnectionOpen();
+            var entity = getEntity();
+            return entity != null && entity.isAlive() && entity.networkHandler.isConnectionOpen();
         }
         return false;
     }
@@ -197,15 +197,15 @@ public final class GamePlayer {
     }
 
     public void teleport(@NotNull Position position) {
-        var player = getEntity();
-        if (player != null) {
-            player.teleport(
+        var entity = getEntity();
+        if (entity != null) {
+            entity.teleport(
                 context.world,
                 position.getX(),
                 position.getY(),
                 position.getZ(),
-                player.getYaw(),
-                player.getPitch()
+                entity.getYaw(),
+                entity.getPitch()
             );
         }
     }
@@ -232,10 +232,10 @@ public final class GamePlayer {
 
     public @Nullable Team getScoreboardTeam() {
         if (currentAlive) {
-            var player = getEntity();
-            if (player != null && player.isAlive() && player.networkHandler.isConnectionOpen()) {
+            var entity = getEntity();
+            if (entity != null && entity.isAlive() && entity.networkHandler.isConnectionOpen()) {
                 return (
-                    player.getWorld().getTime() - player.lastDamageTime < 10L
+                    entity.getWorld().getTime() - entity.lastDamageTime < 10L
                         ? getScoreboardDamagedTeam()
                         : getScoreboardAliveTeam()
                 );
@@ -249,10 +249,10 @@ public final class GamePlayer {
     }
 
     private int getSoulsCurrent() {
-        var player = getEntity();
-        if (player != null) {
+        var entity = getEntity();
+        if (entity != null) {
             int count = 0;
-            for (var stack : Inventories.list(player.getInventory())) {
+            for (var stack : Inventories.list(entity.getInventory())) {
                 var nbt = stack.getNbt();
                 if (nbt != null && nbt.contains("MsdSoul")) {
                     count += stack.getCount();

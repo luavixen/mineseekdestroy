@@ -34,12 +34,12 @@ class SpecialFamilyGuyService : Service() {
 
         Async.delay()
 
-        logger.info("Player ${player.name} attempting to place a family guy block")
+        logger.info("Player '${player.name}' attempting to place a family guy block")
 
         val target = targets.find { pos -> world.getBlockState(pos).block === Blocks.TARGET }
         if (target == null) return
 
-        logger.info("Player ${player.name} placed family guy block at ${target.toShortString()}")
+        logger.info("Player '${player.name}' placed family guy block at ${target.toShortString()}")
 
         val offset = target.subtract(structure.center)
         val region = structure.region.offset(offset)

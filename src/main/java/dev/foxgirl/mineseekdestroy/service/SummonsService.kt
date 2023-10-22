@@ -294,7 +294,7 @@ class SummonsService : Service() {
                     data()["MsdTargetPlayer"] = target.uuid
                 })
 
-                logger.info("DeepOccultSummon gave tracker for ${target.name} to ${player.name}")
+                logger.info("DeepOccultSummon gave tracker for '${target.name}' to '${player.name}'")
             }
         }
         override fun update() {
@@ -488,7 +488,7 @@ class SummonsService : Service() {
 
             for ((player, entity) in playerEntitiesNormal) {
                 if (player.isGhost) {
-                    Scheduler.now { entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 999999.0F) }
+                    Scheduler.now { entity.damage(world.damageSources.create(Game.DAMAGE_TYPE_ABYSS), 5000.0F) }
                 }
             }
 
@@ -761,13 +761,13 @@ class SummonsService : Service() {
 
         val failure = failCheck(options)
         if (failure != null) {
-            Game.CONSOLE_PLAYERS.sendInfo(options.team, "failed a summon")
+            Game.CONSOLE_PLAYERS.sendInfo(text(options.team, "failed a summon").styleParent { it.withColor(Formatting.WHITE) })
             Game.CONSOLE_OPERATORS.sendInfo("Summon failed:", failure, options.kind)
 
             textProvider = textProvidersFailure[failure]!!(options)
             failPerform(options)
         } else {
-            Game.CONSOLE_PLAYERS.sendInfo(options.team, "summoned", options.kind)
+            Game.CONSOLE_PLAYERS.sendInfo(text(options.team, "summoned", options.kind).styleParent { it.withColor(Formatting.WHITE) })
 
             textProvider = textProvidersSuccess[options.kind]!!(options)
             summonPerform(options)

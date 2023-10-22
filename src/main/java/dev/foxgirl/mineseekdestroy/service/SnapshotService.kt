@@ -125,8 +125,8 @@ class SnapshotService : Service() {
             console.sendError("Snapshot stack is empty, cannot restore")
         } else {
             snapshot.restore()
-            context.barrierService.executeBlimpClose(console)
             console.sendInfo("Restored snapshot of ${snapshot.players.size} players")
+            context.barrierService.executeBlimpClose(console)
         }
     }
 
@@ -172,6 +172,7 @@ class SnapshotService : Service() {
             if (snapshot != null) {
                 snapshot.restore()
                 console.sendInfo("Restored last snapshot of ${snapshot.players.size} players")
+                context.barrierService.executeBlimpClose(console)
             }
         } catch (cause : Exception) {
             console.sendError("Failed to load snapshot list backup")

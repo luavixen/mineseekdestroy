@@ -10,6 +10,7 @@ import net.minecraft.command.EntitySelector
 import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.Position
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
@@ -130,6 +131,41 @@ internal fun setup() {
     }
 
     Command.build("debug") {
+        it.params(argLiteral("players")) {
+            it.params(argLiteral("list")) {
+                it.actionWithContext { args, context ->
+                    val players = context.players
+                    args.sendInfo("Players (${players.size}):")
+                    players.forEach {
+                        args.sendInfo(
+                            "  -", text(it.displayName).styleParent { it.withColor(Formatting.WHITE) },
+                            "team:", it.team,
+                            "alive:", it.isAlive,
+                            "connected:", it.entity?.networkHandler?.isConnectionOpen ?: false,
+                        )
+                    }
+                }
+            }
+            it.params(argLiteral("dump"), argString("player")) {
+                it.actionWithContext { args, context ->
+                    val player = context.getPlayer(args.get<String>("player"))
+                    if (player != null) {
+                        args.sendInfo("Player", text(player.displayName).styleParent { it.withColor(Formatting.WHITE) }, player.uuid)
+                        args.sendInfo("    team:", player.team)
+                        args.sendInfo("    isPlaying:", player.isPlaying)
+                        args.sendInfo("    isCannon:", player.isCannon)
+                        args.sendInfo("    souls:", player.souls)
+                        args.sendInfo("    kills:", player.kills)
+                        args.sendInfo("    deaths:", player.deaths)
+                        args.sendInfo("    isAlive:", player.isAlive)
+                        args.sendInfo("    isLiving:", player.isLiving)
+                        args.sendInfo("    entity:", player.entity.toString().asText().formatted(Formatting.WHITE))
+                    } else {
+                        args.sendError("Player not found")
+                    }
+                }
+            }
+        }
         it.params(argLiteral("state")) {
             fun register(literal: String, state: () -> GameState) {
                 it.params(argLiteral(literal)) {

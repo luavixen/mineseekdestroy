@@ -29,6 +29,7 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Direction
@@ -176,7 +177,7 @@ class PagesService : Service() {
         }
         if (result.shouldIncrementStat()) {
             Game.CONSOLE_PLAYERS.sendInfo(
-                text(user), text("used page").white(),
+                text(user, "used page").styleParent { it.withColor(Formatting.WHITE) },
                 text(page.name).style { it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_ITEM, HoverEvent.ItemStackContent(page.stack))) },
             )
         }
