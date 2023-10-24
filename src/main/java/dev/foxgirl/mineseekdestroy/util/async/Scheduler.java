@@ -6,6 +6,7 @@ import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -41,23 +42,19 @@ public final class Scheduler {
         void invoke(@NotNull Schedule schedule);
     }
 
-    private static double validateSeconds(double seconds) {
-        if (!Double.isFinite(seconds)) {
-            throw new IllegalArgumentException("Argument 'seconds' is not finite");
-        }
-        if (seconds < 0) {
-            throw new IllegalArgumentException("Argument 'seconds' is negative");
-        }
-        return seconds;
-    }
-
     private static final long TIME_BASE = System.nanoTime();
 
     private static long timeNow() {
         return System.nanoTime() - TIME_BASE;
     }
     private static long timeConvert(double seconds) {
-        var ns = (long) (validateSeconds(seconds) * 1e+9);
+        if (!Double.isFinite(seconds)) {
+            throw new IllegalArgumentException("Argument 'seconds' is not finite");
+        }
+        if (seconds < 0) {
+            throw new IllegalArgumentException("Argument 'seconds' is negative");
+        }
+        var ns = (long) (seconds * 1e+9);
         if (ns < 0) {
             throw new IllegalStateException("Converted time value is invalid");
         }
@@ -73,7 +70,7 @@ public final class Scheduler {
         }
     }
 
-    private static final ArrayList<Executable> EXECUTE_QUEUE = new ArrayList<>(128);
+    private static final LinkedHashSet<Executable> EXECUTE_QUEUE = new LinkedHashSet<>(128);
 
     private static final PriorityQueue<TimeBasedTask> WAITING_TIME_QUEUE = new PriorityQueue<>(128);
     private static final PriorityQueue<TickBasedTask> WAITING_TICK_QUEUE = new PriorityQueue<>(128);
@@ -142,7 +139,7 @@ public final class Scheduler {
 
         protected final void enqueueContinue() {
             synchronized (EXECUTE_QUEUE) {
-                if (!EXECUTE_QUEUE.contains(this)) EXECUTE_QUEUE.add(this);
+                EXECUTE_QUEUE.add(this);
             }
         }
 
