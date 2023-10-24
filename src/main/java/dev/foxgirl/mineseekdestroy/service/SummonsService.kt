@@ -620,14 +620,18 @@ class SummonsService : Service() {
             Broadcast.send(TitleFadeS2CPacket(20, 80, 20))
             Broadcast.send(TitleS2CPacket(textProvider.title))
             Broadcast.send(SubtitleS2CPacket(textProvider.subtitle))
-            Broadcast.send(OverlayMessageS2CPacket(textProvider.tooltip))
+            if (Rules.summonsShowTooltipEnabled) {
+                Broadcast.send(OverlayMessageS2CPacket(textProvider.tooltip))
+            }
         }
         textTimeUpdate()
     }
     private fun textUpdateTooltip() {
         val textProvider = textProvider
         if (textProvider != null) {
-            Broadcast.send(OverlayMessageS2CPacket(textProvider.tooltip))
+            if (Rules.summonsShowTooltipEnabled) {
+                Broadcast.send(OverlayMessageS2CPacket(textProvider.tooltip))
+            }
         }
         textTimeUpdate()
     }

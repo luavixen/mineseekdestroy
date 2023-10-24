@@ -146,6 +146,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdSummonsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_SUMMONS_ALTAR_GLOW_DURATION =
         GameRuleRegistry.register("msdSummonsAltarGlowDuration", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(15.0));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SUMMONS_SHOW_TOOLTIP_ENABLED =
+        GameRuleRegistry.register("msdSummonsShowTooltipEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_DROPPING_ENABLED =
         GameRuleRegistry.register("msdSoulsDroppingEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
