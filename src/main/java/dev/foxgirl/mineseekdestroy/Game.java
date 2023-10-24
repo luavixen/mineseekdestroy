@@ -6,7 +6,6 @@ import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Editor;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
-import dev.foxgirl.mineseekdestroy.util.async.Async;
 import dev.foxgirl.mineseekdestroy.util.async.Scheduler;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -535,7 +534,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         updateBounds();
         updateHunger();
 
-        Async.update();
         Scheduler.update();
         Editor.update();
     }

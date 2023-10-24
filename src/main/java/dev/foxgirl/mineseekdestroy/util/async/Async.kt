@@ -101,43 +101,25 @@ object Async {
         }
     }
 
-    private val queue = mutableListOf<Continuation<Unit>>()
-    private fun enqueue(continuation: Continuation<Unit>) {
-        synchronized(queue) { queue.add(continuation) }
-    }
-
-    @JvmStatic
-    fun update() {
-        if (!Game.getGame().server.isOnThread) {
-            throw IllegalStateException("Async loop execution started from the wrong thread")
-        }
-
-        val continuations: Array<Continuation<Unit>>
-
-        synchronized(queue) {
-            continuations = queue.toTypedArray()
-            queue.clear()
-        }
-
-        for (continuation in continuations) {
-            try {
-                continuation.resume(Unit)
-            } catch (cause: Throwable) {
-                Game.LOGGER.error("Unhandled exception resuming continuation in async loop", cause)
-            }
-        }
+    private class ResumingCallback(private val continuation: Continuation<Unit>) : Scheduler.Callback {
+        override fun invoke(schedule: Scheduler.Schedule) = continuation.resume(Unit)
     }
 
     suspend fun delay(): Unit =
-        suspendCoroutine { enqueue(it) }
+        suspendCoroutine { Scheduler.now(it) }
     suspend fun delay(seconds: Double): Unit =
-        suspendCoroutine { Scheduler.delay(seconds) { _ -> enqueue(it) } }
+        suspendCoroutine { Scheduler.delay(seconds, ResumingCallback(it)) }
+    suspend fun delayTicks(ticks: Int): Unit =
+        suspendCoroutine { Scheduler.delayTicks(ticks, ResumingCallback(it)) }
 
     suspend fun until(condition: suspend () -> Boolean) {
         while (!condition()) delay()
     }
     suspend fun until(seconds: Double, condition: suspend () -> Boolean) {
         while (!condition()) delay(seconds)
+    }
+    suspend fun untilTicks(ticks: Int, condition: suspend () -> Boolean) {
+        while (!condition()) delayTicks(ticks)
     }
 
 }
