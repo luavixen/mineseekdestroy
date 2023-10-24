@@ -20,10 +20,6 @@ object Async {
     fun <T> go(coroutine: suspend Async.() -> T): Unit =
         CompletableFutureContinuation<T>().also { coroutine.startCoroutine(this, it) }.terminate()
 
-    internal fun <T> terminate(promise: CompletableFuture<T>) {
-        promise.whenComplete { _, cause -> if (cause != null) Game.LOGGER.error("Unhandled exception in async task", cause) }
-    }
-
     suspend fun <T> await(promise: CompletableFuture<T>): T =
         suspendCoroutine { promise.whenComplete { value, cause -> it.resumeWith(if (cause != null) Result.failure(cause) else Result.success(value)) } }
 
@@ -72,23 +68,26 @@ object Async {
         return values
     }
 
-    private suspend fun <T> awaitAllSettledImpl(promises: Array<out CompletableFuture<T>>) =
-        suspendCoroutine { Waiter(promises, it).start() }
+    private suspend fun <T> awaitAllSettledImpl(promises: Array<out CompletableFuture<T>>): List<Result<T>> {
+        return suspendCoroutine { Waiter(promises, it).start() }
+    }
 
     private class Waiter<T>(
         private val promises: Array<out CompletableFuture<T>>,
         private val continuation: Continuation<List<Result<T>>>,
     ) {
-        @JvmField internal val results = arrayOfNulls<Result<T>>(promises.size)
-        @JvmField internal var count = 0
+        @JvmField val results = arrayOfNulls<Result<T>>(promises.size)
+        @JvmField var count = 0
+
+        private fun resume() {
+            @Suppress("UNCHECKED_CAST")
+            continuation.resumeWith(Result.success(results.asList() as List<Result<T>>))
+        }
 
         private inner class Handler(private val i: Int) : BiConsumer<T, Throwable?> {
             override fun accept(value: T, cause: Throwable?) {
                 val result = if (cause != null) Result.failure(cause) else Result.success(value)
-                if (synchronized(this@Waiter) { results[i] = result; results.size == ++count }) {
-                    @Suppress("UNCHECKED_CAST")
-                    continuation.resumeWith(Result.success(results.asList() as List<Result<T>>))
-                }
+                if (synchronized(this@Waiter) { results[i] = result; results.size == ++count }) resume()
             }
         }
 
@@ -96,7 +95,7 @@ object Async {
             if (promises.isNotEmpty()) {
                 promises.forEachIndexed { i, promise -> promise.whenComplete(Handler(i)) }
             } else {
-                continuation.resumeWith(Result.success(emptyList()))
+                resume()
             }
         }
     }
@@ -106,7 +105,7 @@ object Async {
     }
 
     suspend fun delay(): Unit =
-        suspendCoroutine { Scheduler.now(it) }
+        suspendCoroutine { Scheduler.now(ResumingCallback(it)) }
     suspend fun delay(seconds: Double): Unit =
         suspendCoroutine { Scheduler.delay(seconds, ResumingCallback(it)) }
     suspend fun delayTicks(ticks: Int): Unit =
@@ -126,4 +125,6 @@ object Async {
 
 suspend inline fun <T> CompletableFuture<T>.await(): T = Async.await(this)
 
-fun <T> CompletableFuture<T>.terminate() = Async.terminate(this)
+fun <T> CompletableFuture<T>.terminate() {
+    whenComplete { _, cause -> if (cause != null) Game.LOGGER.error("Unhandled exception in async task", cause) }
+}
