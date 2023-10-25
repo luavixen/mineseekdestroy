@@ -82,6 +82,9 @@ object Rules {
 
     @JvmStatic var chaosEnabled by BooleanRuleProperty(RULE_CHAOS_ENABLED)
 
+    @JvmStatic var countdownEnabled by BooleanRuleProperty(RULE_COUNTDOWN_ENABLED)
+    @JvmStatic var countdownAutostartEnabled by BooleanRuleProperty(RULE_COUNTDOWN_AUTOSTART_ENABLED)
+
     private sealed class RuleProperty<T : GameRules.Rule<T>>(protected val key: GameRules.Key<T>) {
         protected val game get() = getGame()
     }

@@ -70,6 +70,7 @@ public final class GameContext {
     public final @NotNull AutomationService automationService;
     public final @NotNull PagesService pagesService;
     public final @NotNull SummonsService summonsService;
+    public final @NotNull CountdownService countdownService;
     public final @NotNull SpecialGhoulService specialGhoulService;
     public final @NotNull SpecialCarService specialCarService;
     public final @NotNull SpecialPianoService specialPianoService;
@@ -180,6 +181,7 @@ public final class GameContext {
                 automationService = new AutomationService(),
                 summonsService = new SummonsService(),
                 pagesService = new PagesService(),
+                countdownService = new CountdownService(),
                 specialGhoulService = new SpecialGhoulService(),
                 specialCarService = new SpecialCarService(),
                 specialPianoService = new SpecialPianoService(),
@@ -231,6 +233,8 @@ public final class GameContext {
         game.setRuleBoolean(Game.RULE_GHOULS_ENABLED, false);
         game.setRuleBoolean(Game.RULE_BUDDY_ENABLED, false);
         game.setRuleBoolean(Game.RULE_CHAOS_ENABLED, false);
+        game.setRuleBoolean(Game.RULE_COUNTDOWN_ENABLED, true);
+        game.setRuleBoolean(Game.RULE_COUNTDOWN_AUTOSTART_ENABLED, true);
         game.setRuleBoolean(Game.RULE_HIDDEN_ARMOR_ENABLED, false);
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);

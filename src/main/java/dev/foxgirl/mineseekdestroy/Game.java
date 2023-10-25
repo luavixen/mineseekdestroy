@@ -179,6 +179,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_CHAOS_ENABLED =
         GameRuleRegistry.register("msdChaosEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_COUNTDOWN_ENABLED =
+        GameRuleRegistry.register("msdCountdownEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_COUNTDOWN_AUTOSTART_ENABLED =
+        GameRuleRegistry.register("msdCountdownAutostartEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
