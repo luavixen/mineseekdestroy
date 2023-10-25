@@ -29,11 +29,11 @@ import java.util.*;
 
 public final class GameContext {
 
-    private static final String scoreboardSoulsName = "msd_souls";
-    private static final Text scoreboardSoulsDisplayName = Text.of("Mine n Seek n Destroy");
+    private static final String scoreboardKillsName = "msd_kills";
+    private static final Text scoreboardKillsDisplayName = Text.of("Mine n Seek n Destroy");
 
-    private static final String scoreboardHeartsName = "msd_hearts";
-    private static final Text scoreboardHeartsDisplayName = Text.of("Health");
+    private static final String scoreboardSoulsName = "msd_souls";
+    private static final Text scoreboardSoulsDisplayName = Text.of("Souls");
 
     public final @NotNull Game game;
 
@@ -41,8 +41,8 @@ public final class GameContext {
     public final @NotNull ServerWorld world;
 
     public final @NotNull Scoreboard scoreboard;
+    public final @NotNull ScoreboardObjective scoreboardKills;
     public final @NotNull ScoreboardObjective scoreboardSouls;
-    public final @NotNull ScoreboardObjective scoreboardHearts;
 
     private final Map<String, Team> teamMap;
     private final Map<String, Team> teamBaseMap;
@@ -51,6 +51,8 @@ public final class GameContext {
 
     private final HashMap<UUID, GamePlayer> playerMap;
     private final Object playerMapLock;
+
+    private final GamePlayer playerHerobrine;
 
     public final @NotNull InventoryService inventoryService;
     public final @NotNull LootService lootService;
@@ -100,9 +102,23 @@ public final class GameContext {
 
         scoreboard = server.getScoreboard();
 
-        var scoreboardKillsOld = scoreboard.getNullableObjective(scoreboardSoulsName);
+        var scoreboardKillsOld = scoreboard.getNullableObjective(scoreboardKillsName);
         if (scoreboardKillsOld != null) {
             scoreboard.removeObjective(scoreboardKillsOld);
+        }
+
+        scoreboardKills = scoreboard.addObjective(
+            scoreboardKillsName,
+            ScoreboardCriterion.DUMMY,
+            scoreboardKillsDisplayName,
+            ScoreboardCriterion.RenderType.INTEGER
+        );
+
+        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, scoreboardKills);
+
+        var scoreboardSoulsOld = scoreboard.getNullableObjective(scoreboardSoulsName);
+        if (scoreboardSoulsOld != null) {
+            scoreboard.removeObjective(scoreboardSoulsOld);
         }
 
         scoreboardSouls = scoreboard.addObjective(
@@ -112,21 +128,7 @@ public final class GameContext {
             ScoreboardCriterion.RenderType.INTEGER
         );
 
-        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, scoreboardSouls);
-
-        var scoreboardHeartsOld = scoreboard.getNullableObjective(scoreboardHeartsName);
-        if (scoreboardHeartsOld != null) {
-            scoreboard.removeObjective(scoreboardHeartsOld);
-        }
-
-        scoreboardHearts = scoreboard.addObjective(
-            scoreboardHeartsName,
-            ScoreboardCriterion.HEALTH,
-            scoreboardHeartsDisplayName,
-            ScoreboardCriterion.RenderType.HEARTS
-        );
-
-        scoreboard.setObjectiveSlot(Scoreboard.LIST_DISPLAY_SLOT_ID, scoreboardHearts);
+        scoreboard.setObjectiveSlot(Scoreboard.LIST_DISPLAY_SLOT_ID, scoreboardSouls);
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 
@@ -154,6 +156,11 @@ public final class GameContext {
 
         playerMap = new HashMap<>(64);
         playerMapLock = new Object();
+
+        playerHerobrine = new GamePlayer(this, UUID.fromString("f84c6a79-0a4e-45e0-879b-cd49ebd4c4e2"), "Herobrine");
+        playerHerobrine.setKills(666);
+        playerHerobrine.setDeaths(-999999);
+        playerMap.put(playerHerobrine.getUUID(), playerHerobrine);
 
         try {
             services = new Service[] {
@@ -243,8 +250,8 @@ public final class GameContext {
     }
 
     public void destroy() {
+        scoreboard.removeObjective(scoreboardKills);
         scoreboard.removeObjective(scoreboardSouls);
-        scoreboard.removeObjective(scoreboardHearts);
 
         game.setRuleBoolean(GameRules.DO_FIRE_TICK, false);
         game.setRuleBoolean(GameRules.DO_MOB_GRIEFING, false);
@@ -375,9 +382,10 @@ public final class GameContext {
 
     public @Nullable GamePlayer getPlayer(@NotNull String name) {
         Objects.requireNonNull(name, "Argument 'name'");
+        var nameLowercase = name.toLowerCase(Locale.ROOT);
         synchronized (playerMapLock) {
             for (var player : playerMap.values()) {
-                if (Objects.equals(player.getName(), name)) {
+                if (Objects.equals(player.getNameLowercase(), nameLowercase)) {
                     return player;
                 }
             }
@@ -414,6 +422,10 @@ public final class GameContext {
             playerMap.put(wrapperNew.getUUID(), wrapperNew);
             return wrapperNew;
         }
+    }
+
+    public @NotNull GamePlayer getPlayerHerobrine() {
+        return playerHerobrine;
     }
 
     public @Nullable Team getTeam(@NotNull GameTeam team) {

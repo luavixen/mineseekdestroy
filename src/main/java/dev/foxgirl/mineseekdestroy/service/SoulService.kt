@@ -103,6 +103,21 @@ class SoulService : Service() {
         return if (containsSoulNbt(stack)) Soul(stack.nbt!!) else null
     }
 
+    override fun update() {
+        for ((player, playerEntity) in playerEntitiesNormal) {
+            val inventory = playerEntity.inventory.asList()
+            for ((i, stack) in inventory.withIndex()) {
+                val soul = createSoulFrom(stack)
+                if (soul != null && soul.player == player) {
+                    inventory[i] = stackOf(
+                        Items.POTION, nbtCompoundOf("Potion" to identifier("healing")),
+                        null, text("transmuted from your own soul!"),
+                    )
+                }
+            }
+        }
+    }
+
     fun handleDeath(player: GamePlayer, playerEntity: ServerPlayerEntity) {
         if (player.team === GameTeam.PLAYER_YELLOW || player.team === GameTeam.PLAYER_BLUE) {
             if (!Rules.soulsDroppingEnabled) return
@@ -116,7 +131,9 @@ class SoulService : Service() {
                 (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsGiveYellowOwnSoulEnabled) ||
                 (player.team === GameTeam.PLAYER_BLUE && Rules.soulsGiveBlueOwnSoulEnabled)
             ) {
-                playerEntity.give(createSoulFor(player).toStack())
+                val soulPlayer = if (Rules.soulsGiveHerobrinesSoulEnabled) context.playerHerobrine else player
+                val soulStack = createSoulFor(soulPlayer).toStack()
+                playerEntity.give(soulStack)
             }
         }
     }

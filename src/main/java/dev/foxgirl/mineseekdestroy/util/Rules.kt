@@ -35,6 +35,8 @@ object Rules {
     @JvmStatic var blueMeleeCrits by BooleanRuleProperty(RULE_BLUE_MELEE_CRITS)
     @JvmStatic var blueArrowCrits by BooleanRuleProperty(RULE_BLUE_ARROW_CRITS)
 
+    @JvmStatic var damageFlashEnabled by BooleanRuleProperty(RULE_DAMAGE_FLASH_ENABLED)
+
     @JvmStatic var lootCount by IntRuleProperty(RULE_LOOT_COUNT)
 
     @JvmStatic var killzoneBoundsEnabled by BooleanRuleProperty(RULE_KILLZONE_BOUNDS_ENABLED)
@@ -72,6 +74,7 @@ object Rules {
     @JvmStatic var soulsConsumingEffectSpeedStrength by IntRuleProperty(RULE_SOULS_CONSUMING_EFFECT_SPEED_STRENGTH)
     @JvmStatic var soulsGiveYellowOwnSoulEnabled by BooleanRuleProperty(RULE_SOULS_GIVE_YELLOW_OWN_SOUL_ENABLED)
     @JvmStatic var soulsGiveBlueOwnSoulEnabled by BooleanRuleProperty(RULE_SOULS_GIVE_BLUE_OWN_SOUL_ENABLED)
+    @JvmStatic var soulsGiveHerobrinesSoulEnabled by BooleanRuleProperty(RULE_SOULS_GIVE_HEROBRINES_SOUL_ENABLED)
 
     @JvmStatic var buddyEnabled by BooleanRuleProperty(RULE_BUDDY_ENABLED)
     @JvmStatic var buddyHealthPenalty by DoubleRuleProperty(RULE_BUDDY_HEALTH_PENALTY)

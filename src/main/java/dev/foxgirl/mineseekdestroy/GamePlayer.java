@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy;
 
 import dev.foxgirl.mineseekdestroy.util.Inventories;
 import dev.foxgirl.mineseekdestroy.util.NbtKt;
+import dev.foxgirl.mineseekdestroy.util.Rules;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.scoreboard.Scoreboard;
@@ -13,6 +14,7 @@ import net.minecraft.util.math.Position;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -20,10 +22,11 @@ public final class GamePlayer {
 
     private final GameContext context;
 
-    private final String name;
     private final UUID uuid;
-
     private final int hash;
+
+    private final String name;
+    private final String nameLowercase;
 
     @Override
     public int hashCode() {
@@ -48,27 +51,26 @@ public final class GamePlayer {
     private int statsKills = 0;
     private int statsDeaths = 0;
 
-    private GamePlayer(@NotNull GameContext context, String name, UUID uuid) {
+    GamePlayer(@NotNull GameContext context, UUID uuid, String name) {
         Objects.requireNonNull(context, "Argument 'context'");
+        Objects.requireNonNull(uuid, "Argument 'uuid'");
+        Objects.requireNonNull(name, "Argument 'name'");
         this.context = context;
-        this.name = name;
         this.uuid = uuid;
         this.hash = uuid.hashCode();
+        this.name = name;
+        this.nameLowercase = name.toLowerCase(Locale.ROOT);
     }
 
     GamePlayer(@NotNull GameContext context, @NotNull ServerPlayerEntity player) {
-        this(
-            context,
-            Objects.requireNonNull(player.getEntityName(), "Expression 'player.getEntityName()'"),
-            Objects.requireNonNull(player.getUuid(), "Expression 'player.getUuid()'")
-        );
+        this(context, player.getUuid(), player.getEntityName());
     }
 
     GamePlayer(@NotNull GameContext context, @NotNull NbtCompound nbt) {
         this(
             context,
-            NbtKt.toActualString(nbt.get("Name")),
-            NbtKt.toUUID(nbt.get("UUID"))
+            NbtKt.toUUID(nbt.get("UUID")),
+            NbtKt.toActualString(nbt.get("Name"))
         );
 
         currentAlive = NbtKt.toBoolean(nbt.get("Alive"));
@@ -80,8 +82,8 @@ public final class GamePlayer {
 
     public @NotNull NbtCompound toNbt() {
         var nbt = NbtKt.nbtCompound(16);
-        nbt.putString("Name", name);
         nbt.putUuid("UUID", uuid);
+        nbt.putString("Name", name);
         nbt.putBoolean("Alive", currentAlive);
         nbt.putString("Team", currentTeam.name());
         nbt.putInt("Souls", statsSouls);
@@ -96,6 +98,10 @@ public final class GamePlayer {
 
     public @NotNull String getName() {
         return name;
+    }
+
+    public @NotNull String getNameLowercase() {
+        return nameLowercase;
     }
 
     public @NotNull GameTeam getTeam() {
@@ -214,7 +220,10 @@ public final class GamePlayer {
         return context.scoreboard;
     }
 
-    private @NotNull ScoreboardObjective getScoreboardObjective() {
+    private @NotNull ScoreboardObjective getScoreboardKillsObjective() {
+        return context.scoreboardKills;
+    }
+    private @NotNull ScoreboardObjective getScoreboardSoulsObjective() {
         return context.scoreboardSouls;
     }
 
@@ -235,7 +244,7 @@ public final class GamePlayer {
             var entity = getEntity();
             if (entity != null && entity.isAlive() && entity.networkHandler.isConnectionOpen()) {
                 return (
-                    entity.getWorld().getTime() - entity.lastDamageTime < 10L
+                    entity.getWorld().getTime() - entity.lastDamageTime < 10L && Rules.getDamageFlashEnabled()
                         ? getScoreboardDamagedTeam()
                         : getScoreboardAliveTeam()
                 );
@@ -265,7 +274,8 @@ public final class GamePlayer {
 
     public void update() {
         var scoreboard = getScoreboard();
-        var scoreboardObjective = getScoreboardObjective();
+        var scoreboardKillsObjective = getScoreboardKillsObjective();
+        var scoreboardSoulsObjective = getScoreboardSoulsObjective();
 
         var playerName = getName();
 
@@ -283,15 +293,24 @@ public final class GamePlayer {
         }
 
         if (isOnScoreboard() && !(isGhost() && Game.getGame().getState().isRunning())) {
-            var playerSouls = getSoulsCurrent();
-            var playerScore = scoreboard.getPlayerScore(playerName, scoreboardObjective);
+            var playerKillsValue = getKills();
+            var playerKillsScore = scoreboard.getPlayerScore(playerName, scoreboardKillsObjective);
 
-            if (playerScore.getScore() != playerSouls) {
-                playerScore.setScore(playerSouls);
+            if (playerKillsScore.getScore() != playerKillsValue) {
+                playerKillsScore.setScore(playerKillsValue);
             }
         } else {
-            if (scoreboard.playerHasObjective(playerName, scoreboardObjective)) {
-                scoreboard.resetPlayerScore(playerName, scoreboardObjective);
+            if (scoreboard.playerHasObjective(playerName, scoreboardKillsObjective)) {
+                scoreboard.resetPlayerScore(playerName, scoreboardKillsObjective);
+            }
+        }
+
+        {
+            var playerSoulsValue = getSoulsCurrent();
+            var playerSoulsScore = scoreboard.getPlayerScore(playerName, scoreboardSoulsObjective);
+
+            if (playerSoulsScore.getScore() != playerSoulsValue) {
+                playerSoulsScore.setScore(playerSoulsValue);
             }
         }
     }

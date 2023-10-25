@@ -98,6 +98,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLUE_ARROW_CRITS =
         GameRuleRegistry.register("msdBlueArrowCrits", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_DAMAGE_FLASH_ENABLED =
+        GameRuleRegistry.register("msdDamageFlashEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(5));
 
@@ -163,6 +166,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdSoulsGiveYellowOwnSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_GIVE_BLUE_OWN_SOUL_ENABLED =
         GameRuleRegistry.register("msdSoulsGiveBlueOwnSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_GIVE_HEROBRINES_SOUL_ENABLED =
+        GameRuleRegistry.register("msdSoulsGiveHerobrinesSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BUDDY_ENABLED =
         GameRuleRegistry.register("msdBuddyEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
