@@ -68,19 +68,11 @@ class SoulService : Service() {
                 SoulKind.YELLOW -> Items.LANTERN
                 SoulKind.BLUE -> Items.SOUL_LANTERN
             }
-            val lore = when (kind) {
-                SoulKind.YELLOW -> listOf(
-                    text("can be used by a ") + text("blue").teamBlue() + " player to enact a " + text("pure summon").bold(),
-                    text("can be eaten by a ") + text("yellow").teamYellow() + " player for " + text("temp. jump & speed boost").bold(),
-                    text("will become a random item in the loot pool if left in a chest between rounds!"),
-                )
-                SoulKind.BLUE -> listOf(
-                    text("can be used by a ") + text("yellow").teamYellow() + " player to enact a " + text("pure summon").bold(),
-                    text("can be eaten by a ") + text("yellow").teamYellow() + " player for " + text("temp. jump & speed boost").bold(),
-                    text("will become a random item in the loot pool if left in a chest between rounds!"),
-                )
-            }
-            return stackOf(item, toNbt(), displayName, lore)
+            return stackOf(item, toNbt(), displayName, listOf(
+                text("can be used to enact a ") + text("pure summon").bold(),
+                text("can be eaten by a ") + text("yellow").teamYellow() + " player for " + text("temp. jump & speed boost").bold(),
+                text("will become a random item in the loot pool if left in a chest between rounds!"),
+            ))
         }
     }
 
@@ -131,9 +123,11 @@ class SoulService : Service() {
                 (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsGiveYellowOwnSoulEnabled) ||
                 (player.team === GameTeam.PLAYER_BLUE && Rules.soulsGiveBlueOwnSoulEnabled)
             ) {
-                val soulPlayer = if (Rules.soulsGiveHerobrinesSoulEnabled) context.playerHerobrine else player
-                val soulStack = createSoulFor(soulPlayer).toStack()
-                playerEntity.give(soulStack)
+                if (Rules.soulsGiveHerobrinesSoulEnabled) {
+                    playerEntity.give(createSoulFor(context.playerHerobrine, player.team).toStack())
+                } else {
+                    playerEntity.give(createSoulFor(player).toStack())
+                }
             }
         }
     }

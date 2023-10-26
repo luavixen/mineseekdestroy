@@ -88,7 +88,9 @@ class CountdownService : Service() {
             seconds = secondsFor(ticks--)
         }
 
-        Broadcast.send(OverlayMessageS2CPacket(text("${seconds}s until snip").red()))
+        if (ticks % 5 == 0) {
+            Broadcast.send(OverlayMessageS2CPacket(text("${seconds}s until snip").red()))
+        }
     }
 
     fun executeStart(console: Console, iteration: Int = 0) {
