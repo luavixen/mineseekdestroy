@@ -351,7 +351,7 @@ internal fun setup() {
         }
         it.params(argLiteral("start")) {
             it.params(argInt("iteration")) {
-                it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, args["iteration"]) }
+                it.actionWithContext { args, context -> context.countdownService.executeStart(args, args["iteration"]) }
             }
             it.actionWithContext { args, context -> context.countdownService.executeStart(args) }
         }
