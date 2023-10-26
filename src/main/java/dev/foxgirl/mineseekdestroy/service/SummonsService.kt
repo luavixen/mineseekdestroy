@@ -38,6 +38,7 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.state.property.Properties
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
@@ -84,11 +85,15 @@ class SummonsService : Service() {
         val isOncePerGame get() = prayersOncePerGame.contains(this)
         val isOncePerRound get() = prayersOncePerRound.contains(this)
 
-        val displayName: Text get() =
-            Text.empty()
+        val displayName: Text get() {
+            val text = Text.empty()
                 .append(theology1.displayName)
                 .append(text(" X ").green())
                 .append(theology2.displayName)
+            val stack = summonIconsReference?.get(this)
+            if (stack != null) text.style { it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_ITEM, HoverEvent.ItemStackContent(stack))) }
+            return text
+        }
 
         override fun toString() = "Theologies(theology1=${theology1}, theology2=${theology2})"
 
@@ -1103,6 +1108,8 @@ class SummonsService : Service() {
                 "MsdSummonItem" to true,
             ))
 
+        private var summonIconsReference: Map<Prayer, ItemStack>? = null
+
         private val summonIcons = immutableMapOf<Prayer, ItemStack>(
             summonIconFor(
                 Prayer(DEEP, DEEP), WATER_BUCKET,
@@ -1165,6 +1172,8 @@ class SummonsService : Service() {
                 text("Reveal the locations of your enemies"),
             )
         )
+
+        init { summonIconsReference = summonIcons }
 
         private val textProvidersSuccess = immutableMapOf<Prayer, (Options) -> TextProvider>(
             Prayer(DEEP, OCCULT) to { object : DefaultTextProvider(it) {

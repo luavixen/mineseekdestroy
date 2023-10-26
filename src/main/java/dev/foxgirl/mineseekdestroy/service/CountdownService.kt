@@ -9,7 +9,6 @@ import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
-import net.minecraft.util.Formatting
 
 class CountdownService : Service() {
 
@@ -61,7 +60,7 @@ class CountdownService : Service() {
                 Rules.countdownTextStayDuration,
                 Rules.countdownTextFadeoutDuration,
             ))
-            Broadcast.send(TitleS2CPacket(text("-1 ❤").formatted(if (ticks <= 100) Formatting.RED else Formatting.WHITE)))
+            Broadcast.send(TitleS2CPacket(text("-1 ❤").red()))
             Broadcast.send(SubtitleS2CPacket(text()))
             Broadcast.sendSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.HOSTILE, 1.0F, 1.0F)
             Broadcast.sendParticles(ParticleTypes.ELDER_GUARDIAN, 0.0F, 0) { player, playerEntity ->
