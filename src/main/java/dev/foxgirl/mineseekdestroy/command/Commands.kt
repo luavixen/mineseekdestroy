@@ -340,6 +340,26 @@ internal fun setup() {
         }
     }
 
+    Command.build("countdown") {
+        it.params(argLiteral("setenabled")) {
+            it.params(argLiteral("yes")) { it.actionWithContext { args, context -> context.countdownService.executeSetEnabled(args, true) } }
+            it.params(argLiteral("no")) { it.actionWithContext { args, context -> context.countdownService.executeSetEnabled(args, false) } }
+        }
+        it.params(argLiteral("setautostart")) {
+            it.params(argLiteral("yes")) { it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, true) } }
+            it.params(argLiteral("no")) { it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, false) } }
+        }
+        it.params(argLiteral("start")) {
+            it.params(argInt("iteration")) {
+                it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, args["iteration"]) }
+            }
+            it.actionWithContext { args, context -> context.countdownService.executeStart(args) }
+        }
+        it.params(argLiteral("stop")) {
+            it.actionWithContext { args, context -> context.countdownService.executeStop(args) }
+        }
+    }
+
     Command.build("team") {
         it.params(argLiteral("remove"), argString("player")) {
             it.actionWithContext { args, context ->

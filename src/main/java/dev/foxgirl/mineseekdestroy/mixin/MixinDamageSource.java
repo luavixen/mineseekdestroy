@@ -31,8 +31,9 @@ public abstract class MixinDamageSource {
 
         boolean isHeartbreak = key == Game.DAMAGE_TYPE_HEARTBREAK;
         boolean isAbyss = key == Game.DAMAGE_TYPE_ABYSS;
+        boolean isBitten = key == Game.DAMAGE_TYPE_BITTEN;
 
-        if (isHeartbreak || isAbyss) {
+        if (isHeartbreak || isAbyss || isBitten) {
             Text nameEntity = entity.getDisplayName();
             Text nameAttacker;
             if (source != null) {
@@ -44,8 +45,12 @@ public abstract class MixinDamageSource {
             }
             if (isHeartbreak) {
                 info.setReturnValue(Text.empty().append(nameEntity).append(" was torn by the loss of ").append(nameAttacker));
-            } else {
+            }
+            if (isAbyss) {
                 info.setReturnValue(Text.empty().append(nameEntity).append(" was dragged into the abyss by ").append(nameAttacker));
+            }
+            if (isBitten) {
+                info.setReturnValue(Text.empty().append(nameEntity).append(" was bitten by the dog"));
             }
         }
     }

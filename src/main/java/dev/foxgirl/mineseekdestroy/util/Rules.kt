@@ -84,6 +84,9 @@ object Rules {
 
     @JvmStatic var countdownEnabled by BooleanRuleProperty(RULE_COUNTDOWN_ENABLED)
     @JvmStatic var countdownAutostartEnabled by BooleanRuleProperty(RULE_COUNTDOWN_AUTOSTART_ENABLED)
+    @JvmStatic var countdownTextFadeinDuration by IntRuleProperty(RULE_COUNTDOWN_TEXT_FADEIN_DURATION)
+    @JvmStatic var countdownTextStayDuration by IntRuleProperty(RULE_COUNTDOWN_TEXT_STAY_DURATION)
+    @JvmStatic var countdownTextFadeoutDuration by IntRuleProperty(RULE_COUNTDOWN_TEXT_FADEOUT_DURATION)
 
     private sealed class RuleProperty<T : GameRules.Rule<T>>(protected val key: GameRules.Key<T>) {
         protected val game get() = getGame()

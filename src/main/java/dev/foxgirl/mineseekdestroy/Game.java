@@ -183,6 +183,12 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdCountdownEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_COUNTDOWN_AUTOSTART_ENABLED =
         GameRuleRegistry.register("msdCountdownAutostartEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_COUNTDOWN_TEXT_FADEIN_DURATION =
+        GameRuleRegistry.register("msdCountdownTextFadeinDuration", GameRules.Category.MISC, GameRuleFactory.createIntRule(5));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_COUNTDOWN_TEXT_STAY_DURATION =
+        GameRuleRegistry.register("msdCountdownTextStayDuration", GameRules.Category.MISC, GameRuleFactory.createIntRule(20));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_COUNTDOWN_TEXT_FADEOUT_DURATION =
+        GameRuleRegistry.register("msdCountdownTextFadeoutDuration", GameRules.Category.MISC, GameRuleFactory.createIntRule(10));
 
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
@@ -322,6 +328,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("mineseekdestroy", "heartbreak"));
     public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_ABYSS =
         RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("mineseekdestroy", "abyss"));
+    public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_BITTEN =
+        RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("mineseekdestroy", "bitten"));
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override

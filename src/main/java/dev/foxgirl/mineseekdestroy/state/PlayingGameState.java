@@ -24,6 +24,7 @@ public class PlayingGameState extends RunningGameState {
         context.barrierService.executeBlimpClose(Game.CONSOLE_OPERATORS);
 
         context.automationService.handleRoundBegin();
+        context.countdownService.handleRoundStart();
 
         return null;
     }
@@ -54,6 +55,7 @@ public class PlayingGameState extends RunningGameState {
         context.lootService.handleRoundEnd();
         context.summonsService.handleRoundEnd();
         context.soulService.handleRoundEnd();
+        context.countdownService.handleRoundEnd();
 
         return new FinalizingGameState();
     }

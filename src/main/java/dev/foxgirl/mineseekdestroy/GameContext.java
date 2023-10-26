@@ -219,6 +219,11 @@ public final class GameContext {
             damageTypes.frozen = false;
             damageTypes.add(Game.DAMAGE_TYPE_HEARTBREAK, new DamageType("heartbreak", 0.0F), Lifecycle.experimental());
         }
+        if (damageTypes.getEntry(Game.DAMAGE_TYPE_BITTEN).isEmpty()) {
+            damageTypesThawed = true;
+            damageTypes.frozen = false;
+            damageTypes.add(Game.DAMAGE_TYPE_BITTEN, new DamageType("bitten", 0.0F), Lifecycle.experimental());
+        }
         if (damageTypesThawed) damageTypes.freeze();
 
         game.setRuleInt(GameRules.RANDOM_TICK_SPEED, GameRules.DEFAULT_RANDOM_TICK_SPEED);
