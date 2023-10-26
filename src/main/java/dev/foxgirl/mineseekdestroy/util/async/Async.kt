@@ -108,17 +108,12 @@ object Async {
         suspendCoroutine { Scheduler.now(ResumingCallback(it)) }
     suspend fun delay(seconds: Double): Unit =
         suspendCoroutine { Scheduler.delay(seconds, ResumingCallback(it)) }
-    suspend fun delayTicks(ticks: Int): Unit =
-        suspendCoroutine { Scheduler.delayTicks(ticks, ResumingCallback(it)) }
 
     suspend fun until(condition: suspend () -> Boolean) {
         while (!condition()) delay()
     }
     suspend fun until(seconds: Double, condition: suspend () -> Boolean) {
         while (!condition()) delay(seconds)
-    }
-    suspend fun untilTicks(ticks: Int, condition: suspend () -> Boolean) {
-        while (!condition()) delayTicks(ticks)
     }
 
 }

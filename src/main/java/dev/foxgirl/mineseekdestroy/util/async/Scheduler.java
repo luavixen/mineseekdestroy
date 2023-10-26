@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashSet;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
 public final class Scheduler {
 
@@ -58,17 +57,8 @@ public final class Scheduler {
         return ns;
     }
 
-    private static final Object TICKS_LOCK = new Object();
-    private static int TICKS_CURRENT = 0;
-
-    private static int ticksNow() {
-        synchronized (TICKS_LOCK) { return TICKS_CURRENT; }
-    }
-    private static void ticksIncrement() {
-        synchronized (TICKS_LOCK) { TICKS_CURRENT++; }
-    }
-
-    private static final LinkedHashSet<Executable> EXECUTE_NEXT = new LinkedHashSet<>(128);
+    private static final LinkedHashSet<Executable> EXECUTE_QUEUE = new LinkedHashSet<>(128);
+    private static final PriorityQueue<Task> WAITING_QUEUE = new PriorityQueue<>(128);
 
     private static class Executable implements Schedule {
         private final Callback callback;
@@ -77,7 +67,7 @@ public final class Scheduler {
             this.callback = callback;
         }
 
-        final void execute() {
+        private void execute() {
             try {
                 callback.invoke(this);
             } catch (Throwable cause) {
@@ -87,81 +77,21 @@ public final class Scheduler {
         }
 
         Schedule schedule() {
-            synchronized (EXECUTE_NEXT) { EXECUTE_NEXT.add(this); }
+            synchronized (EXECUTE_QUEUE) { EXECUTE_QUEUE.add(this); }
             return this;
         }
 
         @Override
         public boolean cancel() {
-            synchronized (EXECUTE_NEXT) { return EXECUTE_NEXT.remove(this); }
+            synchronized (EXECUTE_QUEUE) { return EXECUTE_QUEUE.remove(this); }
         }
     }
 
-    private static abstract class Task<T extends Task<T>> extends Executable implements Comparable<T> {
-        private Task(Callback callback) {
-            super(callback);
-        }
-
-        abstract Queue<T> getWaitingQueue();
-
-        abstract boolean shouldContinue();
-        abstract boolean shouldReschedule();
-
-        @SuppressWarnings("unchecked")
-        final boolean attemptContinue() {
-            // Note that attemptContinue is only ever called while synchronized on this queue
-            var waitingQueue = getWaitingQueue();
-
-            // Ensure this task is ready to be executed
-            if (!shouldContinue()) {
-                // Return false to indicate that this task is not ready, and we should stop traversing the queue
-                return false;
-            }
-
-            // Remove it from the waiting queue
-            waitingQueue.remove(this);
-
-            // Check if this task should be rescheduled, and re-add it to the waiting queue if so
-            // Note that shouldReschedule must update the task's timing information if it returns true
-            if (shouldReschedule()) {
-                waitingQueue.offer((T) this);
-            }
-
-            // Call Executable's schedule method to add this task to the execute-next set
-            super.schedule();
-
-            // Return true to indicate that we should continue onto the next task in the queue
-            return true;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        final Schedule schedule() {
-            var waitingQueue = getWaitingQueue();
-            synchronized (waitingQueue) { waitingQueue.offer((T) this); }
-            return this;
-        }
-
-        @Override
-        public final boolean cancel() {
-            var removed = super.cancel();
-            var waitingQueue = getWaitingQueue();
-            synchronized (waitingQueue) {
-                var removedWaiting = waitingQueue.remove(this);
-                if (removedWaiting) removed = true;
-            }
-            return removed;
-        }
-    }
-
-    private static final PriorityQueue<TimeBasedTask> WAITING_TIME_QUEUE = new PriorityQueue<>(128);
-    private static final PriorityQueue<TickBasedTask> WAITING_TICK_QUEUE = new PriorityQueue<>(128);
-
-    private static final class TimeBasedTask extends Task<TimeBasedTask> {
+    private static final class Task extends Executable implements Comparable<Task> {
         private long time;
         private final long period;
 
-        private TimeBasedTask(Callback callback, long time, long period) {
+        private Task(Callback callback, long time, long period) {
             super(callback);
             if (time < 0) throw new IllegalArgumentException("Invalid calculated time");
             if (period < -1) throw new IllegalArgumentException("Invalid calculated time period");
@@ -169,75 +99,52 @@ public final class Scheduler {
             this.period = period;
         }
 
+        private boolean tryContinue() {
+            // Note that tryContinue is only ever called while synchronized on WAITING_QUEUE
 
-        @Override
-        Queue<TimeBasedTask> getWaitingQueue() {
-            return WAITING_TIME_QUEUE;
-        }
-
-        @Override
-        boolean shouldContinue() {
-            return time <= timeNow();
-        }
-
-        @Override
-        boolean shouldReschedule() {
-            if (period > 0) {
-                time += period;
-                return true;
+            // Ensure this task is ready to be executed
+            if (time > timeNow()) {
+                // Return false to indicate that this task is not ready, and we should stop traversing the queue
+                return false;
             }
-            return false;
+
+            // Remove this task from the queue
+            WAITING_QUEUE.remove(this);
+
+            // Check if this task should be rescheduled, and update & re-add it to the queue if so
+            if (period >= 0) {
+                // Update the next execution time
+                time = Math.max(time + period, timeNow());
+                // Re-add this task to the queue asynchronously (avoids an infinite loop with period 0)
+                EXECUTE_QUEUE.add(new Executable((schedule) -> this.schedule()));
+            }
+
+            // Call Executable's schedule method to add this task to the execute-next queue
+            super.schedule();
+
+            // Return true to indicate that we should continue onto the next task in the queue
+            return true;
         }
 
         @Override
-        public int compareTo(@NotNull Scheduler.TimeBasedTask other) {
+        Schedule schedule() {
+            synchronized (WAITING_QUEUE) { WAITING_QUEUE.offer(this); }
+            return this;
+        }
+
+        @Override
+        public boolean cancel() {
+            var removed = super.cancel();
+            synchronized (WAITING_QUEUE) {
+                var removedWaiting = WAITING_QUEUE.remove(this);
+                if (removedWaiting) removed = true;
+            }
+            return removed;
+        }
+
+        @Override
+        public int compareTo(@NotNull Scheduler.Task other) {
             return Long.compare(this.time, other.time);
-        }
-    }
-
-    private static final class TickBasedTask extends Task<TickBasedTask> {
-        private int ticks;
-        private final int period;
-
-        private TickBasedTask(Callback callback, int ticks, int period) {
-            super(callback);
-            if (ticks < 0) throw new IllegalArgumentException("Invalid calculated ticks");
-            if (period < -1) throw new IllegalArgumentException("Invalid calculated tick period");
-            this.ticks = ticks;
-            this.period = period;
-        }
-
-        @Override
-        Queue<TickBasedTask> getWaitingQueue() {
-            return WAITING_TICK_QUEUE;
-        }
-
-        @Override
-        boolean shouldContinue() {
-            return ticks <= TICKS_CURRENT;
-        }
-
-        @Override
-        boolean shouldReschedule() {
-            if (period > 0) {
-                ticks += period;
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public int compareTo(@NotNull TickBasedTask other) {
-            return Integer.compare(this.ticks, other.ticks);
-        }
-    }
-
-    private static <T extends Task<T>> void updateWaitingQueue(Queue<T> waitingQueue) {
-        synchronized (waitingQueue) {
-            while (!waitingQueue.isEmpty()) {
-                boolean shouldContinue = waitingQueue.peek().attemptContinue();
-                if (!shouldContinue) break;
-            }
         }
     }
 
@@ -251,14 +158,18 @@ public final class Scheduler {
             throw new IllegalStateException("Scheduler execution started from the wrong thread");
         }
 
-        updateWaitingQueue(WAITING_TIME_QUEUE);
-        updateWaitingQueue(WAITING_TICK_QUEUE);
+        synchronized (WAITING_QUEUE) {
+            while (!WAITING_QUEUE.isEmpty()) {
+                boolean shouldContinue = WAITING_QUEUE.peek().tryContinue();
+                if (!shouldContinue) break;
+            }
+        }
 
         Executable[] executables;
 
-        synchronized (EXECUTE_NEXT) {
-            executables = EXECUTE_NEXT.toArray(new Executable[0]);
-            EXECUTE_NEXT.clear();
+        synchronized (EXECUTE_QUEUE) {
+            executables = EXECUTE_QUEUE.toArray(new Executable[0]);
+            EXECUTE_QUEUE.clear();
         }
 
         for (var executable : executables) {
@@ -269,9 +180,8 @@ public final class Scheduler {
                 Game.LOGGER.error("Unhandled exception in scheduled task", cause);
             }
         }
-
-        ticksIncrement();
     }
+
 
     /**
      * Schedules a task to be run (once) as soon as possible.
@@ -295,7 +205,7 @@ public final class Scheduler {
     public static @NotNull Schedule delay(double seconds, @NotNull Callback callback) {
         if (callback == null) throw new NullPointerException("Argument 'callback'");
         long ns = timeConvert(seconds);
-        return new TimeBasedTask(callback, timeNow() + ns, -1).schedule();
+        return new Task(callback, timeNow() + ns, -1).schedule();
     }
     /**
      * Schedules a task to be run multiple times on an interval.
@@ -308,36 +218,7 @@ public final class Scheduler {
     public static @NotNull Schedule interval(double seconds, @NotNull Callback callback) {
         if (callback == null) throw new NullPointerException("Argument 'callback'");
         long ns = timeConvert(seconds);
-        return new TimeBasedTask(callback, timeNow() + ns, ns).schedule();
-    }
-
-    /**
-     * Schedules a task to be run (once) at some time in the future in units of
-     * ticks.
-     * @param ticks Delay in ticks to wait before execution.
-     * @param callback Task callback to invoke.
-     * @return Newly created task schedule.
-     * @throws IllegalArgumentException If the provided delay is invalid.
-     * @throws NullPointerException If the provided callback is null.
-     */
-    public static @NotNull Schedule delayTicks(int ticks, @NotNull Callback callback) {
-        if (callback == null) throw new NullPointerException("Argument 'callback'");
-        if (ticks < 0) throw new IllegalArgumentException("Argument 'ticks' is negative");
-        return new TickBasedTask(callback, ticksNow() + ticks, -1).schedule();
-    }
-    /**
-     * Schedules a task to be run multiple times on an interval in units of
-     * ticks.
-     * @param ticks Delay in ticks to wait before and between executions.
-     * @param callback Task callback to invoke.
-     * @return Newly created task schedule.
-     * @throws IllegalArgumentException If the provided delay is invalid.
-     * @throws NullPointerException If the provided callback is null.
-     */
-    public static @NotNull Schedule intervalTicks(int ticks, @NotNull Callback callback) {
-        if (callback == null) throw new NullPointerException("Argument 'callback'");
-        if (ticks < 0) throw new IllegalArgumentException("Argument 'ticks' is negative");
-        return new TickBasedTask(callback, ticksNow() + ticks, ticks).schedule();
+        return new Task(callback, timeNow() + ns, ns).schedule();
     }
 
 }

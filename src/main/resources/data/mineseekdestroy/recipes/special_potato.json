@@ -4,8 +4,7 @@
         "I": [
             { "item": "minecraft:egg" },
             { "item": "minecraft:snowball" },
-            { "item": "minecraft:splash_potion" },
-            { "item": "minecraft:spectral_arrow" }
+            { "item": "minecraft:splash_potion" }
         ]
     },
     "pattern": [

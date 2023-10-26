@@ -605,7 +605,8 @@ class PagesService : Service() {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
                     Async.go {
-                        var minimumHealth = userEntity.health
+                        delay(1.0)
+                        var minimumHealth = user.entity?.health ?: 5000.0F
                         while (true) {
                             delay()
                             if (state.isWaiting || !user.isAlive) break
@@ -620,7 +621,7 @@ class PagesService : Service() {
                         user.entity?.removeEffect(ABSORPTION)
                         unlock(user)
                     }
-                    userEntity.addEffect(ABSORPTION, Double.MAX_VALUE)
+                    userEntity.addEffect(ABSORPTION, Double.MAX_VALUE, 2)
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
                 }

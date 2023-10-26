@@ -33,10 +33,10 @@ public final class GameContext {
     private static final Text scoreboardKillsDisplayName = Text.of("Mine n Seek n Destroy");
 
     private static final String scoreboardSoulsName = "msd_souls";
-    private static final Text scoreboardSoulsDisplayName = Text.of("Souls");
+    private static final Text scoreboardSoulsDisplayName = Text.of("souls");
 
     private static final String scoreboardHeartsName = "msd_hearts";
-    private static final Text scoreboardHeartsDisplayName = Text.of("Health");
+    private static final Text scoreboardHeartsDisplayName = Text.empty();
 
     public final @NotNull Game game;
 
@@ -139,7 +139,7 @@ public final class GameContext {
             scoreboardHeartsName,
             ScoreboardCriterion.HEALTH,
             scoreboardHeartsDisplayName,
-            ScoreboardCriterion.RenderType.INTEGER
+            ScoreboardCriterion.RenderType.HEARTS
         );
         scoreboard.setObjectiveSlot(Scoreboard.LIST_DISPLAY_SLOT_ID, scoreboardHearts);
 

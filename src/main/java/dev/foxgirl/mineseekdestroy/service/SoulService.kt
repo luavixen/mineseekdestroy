@@ -52,7 +52,7 @@ class SoulService : Service() {
             uuid = nbt["MsdSoulPlayer"].toUUID()
         }
 
-        val player get() = context.getPlayer(uuid)!!
+        val player get() = context.getPlayer(uuid) ?: context.playerHerobrine
 
         val displayName: Text get() = text("Soul of", player.name) * kind.team
 
@@ -108,7 +108,7 @@ class SoulService : Service() {
             val inventory = playerEntity.inventory.asList()
             for ((i, stack) in inventory.withIndex()) {
                 val soul = createSoulFrom(stack)
-                if (soul != null && soul.player == player) {
+                if (soul != null && soul.uuid == player.uuid) {
                     inventory[i] = stackOf(
                         Items.POTION, nbtCompoundOf("Potion" to identifier("healing")),
                         null, text("transmuted from your own soul!"),

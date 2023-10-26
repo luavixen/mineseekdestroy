@@ -7,8 +7,10 @@ import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
 import net.minecraft.particle.ParticleTypes
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
+import net.minecraft.util.math.BlockPos
 
 class CountdownService : Service() {
 
@@ -42,6 +44,17 @@ class CountdownService : Service() {
         logger.info("Countdown started")
     }
 
+    private fun isOpaque(pos: BlockPos) = world.getBlockState(pos).let { it.isOpaque || it.isSolid }
+    private fun isProtected(playerEntity: ServerPlayerEntity): Boolean {
+        val posPlayer = playerEntity.blockPos.mutableCopy().apply { y++ }
+        val posBlimp = properties.regionBlimp.start
+        while (posPlayer.y < posBlimp.y) {
+            if (isOpaque(posPlayer)) return false
+            posPlayer.y++
+        }
+        return isOpaque(posPlayer.setY(posBlimp.y)) || isOpaque(posPlayer.setY(posBlimp.y + 1))
+    }
+
     override fun update() {
         if (!Rules.countdownEnabled || !running) {
             running = false
@@ -64,9 +77,13 @@ class CountdownService : Service() {
             Broadcast.send(SubtitleS2CPacket(text()))
             Broadcast.sendSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.HOSTILE, 1.0F, 1.0F)
             Broadcast.sendParticles(ParticleTypes.ELDER_GUARDIAN, 0.0F, 0) { player, playerEntity ->
-                if (player.isPlayingOrGhost && player.isAlive) playerEntity.pos else null
+                if (player.isPlaying && player.isAlive) playerEntity.pos else null
             }
-            playerEntitiesIn.forEach { (_, playerEntity) -> playerEntity.hurtHearts(1.0) { it.create(Game.DAMAGE_TYPE_BITTEN) } }
+            for ((player, playerEntity) in playerEntitiesNormal) {
+                if (!player.isPlayingOrGhost || !player.isAlive) continue
+                if (isProtected(playerEntity)) continue
+                playerEntity.hurtHearts(1.0) { it.create(Game.DAMAGE_TYPE_BITTEN) }
+            }
         } else {
             seconds = secondsFor(ticks--)
         }
@@ -79,20 +96,16 @@ class CountdownService : Service() {
             console.sendError("Countdown is disabled")
             return
         }
-        if (running) {
-            console.sendError("Countdown already running")
-            return
-        }
+        console.sendInfo("Countdown ${if (running) "(re)" else ""}starting with iteration $iteration")
         start(iteration)
-        console.sendInfo("Countdown starting with iteration $iteration")
     }
     fun executeStop(console: Console) {
         if (!running) {
             console.sendError("Countdown not running")
             return
         }
-        running = false
         console.sendInfo("Countdown stopping")
+        running = false
     }
 
     fun executeSetEnabled(console: Console, enabled: Boolean) {

@@ -290,16 +290,21 @@ public final class Editor {
                 }
                 success = false;
             } finally {
+                var ms = (double) (System.nanoTime() - start) * 1e-6D;
                 var message = new StringBuilder(64);
                 message.append("Editor performed task (");
                 message.append(success ? "success" : "failure");
                 message.append(") for ");
                 message.append(operations.length);
                 message.append(" operation(s) in ");
-                message.append(new DecimalFormat("#.##").format((double) (System.nanoTime() - start) * 1e-6D));
+                message.append(new DecimalFormat("#.##").format(ms));
                 message.append("ms");
-                if (success) Game.LOGGER.info(message.toString());
-                else Game.LOGGER.warn(message.toString());
+                if (success) {
+                    if (ms >= 2.0) Game.LOGGER.info(message);
+                    else Game.LOGGER.debug(message);
+                } else {
+                    Game.LOGGER.warn(message);
+                }
             }
             return ImmutableList.of();
         }

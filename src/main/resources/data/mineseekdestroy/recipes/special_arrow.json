@@ -19,7 +19,8 @@
             { "item": "minecraft:blue_ice" },
             { "item": "minecraft:anvil" },
             { "item": "minecraft:chipped_anvil" },
-            { "item": "minecraft:damaged_anvil" }
+            { "item": "minecraft:damaged_anvil" },
+            { "item": "minecraft:potion" }
         ]
     },
     "pattern": [
