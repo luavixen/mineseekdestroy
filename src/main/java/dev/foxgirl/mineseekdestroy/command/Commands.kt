@@ -1,16 +1,23 @@
 package dev.foxgirl.mineseekdestroy.command
 
 import com.mojang.brigadier.builder.ArgumentBuilder
+import com.sk89q.worldedit.WorldEdit
+import com.sk89q.worldedit.fabric.FabricAdapter
 import dev.foxgirl.mineseekdestroy.*
 import dev.foxgirl.mineseekdestroy.service.PagesService
 import dev.foxgirl.mineseekdestroy.service.SummonsService
 import dev.foxgirl.mineseekdestroy.state.*
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.async.Async
+import dev.foxgirl.mineseekdestroy.util.async.await
+import net.minecraft.block.Blocks
 import net.minecraft.command.EntitySelector
 import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Formatting
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Position
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
@@ -253,7 +260,6 @@ internal fun setup() {
                     return@action
                 }
                 args.sendError("Unimplemented")
-                /*
                 val sessionManager = WorldEdit.getInstance().getSessionManager().get(FabricAdapter.adaptPlayer(entity))
                 val region = sessionManager.selection.let {
                     Region(
@@ -262,7 +268,7 @@ internal fun setup() {
                     )
                 }
                 val world = FabricAdapter.adapt(sessionManager.selectionWorld) as ServerWorld
-                Async.run {
+                Async.go {
                     args.sendInfo("Starting task for ${region.blockCount} block(s)")
                     val positions = HashSet<BlockPos>(region.blockCount.toInt())
                     fun isOpaqueFullCube(pos: BlockPos) = world.getBlockState(pos).isOpaqueFullCube(world, pos)
@@ -292,7 +298,6 @@ internal fun setup() {
                         .await()
                     args.sendInfo("Completed task for ${region.blockCount} block(s)")
                 }
-                */
             }
         }
     }

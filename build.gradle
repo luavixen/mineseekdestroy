@@ -48,6 +48,8 @@ dependencies {
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_version}"
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${project.kotlin_version}"
     includeImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${project.kotlin_version}"
+
+    modImplementation "com.sk89q.worldedit:worldedit-fabric-mc1.20:7.2.15"
 }
 
 java {
