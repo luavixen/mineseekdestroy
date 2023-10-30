@@ -1,12 +1,10 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
-import net.minecraft.entity.LivingEntity;
+import dev.foxgirl.mineseekdestroy.util.EntitiesKt;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.thrown.EggEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.MathHelper;
@@ -63,16 +61,7 @@ public abstract class MixinProjectileEntity {
             strength = Math.abs(strength);
         }
 
-        if (target instanceof LivingEntity targetLiving) {
-            targetLiving.takeKnockback(strength, pushX, pushZ);
-        } else {
-            target.addVelocity(pushX * strength, 0.1D, pushZ * strength);
-        }
-
-        if (target instanceof ServerPlayerEntity targetPlayer) {
-            targetPlayer.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(targetPlayer));
-            targetPlayer.velocityDirty = false;
-        }
+        EntitiesKt.applyKnockback(target, pushX, pushZ, strength, true);
     }
 
 }

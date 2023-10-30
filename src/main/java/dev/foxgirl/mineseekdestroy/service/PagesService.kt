@@ -636,7 +636,7 @@ class PagesService : Service() {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     for ((_, playerEntity) in playerEntitiesNormal) {
                         if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 64.0) {
-                            playerEntity.knockback(2.0, playerEntity.x - userEntity.x, playerEntity.z - userEntity.z)
+                            playerEntity.applyKnockback(2.0, playerEntity.x - userEntity.x, playerEntity.z - userEntity.z, true)
                             playerEntity.play(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP)
                         }
                     }
@@ -770,7 +770,7 @@ class PagesService : Service() {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     for ((_, playerEntity) in playerEntitiesNormal) {
                         if (playerEntity != userEntity && playerEntity.squaredDistanceTo(userEntity) <= 64.0) {
-                            playerEntity.knockback(2.0, userEntity.x - playerEntity.x, userEntity.z - playerEntity.z)
+                            playerEntity.applyKnockback(2.0, userEntity.x - playerEntity.x, userEntity.z - playerEntity.z, true)
                             playerEntity.play(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP)
                         }
                     }

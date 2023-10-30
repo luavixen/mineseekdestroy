@@ -283,7 +283,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.IRON_SWORD, Items.IRON_PICKAXE, Items.IRON_AXE, Items.IRON_SHOVEL, Items.IRON_HOE,
         Items.DIAMOND_SWORD, Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE,
         Items.BOW, Items.CROSSBOW,
-        Items.TRIDENT,
+        Items.TRIDENT, Items.CONDUIT,
         Items.ELYTRA,
         Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
         Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,

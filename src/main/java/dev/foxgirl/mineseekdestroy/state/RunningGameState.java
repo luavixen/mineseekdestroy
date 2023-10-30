@@ -96,7 +96,7 @@ public abstract class RunningGameState extends GameState {
         if (context == null) return false;
 
         if (damageSource.isOf(DamageTypes.GENERIC_KILL) || damageAmount >= 100000.0F) {
-            Game.LOGGER.info("Invalid death for player '{}' source: {} amount: {}", playerEntity.getEntityName(), damageSource.getName(), damageAmount);
+            Game.LOGGER.info("Invalid damage for player '{}' source: {} amount: {}", playerEntity.getEntityName(), damageSource.getName(), damageAmount);
             return false;
         }
 
@@ -113,6 +113,12 @@ public abstract class RunningGameState extends GameState {
             if (
                 playerEntity.hasStatusEffect(StatusEffects.JUMP_BOOST) &&
                 damageSource.isOf(DamageTypes.FALL)
+            ) {
+                return false;
+            }
+            if (
+                player.getTeam() == GameTeam.PLAYER_BLUE &&
+                damageSource.isOf(DamageTypes.FLY_INTO_WALL)
             ) {
                 return false;
             }

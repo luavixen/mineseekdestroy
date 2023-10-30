@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.mixin;
 
 import dev.foxgirl.mineseekdestroy.Game;
+import dev.foxgirl.mineseekdestroy.util.EntitiesKt;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -10,7 +11,6 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Pair;
@@ -146,9 +146,7 @@ public abstract class MixinPigEntity extends AnimalEntity {
 
         var pushStrength = Game.getGame().getRuleDouble(Game.RULE_CARS_KNOCKBACK);
         var pushDirection = getPos().subtract(player.getPos());
-        player.takeKnockback(pushStrength, pushDirection.x, pushDirection.z);
-        player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
-        player.velocityDirty = false;
+        EntitiesKt.applyKnockback(player, pushStrength, pushDirection.x, pushDirection.z);
     }
 
 }

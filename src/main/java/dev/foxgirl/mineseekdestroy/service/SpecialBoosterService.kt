@@ -2,17 +2,14 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameProperties
-import dev.foxgirl.mineseekdestroy.util.Broadcast
-import dev.foxgirl.mineseekdestroy.util.Region
-import dev.foxgirl.mineseekdestroy.util.Rules
-import dev.foxgirl.mineseekdestroy.util.Selection
+import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Vec3d
 import kotlin.math.sqrt
 
 class SpecialBoosterService : Service() {
@@ -72,9 +69,7 @@ class SpecialBoosterService : Service() {
             {
                 logger.info("Player '${it.entityName}' launched by blimp fans")
 
-                it.addVelocity(0.0, Rules.fansKnockback, 0.0)
-                it.networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(it))
-                it.velocityDirty = false
+                it.applyVelocity(Vec3d(0.0, Rules.fansKnockback, 0.0))
 
                 Broadcast.sendSound(
                     SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,
@@ -117,9 +112,7 @@ class SpecialBoosterService : Service() {
                             pushY /= magnitude
                         }
 
-                        it.takeKnockback(Rules.towerKnockback, pushX, pushY)
-                        it.networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(it))
-                        it.velocityDirty = false
+                        it.applyKnockback(Rules.towerKnockback, pushX, pushY, true)
 
                         Broadcast.sendSound(
                             SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,

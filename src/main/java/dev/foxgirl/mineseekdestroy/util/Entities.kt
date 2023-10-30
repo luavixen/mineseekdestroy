@@ -8,12 +8,12 @@ import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
-import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket
 import net.minecraft.particle.ParticleEffect
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
 import net.minecraft.util.math.Vec3d
+import kotlin.math.min
 
 fun LivingEntity.hurtHearts(hearts: Double, source: (DamageSources) -> DamageSource = { it.generic() }): Boolean =
     damage(source(damageSources), (hearts * 2.0).toFloat())
@@ -46,11 +46,32 @@ fun PlayerEntity.give(stack: ItemStack, drop: Boolean): Boolean {
     return false
 }
 
-fun LivingEntity.knockback(strength: Double, x: Double, z: Double) {
-    takeKnockback(strength, x, z)
+fun Entity.applyVelocity(velocity: Vec3d) {
+    addVelocity(velocity)
+    velocityDirty = true
     if (this is ServerPlayerEntity) {
-        networkHandler.sendPacket(EntityVelocityUpdateS2CPacket(this))
-        velocityDirty = false
+        velocityModified = true
+    }
+}
+fun Entity.applyKnockback(strength: Double, x: Double, z: Double) = applyKnockback(strength, x, z, false)
+fun Entity.applyKnockback(strength: Double, x: Double, z: Double, force: Boolean) {
+    if (this is LivingEntity && !force) {
+        takeKnockback(strength, x, z)
+    } else {
+        applyKnockbackImpl(this, strength, x, z)
+    }
+    if (velocityDirty && this is ServerPlayerEntity) {
+        velocityModified = true
+    }
+}
+private fun applyKnockbackImpl(entity: Entity, strength: Double, x: Double, z: Double) {
+    entity.velocityDirty = true
+    entity.velocity = entity.velocity.let {
+        val delta = Vec3d(x, 0.0, z).normalize().multiply(strength)
+        val x = it.x / 2.0 - delta.x
+        val z = it.z / 2.0 - delta.z
+        val y = if (entity.isOnGround) min(0.4, it.y / 2.0 + strength) else it.y
+        Vec3d(x, y, z)
     }
 }
 
