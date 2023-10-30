@@ -177,8 +177,8 @@ class SoulService : Service() {
         val displayName: Text get() = text(aggressor, "VS", victim)
         fun message(): Text = text(
             displayName, "-",
-            text("[START]").green().style { it.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/msd duel start ${aggressor.name} ${victim.name}")) },
-            text("[CANCEL]").red().style { it.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/msd duel cancel ${aggressor.name} ${victim.name}")) },
+            text("[START]").green().style { it.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/msd duel start exact ${aggressor.name} ${victim.name}")) },
+            text("[CANCEL]").red().style { it.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/msd duel cancel exact ${aggressor.name} ${victim.name}")) },
         )
     }
 

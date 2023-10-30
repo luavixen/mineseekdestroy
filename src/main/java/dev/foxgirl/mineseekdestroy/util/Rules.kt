@@ -84,6 +84,8 @@ object Rules {
 
     @JvmStatic var countdownEnabled by BooleanRuleProperty(RULE_COUNTDOWN_ENABLED)
     @JvmStatic var countdownAutostartEnabled by BooleanRuleProperty(RULE_COUNTDOWN_AUTOSTART_ENABLED)
+    @JvmStatic var countdownProgressionEnabled by BooleanRuleProperty(RULE_COUNTDOWN_PROGRESSION_ENABLED)
+    @JvmStatic var countdownDamageAmount by DoubleRuleProperty(RULE_COUNTDOWN_DAMAGE_AMOUNT)
     @JvmStatic var countdownTextFadeinDuration by IntRuleProperty(RULE_COUNTDOWN_TEXT_FADEIN_DURATION)
     @JvmStatic var countdownTextStayDuration by IntRuleProperty(RULE_COUNTDOWN_TEXT_STAY_DURATION)
     @JvmStatic var countdownTextFadeoutDuration by IntRuleProperty(RULE_COUNTDOWN_TEXT_FADEOUT_DURATION)

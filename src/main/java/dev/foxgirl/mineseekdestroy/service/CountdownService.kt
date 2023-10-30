@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.async.Scheduler
 import net.minecraft.network.packet.s2c.play.OverlayMessageS2CPacket
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleFadeS2CPacket
@@ -11,6 +12,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.math.BlockPos
+import java.text.DecimalFormat
 
 class CountdownService : Service() {
 
@@ -47,12 +49,16 @@ class CountdownService : Service() {
     private fun isOpaque(pos: BlockPos) = world.getBlockState(pos).let { it.isOpaque || it.isSolid }
     private fun isProtected(playerEntity: ServerPlayerEntity): Boolean {
         val posPlayer = playerEntity.blockPos.mutableCopy().apply { y++ }
-        val posBlimp = properties.regionBlimp.start
-        while (posPlayer.y < posBlimp.y) {
+        val (posBlimpStart, posBlimpEnd) = properties.regionBlimp
+        while (posPlayer.y < posBlimpStart.y) {
             if (isOpaque(posPlayer)) return false
             posPlayer.y++
         }
-        return isOpaque(posPlayer.setY(posBlimp.y)) || isOpaque(posPlayer.setY(posBlimp.y + 1))
+        while (posPlayer.y <= posBlimpEnd.y) {
+            if (isOpaque(posPlayer)) return true
+            posPlayer.y++
+        }
+        return false
     }
 
     override fun update() {
@@ -68,21 +74,28 @@ class CountdownService : Service() {
         if (ticks == 0) {
             logger.info("Countdown iteration $iteration finished, snipping")
             ticks = ticksFor(++iteration)
+
+            var damage = Rules.countdownDamageAmount
+            if (Rules.countdownProgressionEnabled && iteration > 7) {
+                damage += 0.1 * (iteration - 7).toDouble()
+            }
+
             Broadcast.send(TitleFadeS2CPacket(
                 Rules.countdownTextFadeinDuration,
                 Rules.countdownTextStayDuration,
                 Rules.countdownTextFadeoutDuration,
             ))
-            Broadcast.send(TitleS2CPacket(text("-1 ❤").red()))
+            Broadcast.send(TitleS2CPacket(text(DecimalFormat("#.#").format(-damage) + " ❤").red()))
             Broadcast.send(SubtitleS2CPacket(text()))
             Broadcast.sendSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.HOSTILE, 1.0F, 1.0F)
             Broadcast.sendParticles(ParticleTypes.ELDER_GUARDIAN, 0.0F, 0) { player, playerEntity ->
-                if (player.isPlaying && player.isAlive) playerEntity.pos else null
+                if (player.isPlayingOrGhost && player.isAlive) playerEntity.pos else null
             }
+
             for ((player, playerEntity) in playerEntitiesNormal) {
                 if (!player.isPlayingOrGhost || !player.isAlive) continue
-                if (isProtected(playerEntity)) continue
-                playerEntity.hurtHearts(1.0) { it.create(Game.DAMAGE_TYPE_BITTEN) }
+                if (!player.isGhost && isProtected(playerEntity)) continue
+                playerEntity.hurtHearts(damage) { it.create(Game.DAMAGE_TYPE_BITTEN) }
             }
         } else {
             seconds = secondsFor(ticks--)
@@ -110,6 +123,19 @@ class CountdownService : Service() {
         running = false
     }
 
+    fun executeSetTime(console: Console, seconds: Double) {
+        if (!running) {
+            console.sendError("Countdown not running")
+            return
+        }
+        ticks = (seconds * 20.0).toInt()
+    }
+
+    fun executeSetDamage(console: Console, damage: Double) {
+        Rules.countdownDamageAmount = damage
+        console.sendInfo("Countdown damage set to $damage")
+    }
+
     fun executeSetEnabled(console: Console, enabled: Boolean) {
         Rules.countdownEnabled = enabled
         if (enabled) {
@@ -126,11 +152,21 @@ class CountdownService : Service() {
             console.sendInfo("Countdown autostart disabled")
         }
     }
+    fun executeSetProgression(console: Console, enabled: Boolean) {
+        Rules.countdownProgressionEnabled = enabled
+        if (enabled) {
+            console.sendInfo("Countdown progression enabled")
+        } else {
+            console.sendInfo("Countdown progression disabled")
+        }
+    }
 
     fun handleRoundStart() {
-        if (Rules.countdownEnabled && Rules.countdownAutostartEnabled) {
-            start(0)
-            Game.CONSOLE_OPERATORS.sendInfo("Countdown automatically started")
+        Scheduler.delay(5.0) {
+            if (Rules.countdownEnabled && Rules.countdownAutostartEnabled) {
+                start(0)
+                Game.CONSOLE_OPERATORS.sendInfo("Countdown automatically started")
+            }
         }
     }
     fun handleRoundEnd() {

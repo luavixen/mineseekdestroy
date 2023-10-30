@@ -183,6 +183,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdCountdownEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_COUNTDOWN_AUTOSTART_ENABLED =
         GameRuleRegistry.register("msdCountdownAutostartEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_COUNTDOWN_PROGRESSION_ENABLED =
+        GameRuleRegistry.register("msdCountdownProgressionEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_COUNTDOWN_DAMAGE_AMOUNT =
+        GameRuleRegistry.register("msdCountdownDamageAmount", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(1.0));
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_COUNTDOWN_TEXT_FADEIN_DURATION =
         GameRuleRegistry.register("msdCountdownTextFadeinDuration", GameRules.Category.MISC, GameRuleFactory.createIntRule(5));
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_COUNTDOWN_TEXT_STAY_DURATION =

@@ -346,13 +346,25 @@ internal fun setup() {
     }
 
     Command.build("countdown") {
-        it.params(argLiteral("setenabled")) {
-            it.params(argLiteral("yes")) { it.actionWithContext { args, context -> context.countdownService.executeSetEnabled(args, true) } }
-            it.params(argLiteral("no")) { it.actionWithContext { args, context -> context.countdownService.executeSetEnabled(args, false) } }
-        }
-        it.params(argLiteral("setautostart")) {
-            it.params(argLiteral("yes")) { it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, true) } }
-            it.params(argLiteral("no")) { it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, false) } }
+        it.params(argLiteral("set")) {
+            it.params(argLiteral("time"), argDouble("seconds")) {
+                it.actionWithContext { args, context -> context.countdownService.executeSetTime(args, args["seconds"]) }
+            }
+            it.params(argLiteral("damage"), argDouble("hearts")) {
+                it.actionWithContext { args, context -> context.countdownService.executeSetDamage(args, args["hearts"]) }
+            }
+            it.params(argLiteral("enabled")) {
+                it.params(argLiteral("yes")) { it.actionWithContext { args, context -> context.countdownService.executeSetEnabled(args, true) } }
+                it.params(argLiteral("no")) { it.actionWithContext { args, context -> context.countdownService.executeSetEnabled(args, false) } }
+            }
+            it.params(argLiteral("autostart")) {
+                it.params(argLiteral("yes")) { it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, true) } }
+                it.params(argLiteral("no")) { it.actionWithContext { args, context -> context.countdownService.executeSetAutostart(args, false) } }
+            }
+            it.params(argLiteral("progression")) {
+                it.params(argLiteral("yes")) { it.actionWithContext { args, context -> context.countdownService.executeSetProgression(args, true) } }
+                it.params(argLiteral("no")) { it.actionWithContext { args, context -> context.countdownService.executeSetProgression(args, false) } }
+            }
         }
         it.params(argLiteral("start")) {
             it.params(argInt("iteration")) {
@@ -488,20 +500,46 @@ internal fun setup() {
             }
         }
         it.params(argLiteral("start")) {
-            it.params(argPlayer("aggressor"), argPlayer("victim")) {
-                it.params(argLiteral("force")) {
-                    it.actionWithContext { args, context ->
-                        context.soulService.executeDuelStart(args, args.player(context, "aggressor"), args.player(context, "victim"), true)
+            fun <T : Command.Arguments<ServerCommandSource>> start(args: T, context: GameContext, force: Boolean, aggressor: (T) -> GamePlayer?, victim: (T) -> GamePlayer?) {
+                val playerAggressor = aggressor(args)
+                if (playerAggressor == null) { args.sendError("Invalid aggressor"); return }
+                val playerVictim = victim(args)
+                if (playerVictim == null) { args.sendError("Invalid victim"); return }
+                context.soulService.executeDuelStart(args, playerAggressor, playerVictim, force)
+            }
+            fun startEntity(args: Command.Arguments<ServerCommandSource>, context: GameContext, force: Boolean) = start(args, context, force, { args.player(context, "aggressor") }, { args.player(context, "victim") })
+            fun startExact(args: Command.Arguments<ServerCommandSource>, context: GameContext, force: Boolean) = start(args, context, force, { context.getPlayer(args.get<String>("aggressor")) }, { context.getPlayer(args.get<String>("victim")) })
+            it.params(argLiteral("exact")) {
+                it.params(argString("aggressor"), argString("victim")) {
+                    it.params(argLiteral("force")) {
+                        it.actionWithContext { args, context -> startExact(args, context, true) }
                     }
-                }
-                it.actionWithContext { args, context ->
-                    context.soulService.executeDuelStart(args, args.player(context, "aggressor"), args.player(context, "victim"), false)
+                    it.actionWithContext { args, context -> startExact(args, context, false) }
                 }
             }
+            it.params(argPlayer("aggressor"), argPlayer("victim")) {
+                it.params(argLiteral("force")) {
+                    it.actionWithContext { args, context -> startEntity(args, context, true) }
+                }
+                it.actionWithContext { args, context -> startEntity(args, context, false) }
+            }
         }
-        it.params(argLiteral("cancel"), argPlayer("aggressor"), argPlayer("victim")) {
-            it.actionWithContext { args, context ->
-                context.soulService.executeDuelCancel(args, args.player(context, "aggressor"), args.player(context, "victim"))
+        it.params(argLiteral("cancel")) {
+            it.params(argLiteral("exact")) {
+                it.params(argPlayer("aggressor"), argPlayer("victim")) {
+                    it.actionWithContext { args, context ->
+                        val aggressor = context.getPlayer(args.get<String>("aggressor"))
+                        if (aggressor == null) { args.sendError("Invalid aggressor"); return@actionWithContext }
+                        val victim = context.getPlayer(args.get<String>("victim"))
+                        if (victim == null) { args.sendError("Invalid victim"); return@actionWithContext }
+                        context.soulService.executeDuelCancel(args, aggressor, victim)
+                    }
+                }
+            }
+            it.params(argPlayer("aggressor"), argPlayer("victim")) {
+                it.actionWithContext { args, context ->
+                    context.soulService.executeDuelCancel(args, args.player(context, "aggressor"), args.player(context, "victim"))
+                }
             }
         }
         it.params(argLiteral("list")) {
