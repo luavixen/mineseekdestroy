@@ -25,6 +25,7 @@
         "MixinPigEntity",
         "MixinPlayerEntity",
         "MixinPlayerInventory",
+        "MixinPotionEntity",
         "MixinProjectileEntity",
         "MixinRecipeManager",
         "MixinSaddledComponent",

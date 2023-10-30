@@ -131,19 +131,19 @@ object GameItems {
         text("can be shot out of yellow’s crossbows!").yellow(),
         text("will damage blue if used to fly!").blue(),
     )
-    val splashPotionSlowness = stackOf(
+    val potionSlowness = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),
         null,
         text("break their legs!"),
         text("affects ghosts").bold(),
     )
-    val splashPotionPoison = stackOf(
+    val potionPoison = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_poison")),
         null,
         text("will whittle your opponent down to half a heart!"),
         text("affects ghosts").bold(),
     )
-    val splashPotionHarming = stackOf(
+    val potionHarming = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_harming")),
         null,
         text("OOOWWUH"),
@@ -248,10 +248,9 @@ object GameItems {
         ::toolCrossbow, ::toolBow, ::toolTrident, ::snowBlock, ::eggBlock,
         ::ectoplasm, ::potato, ::bakedPotato, ::egg, ::snowball,
         ::spectralArrow, ::flintAndSteel, ::enderPearl, ::familyGuyBlock,
-        ::shield, ::fireworkRocket, ::splashPotionSlowness,
-        ::splashPotionPoison, ::splashPotionHarming, ::bookDeep,
-        ::bookOccult, ::bookCosmos, ::bookBarter, ::bookFlame,
-        ::summonSteak, ::summonGoldenSword, ::summonBlueIce,
+        ::shield, ::fireworkRocket, ::potionSlowness, ::potionPoison,
+        ::potionHarming, ::bookDeep, ::bookOccult, ::bookCosmos, ::bookBarter,
+        ::bookFlame, ::summonSteak, ::summonGoldenSword, ::summonBlueIce,
         ::summonWaterBucket, ::summonChippedAnvil, ::summonCompass,
     )
 
