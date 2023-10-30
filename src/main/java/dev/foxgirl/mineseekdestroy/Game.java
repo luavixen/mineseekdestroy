@@ -197,7 +197,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull Set<@NotNull UUID> OPERATORS = ImmutableSet.copyOf(new UUID[] {
         UUID.fromString("84cc25f6-1689-4729-a3fa-43a79e428404"), // luavixen
         UUID.fromString("ea5f3df6-eba5-47b6-a7f8-fbfec4078069"), // bread_enu
-        UUID.fromString("53489b5d-d23a-4758-9374-2d8151fba31a"), // ReachOutLaz
         UUID.fromString("01dc40cd-2dba-4063-b2c5-bc333e864e0c"), // Karma_Dragon
     });
 
