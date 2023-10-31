@@ -58,8 +58,6 @@ class SpecialBoosterService : Service() {
         trackers += Tracker(
             properties.regionBlimpFans,
             {
-                logger.info("Player '${it.entityName}' entered blimp fans")
-
                 it.frozenTicks = 120
                 it.addStatusEffect(StatusEffectInstance(
                     StatusEffects.SLOW_FALLING,
@@ -90,8 +88,6 @@ class SpecialBoosterService : Service() {
                 trackers += Tracker(
                     region,
                     {
-                        logger.info("Player '${it.entityName}' entered tower")
-
                         it.frozenTicks = 120
                         it.addStatusEffect(StatusEffectInstance(
                             StatusEffects.SLOW_FALLING,

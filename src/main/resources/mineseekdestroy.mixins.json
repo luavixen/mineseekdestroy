@@ -27,6 +27,7 @@
         "MixinPlayerInventory",
         "MixinPotionEntity",
         "MixinProjectileEntity",
+        "MixinProtectionEnchantment",
         "MixinRecipeManager",
         "MixinSaddledComponent",
         "MixinServerPlayerEntity",

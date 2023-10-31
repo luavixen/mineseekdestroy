@@ -61,7 +61,7 @@ public abstract class MixinProjectileEntity {
             strength = Math.abs(strength);
         }
 
-        EntitiesKt.applyKnockback(target, pushX, pushZ, strength, true);
+        EntitiesKt.applyKnockback(target, strength, pushX, pushZ, true);
     }
 
 }
