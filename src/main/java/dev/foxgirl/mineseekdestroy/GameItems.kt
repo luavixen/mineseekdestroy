@@ -63,6 +63,24 @@ object GameItems {
         text("does not affect ghosts").bold(),
     )
 
+    val toolYellowBow = toolBow.copy().apply {
+        addEnchantment(Enchantments.PUNCH, 2)
+    }
+    val toolYellowSword = toolSword.copy().apply {
+        addEnchantment(Enchantments.KNOCKBACK, 2)
+        addEnchantment(Enchantments.SWEEPING, 2)
+    }
+    val toolBlueCrossbow = toolCrossbow.copy().apply {
+        addEnchantment(Enchantments.PIERCING, 4)
+        addEnchantment(Enchantments.QUICK_CHARGE, 2)
+    }
+    val toolBluePickaxe = toolPickaxe.copy().apply {
+        addEnchantment(Enchantments.EFFICIENCY, 4)
+    }
+
+    val toolYellowConduit = stackOf(CONDUIT) // TODO
+    val toolBlueConduit = stackOf(CONDUIT) // TODO
+
     val snowBlock = stackOf(
         SNOW_BLOCK, text("Snow Block").white(),
         text("can be uncrafted into ") + text("4 snowballs").bold() + "!",
@@ -127,9 +145,9 @@ object GameItems {
     )
     val fireworkRocket = stackOf(
         FIREWORK_ROCKET, nbtDecode("{Fireworks:{Explosions:[{Colors:[I;14602026],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}}").asCompound(),
-        text("Crossbow Rocket").yellow(),
-        text("can be shot out of yellow’s crossbows!").yellow(),
-        text("will damage blue if used to fly!").blue(),
+        text("Crossbow Rocket").blue(),
+        text("can be shot out of blue's crossbows!").blue(),
+        text("will damage you if used to fly!").blue(),
     )
     val potionSlowness = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),

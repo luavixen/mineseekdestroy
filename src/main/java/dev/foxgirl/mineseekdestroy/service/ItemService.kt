@@ -202,22 +202,22 @@ class ItemService : Service() {
                 Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
             GameTeam.PLAYER_BLACK to enumMapOf(
-                Tool.Tool1.stack(GameItems.toolAxe),
-                Tool.Tool2.stack(GameItems.toolShovel),
                 Tool.Tool3.stack(GameItems.toolBow),
+                Tool.Tool1.stack(GameItems.toolAxe),
                 Tool.Tool4.stack(GameItems.toolTrident),
+                Tool.Tool2.stack(GameItems.toolShovel),
             ),
             GameTeam.PLAYER_YELLOW to enumMapOf(
-                Tool.Tool1.stack(GameItems.toolAxe),
-                Tool.Tool2.stack(GameItems.toolShovel),
-                Tool.Tool3.stack(GameItems.toolCrossbow),
-                Tool.Tool4.stack(GameItems.toolCrossbow),
+                Tool.Tool1.stack(GameItems.toolYellowBow),
+                Tool.Tool4.stack(GameItems.toolYellowSword),
+                Tool.Tool2.stack(GameItems.toolYellowConduit),
+                Tool.Tool3.stack(GameItems.toolShovel),
             ),
             GameTeam.PLAYER_BLUE to enumMapOf(
-                Tool.Tool1.stack(GameItems.toolSword),
-                Tool.Tool2.stack(GameItems.toolPickaxe),
-                Tool.Tool3.stack(GameItems.toolBow),
-                Tool.Tool4.stack(GameItems.toolBow),
+                Tool.Tool1.stack(GameItems.toolBlueCrossbow),
+                Tool.Tool4.stack(GameItems.toolAxe),
+                Tool.Tool2.stack(GameItems.toolBlueConduit),
+                Tool.Tool3.stack(GameItems.toolBluePickaxe),
             ),
         )
 
