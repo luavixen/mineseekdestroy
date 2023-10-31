@@ -120,6 +120,7 @@ object GameItems {
         text("arrow... but glows..."),
         text("does not affect ghosts"),
     )
+    val tippedArrow = stackOf(TIPPED_ARROW, nbtCompoundOf("MsdYellowArrow" to true))
 
     val flintAndSteel = stackOf(
         FLINT_AND_STEEL, FLINT_AND_STEEL.name(),
@@ -137,10 +138,10 @@ object GameItems {
         text("contains tnt; can be lit & blown up"),
     )
     val shield = stackOf(
-        SHIELD, nbtDecode("{BlockEntityTag:{id:\"minecraft:banner\",Base:11}}").asCompound(),
-        SHIELD.name().blue(),
-        text("will not function for yellow!").yellow(),
-        text("functions normally for blue!").blue(),
+        SHIELD, nbtDecode("{BlockEntityTag:{id:\"minecraft:banner\",Base:4}}").asCompound(),
+        SHIELD.name().yellow(),
+        text("functions normally for yellow!").yellow(),
+        text("will not function for blue!").blue(),
         text("functions normally for black and duels!").teamBlack(),
     )
     val fireworkRocket = stackOf(
@@ -243,7 +244,7 @@ object GameItems {
     val replacements = buildImmutableMap<Item, ItemStack> {
         for (stack in listOf(
             snowBlock, eggBlock, ectoplasm,
-            potato, bakedPotato, egg, snowball, spectralArrow,
+            potato, bakedPotato, egg, snowball, spectralArrow, tippedArrow,
             flintAndSteel, enderPearl, familyGuyBlock, fireworkRocket,
         )) {
             put(stack.item, stack)
@@ -265,11 +266,12 @@ object GameItems {
         ::toolSkull, ::toolAxe, ::toolSword, ::toolShovel, ::toolPickaxe,
         ::toolCrossbow, ::toolBow, ::toolTrident, ::snowBlock, ::eggBlock,
         ::ectoplasm, ::potato, ::bakedPotato, ::egg, ::snowball,
-        ::spectralArrow, ::flintAndSteel, ::enderPearl, ::familyGuyBlock,
-        ::shield, ::fireworkRocket, ::potionSlowness, ::potionPoison,
-        ::potionHarming, ::bookDeep, ::bookOccult, ::bookCosmos, ::bookBarter,
-        ::bookFlame, ::summonSteak, ::summonGoldenSword, ::summonBlueIce,
-        ::summonWaterBucket, ::summonChippedAnvil, ::summonCompass,
+        ::spectralArrow, ::tippedArrow, ::flintAndSteel, ::enderPearl,
+        ::familyGuyBlock, ::shield, ::fireworkRocket, ::potionSlowness,
+        ::potionPoison, ::potionHarming, ::bookDeep, ::bookOccult,
+        ::bookCosmos, ::bookBarter, ::bookFlame, ::summonSteak,
+        ::summonGoldenSword, ::summonBlueIce, ::summonWaterBucket,
+        ::summonChippedAnvil, ::summonCompass,
     )
 
 }
