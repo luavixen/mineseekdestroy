@@ -56,34 +56,38 @@ class ConduitService : Service() {
 
         private fun startOwnHunger(hungerPerSecond: Double) {
             Async.go {
+                delay(0.5)
                 while (isActive) {
-                    delay(1.0 / hungerPerSecond)
                     val playerEntity = player.entity ?: continue
                     if (playerEntity.hungerManager.foodLevel > 0) {
                         playerEntity.hungerManager.foodLevel--
+                    } else {
+                        playerEntity.hurtHearts(0.5) { it.starve() }
                     }
+                    delay(1.0 / hungerPerSecond)
                 }
             }
         }
         private fun startOtherHunger(hungerPerSecond: Double) {
             Async.go {
+                delay(0.5)
                 val targets = mutableMapOf<GamePlayer, Int>()
                 while (isActive) {
-                    delay(1.0 / hungerPerSecond)
                     val playerEntity = player.entity ?: continue
                     for ((target, targetEntity) in playerEntitiesIn) {
                         if (player == target) continue
                         if (player.team === target.team) continue
-                        if (playerEntity.squaredDistanceTo(targetEntity) <= 2.5) {
+                        if (playerEntity.squaredDistanceTo(targetEntity) <= 6.25) {
                             if (targetEntity.hungerManager.foodLevel > 0) {
                                 targetEntity.hungerManager.foodLevel--
                             }
                             val ticksLast = targets.put(target, ticks)
-                            if (ticksLast == null || ticksLast < ticks - 100) {
+                            if (ticksLast == null || ticksLast < ticks - 80) {
                                 targetEntity.sendMessage(Console.formatInfo(text("You're being starved by ") + player.displayName + "!"))
                             }
                         }
                     }
+                    delay(1.0 / hungerPerSecond)
                 }
             }
         }
@@ -91,12 +95,14 @@ class ConduitService : Service() {
         private fun startYellow() {
             startOwnHunger(2.0)
             startOtherHunger(3.0)
+
             Async.go {
+                delay(0.5)
                 while (isActive) {
-                    delay(0.5)
                     val playerEntity = player.entity ?: continue
-                    playerEntity.addEffect(StatusEffects.WEAKNESS, 15.75, 64)
-                    playerEntity.addEffect(StatusEffects.MINING_FATIGUE, 15.75, 64)
+                    playerEntity.addEffect(StatusEffects.WEAKNESS, 4.75, 64)
+                    playerEntity.addEffect(StatusEffects.MINING_FATIGUE, 4.75, 64)
+                    delay(0.5)
                 }
             }
         }
@@ -104,7 +110,10 @@ class ConduitService : Service() {
         private fun startBlue() {
             startOwnHunger(3.0)
             startOtherHunger(3.0)
+
             Async.go {
+                delay(0.5)
+
                 val blocks = mutableMapOf<BlockPos, Pair<Long, Int>>()
                 var iteration = 0L
 
@@ -156,8 +165,13 @@ class ConduitService : Service() {
                 return UnusableReason.INVALID
             }
             if (isTryingToUse) {
-                if (team == Team.YELLOW && playerEntity.hungerManager.foodLevel < 17) {
-                    return UnusableReason.NOT_ENOUGH_FOOD
+                when (team) {
+                    Team.YELLOW -> if (playerEntity.hungerManager.foodLevel < 17) {
+                        return UnusableReason.NOT_ENOUGH_FOOD
+                    }
+                    Team.BLUE -> if (playerEntity.hungerManager.foodLevel < 2) {
+                        return UnusableReason.NOT_ENOUGH_FOOD
+                    }
                 }
             } else {
                 if (team == Team.YELLOW && playerEntity.hungerManager.foodLevel > 0) {
@@ -195,7 +209,7 @@ class ConduitService : Service() {
                 if (unusableReason != null) {
                     deactivate(unusableReason)
                 } else {
-                    player.entity?.particles(ParticleTypes.ENCHANT, Random.nextDouble(0.5, 2.0), 2)
+                    player.entity?.particles(ParticleTypes.ENCHANT, Random.nextDouble(0.5, 2.0), 6) { it.add(0.0, Random.nextDouble(0.5, 2.0), 0.0) }
                 }
             }
             ticks++

@@ -17,7 +17,9 @@ import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
+import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.SpawnReason
+import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.boss.BossBar
 import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.effect.StatusEffects
@@ -650,11 +652,16 @@ class SummonsService : Service() {
         return Duration.between(textLastUpdate, Instant.now()).toMillis() >= 500
     }
 
-    private enum class Failure {
-        TIMEOUT, MISMATCH, REPEATED_DOUBLE, REPEATED_ONCE, REPEATED_SEQUENCE
+    private enum class FailureReason {
+        TIMEOUT,
+        MISMATCH,
+        REPEATED_DOUBLE,
+        REPEATED_ONCE,
+        REPEATED_SEQUENCE,
+        SPRINGTRAP,
     }
 
-    private fun failCheck(options: Options): Failure? {
+    private fun failCheck(options: Options): FailureReason? {
         if (Rules.chaosEnabled) {
             return null
         }
@@ -664,28 +671,31 @@ class SummonsService : Service() {
         }
 
         if (timeoutCheck()) {
-            return Failure.TIMEOUT
+            return FailureReason.TIMEOUT
         }
 
         val kind = options.kind
 
         if (kind.theology1 !== options.altar.theology && kind.theology2 !== options.altar.theology) {
-            return Failure.MISMATCH
+            return FailureReason.MISMATCH
         }
         if (kind.isOncePerGame && summonListGame.any { it.kind == kind }) {
-            return Failure.REPEATED_DOUBLE
+            return FailureReason.REPEATED_DOUBLE
         }
         if (kind.isOncePerRound && summonListRound.any { it.kind == kind }) {
-            return Failure.REPEATED_ONCE
+            return FailureReason.REPEATED_ONCE
         }
         if (kind == summonListRound.lastOrNull()?.kind) {
-            return Failure.REPEATED_SEQUENCE
+            return FailureReason.REPEATED_SEQUENCE
+        }
+        if (kind == Prayer(DEEP, DEEP) && !Rules.summonsDeepdeepEnabled) {
+            return FailureReason.SPRINGTRAP
         }
 
         return null
     }
 
-    private fun failPerform(options: Options) {
+    private fun failPerform(options: Options, reason: FailureReason) {
         for (player in players) {
             if (player.team === options.team) {
                 player.entity?.addEffect(StatusEffects.GLOWING, 4.0)
@@ -694,7 +704,22 @@ class SummonsService : Service() {
 
         when (options.altar.theology) {
             DEEP -> {
-                EntityType.GUARDIAN.spawn(world, options.pos, SpawnReason.COMMAND)
+                if (reason == FailureReason.SPRINGTRAP) {
+                    val springtrap = EntityType.ZOMBIE.create(world)!!.also {
+                        it.equipStack(EquipmentSlot.FEET, ItemStack.fromNbt(nbtDecode("""{id: "minecraft:leather_boots", tag: {Damage: 0, Trim: {material: "minecraft:redstone", pattern: "minecraft:rib"}, display: {color: 7301926}}, Count: 1b}""").asCompound()))
+                        it.equipStack(EquipmentSlot.LEGS, ItemStack.fromNbt(nbtDecode("""{id: "minecraft:leather_leggings", tag: {Damage: 0, Trim: {material: "minecraft:redstone", pattern: "minecraft:rib"}, display: {color: 7301926}}, Count: 1b}""").asCompound()))
+                        it.equipStack(EquipmentSlot.CHEST, ItemStack.fromNbt(nbtDecode("""{id: "minecraft:leather_chestplate", tag: {Damage: 0, Trim: {material: "minecraft:redstone", pattern: "minecraft:rib"}, display: {color: 7301926}}, Count: 1b}""").asCompound()))
+                        it.equipStack(EquipmentSlot.HEAD, ItemStack.fromNbt(nbtDecode("""{id: "minecraft:player_head", tag: {display: {Name: '{"text":"Springtrap"}'}, SkullOwner: {Id: [I; -304140315, 173950771, -1692193734, 1546731912], Properties: {textures: [{Value: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjJmNjU2ZGVjYWQ1ZTNjNGZkMDllMzIyZGY3NjhlN2JkMTdhZWIzNTM3YjU4ZWNlYTI5OTBiZGU2ZWNmOSJ9fX0="}]}}}, Count: 1b}""").asCompound()))
+                        it.equipStack(EquipmentSlot.MAINHAND, ItemStack.fromNbt(nbtDecode("""{id: "minecraft:mangrove_button", tag: {display: {Name: '[{"text":"Springlocks","italic":false}]'}, Enchantments: [{id: "sharpness", lvl: 255}]}, Count: 1b}""").asCompound()))
+                        it.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)!!.baseValue = 50000.0
+                        it.health = it.maxHealth
+                        it.customName = text("Springtrap")
+                        it.refreshPositionAndAngles(options.pos, 0.0F, 0.0F)
+                    }
+                    world.spawnEntityAndPassengers(springtrap)
+                } else {
+                    EntityType.GUARDIAN.spawn(world, options.pos, SpawnReason.COMMAND)
+                }
             }
             OCCULT -> {
                 for (i in 1..5) EntityType.ZOMBIE.spawn(world, options.pos, SpawnReason.COMMAND)
@@ -774,7 +799,7 @@ class SummonsService : Service() {
             Game.CONSOLE_OPERATORS.sendInfo("Summon failed:", failure, options.kind)
 
             textProvider = textProvidersFailure[failure]!!(options)
-            failPerform(options)
+            failPerform(options, failure)
         } else {
             Game.CONSOLE_PLAYERS.sendInfo(text(options.team, "summoned", options.kind).styleParent { it.withColor(Formatting.WHITE) })
 
@@ -1298,12 +1323,12 @@ class SummonsService : Service() {
             } },
         )
 
-        private val textProvidersFailure = immutableMapOf<Failure, (Options) -> TextProvider>(
-            Failure.TIMEOUT to { object : FailureTextProvider(it) {
+        private val textProvidersFailure = immutableMapOf<FailureReason, (Options) -> TextProvider>(
+            FailureReason.TIMEOUT to { object : FailureTextProvider(it) {
                 override val subtitle =
                     text("Let the cooldown complete first!")
             } },
-            Failure.MISMATCH to { object : FailureTextProvider(it) {
+            FailureReason.MISMATCH to { object : FailureTextProvider(it) {
                 override val subtitle: Text =
                     if (options.kind.isDouble) {
                         text(options.kind, "can only be performed at a", options.kind.theology1, "altar!")
@@ -1318,17 +1343,21 @@ class SummonsService : Service() {
                         )
                     }
             } },
-            Failure.REPEATED_DOUBLE to { object : FailureTextProvider(it) {
+            FailureReason.REPEATED_DOUBLE to { object : FailureTextProvider(it) {
                 override val subtitle =
                     text(options.kind, "can only be performed once per game!")
             } },
-            Failure.REPEATED_ONCE to { object : FailureTextProvider(it) {
+            FailureReason.REPEATED_ONCE to { object : FailureTextProvider(it) {
                 override val subtitle =
                     text(options.kind, "can only be performed once per round!")
             } },
-            Failure.REPEATED_SEQUENCE to { object : FailureTextProvider(it) {
+            FailureReason.REPEATED_SEQUENCE to { object : FailureTextProvider(it) {
                 override val subtitle =
                     text(options.kind, "can't be performed twice in a row!")
+            } },
+            FailureReason.SPRINGTRAP to { object : FailureTextProvider(it) {
+                override val subtitle =
+                    text("")
             } },
         )
 

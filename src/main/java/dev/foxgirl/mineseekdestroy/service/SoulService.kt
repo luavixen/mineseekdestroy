@@ -60,16 +60,24 @@ class SoulService : Service() {
             "MsdGlowing" to true,
         )
 
-        fun toStack(): ItemStack {
+        fun toSoulStack(): ItemStack {
             val item = when (kind) {
                 SoulKind.YELLOW -> Items.LANTERN
                 SoulKind.BLUE -> Items.SOUL_LANTERN
             }
             return stackOf(item, toNbt(), displayName, listOf(
                 text("can be used to enact a ") + text("pure summon").bold(),
-                text("can be eaten by a ") + text("yellow").teamYellow() + " player for " + text("temp. jump & speed boost").bold(),
                 text("will become a random item in the loot pool if left in a chest between rounds!"),
             ))
+        }
+
+        fun toPotionStack(): ItemStack {
+            return stackOf(
+                Items.POTION, nbtCompoundOf("Potion" to identifier("healing")),
+                text("Blood of", player.name).red(),
+                text("used to be the soul of someone who was lost..."),
+                text("tastes really good!"),
+            )
         }
     }
 
@@ -96,12 +104,9 @@ class SoulService : Service() {
         for ((player, playerEntity) in playerEntitiesNormal) {
             val inventory = playerEntity.inventory.asList()
             for ((i, stack) in inventory.withIndex()) {
-                val soul = createSoulFrom(stack)
-                if (soul != null && soul.uuid == player.uuid) {
-                    inventory[i] = stackOf(
-                        Items.POTION, nbtCompoundOf("Potion" to identifier("healing")),
-                        null, text("transmuted from your own soul!"),
-                    )
+                val soul = createSoulFrom(stack) ?: continue
+                if (soul.uuid == player.uuid || soul.player.team === GameTeam.NONE) {
+                    inventory[i] = soul.toPotionStack().also { it.count = stack.count }
                 }
             }
         }
@@ -110,7 +115,7 @@ class SoulService : Service() {
     fun handleDeath(player: GamePlayer, playerEntity: ServerPlayerEntity) {
         if (player.team === GameTeam.PLAYER_YELLOW || player.team === GameTeam.PLAYER_BLUE) {
             if (!Rules.soulsDroppingEnabled) return
-            playerEntity.dropItem(createSoulFor(player).toStack(), true, false)
+            playerEntity.dropItem(createSoulFor(player).toSoulStack(), true, false)
         }
     }
 
@@ -121,9 +126,9 @@ class SoulService : Service() {
                 (player.team === GameTeam.PLAYER_BLUE && Rules.soulsGiveBlueOwnSoulEnabled)
             ) {
                 if (Rules.soulsGiveHerobrinesSoulEnabled) {
-                    playerEntity.give(createSoulFor(context.playerHerobrine, player.team).toStack())
+                    playerEntity.give(createSoulFor(context.playerHerobrine, player.team).toSoulStack())
                 } else {
-                    playerEntity.give(createSoulFor(player).toStack())
+                    playerEntity.give(createSoulFor(player).toSoulStack())
                 }
             }
         }
@@ -145,7 +150,7 @@ class SoulService : Service() {
 
     fun executeSoulGive(console: Console, players: List<GamePlayer>, soulPlayer: GamePlayer, soulTeam: GameTeam = soulPlayer.team) {
         val soul = createSoulFor(soulPlayer, soulTeam)
-        val stack = soul.toStack()
+        val stack = soul.toSoulStack()
         players.forEach { it.entity?.give(stack.copy()) }
         console.sendInfo("Gave", soul, "to ${players.size} player(s)")
     }
@@ -263,7 +268,7 @@ class SoulService : Service() {
 
         val aggressorEntity = duel.aggressor.entity
         if (aggressorEntity != null) {
-            aggressorEntity.give(createSoulFor(duel.victim).toStack())
+            aggressorEntity.give(createSoulFor(duel.victim).toSoulStack())
         } else {
             console.sendError("Duel", duel, "failed to return soul to aggressor while being cancelled")
         }

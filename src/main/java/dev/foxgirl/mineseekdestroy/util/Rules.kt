@@ -66,6 +66,7 @@ object Rules {
     @JvmStatic var summonsEnabled by BooleanRuleProperty(RULE_SUMMONS_ENABLED)
     @JvmStatic var summonsAltarGlowDuration by DoubleRuleProperty(RULE_SUMMONS_ALTAR_GLOW_DURATION)
     @JvmStatic var summonsShowTooltipEnabled by BooleanRuleProperty(RULE_SUMMONS_SHOW_TOOLTIP_ENABLED)
+    @JvmStatic var summonsDeepdeepEnabled by BooleanRuleProperty(RULE_SUMMONS_DEEPDEEP_ENABLED)
 
     @JvmStatic var soulsDroppingEnabled by BooleanRuleProperty(RULE_SOULS_DROPPING_ENABLED)
     @JvmStatic var soulsConsumingEnabled by BooleanRuleProperty(RULE_SOULS_CONSUMING_ENABLED)

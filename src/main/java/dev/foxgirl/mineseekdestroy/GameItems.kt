@@ -94,23 +94,21 @@ object GameItems {
 
     val toolYellowConduit = stackOf(
         CONDUIT, nbtCompoundOf("MsdTool" to "yellowConduit", "MsdConduit" to GameTeam.PLAYER_YELLOW),
-        text("super magical conduit of power").yellow(),
-        text("while active, negates all damage taken").yellow(),
-        text("while active, you can't attack").yellow(),
-        text("right click to activate!"),
-        text("stop holding to deactivate once you're starved!"),
-        text("saps hunger while active!"),
-        text("does not negate starvation").bold(),
+        text("super magical conduit of power").teamYellow(),
+        text("right click to activate! ") + text("(only when full)").bold(),
+        text("stop holding to deactivate! ") + text("(only when starving)").bold(),
+        text("makes the user immune to all damage except starvation when active").teamYellow(),
+        text("saps hunger of user AND nearby enemy players"),
+        text("gain weakness 64 while active").bold(),
+        text("gain mining fatigue 64 while active").bold(),
     )
     val toolBlueConduit = stackOf(
         CONDUIT, nbtCompoundOf("MsdTool" to "blueConduit", "MsdConduit" to GameTeam.PLAYER_BLUE),
-        text("super duper conduit of power").blue(),
-        text("while active, all blocks you touch disappear").blue(),
-        text("does not remove blocks being stood on").blue(),
-        text("right click to activate!"),
-        text("stop holding to deactivate!"),
-        text("saps hunger while active!"),
-        text("does not negate starvation").bold(),
+        text("super duper conduit of power").teamBlue(),
+        text("right click to activate! ") + text("(only when NOT starving)").bold(),
+        text("stop holding to deactivate! ") + text("(any time)").bold(),
+        text("removes all blocks around the user above ground level").teamBlue(),
+        text("saps hunger of user AND nearby enemy players"),
     )
 
     val snowBlock = stackOf(
@@ -154,9 +152,9 @@ object GameItems {
     )
     val tippedArrow = stackOf(
         TIPPED_ARROW, nbtCompoundOf("MsdYellowArrow" to true, "Potion" to identifier("harming")),
-        text("Retaliation Arrow").yellow(),
-        text("functions normally on yellow!").yellow(),
-        text("cannot be shot by blue players").blue(),
+        text("Retaliation Arrow").teamYellow(),
+        text("functions normally on yellow!").teamYellow(),
+        text("cannot be shot by blue players").teamBlue(),
     )
 
     val flintAndSteel = stackOf(
@@ -165,8 +163,8 @@ object GameItems {
     )
     val enderPearl = stackOf(
         ENDER_PEARL, ENDER_PEARL.name(),
-        text("if it lands near a player, it will teleport them to you!").yellow(),
-        text("functions normally for blue!").blue(),
+        text("if it lands near a player, it will teleport them to you!").teamYellow(),
+        text("functions normally for blue!").teamBlue(),
         text("functions normally for black and duels!").teamBlack(),
     )
     val familyGuyBlock = stackOf(
@@ -176,16 +174,16 @@ object GameItems {
     )
     val shield = stackOf(
         SHIELD, nbtDecode("{BlockEntityTag:{id:\"minecraft:banner\",Base:4}}").asCompound(),
-        SHIELD.name().yellow(),
-        text("functions normally for yellow!").yellow(),
-        text("will not function for blue!").blue(),
+        SHIELD.name().teamYellow(),
+        text("functions normally for yellow!").teamYellow(),
+        text("will not function for blue!").teamBlue(),
         text("functions normally for black and duels!").teamBlack(),
     )
     val fireworkRocket = stackOf(
         FIREWORK_ROCKET, nbtDecode("{Fireworks:{Explosions:[{Colors:[I;2437522],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}}").asCompound(),
-        text("Crossbow Rocket").blue(),
-        text("can be shot out of blue's crossbows!").blue(),
-        text("can be used by blue to fly, but will damage you!").blue(),
+        text("Crossbow Rocket").teamBlue(),
+        text("can be shot out of blue's crossbows!").teamBlue(),
+        text("can be used by blue to fly, but will damage you!").teamBlue(),
     )
     val potionSlowness = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),
