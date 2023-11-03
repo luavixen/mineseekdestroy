@@ -1357,7 +1357,7 @@ class SummonsService : Service() {
             } },
             FailureReason.SPRINGTRAP to { object : FailureTextProvider(it) {
                 override val subtitle =
-                    text("")
+                    text("He always comes back...")
             } },
         )
 
