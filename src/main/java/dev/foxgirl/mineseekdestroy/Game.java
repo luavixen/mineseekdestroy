@@ -163,11 +163,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_SOULS_CONSUMING_EFFECT_SPEED_STRENGTH =
         GameRuleRegistry.register("msdSoulsConsumingEffectSpeedStrength", GameRules.Category.MISC, GameRuleFactory.createIntRule(6));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_GIVE_YELLOW_OWN_SOUL_ENABLED =
-        GameRuleRegistry.register("msdSoulsGiveYellowOwnSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+        GameRuleRegistry.register("msdSoulsGiveYellowOwnSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_GIVE_BLUE_OWN_SOUL_ENABLED =
         GameRuleRegistry.register("msdSoulsGiveBlueOwnSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_GIVE_HEROBRINES_SOUL_ENABLED =
-        GameRuleRegistry.register("msdSoulsGiveHerobrinesSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+        GameRuleRegistry.register("msdSoulsGiveHerobrinesSoulEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BUDDY_ENABLED =
         GameRuleRegistry.register("msdBuddyEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));

@@ -102,14 +102,6 @@ public abstract class RunningGameState extends GameState {
 
         var player = context.getPlayer(playerEntity);
         if (player.isPlayingOrGhost() && player.isAlive()) {
-            var vehicle = playerEntity.getVehicle();
-            if (vehicle instanceof PigEntity) {
-                if (damageSource.isOf(DamageTypes.FALL)) {
-                    return false;
-                } else {
-                    context.specialCarService.cooldownActivate((PigEntity) vehicle);
-                }
-            }
             if (
                 playerEntity.hasStatusEffect(StatusEffects.JUMP_BOOST) &&
                 damageSource.isOf(DamageTypes.FALL)
@@ -127,6 +119,20 @@ public abstract class RunningGameState extends GameState {
                 context.ghostService.shouldGhostIgnoreDamage(damageSource.getTypeRegistryEntry().getKey().orElse(null))
             ) {
                 return false;
+            }
+            if (
+                player.isCannon() &&
+                context.conduitService.shouldIgnoreDamage(player, playerEntity, damageSource)
+            ) {
+                return false;
+            }
+            var vehicle = playerEntity.getVehicle();
+            if (vehicle instanceof PigEntity) {
+                if (damageSource.isOf(DamageTypes.FALL)) {
+                    return false;
+                } else {
+                    context.specialCarService.cooldownActivate((PigEntity) vehicle);
+                }
             }
             return true;
         }

@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.util.Broadcast;
+import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Rules;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -33,7 +34,7 @@ public class StartingGameState extends GameState {
             .formatted(blink ? Formatting.YELLOW : Formatting.RED);
     }
     private static Text formatRoundStarted() {
-        return Text.literal("ROUND STARTED! KILL!").formatted(Formatting.LIGHT_PURPLE);
+        return Console.formatInfo("ROUND STARTED! KILL!");
     }
 
     private static double toTime(int ticks) {

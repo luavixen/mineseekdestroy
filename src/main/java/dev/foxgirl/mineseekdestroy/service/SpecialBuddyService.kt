@@ -3,8 +3,11 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Rules
 import dev.foxgirl.mineseekdestroy.util.async.Scheduler
+import dev.foxgirl.mineseekdestroy.util.plus
+import dev.foxgirl.mineseekdestroy.util.text
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.text.Text
@@ -87,7 +90,7 @@ class SpecialBuddyService : Service() {
                                 StatusEffectInstance.INFINITE,
                                 Rules.buddyAbsorptionStrength - 1,
                             ))
-                            playerFollowerEntity.sendMessage(text(playerTarget, "won last game, so you got absorption").lightPurple())
+                            playerFollowerEntity.sendMessage(Console.formatInfo(playerTarget, "won last game, so you got absorption"))
                             Game.CONSOLE_OPERATORS.sendInfo("Player", playerFollower, "given absorption for", text(playerTarget.displayName) + "'s", "win")
                         }
                     }

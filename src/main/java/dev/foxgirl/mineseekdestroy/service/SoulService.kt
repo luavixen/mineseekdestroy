@@ -8,17 +8,14 @@ import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.async.Async
 import net.minecraft.block.Blocks
 import net.minecraft.block.RespawnAnchorBlock
-import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.particle.ParticleTypes
 import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.sound.SoundEvents
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
@@ -132,6 +129,7 @@ class SoulService : Service() {
         }
     }
 
+    /*
     fun handleSoulConsume(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
         if (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsConsumingEnabled) {
             playerEntity.addEffect(StatusEffects.JUMP_BOOST, Rules.soulsConsumingEffectDuration, Rules.soulsConsumingEffectJumpStrength)
@@ -143,6 +141,7 @@ class SoulService : Service() {
         }
         return ActionResult.FAIL
     }
+    */
 
     fun executeSoulGive(console: Console, players: List<GamePlayer>, soulPlayer: GamePlayer, soulTeam: GameTeam = soulPlayer.team) {
         val soul = createSoulFor(soulPlayer, soulTeam)

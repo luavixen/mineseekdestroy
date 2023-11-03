@@ -15,3 +15,9 @@ fun BlockPos.around(radiusX: Double, radiusY: Double, radiusZ: Double) = sequenc
         }
     }
 }
+
+inline fun lazyString(crossinline block: () -> Any?): Any {
+    return object {
+        override fun toString() = block().toString()
+    }
+}

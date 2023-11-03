@@ -175,6 +175,10 @@ public abstract class GameState {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlayingOrGhost() && player.isAlive()) {
                 var item = stack.getItem();
+                if (item == Items.CONDUIT) {
+                    var result = context.conduitService.handleConduitUse(player, (ServerPlayerEntity) playerEntity, stack);
+                    if (result != ActionResult.PASS) return result;
+                }
                 if (
                     item instanceof BlockItem blockItem && isRunning() &&
                     Game.PLACABLE_BLOCKS.contains(blockItem.getBlock()) &&
@@ -223,8 +227,8 @@ public abstract class GameState {
                         if (result != ActionResult.PASS) return result;
                     }
                 }
-                if (stack.getItem() == Items.LANTERN || stack.getItem() == Items.SOUL_LANTERN) {
-                    var result = context.soulService.handleSoulConsume(player, playerEntity, stack);
+                if (stack.getItem() == Items.CONDUIT) {
+                    var result = context.conduitService.handleConduitUse(player, playerEntity, stack);
                     if (result != ActionResult.PASS) return result;
                 }
                 return ActionResult.PASS;

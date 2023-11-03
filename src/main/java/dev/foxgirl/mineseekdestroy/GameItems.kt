@@ -15,71 +15,103 @@ import kotlin.reflect.KProperty0
 object GameItems {
 
     val toolSkull = stackOf(
-        SKELETON_SKULL, SKELETON_SKULL.name.copy().white(),
+        SKELETON_SKULL, nbtCompoundOf("MsdTool" to "skull"),
+        SKELETON_SKULL.name.copy().white(),
         text("useless! useless! ghost dumb bitch!"),
     )
     val toolAxe = stackOf(
-        IRON_AXE, null,
+        IRON_AXE, nbtCompoundOf("MsdTool" to "axe"),
+        null,
         text("OWIE!"),
         text("affects ghosts").bold(),
     )
     val toolSword = stackOf(
-        IRON_SWORD, null,
+        IRON_SWORD, nbtCompoundOf("MsdTool" to "sword"),
+        null,
         text("owie!"),
         text("affects ghosts").bold(),
     )
     val toolShovel = stackOf(
-        IRON_SHOVEL, null,
+        IRON_SHOVEL, nbtCompoundOf("MsdTool" to "shovel"),
+        null,
         text("best for mining ") + text("concrete powder").bold(),
     )
     val toolPickaxe = stackOf(
-        IRON_PICKAXE, null,
+        IRON_PICKAXE, nbtCompoundOf("MsdTool" to "pickaxe"),
+        null,
         text("best for mining ") + text("concrete").bold(),
     )
     val toolHoe = stackOf(
-        IRON_HOE, null,
+        IRON_HOE, nbtCompoundOf("MsdTool" to "hoe"),
+        null,
         text("just for fun, good luck using this"),
     )
     val toolCrossbow = stackOf(
-        CROSSBOW, null,
+        CROSSBOW, nbtCompoundOf("MsdTool" to "crossbow"),
+        null,
         text("PEW!"),
         text("does not affect ghosts").bold(),
     )
     val toolBow = stackOf(
-        BOW, null,
+        BOW, nbtCompoundOf("MsdTool" to "bow"),
+        null,
         text("pew!"),
         text("does not affect ghosts").bold(),
     )
     val toolTrident = stackOf(
-        TRIDENT, null,
+        TRIDENT, nbtCompoundOf("MsdTool" to "trident"),
+        null,
         text("have fun with this"),
         text("does not affect ghosts").bold(),
     ).apply {
         addEnchantment(Enchantments.LOYALTY, 3)
     }
     val toolRod = stackOf(
-        FISHING_ROD, null,
+        FISHING_ROD, nbtCompoundOf("MsdTool" to "rod"),
+        null,
         text("yoink!"),
         text("does not affect ghosts").bold(),
     )
 
     val toolYellowBow = toolBow.copy().apply {
+        getOrCreateNbt()["MsdTool"] = "yellowBow"
         addEnchantment(Enchantments.PUNCH, 2)
     }
     val toolYellowSword = toolSword.copy().apply {
+        getOrCreateNbt()["MsdTool"] = "yellowSword"
         addEnchantment(Enchantments.KNOCKBACK, 2)
         addEnchantment(Enchantments.SWEEPING, 2)
     }
     val toolBlueCrossbow = toolCrossbow.copy().apply {
+        getOrCreateNbt()["MsdTool"] = "blueCrossbow"
         addEnchantment(Enchantments.PIERCING, 4)
         addEnchantment(Enchantments.QUICK_CHARGE, 2)
     }
     val toolBluePickaxe = toolPickaxe.copy().apply {
+        getOrCreateNbt()["MsdTool"] = "bluePickaxe"
         addEnchantment(Enchantments.EFFICIENCY, 4)
     }
 
-    val toolYellowConduit = stackOf(CONDUIT) // TODO
-    val toolBlueConduit = stackOf(CONDUIT) // TODO
+    val toolYellowConduit = stackOf(
+        CONDUIT, nbtCompoundOf("MsdTool" to "yellowConduit", "MsdConduit" to GameTeam.PLAYER_YELLOW),
+        text("super magical conduit of power").yellow(),
+        text("while active, negates all damage taken").yellow(),
+        text("while active, you can't attack").yellow(),
+        text("right click to activate!"),
+        text("stop holding to deactivate once you're starved!"),
+        text("saps hunger while active!"),
+        text("does not negate starvation").bold(),
+    )
+    val toolBlueConduit = stackOf(
+        CONDUIT, nbtCompoundOf("MsdTool" to "blueConduit", "MsdConduit" to GameTeam.PLAYER_BLUE),
+        text("super duper conduit of power").blue(),
+        text("while active, all blocks you touch disappear").blue(),
+        text("does not remove blocks being stood on").blue(),
+        text("right click to activate!"),
+        text("stop holding to deactivate!"),
+        text("saps hunger while active!"),
+        text("does not negate starvation").bold(),
+    )
 
     val snowBlock = stackOf(
         SNOW_BLOCK, text("Snow Block").white(),
@@ -120,7 +152,12 @@ object GameItems {
         text("arrow... but glows..."),
         text("does not affect ghosts"),
     )
-    val tippedArrow = stackOf(TIPPED_ARROW, nbtCompoundOf("MsdYellowArrow" to true))
+    val tippedArrow = stackOf(
+        TIPPED_ARROW, nbtCompoundOf("MsdYellowArrow" to true, "Potion" to identifier("harming")),
+        text("Retaliation Arrow").yellow(),
+        text("functions normally on yellow!").yellow(),
+        text("cannot be shot by blue players").blue(),
+    )
 
     val flintAndSteel = stackOf(
         FLINT_AND_STEEL, FLINT_AND_STEEL.name(),
@@ -145,10 +182,10 @@ object GameItems {
         text("functions normally for black and duels!").teamBlack(),
     )
     val fireworkRocket = stackOf(
-        FIREWORK_ROCKET, nbtDecode("{Fireworks:{Explosions:[{Colors:[I;14602026],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}}").asCompound(),
+        FIREWORK_ROCKET, nbtDecode("{Fireworks:{Explosions:[{Colors:[I;2437522],Flicker:1b,Trail:1b,Type:4b}],Flight:2b}}").asCompound(),
         text("Crossbow Rocket").blue(),
         text("can be shot out of blue's crossbows!").blue(),
-        text("will damage you if used to fly!").blue(),
+        text("can be used by blue to fly, but will damage you!").blue(),
     )
     val potionSlowness = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),

@@ -76,7 +76,11 @@ class ItemService : Service() {
                     val tool = Tool.from(stack)
                     if (tool != null) {
                         val toolStack = toolStacks[tool]!!
-                        if (!ItemStack.areItemsEqual(toolStack, stack)) inventory.setStack(i, toolStack.copy())
+                        val idExpected = toolStack.nbt?.getString("MsdTool")
+                        val idActual = stack.nbt?.getString("MsdTool")
+                        if (idActual != idExpected || !ItemStack.areItemsEqual(toolStack, stack)) {
+                            inventory.setStack(i, toolStack.copy())
+                        }
                         return@forEach
                     }
                 }
@@ -192,8 +196,8 @@ class ItemService : Service() {
             GameTeam.PLAYER_WARDEN to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolAxe),
                 Tool.Tool2.stack(GameItems.toolShovel),
-                Tool.Tool4.stack(GameItems.toolBow),
-                Tool.Tool3.stack(GameItems.toolCrossbow),
+                Tool.Tool3.stack(GameItems.toolBow),
+                Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
             GameTeam.PLAYER_DUEL to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolSword),
@@ -202,22 +206,22 @@ class ItemService : Service() {
                 Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
             GameTeam.PLAYER_BLACK to enumMapOf(
-                Tool.Tool3.stack(GameItems.toolBow),
-                Tool.Tool1.stack(GameItems.toolAxe),
-                Tool.Tool4.stack(GameItems.toolTrident),
-                Tool.Tool2.stack(GameItems.toolShovel),
+                Tool.Tool1.stack(GameItems.toolBow),
+                Tool.Tool2.stack(GameItems.toolAxe),
+                Tool.Tool3.stack(GameItems.toolTrident),
+                Tool.Tool4.stack(GameItems.toolShovel),
             ),
             GameTeam.PLAYER_YELLOW to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolYellowBow),
-                Tool.Tool4.stack(GameItems.toolYellowSword),
-                Tool.Tool2.stack(GameItems.toolYellowConduit),
-                Tool.Tool3.stack(GameItems.toolShovel),
+                Tool.Tool2.stack(GameItems.toolYellowSword),
+                Tool.Tool3.stack(GameItems.toolYellowConduit),
+                Tool.Tool4.stack(GameItems.toolShovel),
             ),
             GameTeam.PLAYER_BLUE to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolBlueCrossbow),
-                Tool.Tool4.stack(GameItems.toolAxe),
-                Tool.Tool2.stack(GameItems.toolBlueConduit),
-                Tool.Tool3.stack(GameItems.toolBluePickaxe),
+                Tool.Tool2.stack(GameItems.toolAxe),
+                Tool.Tool3.stack(GameItems.toolBlueConduit),
+                Tool.Tool4.stack(GameItems.toolBluePickaxe),
             ),
         )
 

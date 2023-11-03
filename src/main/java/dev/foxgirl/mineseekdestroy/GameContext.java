@@ -66,6 +66,7 @@ public final class GameContext {
     public final @NotNull GlowService glowService;
     public final @NotNull ItemService itemService;
     public final @NotNull ShieldService shieldService;
+    public final @NotNull ConduitService conduitService;
     public final @NotNull GhostService ghostService;
     public final @NotNull SoulService soulService;
     public final @NotNull SnapshotService snapshotService;
@@ -185,6 +186,7 @@ public final class GameContext {
                 glowService = new GlowService(),
                 itemService = new ItemService(),
                 shieldService = new ShieldService(),
+                conduitService = new ConduitService(),
                 ghostService = new GhostService(),
                 soulService = new SoulService(),
                 snapshotService = new SnapshotService(),

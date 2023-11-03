@@ -33,4 +33,11 @@ public interface Console {
         return TextsKt.style(TextsKt.text(values), style -> style.withParent(error ? STYLE_ERROR : STYLE_INFO));
     }
 
+    static @NotNull MutableText formatInfo(@Nullable Object... values) {
+        return format(values, false);
+    }
+    static @NotNull MutableText formatError(@Nullable Object... values) {
+        return format(values, true);
+    }
+
 }
