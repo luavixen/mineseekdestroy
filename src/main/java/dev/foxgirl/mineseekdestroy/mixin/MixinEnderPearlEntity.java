@@ -50,7 +50,7 @@ public abstract class MixinEnderPearlEntity extends ThrownItemEntity {
                     .orElse(null);
 
                 if (targetEntity != null) {
-                    Game.LOGGER.info("Grapple pearl teleporting target '{}' to user '{}", targetEntity.getName(), playerEntity.getEntityName());
+                    Game.LOGGER.info("Grapple pearl teleporting target '{}' to user '{}'", targetEntity.getEntityName(), playerEntity.getEntityName());
 
                     refreshPositionAfterTeleport(playerEntity.getPos());
 

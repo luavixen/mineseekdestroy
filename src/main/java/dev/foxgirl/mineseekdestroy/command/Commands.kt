@@ -74,13 +74,7 @@ internal fun setup() {
 
                 it.params(argLiteral(properties().name)) { registerFlags(it, arrayOf()) }
             }
-            register { GameProperties.Macander }
-            register { GameProperties.Radiator }
-            register { GameProperties.Realm }
-            register { GameProperties.Lights }
-            register { GameProperties.Station }
-            register { GameProperties.Horror }
-            register { GameProperties.Island }
+            GameProperties.instances.forEach { register { it } }
         }
         it.params(argLiteral("prepare")) {
             it.actionWithContext { args, context ->
@@ -95,6 +89,23 @@ internal fun setup() {
                 context.inventoryService.executeFill(args)
                 context.players.forEach { if (!it.isOperator) it.teleport(properties.positionBlimp) }
             }
+        }
+        it.params(argLiteral("unfreeze")) {
+            fun register(name: String, state: () -> GameState) {
+                it.params(argLiteral(name)) {
+                    it.actionWithContext { args, context ->
+                        if (game.state is FrozenGameState) {
+                            game.state = state()
+                            args.sendInfo("Unfroze game!")
+                        } else {
+                            args.sendError("Cannot unfreeze game, not frozen")
+                        }
+                    }
+                }
+            }
+            register("waiting") { WaitingGameState() }
+            register("dueling") { DuelingGameState() }
+            register("playing") { PlayingGameState() }
         }
     }
 
@@ -195,17 +206,12 @@ internal fun setup() {
                 }
             }
             register("waiting") { WaitingGameState() }
-            register("skirmishing") { SkirmishingGameState() }
+            register("frozen") { FrozenGameState() }
+            register("arena") { ArenaGameState() }
             register("finalizing") { FinalizingGameState() }
             register("starting") { StartingGameState() }
             register("playing") { PlayingGameState() }
             register("dueling") { DuelingGameState() }
-        }
-        it.params(argLiteral("super_dangerous_cause_a_lockup")) {
-            it.action { args ->
-                var i = 0
-                while (true) i++
-            }
         }
         it.params(argLiteral("givetools")) {
             it.action { args ->
@@ -256,6 +262,14 @@ internal fun setup() {
         it.params(argLiteral("cleanloot")) {
             it.actionWithContext { args, context ->
                 context.lootService.executeDebugClean(args)
+            }
+        }
+        it.params(argLiteral("danger")) {
+            it.params(argLiteral("loopforever")) {
+                it.action { args ->
+                    var i = 0
+                    while (true) i++
+                }
             }
         }
         it.params(argLiteral("removeunexposed")) {

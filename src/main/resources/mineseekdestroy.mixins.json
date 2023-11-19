@@ -21,7 +21,6 @@
         "MixinItemEntity",
         "MixinLivingEntity",
         "MixinMessageCommand",
-        "MixinMinecraftServer",
         "MixinPigEntity",
         "MixinPlayerEntity",
         "MixinPlayerInventory",

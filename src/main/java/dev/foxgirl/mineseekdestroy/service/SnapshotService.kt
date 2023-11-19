@@ -1,10 +1,7 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.Game
-import dev.foxgirl.mineseekdestroy.GameContext
-import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.state.WaitingGameState
+import dev.foxgirl.mineseekdestroy.*
+import dev.foxgirl.mineseekdestroy.state.FrozenGameState
 import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.inventory.Inventory
 import net.minecraft.nbt.NbtCompound
@@ -77,13 +74,29 @@ class SnapshotService : Service() {
         }
     }
 
-    private class Snapshot(val players: List<SnapshotPlayer>) {
-        constructor(context: GameContext, nbt: NbtCompound)
-            : this(nbt["Players"].asList().map { SnapshotPlayer(context, it.asCompound()) })
+    private class Snapshot {
+        val properties: GameProperties
+        val players: List<SnapshotPlayer>
 
-        fun toNbt() = nbtCompoundOf("Players" to players)
+
+        constructor(properties: GameProperties, players: List<SnapshotPlayer>) {
+            this.properties = properties
+            this.players = players
+        }
+
+        constructor(context: GameContext, nbt: NbtCompound) {
+            properties = GameProperties.instancesByName[nbt["Properties"].toActualString()]!!
+            players = nbt["Players"].asList().map { SnapshotPlayer(context, it.asCompound()) }
+        }
+
+        fun toNbt() = nbtCompoundOf("Properties" to properties.name, "Players" to players)
 
         fun restore() {
+            val game = Game.getGame()
+            if (game.properties != properties) {
+                game.destroy()
+                game.initialize(properties)
+            }
             players.forEach {
                 it.player.team = it.snapshotTeam
                 it.player.isAlive = it.snapshotAlive
@@ -100,8 +113,7 @@ class SnapshotService : Service() {
                     }
                 }
             }
-
-            Game.getGame().state = WaitingGameState()
+            game.state = FrozenGameState()
         }
     }
 
@@ -133,7 +145,7 @@ class SnapshotService : Service() {
     fun executeSnapshotSave(console: Console) {
         ready = false
 
-        val snapshot = Snapshot(players.map(::SnapshotPlayer))
+        val snapshot = Snapshot(properties, players.map(::SnapshotPlayer))
         snapshots.add(snapshot)
 
         val name = "mnsnd-snapshot-${DateTimeFormatter.ISO_INSTANT.format(Instant.now())}.bin"
@@ -141,7 +153,7 @@ class SnapshotService : Service() {
         try {
             NbtIo.write(nbtCompoundOf("Snapshots" to snapshots), path.toFile())
             logger.info("Saved snapshot to file ${name}")
-        } catch (cause : Exception) {
+        } catch (cause: Exception) {
             logger.error("Failed to save snapshot to file ${name}", cause)
         }
 

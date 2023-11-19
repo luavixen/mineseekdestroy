@@ -6,7 +6,6 @@ import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Editor;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
-import dev.foxgirl.mineseekdestroy.util.async.Async;
 import dev.foxgirl.mineseekdestroy.util.async.Scheduler;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -43,15 +42,20 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class Game implements Console, DedicatedServerModInitializer, ServerLifecycleEvents.ServerStarting, ServerTickEvents.StartTick {
+public final class Game implements Console, DedicatedServerModInitializer, ServerLifecycleEvents.ServerStarting, ServerLifecycleEvents.ServerStarted, ServerTickEvents.StartTick {
 
     public static final @NotNull Logger LOGGER = LogManager.getLogger("MnSnD");
 
-    public static final @NotNull Path CONFIGDIR = FabricLoader.getInstance().getConfigDir();
+    public static final @NotNull Path CONFIGDIR = FabricLoader.getInstance().getConfigDir().resolve("mineseekdestroy");
+    public static final @NotNull Path CONFIGDIR_CRASHMARKER = CONFIGDIR.resolve(".crashmarker");
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_MESSAGE_DIRECT_ALLOWED =
         GameRuleRegistry.register("msdMessageDirectAllowed", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
@@ -335,19 +339,6 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_BITTEN =
         RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("mineseekdestroy", "bitten"));
 
-    public static final @NotNull Console CONSOLE_SERVER = new Console() {
-        private String format(Object[] values) {
-            return Arrays.stream(values).map(Object::toString).collect(Collectors.joining(" "));
-        }
-        @Override
-        public void sendInfo(@Nullable Object... values) {
-            LOGGER.info(format(values));
-        }
-        @Override
-        public void sendError(@Nullable Object... values) {
-            LOGGER.error(format(values));
-        }
-    };
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override
         public void sendInfo(@Nullable Object... values) {
@@ -541,6 +532,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     @Override
     public void onInitializeServer() {
         ServerLifecycleEvents.SERVER_STARTING.register(this);
+        ServerLifecycleEvents.SERVER_STARTED.register(this);
         ServerTickEvents.START_SERVER_TICK.register(this);
 
         CommandRegistrationCallback.EVENT.register(Command.INSTANCE);
@@ -557,6 +549,43 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         AttackEntityCallback.EVENT.register((playerEntity, world, hand, entity, entityHit) -> getState().onAttackEntity(getContext(), playerEntity, world, hand, entity, entityHit));
         ExtraEvents.ITEM_DROPPED.register((playerEntity, stack, throwRandomly, retainOwnership) -> getState().onItemDropped(getContext(), playerEntity, stack, throwRandomly, retainOwnership));
         ExtraEvents.ITEM_ACQUIRED.register((playerEntity, inventory, stack, slot) -> getState().onItemAcquired(getContext(), playerEntity, inventory, stack, slot));
+
+        try {
+            Files.createDirectories(CONFIGDIR);
+        } catch (FileAlreadyExistsException ignored) {
+        } catch (IOException cause) {
+            LOGGER.error("Failed to create config directory", cause);
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread("MnSnD-Shutdown") {
+            {
+                setDaemon(false);
+            }
+            @Override
+            public void run() {
+                var context = getContext();
+                if (context != null) {
+                    try {
+                        LOGGER.warn("Server stopping with active game (probable crash), saving emergency snapshot");
+                        context.snapshotService.executeSnapshotSave(new Console() {
+                            private void send(Object[] values) {
+                                LOGGER.warn(Arrays.stream(values).map(String::valueOf).collect(Collectors.joining(" ")));
+                            }
+                            @Override public void sendInfo(Object... values) { send(values); }
+                            @Override public void sendError(Object... values) { send(values); }
+                        });
+                        LOGGER.warn("Writing crash marker file");
+                        try {
+                            Files.write(CONFIGDIR_CRASHMARKER, new byte[0], StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+                        } catch (Exception cause) {
+                            LOGGER.warn("Failed to write crash marker file", cause);
+                        }
+                    } catch (Throwable cause) {
+                        LOGGER.error("Failed to save emergency snapshot", cause);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -566,78 +595,28 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     }
 
     @Override
+    public void onServerStarted(MinecraftServer server) {
+        Objects.requireNonNull(server, "Argument 'server'");
+        try {
+            if (Files.exists(CONFIGDIR_CRASHMARKER)) {
+                Files.delete(CONFIGDIR_CRASHMARKER);
+                LOGGER.warn("Server crashed, restoring from snapshot...");
+                initialize(GameProperties.Base.INSTANCE);
+                getContext().snapshotService.executeSnapshotLoadBackup(CONSOLE_OPERATORS, null);
+            }
+        } catch (Exception cause) {
+            LOGGER.error("Failed to restore from snapshot", cause);
+        }
+    }
+
+    @Override
     public void onStartTick(MinecraftServer server) {
-        updateWatchdog();
         updateContext();
         updateBounds();
         updateHunger();
 
         Scheduler.update();
         Editor.update();
-    }
-
-    private volatile long watchdogLastUpdated = 0;
-    private volatile boolean watchdogIsRunning = false;
-    private volatile boolean watchdogIsLockedUp = false;
-
-    private final Thread watchdogThread = new Thread() {
-        {
-            setDaemon(true);
-            setName("MnSnD-Watchdog");
-        }
-
-        @Override
-        public void run() {
-            while (!isInterrupted()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignored) {
-                    break;
-                }
-                if (watchdogIsRunning && System.currentTimeMillis() - watchdogLastUpdated > 5000) {
-                    watchdogLastUpdated = System.currentTimeMillis();
-                    if (watchdogIsLockedUp) {
-                        Game.LOGGER.error("Watchdog is still locked up!");
-                    } else {
-                        watchdogIsLockedUp = true;
-                        // Complain
-                        Game.LOGGER.error("Watchdog detected a deadlock, aah!");
-                        // Dump async and scheduler state
-                        Async.dumpLastContext();
-                        Scheduler.dumpCurrentExecutable();
-                        // Dump main thread stack trace
-                        Game.LOGGER.error("Watchdog stack trace of main thread:");
-                        for (var element : server.getThread().getStackTrace()) {
-                            Game.LOGGER.error(element.toString());
-                        }
-                        // Attempt to save an emergency snapshot that we can restore from
-                        try {
-                            var context = getContext();
-                            if (context != null) {
-                                context.snapshotService.executeSnapshotSave(CONSOLE_SERVER);
-                                Game.LOGGER.warn("Watchdog saved emergency snapshot");
-                            } else {
-                                Game.LOGGER.warn("Watchdog cannot save emergency snapshot, no game running");
-                            }
-                        } catch (Exception cause) {
-                            Game.LOGGER.error("Watchdog failed to save emergency snapshot", cause);
-                        }
-                        // Attempt to fix things by interrupting the main thread, dangerous!
-                        Game.LOGGER.error("Watchdog attempting to interrupt main thread...");
-                        server.getThread().interrupt();
-                    }
-                }
-            }
-        }
-    };
-
-    private void updateWatchdog() {
-        watchdogLastUpdated = System.currentTimeMillis();
-        watchdogIsLockedUp = false;
-        if (!watchdogIsRunning) {
-            watchdogIsRunning = true;
-            watchdogThread.start();
-        }
     }
 
     private void updateContext() {

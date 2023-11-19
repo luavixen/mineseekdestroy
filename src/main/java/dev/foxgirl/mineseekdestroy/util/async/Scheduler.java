@@ -158,11 +158,6 @@ public final class Scheduler {
         }
     }
 
-    private static Executable CURRENT_EXECUTABLE = null;
-    public static void dumpCurrentExecutable() {
-        Game.LOGGER.warn("Scheduler current executable: " + CURRENT_EXECUTABLE);
-    }
-
     /**
      * Updates this scheduler by executing all tasks that are ready to be
      * executed. Must be called from the main server thread only once per tick.
@@ -188,15 +183,9 @@ public final class Scheduler {
         }
 
         for (var executable : executables) {
-            CURRENT_EXECUTABLE = executable;
-            try {
-                executable.execute();
-            } finally {
-                CURRENT_EXECUTABLE = null;
-            }
+            executable.execute();
         }
     }
-
 
     /**
      * Schedules a task to be run (once) as soon as possible.

@@ -1,7 +1,9 @@
 package dev.foxgirl.mineseekdestroy
 
 import dev.foxgirl.mineseekdestroy.util.Region
+import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableMap
 import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableSet
+import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks.*
@@ -48,6 +50,11 @@ sealed interface GameProperties {
     val unstealableBlocks: Set<Block>
 
     fun setup(context: GameContext) {}
+
+    companion object {
+        @JvmStatic val instances = immutableListOf(Base, Macander, Radiator, Realm, Lights, Station, Horror, Island)
+        @JvmStatic val instancesByName = buildImmutableMap<String, GameProperties> { instances.forEach { put(it.name, it) } }
+    }
 
     object Base : GameProperties {
 

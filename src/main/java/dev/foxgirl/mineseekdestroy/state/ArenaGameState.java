@@ -6,11 +6,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SkirmishingGameState extends IdlingGameState {
+public class ArenaGameState extends IdlingGameState {
 
     @Override
     public @NotNull String getName() {
-        return "skirmishing";
+        return "arena";
     }
 
     @Override

@@ -25,10 +25,6 @@ object Async {
     private fun updateLastContext(context: CoroutineContext) {
         lastContext = context
     }
-    @JvmStatic
-    fun dumpLastContext() {
-        Game.LOGGER.warn("Async last context: $lastContext")
-    }
 
     private fun <T> startCoroutine(coroutine: suspend () -> T, continuation: CompletableFutureContinuation<T>) {
         updateLastContext(continuation.context)
