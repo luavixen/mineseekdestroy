@@ -64,7 +64,7 @@ public class DuelingGameState extends RunningGameState {
     private List<GamePlayer> findPlayers(GameContext context) {
         var list = new ArrayList<GamePlayer>(2);
         for (var player : context.getPlayers()) {
-            if (player.getTeam() != GameTeam.PLAYER_DUEL || !player.isAlive()) continue;
+            if (player.getTeam() != GameTeam.DUELIST || !player.isAlive()) continue;
             list.add(player);
         }
         return list;
@@ -74,7 +74,7 @@ public class DuelingGameState extends RunningGameState {
     public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            return player.getTeam() == GameTeam.PLAYER_DUEL;
+            return player.getTeam() == GameTeam.DUELIST;
         }
         return true;
     }

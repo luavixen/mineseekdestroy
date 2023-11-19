@@ -369,7 +369,7 @@ class SummonsService : Service() {
     private inner class OccultOccultSummon(options: Options) : Summon(options) {
         override fun perform() {
             for (player in players) {
-                if (player.team === GameTeam.PLAYER_BLACK) player.kills += 2
+                if (player.team === GameTeam.BLACK) player.kills += 2
             }
 
             for ((player, entity) in playerEntitiesNormal) {
@@ -381,7 +381,7 @@ class SummonsService : Service() {
                 if (player.isGhost) {
                     source = world.damageSources.create(Game.DAMAGE_TYPE_ABYSS)
                     amount = 999999.0F
-                } else if (player.team !== GameTeam.PLAYER_BLACK) {
+                } else if (player.team !== GameTeam.BLACK) {
                     source = world.damageSources.create(Game.DAMAGE_TYPE_ABYSS)
                     amount = Math.max(entity.health - 0.5F, 0.0F)
                 } else {
@@ -769,14 +769,15 @@ class SummonsService : Service() {
             world.spawnEntity(shulker)
             context.scoreboard.addPlayerToTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
 
-            go {
-                while (true) {
-                    if (!shulker.isAlive) break
-                    shulker.isInvisible = true
-                    shulker.isGlowing = true
-                    delay()
+            lifetime()
+                .withCondition { shulker.isAlive }
+                .go {
+                    while (true) {
+                        shulker.isInvisible = true
+                        shulker.isGlowing = true
+                        delay()
+                    }
                 }
-            }
 
             delay(Rules.summonsAltarGlowDuration)
 
@@ -1293,9 +1294,9 @@ class SummonsService : Service() {
                 override val title =
                     text("DESPERATION") * OCCULT.color
                 override val subtitle =
-                    text(GameTeam.PLAYER_BLACK, "gains many kills, almost killing everyone else.")
+                    text(GameTeam.BLACK, "gains many kills, almost killing everyone else.")
                 override val tooltip =
-                    text(GameTeam.PLAYER_BLACK, "players gained two kills.")
+                    text(GameTeam.BLACK, "players gained two kills.")
             } },
             Prayer(COSMOS, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =

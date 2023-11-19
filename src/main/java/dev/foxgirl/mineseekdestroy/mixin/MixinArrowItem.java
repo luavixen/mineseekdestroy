@@ -22,7 +22,7 @@ public abstract class MixinArrowItem {
             var context = Game.getGame().getContext();
             if (context == null) return;
             var player = context.getPlayer(shooter);
-            if (player != null && player.getTeam() == GameTeam.PLAYER_BLUE) {
+            if (player != null && player.getTeam() == GameTeam.BLUE) {
                 info.getReturnValue().setCritical(true);
             }
         }

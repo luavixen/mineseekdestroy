@@ -121,11 +121,11 @@ class ArmorService : Service() {
             SKIP to loadoutEmpty,
             GHOST to loadoutEmpty,
             OPERATOR to loadoutEmpty,
-            PLAYER_DUEL to loadoutDuel,
-            PLAYER_WARDEN to loadoutWarden,
-            PLAYER_YELLOW to loadoutYellow,
-            PLAYER_BLUE to loadoutBlue,
-            PLAYER_BLACK to loadoutBlack,
+            DUELIST to loadoutDuel,
+            WARDEN to loadoutWarden,
+            YELLOW to loadoutYellow,
+            BLUE to loadoutBlue,
+            BLACK to loadoutBlack,
         )
     }
 

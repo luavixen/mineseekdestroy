@@ -22,10 +22,10 @@ class ConduitService : Service() {
 
     private enum class Team {
         YELLOW {
-            override val value get() = GameTeam.PLAYER_YELLOW
+            override val value get() = GameTeam.YELLOW
         },
         BLUE {
-            override val value get() = GameTeam.PLAYER_BLUE
+            override val value get() = GameTeam.BLUE
         };
 
         abstract val value: GameTeam
@@ -222,8 +222,8 @@ class ConduitService : Service() {
 
             team = try {
                 when (stack.nbt!!.get("MsdConduit").toEnum<GameTeam>()) {
-                    GameTeam.PLAYER_YELLOW -> Team.YELLOW
-                    GameTeam.PLAYER_BLUE -> Team.BLUE
+                    GameTeam.YELLOW -> Team.YELLOW
+                    GameTeam.BLUE -> Team.BLUE
                     else -> return
                 }
             } catch (ignored: Exception) {

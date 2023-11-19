@@ -68,7 +68,7 @@ public abstract class RunningGameState extends GameState {
             GamePlayer attacker = attackerEntity == null ? null : context.getPlayer(attackerEntity);
 
             if (attacker != null) {
-                if (player.getTeam() == GameTeam.PLAYER_BLACK) {
+                if (player.getTeam() == GameTeam.BLACK) {
                     attacker.countKill();
                     attacker.countKill();
                 } else {
@@ -109,7 +109,7 @@ public abstract class RunningGameState extends GameState {
                 return false;
             }
             if (
-                player.getTeam() == GameTeam.PLAYER_BLUE &&
+                player.getTeam() == GameTeam.BLUE &&
                 damageSource.isOf(DamageTypes.FLY_INTO_WALL)
             ) {
                 return false;

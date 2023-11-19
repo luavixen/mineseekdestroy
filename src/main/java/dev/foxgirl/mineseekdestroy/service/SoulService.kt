@@ -26,10 +26,10 @@ class SoulService : Service() {
 
     private enum class SoulKind {
         YELLOW {
-            override val team get() = GameTeam.PLAYER_YELLOW
+            override val team get() = GameTeam.YELLOW
         },
         BLUE {
-            override val team get() = GameTeam.PLAYER_BLUE
+            override val team get() = GameTeam.BLUE
         };
 
         abstract val team: GameTeam
@@ -90,8 +90,8 @@ class SoulService : Service() {
 
     private fun createSoulFor(player: GamePlayer, team: GameTeam = player.team): Soul {
         val kind = when (team) {
-            GameTeam.PLAYER_YELLOW -> SoulKind.YELLOW
-            GameTeam.PLAYER_BLUE -> SoulKind.BLUE
+            GameTeam.YELLOW -> SoulKind.YELLOW
+            GameTeam.BLUE -> SoulKind.BLUE
             else -> if (Random.nextBoolean()) SoulKind.YELLOW else SoulKind.BLUE
         }
         return Soul(kind, player.uuid)
@@ -113,7 +113,7 @@ class SoulService : Service() {
     }
 
     fun handleDeath(player: GamePlayer, playerEntity: ServerPlayerEntity) {
-        if (player.team === GameTeam.PLAYER_YELLOW || player.team === GameTeam.PLAYER_BLUE) {
+        if (player.team === GameTeam.YELLOW || player.team === GameTeam.BLUE) {
             if (!Rules.soulsDroppingEnabled) return
             playerEntity.dropItem(createSoulFor(player).toSoulStack(), true, false)
         }
@@ -122,8 +122,8 @@ class SoulService : Service() {
     fun handleRoundEnd() {
         for ((player, playerEntity) in playerEntitiesNormal) {
             if (
-                (player.team === GameTeam.PLAYER_YELLOW && Rules.soulsGiveYellowOwnSoulEnabled) ||
-                (player.team === GameTeam.PLAYER_BLUE && Rules.soulsGiveBlueOwnSoulEnabled)
+                (player.team === GameTeam.YELLOW && Rules.soulsGiveYellowOwnSoulEnabled) ||
+                (player.team === GameTeam.BLUE && Rules.soulsGiveBlueOwnSoulEnabled)
             ) {
                 if (Rules.soulsGiveHerobrinesSoulEnabled) {
                     playerEntity.give(createSoulFor(context.playerHerobrine, player.team).toSoulStack())
@@ -239,18 +239,17 @@ class SoulService : Service() {
 
         context.automationService.handleDuelPrepare()
 
-        aggressor.team = GameTeam.PLAYER_DUEL
+        aggressor.team = GameTeam.DUELIST
         aggressor.isAlive = true
-        victim.team = GameTeam.PLAYER_DUEL
+        victim.team = GameTeam.DUELIST
         victim.isAlive = true
 
-        Async.go {
-            var running = true; go { delay(0.1); running = false }
-            do {
+        Async.background().withTimeout(0.1).go {
+            while (true) {
                 aggressor.teleport(properties.positionDuel1)
                 victim.teleport(properties.positionDuel2)
                 delay()
-            } while (running)
+            }
         }
 
         state = DuelingGameState()

@@ -113,8 +113,8 @@ internal fun setup() {
                     val player1 = args.player(context, "aggressor")
                     val player2 = args.player(context, "victim")
 
-                    player1.team = GameTeam.PLAYER_DUEL
-                    player2.team = GameTeam.PLAYER_DUEL
+                    player1.team = GameTeam.DUELIST
+                    player2.team = GameTeam.DUELIST
                     player1.isAlive = true
                     player2.isAlive = true
 
@@ -200,6 +200,12 @@ internal fun setup() {
             register("starting") { StartingGameState() }
             register("playing") { PlayingGameState() }
             register("dueling") { DuelingGameState() }
+        }
+        it.params(argLiteral("super_dangerous_cause_a_lockup")) {
+            it.action { args ->
+                var i = 0
+                while (true) i++
+            }
         }
         it.params(argLiteral("givetools")) {
             it.action { args ->
@@ -403,11 +409,11 @@ internal fun setup() {
         register("skip", GameTeam.SKIP)
         register("ghost", GameTeam.GHOST)
         register("operator", GameTeam.OPERATOR)
-        register("duel", GameTeam.PLAYER_DUEL)
-        register("warden", GameTeam.PLAYER_WARDEN)
-        register("black", GameTeam.PLAYER_BLACK)
-        register("yellow", GameTeam.PLAYER_YELLOW)
-        register("blue", GameTeam.PLAYER_BLUE)
+        register("duel", GameTeam.DUELIST)
+        register("warden", GameTeam.WARDEN)
+        register("black", GameTeam.BLACK)
+        register("yellow", GameTeam.YELLOW)
+        register("blue", GameTeam.BLUE)
     }
 
     Command.build("score") {
@@ -454,12 +460,12 @@ internal fun setup() {
         it.params(argLiteral("give"), argPlayers(), argPlayer()) {
             it.params(argLiteral("yellow")) {
                 it.actionWithContext { args, context ->
-                    context.soulService.executeSoulGive(args, args.players(context), args.player(context), GameTeam.PLAYER_YELLOW)
+                    context.soulService.executeSoulGive(args, args.players(context), args.player(context), GameTeam.YELLOW)
                 }
             }
             it.params(argLiteral("blue")) {
                 it.actionWithContext { args, context ->
-                    context.soulService.executeSoulGive(args, args.players(context), args.player(context), GameTeam.PLAYER_BLUE)
+                    context.soulService.executeSoulGive(args, args.players(context), args.player(context), GameTeam.BLUE)
                 }
             }
             it.actionWithContext { args, context ->

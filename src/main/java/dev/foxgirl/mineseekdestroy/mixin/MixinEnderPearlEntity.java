@@ -31,7 +31,7 @@ public abstract class MixinEnderPearlEntity extends ThrownItemEntity {
         var context = Game.getGame().getContext();
         if (context != null && entity instanceof ServerPlayerEntity playerEntity) {
             var player = context.getPlayer(playerEntity);
-            if (player.getTeam() == GameTeam.PLAYER_YELLOW) {
+            if (player.getTeam() == GameTeam.YELLOW) {
                 if (playerEntity.getWorld() != getWorld()) return null;
 
                 var targetEntity = getWorld().getPlayers()

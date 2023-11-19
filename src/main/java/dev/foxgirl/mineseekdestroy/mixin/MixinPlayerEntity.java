@@ -57,7 +57,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
             var context = Game.getGame().getContext();
             if (
                 context != null &&
-                context.getPlayer((ServerPlayerEntity) (Object) this).getTeam() == GameTeam.PLAYER_BLUE
+                context.getPlayer((ServerPlayerEntity) (Object) this).getTeam() == GameTeam.BLUE
             ) return true;
         }
         return value;
@@ -71,14 +71,11 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     @Overwrite
     public ItemStack getProjectileType(ItemStack weaponStack) {
         if (weaponStack.getItem() instanceof RangedWeaponItem weaponItem) {
-            ItemStack arrowHeldStack = RangedWeaponItem.getHeldProjectile(this, weaponItem.getHeldProjectiles());
-            if (!arrowHeldStack.isEmpty()) return arrowHeldStack;
-
             int yellowArrowFlag = 0;
             var context = Game.getGame().getContext();
             if (context != null) {
                 var player = context.getPlayer((ServerPlayerEntity) (Object) this);
-                if (player.getTeam() == GameTeam.PLAYER_YELLOW) {
+                if (player.getTeam() == GameTeam.YELLOW) {
                     yellowArrowFlag = 1;
                 } else {
                     yellowArrowFlag = 2;
@@ -90,10 +87,20 @@ public abstract class MixinPlayerEntity extends LivingEntity {
                     ItemStack arrowStack = inventory.getStack(i);
                     if (
                         arrowStack.hasNbt() &&
-                        arrowStack.getNbt().contains("MsdYellowArrow")
+                            arrowStack.getNbt().contains("MsdYellowArrow")
                     ) {
                         return arrowStack;
                     }
+                }
+            }
+
+            ItemStack arrowHeldStack = RangedWeaponItem.getHeldProjectile(this, weaponItem.getHeldProjectiles());
+            if (!arrowHeldStack.isEmpty()) {
+                if (yellowArrowFlag != 2 || !(
+                    arrowHeldStack.hasNbt() &&
+                    arrowHeldStack.getNbt().contains("MsdYellowArrow")
+                )) {
+                    return arrowHeldStack;
                 }
             }
 

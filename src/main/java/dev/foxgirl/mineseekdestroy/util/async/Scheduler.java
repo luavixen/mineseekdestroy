@@ -72,7 +72,7 @@ public final class Scheduler {
                 callback.invoke(this);
             } catch (Throwable cause) {
                 cancel();
-                Game.LOGGER.error("Unhandled exception in scheduled task", cause);
+                Async.printThrowable(cause);
             }
         }
 
@@ -84,6 +84,11 @@ public final class Scheduler {
         @Override
         public boolean cancel() {
             synchronized (EXECUTE_QUEUE) { return EXECUTE_QUEUE.remove(this); }
+        }
+
+        @Override
+        public String toString() {
+            return "Executable{callback.getClass()=" + callback.getClass() + ", callback=" + callback + "}";
         }
     }
 
@@ -146,6 +151,16 @@ public final class Scheduler {
         public int compareTo(@NotNull Scheduler.Task other) {
             return Long.compare(this.time, other.time);
         }
+
+        @Override
+        public String toString() {
+            return "Task{time=" + time + ", period=" + period + ", super=" + super.toString() + "}";
+        }
+    }
+
+    private static Executable CURRENT_EXECUTABLE = null;
+    public static void dumpCurrentExecutable() {
+        Game.LOGGER.warn("Scheduler current executable: " + CURRENT_EXECUTABLE);
     }
 
     /**
@@ -173,11 +188,11 @@ public final class Scheduler {
         }
 
         for (var executable : executables) {
+            CURRENT_EXECUTABLE = executable;
             try {
                 executable.execute();
-            } catch (Throwable cause) {
-                executable.cancel();
-                Game.LOGGER.error("Unhandled exception in scheduled task", cause);
+            } finally {
+                CURRENT_EXECUTABLE = null;
             }
         }
     }

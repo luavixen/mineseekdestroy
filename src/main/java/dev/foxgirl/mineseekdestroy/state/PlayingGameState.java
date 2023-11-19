@@ -35,14 +35,14 @@ public class PlayingGameState extends RunningGameState {
 
         for (var player : context.getPlayersIn()) {
             var team = player.getTeam();
-            if (team.isCannon()) teamsCurrentlyAlive.add(team);
+            if (team.isCanon()) teamsCurrentlyAlive.add(team);
         }
 
         switch (teamsCurrentlyAlive.size()) {
             case 1 -> {
                 var team = teamsCurrentlyAlive.iterator().next();
                 context.game.sendInfo("Round over!", team.getDisplayName(), "wins!");
-                context.automationService.handleRoundEnd(team == GameTeam.PLAYER_YELLOW ? GameTeam.PLAYER_BLUE : GameTeam.PLAYER_YELLOW);
+                context.automationService.handleRoundEnd(team == GameTeam.YELLOW ? GameTeam.BLUE : GameTeam.YELLOW);
             }
             case 0 -> {
                 context.game.sendInfo("Round over! Both teams died at the exact same time, nobody wins!");

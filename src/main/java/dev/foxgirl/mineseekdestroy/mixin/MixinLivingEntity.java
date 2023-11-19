@@ -25,7 +25,7 @@ public abstract class MixinLivingEntity {
             var context = Game.getGame().getContext();
             if (context != null) {
                 var player = context.getPlayer(playerEntity);
-                if (player.getTeam() == GameTeam.PLAYER_YELLOW) info.cancel();
+                if (player.getTeam() == GameTeam.YELLOW) info.cancel();
             }
         }
     }

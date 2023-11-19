@@ -126,7 +126,7 @@ class GhostService : Service() {
         attacker: GamePlayer,
         attackerEntity: ServerPlayerEntity,
     ) {
-        if (attacker.team !== GameTeam.PLAYER_BLACK) return
+        if (attacker.team !== GameTeam.BLACK) return
 
         Scheduler.now {
             attackerEntity.damage(

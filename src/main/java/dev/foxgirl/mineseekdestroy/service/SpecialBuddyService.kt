@@ -77,8 +77,8 @@ class SpecialBuddyService : Service() {
         }
         for (player in playersNormal) {
             if (
-                player.team === GameTeam.PLAYER_YELLOW ||
-                player.team === GameTeam.PLAYER_BLUE ||
+                player.team === GameTeam.YELLOW ||
+                player.team === GameTeam.BLUE ||
                 player.team === GameTeam.SKIP
             ) {
                 for ((playerTarget, playerFollower) in buddies) {

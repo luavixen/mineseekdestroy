@@ -19,7 +19,7 @@ public abstract class MixinProtectionEnchantment {
             var context = Game.getGame().getContext();
             if (context != null) {
                 var player = context.getPlayer(playerEntity);
-                if (player.getTeam() == GameTeam.PLAYER_YELLOW) info.setReturnValue(0.0);
+                if (player.getTeam() == GameTeam.YELLOW) info.setReturnValue(0.0);
             }
         }
     }

@@ -163,7 +163,7 @@ class CountdownService : Service() {
 
     fun handleRoundStart() {
         Scheduler.delay(5.0) {
-            if (Rules.countdownEnabled && Rules.countdownAutostartEnabled) {
+            if (Rules.countdownEnabled && Rules.countdownAutostartEnabled && !running) {
                 start(0)
                 Game.CONSOLE_OPERATORS.sendInfo("Countdown automatically started")
             }

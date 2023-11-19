@@ -6,6 +6,7 @@ import dev.foxgirl.mineseekdestroy.state.WaitingGameState;
 import dev.foxgirl.mineseekdestroy.util.Console;
 import dev.foxgirl.mineseekdestroy.util.Editor;
 import dev.foxgirl.mineseekdestroy.util.ExtraEvents;
+import dev.foxgirl.mineseekdestroy.util.async.Async;
 import dev.foxgirl.mineseekdestroy.util.async.Scheduler;
 import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -43,10 +44,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class Game implements Console, DedicatedServerModInitializer, ServerLifecycleEvents.ServerStarting, ServerTickEvents.StartTick {
 
@@ -336,6 +335,19 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_BITTEN =
         RegistryKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier("mineseekdestroy", "bitten"));
 
+    public static final @NotNull Console CONSOLE_SERVER = new Console() {
+        private String format(Object[] values) {
+            return Arrays.stream(values).map(Object::toString).collect(Collectors.joining(" "));
+        }
+        @Override
+        public void sendInfo(@Nullable Object... values) {
+            LOGGER.info(format(values));
+        }
+        @Override
+        public void sendError(@Nullable Object... values) {
+            LOGGER.error(format(values));
+        }
+    };
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override
         public void sendInfo(@Nullable Object... values) {
@@ -555,12 +567,69 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     @Override
     public void onStartTick(MinecraftServer server) {
+        updateWatchdog();
         updateContext();
         updateBounds();
         updateHunger();
 
         Scheduler.update();
         Editor.update();
+    }
+
+    private long watchdogLastUpdated = 0;
+    private boolean watchdogIsRunning = false;
+
+    private final Thread watchdogThread = new Thread() {
+        {
+            setDaemon(true);
+            setName("MnSnD-Watchdog");
+        }
+
+        @Override
+        public void run() {
+            while (!isInterrupted()) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignored) {
+                    break;
+                }
+                if (watchdogIsRunning && System.currentTimeMillis() - watchdogLastUpdated > 5000) {
+                    watchdogLastUpdated = System.currentTimeMillis();
+                    // Complain
+                    Game.LOGGER.error("Watchdog detected a deadlock, aah!");
+                    // Dump async and scheduler state
+                    Async.dumpLastContext();
+                    Scheduler.dumpCurrentExecutable();
+                    // Dump main thread stack trace
+                    Game.LOGGER.error("Watchdog stack trace of main thread:");
+                    for (var element : server.getThread().getStackTrace()) {
+                        Game.LOGGER.error(element.toString());
+                    }
+                    // Attempt to save an emergency snapshot that we can restore from
+                    try {
+                        var context = getContext();
+                        if (context != null) {
+                            context.snapshotService.executeSnapshotSave(CONSOLE_SERVER);
+                            Game.LOGGER.warn("Watchdog saved emergency snapshot");
+                        } else {
+                            Game.LOGGER.warn("Watchdog cannot save emergency snapshot, no game running");
+                        }
+                    } catch (Exception cause) {
+                        Game.LOGGER.error("Watchdog failed to save emergency snapshot", cause);
+                    }
+                    // Attempt to fix things by interrupting the main thread, dangerous!
+                    server.getThread().interrupt();
+                }
+            }
+        }
+    };
+
+    private void updateWatchdog() {
+        watchdogLastUpdated = System.currentTimeMillis();
+        if (!watchdogIsRunning) {
+            watchdogIsRunning = true;
+            watchdogThread.start();
+        }
     }
 
     private void updateContext() {

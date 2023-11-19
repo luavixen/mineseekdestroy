@@ -199,7 +199,7 @@ public final class GamePlayer {
     }
 
     public boolean isCannon() {
-        return currentTeam.isCannon();
+        return currentTeam.isCanon();
     }
 
     public void teleport(@NotNull Position position) {
@@ -228,7 +228,7 @@ public final class GamePlayer {
     }
 
     private @Nullable Team getScoreboardAliveTeam() {
-        return currentTeam.getAliveTeam(getScoreboard());
+        return currentTeam.getTeam(getScoreboard());
     }
     private @Nullable Team getScoreboardDeadTeam() {
         var team = currentTeam.getDeadTeam(getScoreboard());

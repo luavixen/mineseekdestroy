@@ -19,7 +19,7 @@ public abstract class MixinPotionEntity {
             var context = Game.getGame().getContext();
             if (context != null) {
                 var player = context.getPlayer(playerEntity);
-                if (player.getTeam() == GameTeam.PLAYER_YELLOW) info.setReturnValue(true);
+                if (player.getTeam() == GameTeam.YELLOW) info.setReturnValue(true);
             }
         }
     }

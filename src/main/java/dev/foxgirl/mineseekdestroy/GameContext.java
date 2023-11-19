@@ -149,13 +149,13 @@ public final class GameContext {
         var teamMapBuilder = ImmutableMap.<String, Team>builder(32);
         var teamBaseMapBuilder = ImmutableMap.<String, Team>builder(32);
 
-        for (var value : GameTeam.values()) {
-            var team = value.getAliveTeam(scoreboard);
+        for (var value : GameTeam.getEntries()) {
+            var team = value.getTeam(scoreboard);
             if (team != null) {
-                for (var name : value.getNames()) {
+                for (var name : value.getTeamNames()) {
                     teamBaseMapBuilder.put(name, team);
                 }
-                teamMapBuilder.put(Objects.requireNonNull(value.getName()), team);
+                teamMapBuilder.put(Objects.requireNonNull(value.getTeamName()), team);
             }
             var teamDead = value.getDeadTeam(scoreboard);
             if (teamDead != null) teamMapBuilder.put(teamDead.getName(), teamDead);
@@ -454,7 +454,7 @@ public final class GameContext {
 
     public @Nullable Team getTeam(@NotNull GameTeam team) {
         Objects.requireNonNull(team, "Argument 'team'");
-        var name = team.getName();
+        var name = team.getTeamName();
         return name == null ? null : getTeam(name);
     }
     public @Nullable Team getTeam(@NotNull String name) {

@@ -93,7 +93,7 @@ object GameItems {
     }
 
     val toolYellowConduit = stackOf(
-        CONDUIT, nbtCompoundOf("MsdTool" to "yellowConduit", "MsdConduit" to GameTeam.PLAYER_YELLOW),
+        CONDUIT, nbtCompoundOf("MsdTool" to "yellowConduit", "MsdConduit" to GameTeam.YELLOW),
         text("super magical conduit of power").teamYellow(),
         text("right click to activate! ") + text("(only when full)").bold(),
         text("stop holding to deactivate! ") + text("(only when starving)").bold(),
@@ -103,7 +103,7 @@ object GameItems {
         text("gain mining fatigue 64 while active").bold(),
     )
     val toolBlueConduit = stackOf(
-        CONDUIT, nbtCompoundOf("MsdTool" to "blueConduit", "MsdConduit" to GameTeam.PLAYER_BLUE),
+        CONDUIT, nbtCompoundOf("MsdTool" to "blueConduit", "MsdConduit" to GameTeam.BLUE),
         text("super duper conduit of power").teamBlue(),
         text("right click to activate! ") + text("(only when NOT starving)").bold(),
         text("stop holding to deactivate! ") + text("(any time)").bold(),

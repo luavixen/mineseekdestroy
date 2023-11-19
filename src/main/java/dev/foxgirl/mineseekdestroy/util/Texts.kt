@@ -115,11 +115,11 @@ fun MutableText.italic() = this * Formatting.ITALIC
 
 fun MutableText.teamGhost() = this * GameTeam.GHOST
 fun MutableText.teamOperator() = this * GameTeam.OPERATOR
-fun MutableText.teamDuel() = this * GameTeam.PLAYER_DUEL
-fun MutableText.teamWarden() = this * GameTeam.PLAYER_WARDEN
-fun MutableText.teamBlack() = this * GameTeam.PLAYER_BLACK
-fun MutableText.teamYellow() = this * GameTeam.PLAYER_YELLOW
-fun MutableText.teamBlue() = this * GameTeam.PLAYER_BLUE
+fun MutableText.teamDuel() = this * GameTeam.DUELIST
+fun MutableText.teamWarden() = this * GameTeam.WARDEN
+fun MutableText.teamBlack() = this * GameTeam.BLACK
+fun MutableText.teamYellow() = this * GameTeam.YELLOW
+fun MutableText.teamBlue() = this * GameTeam.BLUE
 
 private val mnsndItemName = Style.EMPTY.withColor(Formatting.GREEN).withItalic(false)
 private val mnsndItemLore = Style.EMPTY.withColor(Formatting.GREEN).withItalic(true)

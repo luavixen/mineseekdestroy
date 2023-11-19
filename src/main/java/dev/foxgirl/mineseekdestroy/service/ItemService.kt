@@ -63,11 +63,11 @@ class ItemService : Service() {
             val toolStacks = toolStackMaps[player.team]
 
             val powderItem = when (player.team) {
-                GameTeam.PLAYER_DUEL -> BROWN_CONCRETE_POWDER
-                GameTeam.PLAYER_WARDEN -> BLACK_CONCRETE_POWDER
-                GameTeam.PLAYER_BLACK -> BLACK_CONCRETE_POWDER
-                GameTeam.PLAYER_YELLOW -> YELLOW_CONCRETE_POWDER
-                GameTeam.PLAYER_BLUE -> BLUE_CONCRETE_POWDER
+                GameTeam.DUELIST -> BROWN_CONCRETE_POWDER
+                GameTeam.WARDEN -> BLACK_CONCRETE_POWDER
+                GameTeam.BLACK -> BLACK_CONCRETE_POWDER
+                GameTeam.YELLOW -> YELLOW_CONCRETE_POWDER
+                GameTeam.BLUE -> BLUE_CONCRETE_POWDER
                 else -> MAGENTA_CONCRETE_POWDER
             }
 
@@ -193,31 +193,31 @@ class ItemService : Service() {
                 Tool.Tool3.stack(GameItems.toolSkull),
                 Tool.Tool4.stack(GameItems.toolSkull),
             ),
-            GameTeam.PLAYER_WARDEN to enumMapOf(
+            GameTeam.WARDEN to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolAxe),
                 Tool.Tool2.stack(GameItems.toolShovel),
                 Tool.Tool3.stack(GameItems.toolBow),
                 Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
-            GameTeam.PLAYER_DUEL to enumMapOf(
+            GameTeam.DUELIST to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolSword),
                 Tool.Tool2.stack(GameItems.toolAxe),
                 Tool.Tool3.stack(GameItems.toolBow),
                 Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
-            GameTeam.PLAYER_BLACK to enumMapOf(
+            GameTeam.BLACK to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolBow),
                 Tool.Tool2.stack(GameItems.toolAxe),
                 Tool.Tool3.stack(GameItems.toolTrident),
                 Tool.Tool4.stack(GameItems.toolShovel),
             ),
-            GameTeam.PLAYER_YELLOW to enumMapOf(
+            GameTeam.YELLOW to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolYellowBow),
                 Tool.Tool2.stack(GameItems.toolYellowSword),
                 Tool.Tool3.stack(GameItems.toolYellowConduit),
                 Tool.Tool4.stack(GameItems.toolShovel),
             ),
-            GameTeam.PLAYER_BLUE to enumMapOf(
+            GameTeam.BLUE to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolBlueCrossbow),
                 Tool.Tool2.stack(GameItems.toolAxe),
                 Tool.Tool3.stack(GameItems.toolBlueConduit),

@@ -58,7 +58,7 @@ class AutomationService : Service() {
 
         for (player in players) {
             val record = records[player] ?: continue
-            if (player.team == GameTeam.PLAYER_BLACK) {
+            if (player.team == GameTeam.BLACK) {
                 if (player.kills > record.kills) {
                     tasks.add {
                         player.team = teamSkip
@@ -80,7 +80,7 @@ class AutomationService : Service() {
         for (player in players) {
             if (player.team == losingTeam) {
                 tasks.add {
-                    player.team = GameTeam.PLAYER_BLACK
+                    player.team = GameTeam.BLACK
                     logger.info("Automation assigned '" + player.name + "' to black")
                 }
             }
@@ -115,15 +115,15 @@ class AutomationService : Service() {
 
         if (!Rules.automationEnabled) return
 
-        val players = players.filter { it.team == GameTeam.PLAYER_DUEL }
+        val players = players.filter { it.team == GameTeam.DUELIST }
 
         val team = players
-            .map { player -> records[player]?.team ?: GameTeam.PLAYER_BLACK }
-            .find { team -> team !== GameTeam.PLAYER_BLACK } ?: GameTeam.SKIP
+            .map { player -> records[player]?.team ?: GameTeam.BLACK }
+            .find { team -> team !== GameTeam.BLACK } ?: GameTeam.SKIP
 
         for (player in players) {
             player.isAlive = true
-            player.team = GameTeam.PLAYER_BLACK
+            player.team = GameTeam.BLACK
         }
         for (player in winningPlayers) {
             player.team = team
@@ -161,7 +161,7 @@ class AutomationService : Service() {
         val targetBlue = TargetInventoryPart(mappingTargetBlue)
         val targetSkip = TargetInventoryPart(mappingTargetSkip)
 
-        val players = players.filter { it.team == GameTeam.PLAYER_YELLOW || it.team == GameTeam.PLAYER_BLUE || it.team == GameTeam.SKIP }
+        val players = players.filter { it.team == GameTeam.YELLOW || it.team == GameTeam.BLUE || it.team == GameTeam.SKIP }
 
         val listing = ListingInventoryPart(mappingListing, players)
 
@@ -196,7 +196,7 @@ class AutomationService : Service() {
 
                 if (player.isOperator) {
                     entity.openHandledScreen(factoryOperators)
-                } else if (player.isOnScoreboard && player.team != GameTeam.PLAYER_BLACK) {
+                } else if (player.isOnScoreboard && player.team != GameTeam.BLACK) {
                     entity.openHandledScreen(factoryPlayers)
                 } else {
                     entity.openHandledScreen(factoryView)
@@ -223,8 +223,8 @@ class AutomationService : Service() {
             logger.info("Automation iPad commit started, assigning selected players to skip")
             players.forEach { it.team = GameTeam.SKIP }
 
-            targetYellow.commit(context, GameTeam.PLAYER_YELLOW)
-            targetBlue.commit(context, GameTeam.PLAYER_BLUE)
+            targetYellow.commit(context, GameTeam.YELLOW)
+            targetBlue.commit(context, GameTeam.BLUE)
             targetSkip.commit(context, GameTeam.SKIP)
 
             Broadcast.sendSoundPing()
