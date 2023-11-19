@@ -576,8 +576,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Editor.update();
     }
 
-    private long watchdogLastUpdated = 0;
-    private boolean watchdogIsRunning = false;
+    private volatile long watchdogLastUpdated = 0;
+    private volatile boolean watchdogIsRunning = false;
+    private volatile boolean watchdogIsLockedUp = false;
 
     private final Thread watchdogThread = new Thread() {
         {
@@ -595,30 +596,36 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                 }
                 if (watchdogIsRunning && System.currentTimeMillis() - watchdogLastUpdated > 5000) {
                     watchdogLastUpdated = System.currentTimeMillis();
-                    // Complain
-                    Game.LOGGER.error("Watchdog detected a deadlock, aah!");
-                    // Dump async and scheduler state
-                    Async.dumpLastContext();
-                    Scheduler.dumpCurrentExecutable();
-                    // Dump main thread stack trace
-                    Game.LOGGER.error("Watchdog stack trace of main thread:");
-                    for (var element : server.getThread().getStackTrace()) {
-                        Game.LOGGER.error(element.toString());
-                    }
-                    // Attempt to save an emergency snapshot that we can restore from
-                    try {
-                        var context = getContext();
-                        if (context != null) {
-                            context.snapshotService.executeSnapshotSave(CONSOLE_SERVER);
-                            Game.LOGGER.warn("Watchdog saved emergency snapshot");
-                        } else {
-                            Game.LOGGER.warn("Watchdog cannot save emergency snapshot, no game running");
+                    if (watchdogIsLockedUp) {
+                        Game.LOGGER.error("Watchdog is still locked up!");
+                    } else {
+                        watchdogIsLockedUp = true;
+                        // Complain
+                        Game.LOGGER.error("Watchdog detected a deadlock, aah!");
+                        // Dump async and scheduler state
+                        Async.dumpLastContext();
+                        Scheduler.dumpCurrentExecutable();
+                        // Dump main thread stack trace
+                        Game.LOGGER.error("Watchdog stack trace of main thread:");
+                        for (var element : server.getThread().getStackTrace()) {
+                            Game.LOGGER.error(element.toString());
                         }
-                    } catch (Exception cause) {
-                        Game.LOGGER.error("Watchdog failed to save emergency snapshot", cause);
+                        // Attempt to save an emergency snapshot that we can restore from
+                        try {
+                            var context = getContext();
+                            if (context != null) {
+                                context.snapshotService.executeSnapshotSave(CONSOLE_SERVER);
+                                Game.LOGGER.warn("Watchdog saved emergency snapshot");
+                            } else {
+                                Game.LOGGER.warn("Watchdog cannot save emergency snapshot, no game running");
+                            }
+                        } catch (Exception cause) {
+                            Game.LOGGER.error("Watchdog failed to save emergency snapshot", cause);
+                        }
+                        // Attempt to fix things by interrupting the main thread, dangerous!
+                        Game.LOGGER.error("Watchdog attempting to interrupt main thread...");
+                        server.getThread().interrupt();
                     }
-                    // Attempt to fix things by interrupting the main thread, dangerous!
-                    server.getThread().interrupt();
                 }
             }
         }
@@ -626,6 +633,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     private void updateWatchdog() {
         watchdogLastUpdated = System.currentTimeMillis();
+        watchdogIsLockedUp = false;
         if (!watchdogIsRunning) {
             watchdogIsRunning = true;
             watchdogThread.start();
