@@ -37,6 +37,8 @@ object Rules {
 
     @JvmStatic var damageFlashEnabled by BooleanRuleProperty(RULE_DAMAGE_FLASH_ENABLED)
 
+    @JvmStatic var ghostsBlackDeathPenaltyAmount by IntRuleProperty(RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT)
+
     @JvmStatic var lootCount by IntRuleProperty(RULE_LOOT_COUNT)
 
     @JvmStatic var killzoneBoundsEnabled by BooleanRuleProperty(RULE_KILLZONE_BOUNDS_ENABLED)

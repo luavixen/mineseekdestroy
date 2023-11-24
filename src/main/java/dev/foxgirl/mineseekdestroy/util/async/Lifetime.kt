@@ -22,4 +22,7 @@ sealed class Lifetime : CoroutineContext.Element {
     fun <T> execute(name: String? = null, coroutine: suspend () -> T) = Async.execute(name, this, coroutine)
     fun <T> go(name: String? = null, coroutine: suspend Async.() -> T) = Async.go(name, this, coroutine)
 
+    suspend fun <T> innerExecute(coroutine: suspend () -> T) = Async.innerExecute(this, coroutine)
+    suspend fun <T> innerGo(coroutine: suspend Async.() -> T) = Async.innerGo(this, coroutine)
+
 }

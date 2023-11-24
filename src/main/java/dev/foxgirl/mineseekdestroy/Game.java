@@ -104,6 +104,9 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_DAMAGE_FLASH_ENABLED =
         GameRuleRegistry.register("msdDamageFlashEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT =
+        GameRuleRegistry.register("msdGhostsBlackDeathPenaltyAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(2));
+
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(5));
 
@@ -605,7 +608,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                 getContext().snapshotService.executeSnapshotLoadBackup(CONSOLE_OPERATORS, null);
             }
         } catch (Exception cause) {
-            LOGGER.error("Failed to restore from snapshot", cause);
+            LOGGER.error("Failed to check/restore from snapshot", cause);
         }
     }
 

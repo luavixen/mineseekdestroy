@@ -12,6 +12,7 @@ import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.async.Async
 import dev.foxgirl.mineseekdestroy.util.async.Scheduler
 import dev.foxgirl.mineseekdestroy.util.async.await
+import dev.foxgirl.mineseekdestroy.util.async.awaitCancelled
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableMapOf
 import net.minecraft.block.Blocks
@@ -364,16 +365,19 @@ class PagesService : Service() {
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
-                    Async.go {
-                        var running = true
-                        go { delay(10.0); running = false }
-                        go { until { state.isWaiting || !user.isAlive || !running }; running = false }
-                        while (true) {
-                            delay(0.5); if (!running) break
-                            user.entity?.air = -10
-                            delay(0.5); if (!running) break
-                            user.entity?.let { if (it.air > -20) it.air = -40 }
-                        }
+                    Async.go("pagesDeepRegen") {
+                        lifetime()
+                            .withTimeout(10.0)
+                            .withCondition { user.isAlive && !state.isWaiting }
+                            .innerExecute {
+                                while (true) {
+                                    delay(0.5)
+                                    user.entity?.air = -10
+                                    delay(0.5)
+                                    user.entity?.let { if (it.air > -20) it.air = -40 }
+                                }
+                            }
+                            .awaitCancelled()
                         user.entity?.air = 0
                         unlock(user)
                     }
@@ -403,7 +407,7 @@ class PagesService : Service() {
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
-                    Async.go {
+                    Async.go("pagesDeepBusted") {
                         val blockPositions = HashSet<BlockPos>()
                         val chunkPositions = HashSet<ChunkPos>()
 
@@ -499,21 +503,24 @@ class PagesService : Service() {
             )  {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
-                    Async.go {
-                        var running = true
-                        go { delay(10.0); running = false }
-                        go { until { state.isWaiting || !user.isAlive || !running }; running = false }
-                        var previousHealth = userEntity.health
-                        while (running) {
-                            delay()
-                            val userEntity = user.entity ?: continue
-                            if (userEntity.health < previousHealth) {
-                                userEntity.healHearts(1.5)
-                                userEntity.particles(ParticleTypes.NOTE, 1.0, 6)
-                                userEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1.0, 0.5)
+                    Async.go("pagesOccultRegen") {
+                        lifetime()
+                            .withTimeout(10.0)
+                            .withCondition { user.isAlive && !state.isWaiting }
+                            .innerExecute {
+                                var previousHealth = userEntity.health
+                                while (true) {
+                                    delay()
+                                    val userEntity = user.entity ?: continue
+                                    if (userEntity.health < previousHealth) {
+                                        userEntity.healHearts(1.5)
+                                        userEntity.particles(ParticleTypes.NOTE, 1.0, 6)
+                                        userEntity.play(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.PLAYERS, 1.0, 0.5)
+                                    }
+                                    previousHealth = userEntity.health
+                                }
                             }
-                            previousHealth = userEntity.health
-                        }
+                            .awaitCancelled()
                         unlock(user)
                     }
                     userEntity.sparkles()
@@ -604,7 +611,7 @@ class PagesService : Service() {
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
-                    Async.go {
+                    Async.go("pagesCosmosRegen") {
                         delay(1.0)
                         var minimumHealth = user.entity?.health ?: 5000.0F
                         while (true) {
@@ -734,7 +741,7 @@ class PagesService : Service() {
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
-                    Async.go {
+                    Async.go("pagesBarterRegen") {
                         val subscription = eventGenericAttack.subscribe { (evUser, evUserEntity, evVictimEntity) ->
                             if (context.getPlayer(evVictimEntity).let { !it.isAlive || !it.isPlayingOrGhost }) return@subscribe
                             if (evUser != user) return@subscribe
@@ -751,8 +758,8 @@ class PagesService : Service() {
                             }
                         }
                         awaitAny(
-                            execute { delay(30.0) },
-                            execute { until(1.0) { state.isWaiting || !user.isAlive } },
+                            innerExecute { delay(30.0) },
+                            innerExecute { until(1.0) { state.isWaiting || !user.isAlive } },
                         )
                         subscription.unsubscribe()
                         unlock(user)
@@ -787,7 +794,7 @@ class PagesService : Service() {
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
-                    Async.go {
+                    Async.go("pagesBarterBusted") {
                         val blocks = mutableMapOf<BlockPos, Pair<Long, Int>>()
                         var iteration = 0L
                         while (true) {
@@ -872,8 +879,8 @@ class PagesService : Service() {
                 text("turn all blocks in a ") + text("4 block radius").bold() + " into fire!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
-                    Async.go {
-                        var running = true; go { delay(3.0); running = false }
+                    Async.go("pagesFlameArea") {
+                        var running = true; innerGo { delay(3.0); running = false }
                         val center = userEntity.blockPos.up()
                         val region = center.let {
                             Region(
@@ -909,7 +916,7 @@ class PagesService : Service() {
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
-                    Async.go {
+                    Async.go("pagesFlameBusted") {
                         until { state.isWaiting || !user.isAlive }
                         user.entity?.let {
                             it.removeEffect(SPEED)

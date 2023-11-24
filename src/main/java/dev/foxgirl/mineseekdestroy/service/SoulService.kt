@@ -158,7 +158,7 @@ class SoulService : Service() {
     fun executeSoulClear(console: Console, players: List<GamePlayer>) {
         for (player in players) {
             val stacks = player.inventory?.asList() ?: continue
-            for (i in stacks.indices) if (containsSoulNbt(stacks[i])) stacks[i] = ItemStack.EMPTY
+            for (i in stacks.indices) if (containsSoulNbt(stacks[i])) stacks[i] = stackOf()
         }
         console.sendInfo("Removed souls from ${players.size} player(s)")
     }

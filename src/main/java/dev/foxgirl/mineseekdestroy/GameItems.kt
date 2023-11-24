@@ -251,7 +251,7 @@ object GameItems {
         text("will mostly kill someone!"),
         text("was gained through ") + Prayer(OCCULT, BARTER).displayName,
     ).apply {
-        addEnchantment(Enchantments.SHARPNESS, 15)
+        addEnchantment(Enchantments.SHARPNESS, 69)
         setDamage(32)
     }
     val summonBlueIce = stackOf(

@@ -142,7 +142,7 @@ abstract class DynamicScreenHandler(
     final override fun onClosed(playerEntity: PlayerEntity) {
         handleClosed()
         playerEntity.give(cursorStack)
-        cursorStack = ItemStack.EMPTY
+        cursorStack = stackOf()
     }
 
     private var ready = false
@@ -152,6 +152,6 @@ abstract class DynamicScreenHandler(
         super.syncState()
     }
 
-    override fun quickMove(playerEntity: PlayerEntity, slotIndex: Int): ItemStack = ItemStack.EMPTY
+    override fun quickMove(playerEntity: PlayerEntity, slotIndex: Int): ItemStack = stackOf()
     override fun canUse(playerEntity: PlayerEntity) = true
 }

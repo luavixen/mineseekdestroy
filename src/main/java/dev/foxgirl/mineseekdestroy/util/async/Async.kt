@@ -8,9 +8,45 @@ import kotlin.coroutines.*
 
 object Async {
 
+    private val activeContexts = mutableSetOf<CoroutineContext>()
+    private fun onCoroutineOpen(context: CoroutineContext) {
+        synchronized(activeContexts) {
+            activeContexts.add(context)
+        }
+    }
+    private fun onCoroutineClose(context: CoroutineContext) {
+        synchronized(activeContexts) {
+            activeContexts.remove(context)
+        }
+    }
+
     private class CompletableFutureContinuation<T>(override val context: CoroutineContext) : CompletableFuture<T>(), Continuation<T> {
+        init {
+            whenComplete { _, _ -> onCoroutineClose(context) }
+        }
+        fun startCoroutine(coroutine: suspend () -> T): CompletableFutureContinuation<T> {
+            onCoroutineOpen(context)
+            coroutine.startCoroutine(this)
+            return this
+        }
+        fun <R> startCoroutine(coroutine: suspend R.() -> T, receiver: R): CompletableFutureContinuation<T> {
+            onCoroutineOpen(context)
+            coroutine.startCoroutine(receiver, this)
+            return this
+        }
         override fun resumeWith(result: Result<T>) {
             result.fold(::complete, ::completeExceptionally)
+        }
+    }
+
+    private fun <T> Continuation<T>.resumeChecked(value: T) {
+        resumeWithChecked(Result.success(value))
+    }
+    private fun <T> Continuation<T>.resumeWithChecked(result: Result<T>) {
+        if (isCancelled) {
+            resumeWithException(CanceledException(this.context))
+        } else {
+            resumeWith(result)
         }
     }
 
@@ -21,56 +57,42 @@ object Async {
         return AsyncCoroutineContext(createDescriptor(name), lifetime)
     }
 
-    private var lastContext: CoroutineContext? = null
-    private fun updateLastContext(context: CoroutineContext) {
-        lastContext = context
-    }
-
-    private fun <T> startCoroutine(coroutine: suspend () -> T, continuation: CompletableFutureContinuation<T>) {
-        updateLastContext(continuation.context)
-        coroutine.startCoroutine(continuation)
-    }
-    private fun <T> startCoroutine(coroutine: suspend Async.() -> T, continuation: CompletableFutureContinuation<T>) {
-        updateLastContext(continuation.context)
-        coroutine.startCoroutine(this, continuation)
-    }
-
     fun background(): Lifetime = BackgroundLifetime
-
-    suspend fun lifetime(): Lifetime = coroutineContext.lifetime
 
     fun <T> execute(coroutine: suspend () -> T) = execute(null, background(), coroutine)
     fun <T> execute(name: String?, coroutine: suspend () -> T) = execute(name, background(), coroutine)
     fun <T> execute(name: String?, lifetime: Lifetime, coroutine: suspend () -> T): CompletableFuture<T> {
-        val context = createContext(name, lifetime)
+        return execute(createContext(name, lifetime), coroutine)
+    }
+    private fun <T> execute(context: CoroutineContext, coroutine: suspend () -> T): CompletableFuture<T> {
         return if (context.isCancelled) {
             CompletableFuture.failedFuture(CanceledException(context))
         } else {
-            CompletableFutureContinuation<T>(context).also { startCoroutine(coroutine, it) }
+            CompletableFutureContinuation<T>(context).startCoroutine(coroutine)
         }
     }
 
     fun <T> go(coroutine: suspend Async.() -> T) = go(null, background(), coroutine)
     fun <T> go(name: String?, coroutine: suspend Async.() -> T) = go(name, background(), coroutine)
     fun <T> go(name: String?, lifetime: Lifetime, coroutine: suspend Async.() -> T) {
-        val context = createContext(name, lifetime)
+        go(createContext(name, lifetime), coroutine)
+    }
+    private fun <T> go(context: CoroutineContext, coroutine: suspend Async.() -> T) {
         if (context.isCancelled) {
             Game.LOGGER.warn("Lifetime already cancelled, failed to start async task '${context.name}'")
         } else {
-            CompletableFutureContinuation<T>(context).also { startCoroutine(coroutine, it) }.terminate()
+            CompletableFutureContinuation<T>(context).startCoroutine(coroutine, this).terminate()
         }
     }
 
-    private fun <T> Continuation<T>.resumeChecked(value: T) {
-        resumeWithChecked(Result.success(value))
+    suspend fun <T> innerExecute(coroutine: suspend () -> T) = innerExecute(lifetime(), coroutine)
+    suspend fun <T> innerExecute(lifetime: Lifetime, coroutine: suspend () -> T): CompletableFuture<T> {
+        return execute(AsyncCoroutineContext(coroutineContext.descriptor, lifetime), coroutine)
     }
-    private fun <T> Continuation<T>.resumeWithChecked(result: Result<T>) {
-        updateLastContext(context)
-        if (isCancelled) {
-            resumeWithException(CanceledException(this.context))
-        } else {
-            resumeWith(result)
-        }
+
+    suspend fun <T> innerGo(coroutine: suspend Async.() -> T) = innerGo(lifetime(), coroutine)
+    suspend fun <T> innerGo(lifetime: Lifetime, coroutine: suspend Async.() -> T) {
+        go(AsyncCoroutineContext(coroutineContext.descriptor, lifetime), coroutine)
     }
 
     private fun getCancellation(throwable: Throwable?): CanceledException? = getCancellation(throwable, HashSet())
@@ -106,6 +128,8 @@ object Async {
             Game.LOGGER.error("Unhandled async exception", throwable)
         }
     }
+
+    suspend fun lifetime(): Lifetime = coroutineContext.lifetime
 
     suspend fun <T> await(promise: CompletableFuture<T>): T = awaitSettled(promise).getOrThrow()
     suspend fun <T> awaitSettled(promise: CompletableFuture<T>): Result<T> {
@@ -251,12 +275,14 @@ internal class AsyncCoroutineContext(
 }
 
 private val anonymousDescriptor = Descriptor("anonymous")
+private val unknownDescriptor = Descriptor("unknown")
 
 val CoroutineContext.lifetime get() = get(Lifetime.Key) ?: BackgroundLifetime
 val CoroutineContext.isCancelled get() = lifetime.isCancelled
 val Continuation<*>.isCancelled get() = context.isCancelled
 
-val CoroutineContext.name get() = get(Descriptor.Key)?.name ?: "unknown"
+val CoroutineContext.descriptor get() = get(Descriptor.Key) ?: unknownDescriptor
+val CoroutineContext.name get() = descriptor.name
 val Continuation<*>.name get() = context.name
 
 fun <T> CompletableFuture<T>.terminate() {

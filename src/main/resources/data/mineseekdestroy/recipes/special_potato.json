@@ -2,9 +2,12 @@
     "type": "minecraft:crafting_shaped",
     "key": {
         "I": [
-            { "item": "minecraft:egg" },
-            { "item": "minecraft:snowball" },
-            { "item": "minecraft:splash_potion" }
+            { "item": "minecraft:tipped_arrow" },
+            { "item": "minecraft:shield" },
+            { "item": "minecraft:firework_rocket" },
+            { "item": "minecraft:written_book" },
+            { "item": "minecraft:white_banner" },
+            { "item": "minecraft:compass" }
         ]
     },
     "pattern": [

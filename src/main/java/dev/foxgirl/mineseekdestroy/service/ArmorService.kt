@@ -56,7 +56,7 @@ class ArmorService : Service() {
                 ArmorTrim.apply(registryManager, stack, trim)
             }
 
-        val loadoutEmpty = Array(4) { ItemStack.EMPTY }
+        val loadoutEmpty = Array(4) { stackOf() }
         val loadoutDuel = arrayOf(
             stackOf(LEATHER_BOOTS)
                 .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SNOUT),
@@ -174,7 +174,7 @@ class ArmorService : Service() {
             val stack = list[i]
             val item = stack.item
             if (item !is ArmorItem && (item !== ELYTRA || ignoreElytra)) continue
-            list[i] = ItemStack.EMPTY
+            list[i] = stackOf()
         }
     }
 

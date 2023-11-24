@@ -4,9 +4,9 @@ import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Editor
 import dev.foxgirl.mineseekdestroy.util.Inventories
 import dev.foxgirl.mineseekdestroy.util.async.terminate
+import dev.foxgirl.mineseekdestroy.util.stackOf
 import net.minecraft.block.Blocks
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity
-import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.util.math.BlockPos
 
@@ -39,8 +39,8 @@ class SmokerService : Service() {
 
     fun executeFill(console: Console) {
         containers().forEach {
-            it.setStack(0, ItemStack(Items.POTATO, 64))
-            it.setStack(2, ItemStack.EMPTY)
+            it.setStack(0, stackOf(Items.POTATO, 64))
+            it.setStack(2, stackOf())
         }
         console.sendInfo("Filled smokers")
     }

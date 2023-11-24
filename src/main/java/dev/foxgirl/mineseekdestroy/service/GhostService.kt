@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.Console
+import dev.foxgirl.mineseekdestroy.util.Rules
 import dev.foxgirl.mineseekdestroy.util.async.Scheduler
 import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
@@ -29,7 +30,11 @@ class GhostService : Service() {
 
     private class GhostHealth {
         var value = 0; set(value) { field = value.coerceIn(0, healthModifiers.size) }
-        fun count() = ++value == healthModifiers.size
+
+        fun incrementAndCheck(amount: Int = 1): Boolean{
+            value += amount
+            return value == healthModifiers.size
+        }
 
         fun apply(attribute: EntityAttributeInstance) {
             val modifier = healthModifiers.getOrNull(value) ?: healthModifier3
@@ -135,7 +140,7 @@ class GhostService : Service() {
             )
         }
 
-        if (healthValue(player).count()) {
+        if (healthValue(player).incrementAndCheck(Rules.ghostsBlackDeathPenaltyAmount)) {
             Scheduler.now {
                 playerEntity.damage(
                     world.damageSources.create(Game.DAMAGE_TYPE_ABYSS),

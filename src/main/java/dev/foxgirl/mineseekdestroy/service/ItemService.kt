@@ -9,6 +9,7 @@ import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.data
 import dev.foxgirl.mineseekdestroy.util.give
 import dev.foxgirl.mineseekdestroy.util.set
+import dev.foxgirl.mineseekdestroy.util.stackOf
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -33,7 +34,7 @@ class ItemService : Service() {
 
         inventory.forEach { stack, item, i ->
             if (droppedItems.contains(item)) {
-                inventory.setStack(i, ItemStack.EMPTY)
+                inventory.setStack(i, stackOf())
                 entity.dropItem(stack, true, false)
             }
         }
@@ -88,7 +89,7 @@ class ItemService : Service() {
                 val replacementStack = replacementItems[item]
                 if (replacementStack != null && replacementStack.nbt != stack.nbt) {
                     val stackNew = replacementStack.copyWithCount(stack.count)
-                    inventory.setStack(i, ItemStack.EMPTY)
+                    inventory.setStack(i, stackOf())
                     if (!inventory.insertStack(i, stackNew)) {
                         inventory.setStack(i, stackNew)
                     }
@@ -97,7 +98,7 @@ class ItemService : Service() {
 
                 if (powderItem != null && powderItem !== item && powderItems.contains(item)) {
                     val stackNew = ItemStack(powderItem, stack.count)
-                    inventory.setStack(i, ItemStack.EMPTY)
+                    inventory.setStack(i, stackOf())
                     if (!inventory.insertStack(i, stackNew)) {
                         inventory.setStack(i, stackNew)
                     }
@@ -105,13 +106,13 @@ class ItemService : Service() {
                 }
 
                 if (illegalItems.contains(item)) {
-                    inventory.setStack(i, ItemStack.EMPTY)
+                    inventory.setStack(i, stackOf())
                     return@forEach
                 }
 
                 val nbt: NbtCompound? = stack.nbt
                 if (nbt != null && nbt.contains("MsdIllegal")) {
-                    inventory.setStack(i, ItemStack.EMPTY)
+                    inventory.setStack(i, stackOf())
                     return@forEach
                 }
 
@@ -119,7 +120,7 @@ class ItemService : Service() {
                     (bookItems.contains(item)) &&
                     (nbt == null || (!nbt.contains("MsdBook") && !nbt.contains("MsdPage")))
                 ) {
-                    inventory.setStack(i, ItemStack.EMPTY)
+                    inventory.setStack(i, stackOf())
                     return@forEach
                 }
             }
