@@ -19,6 +19,7 @@
         "MixinFireBlock",
         "MixinItem",
         "MixinItemEntity",
+        "MixinItemFrameEntity",
         "MixinLivingEntity",
         "MixinMessageCommand",
         "MixinPigEntity",

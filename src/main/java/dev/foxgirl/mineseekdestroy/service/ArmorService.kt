@@ -1,7 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
 import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.enchantment.Enchantment
@@ -151,8 +150,14 @@ class ArmorService : Service() {
                 .color(DyeColor.BLUE).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.SHAPER),
         )
 
-        loadoutFor = { player ->
-            when (player.team) {
+        fun loadoutForImpl(player: GamePlayer): Array<ItemStack> {
+            if (player.isGhost && Rules.giftsEnabled) {
+                val gift = context.specialGiftService.giftFor(player)
+                if (gift != null) {
+                    return arrayOf(stackOf(), stackOf(), stackOf(), gift)
+                }
+            }
+            return when (player.team) {
                 NONE, SKIP, GHOST, OPERATOR -> loadoutEmpty
                 DUELIST -> loadoutDuel
                 WARDEN -> loadoutWarden
@@ -161,6 +166,8 @@ class ArmorService : Service() {
                 BLACK -> loadoutBlack
             }
         }
+
+        loadoutFor = ::loadoutForImpl
     }
 
     override fun update() {

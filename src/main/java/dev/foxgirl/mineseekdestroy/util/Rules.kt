@@ -84,6 +84,7 @@ object Rules {
     @JvmStatic var buddyAbsorptionStrength by IntRuleProperty(RULE_BUDDY_ABSORPTION_STRENGTH)
 
     @JvmStatic var chaosEnabled by BooleanRuleProperty(RULE_CHAOS_ENABLED)
+    @JvmStatic var giftsEnabled by BooleanRuleProperty(RULE_GIFTS_ENABLED)
 
     @JvmStatic var countdownEnabled by BooleanRuleProperty(RULE_COUNTDOWN_ENABLED)
     @JvmStatic var countdownAutostartEnabled by BooleanRuleProperty(RULE_COUNTDOWN_AUTOSTART_ENABLED)

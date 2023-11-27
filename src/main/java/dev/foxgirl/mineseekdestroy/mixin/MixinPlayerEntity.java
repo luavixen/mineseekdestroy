@@ -44,7 +44,10 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     private void mineseekdestroy$hookDropInventory(CallbackInfo info) {
         var context = Game.getGame().getContext();
         if (context != null) {
-            context.itemService.handleDropInventory((ServerPlayerEntity) (Object) this);
+            var playerEntity = (ServerPlayerEntity) (Object) this;
+            var player = context.getPlayer(playerEntity);
+            context.itemService.handleDropInventory(player, playerEntity);
+            context.specialGiftService.handleDropInventory(player, playerEntity);
         }
     }
 

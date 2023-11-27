@@ -148,6 +148,7 @@ public abstract class GameState {
                     properties.getRegionBlimpBalloons().contains(blockHit.getBlockPos())
                 )
             ) {
+                context.specialGiftService.handleLeverUse(player, blockHit.getBlockPos());
                 return ActionResult.PASS;
             }
             var result = context.pagesService.handleGenericUse((ServerPlayerEntity) playerEntity);

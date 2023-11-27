@@ -79,7 +79,13 @@ fun ItemStack.dataDisplay(): NbtCompound {
     }
 }
 
-infix fun ItemStack.contentEquals(other: ItemStack) = ItemStack.areEqual(this, other)
+infix fun ItemStack?.contentEquals(other: ItemStack?): Boolean {
+    return if (this == null || other == null) {
+        this === other
+    } else {
+        ItemStack.areEqual(this, other)
+    }
+}
 
 fun Inventory.asList(): MutableList<ItemStack> = Inventories.list(this)
 

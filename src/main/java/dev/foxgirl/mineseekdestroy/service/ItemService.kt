@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
+import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.async.Async
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
@@ -27,15 +28,13 @@ class ItemService : Service() {
         }
     }
 
-    fun handleDropInventory(entity: ServerPlayerEntity) {
-        if (!context.getPlayer(entity).isPlaying) return
-
-        val inventory = entity.inventory
-
-        inventory.forEach { stack, item, i ->
-            if (droppedItems.contains(item)) {
-                inventory.setStack(i, stackOf())
-                entity.dropItem(stack, true, false)
+    fun handleDropInventory(player: GamePlayer, playerEntity: ServerPlayerEntity) {
+        if (player.isPlaying) {
+            playerEntity.inventory.forEach { stack, item, i ->
+                if (droppedItems.contains(item)) {
+                    playerEntity.inventory.setStack(i, stackOf())
+                    playerEntity.dropItem(stack, true, false)
+                }
             }
         }
     }

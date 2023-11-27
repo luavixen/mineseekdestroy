@@ -44,6 +44,7 @@ internal fun setup() {
                     "nocountdownautostart" to { Rules.countdownAutostartEnabled = false },
                     "hiddenarmor" to { Rules.hiddenArmorEnabled = true },
                     "chaos" to { Rules.chaosEnabled = true },
+                    "gifts" to { Rules.giftsEnabled = true },
                 )
 
                 fun registerFlags(it: ArgumentBuilder<ServerCommandSource, *>, enabled: Array<String>) {

@@ -186,6 +186,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_CHAOS_ENABLED =
         GameRuleRegistry.register("msdChaosEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_GIFTS_ENABLED =
+        GameRuleRegistry.register("msdGiftsEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_COUNTDOWN_ENABLED =
         GameRuleRegistry.register("msdCountdownEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));

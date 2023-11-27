@@ -82,6 +82,7 @@ public final class GameContext {
     public final @NotNull SpecialFamilyGuyService specialFamilyGuyService;
     public final @NotNull SpecialBuddyService specialBuddyService;
     public final @NotNull SpecialBoosterService specialBoosterService;
+    public final @NotNull SpecialGiftService specialGiftService;
 
     private final Service[] services;
 
@@ -202,6 +203,7 @@ public final class GameContext {
                 specialFamilyGuyService = new SpecialFamilyGuyService(),
                 specialBuddyService = new SpecialBuddyService(),
                 specialBoosterService = new SpecialBoosterService(),
+                specialGiftService = new SpecialGiftService(),
             };
         } catch (Throwable cause) {
             Game.LOGGER.error("Failed to instantiate services", cause);
