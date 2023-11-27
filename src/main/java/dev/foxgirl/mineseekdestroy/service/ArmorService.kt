@@ -3,12 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.GameTeam.*
-import dev.foxgirl.mineseekdestroy.util.Rules
-import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
-import dev.foxgirl.mineseekdestroy.util.collect.immutableListOf
-import dev.foxgirl.mineseekdestroy.util.dataDisplay
-import dev.foxgirl.mineseekdestroy.util.set
-import dev.foxgirl.mineseekdestroy.util.stackOf
+import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.enchantment.Enchantment
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.attribute.EntityAttributeModifier
@@ -20,11 +15,49 @@ import net.minecraft.item.trim.*
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.DyeColor
-import java.util.*
 
 class ArmorService : Service() {
 
-    private var loadouts = mapOf<GameTeam, Array<ItemStack>>()
+    private fun armorRemove(list: MutableList<ItemStack>) {
+        for ((i, stack) in list.withIndex()) {
+            val item = stack.item
+            if (item is ArmorItem || item === ELYTRA) {
+                list[i] = stackOf()
+            }
+        }
+    }
+
+    private fun armorSet(list: MutableList<ItemStack>, loadout: Array<ItemStack>) {
+        for ((i, stack) in list.withIndex()) {
+            if (stack contentEquals loadout[i]) continue
+            list[i] = loadout[i].copy()
+        }
+    }
+
+    private fun armorSetHidden(list: MutableList<ItemStack>, loadout: Array<ItemStack>) {
+        if (loadout[2].item === ELYTRA) {
+            armorSet(list, loadoutEmptyWithElytra)
+        } else {
+            armorSet(list, loadoutEmpty)
+        }
+    }
+
+    private val armorModifiers = HashMap<Int, EntityAttributeModifier>()
+
+    private fun armorModifierFor(protection: Int) =
+        armorModifiers.computeIfAbsent(protection) {
+            EntityAttributeModifier("msd_armor_$it", it.toDouble(), EntityAttributeModifier.Operation.ADDITION)
+        }
+    private fun armorModifierFor(armor: Array<ItemStack>) =
+        armorModifierFor(armor.sumOf {
+            val item = it.item
+            if (item is ArmorItem) item.protection else 0
+        })
+
+    private val loadoutEmpty = arrayOf(stackOf(), stackOf(), stackOf(), stackOf())
+    private val loadoutEmptyWithElytra = arrayOf(stackOf(), stackOf(), stackOf(ELYTRA), stackOf())
+
+    private lateinit var loadoutFor: (GamePlayer) -> Array<ItemStack>
 
     override fun setup() {
         fun convertComponent(component: Float): Int {
@@ -38,25 +71,27 @@ class ArmorService : Service() {
             return (r shl 16) or (g shl 8) or b
         }
 
-        fun ItemStack.color(color: DyeColor) =
-            this.also { stack -> stack.dataDisplay()["color"] = convertColor(color) }
-        fun ItemStack.enchant(enchantment: Enchantment, level: Int) =
-            this.also { stack -> stack.addEnchantment(enchantment, level) }
+        fun ItemStack.color(color: DyeColor): ItemStack {
+            dataDisplay()["color"] = convertColor(color)
+            return this
+        }
+        fun ItemStack.enchant(enchantment: Enchantment, level: Int): ItemStack {
+            addEnchantment(enchantment, level)
+            return this
+        }
 
         val registryManager = world.registryManager
         val registryTrimMaterials = registryManager.get(RegistryKeys.TRIM_MATERIAL)
         val registryTrimPatterns = registryManager.get(RegistryKeys.TRIM_PATTERN)
 
-        fun ItemStack.trim(material: RegistryKey<ArmorTrimMaterial>, pattern: RegistryKey<ArmorTrimPattern>) =
-            this.also { stack ->
-                val trim = ArmorTrim(
-                    registryTrimMaterials.getEntry(material).get(),
-                    registryTrimPatterns.getEntry(pattern).get(),
-                )
-                ArmorTrim.apply(registryManager, stack, trim)
-            }
+        fun ItemStack.trim(material: RegistryKey<ArmorTrimMaterial>, pattern: RegistryKey<ArmorTrimPattern>): ItemStack {
+            ArmorTrim.apply(registryManager, this, ArmorTrim(
+                registryTrimMaterials.getEntry(material).get(),
+                registryTrimPatterns.getEntry(pattern).get(),
+            ))
+            return this
+        }
 
-        val loadoutEmpty = Array(4) { stackOf() }
         val loadoutDuel = arrayOf(
             stackOf(LEATHER_BOOTS)
                 .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SNOUT),
@@ -116,17 +151,16 @@ class ArmorService : Service() {
                 .color(DyeColor.BLUE).trim(ArmorTrimMaterials.DIAMOND, ArmorTrimPatterns.SHAPER),
         )
 
-        loadouts = enumMapOf(
-            NONE to loadoutEmpty,
-            SKIP to loadoutEmpty,
-            GHOST to loadoutEmpty,
-            OPERATOR to loadoutEmpty,
-            DUELIST to loadoutDuel,
-            WARDEN to loadoutWarden,
-            YELLOW to loadoutYellow,
-            BLUE to loadoutBlue,
-            BLACK to loadoutBlack,
-        )
+        loadoutFor = { player ->
+            when (player.team) {
+                NONE, SKIP, GHOST, OPERATOR -> loadoutEmpty
+                DUELIST -> loadoutDuel
+                WARDEN -> loadoutWarden
+                YELLOW -> loadoutYellow
+                BLUE -> loadoutBlue
+                BLACK -> loadoutBlack
+            }
+        }
     }
 
     override fun update() {
@@ -138,72 +172,26 @@ class ArmorService : Service() {
             armorRemove(inventory.main)
             armorRemove(inventory.offHand)
 
+            val loadout = loadoutFor(player)
+
             val armorAttribute = playerEntity.getAttributeInstance(EntityAttributes.GENERIC_ARMOR)!!
-            var armorModifierType = ArmorModifierType.NONE
+            var armorModifier = null as EntityAttributeModifier?
 
             if (Rules.hiddenArmorEnabled) {
-                armorModifierType = armorSetHidden(inventory.armor, player)
+                armorSetHidden(inventory.armor, loadout)
+                armorModifier = armorModifierFor(loadout)
             } else {
-                if (player.team.isPlayingOrGhost) {
-                    armorSet(inventory.armor, player)
-                } else {
-                    armorRemove(inventory.armor)
-                }
+                armorSet(inventory.armor, loadout)
             }
 
-            for ((type, modifier) in armorModifiers) {
-                if (armorAttribute.hasModifier(modifier)) {
-                    if (armorModifierType !== type) armorAttribute.removeModifier(modifier)
-                } else {
-                    if (armorModifierType === type) armorAttribute.addPersistentModifier(modifier)
-                }
+            armorAttribute.modifiers
+                .filter { it.name.startsWith("msd_armor_") && it != armorModifier }
+                .forEach { armorAttribute.removeModifier(it) }
+
+            if (armorModifier != null && !armorAttribute.hasModifier(armorModifier)) {
+                armorAttribute.addTemporaryModifier(armorModifier)
             }
         }
-    }
-
-    private fun armorSet(list: MutableList<ItemStack>, player: GamePlayer) {
-        val loadout = loadouts[player.team]!!
-        for (i in list.indices) {
-            if (ItemStack.areEqual(list[i], loadout[i])) continue
-            list[i] = loadout[i].copy()
-        }
-    }
-
-    private fun armorRemove(list: MutableList<ItemStack>, ignoreElytra: Boolean = false) {
-        for (i in list.indices) {
-            val stack = list[i]
-            val item = stack.item
-            if (item !is ArmorItem && (item !== ELYTRA || ignoreElytra)) continue
-            list[i] = stackOf()
-        }
-    }
-
-    private fun armorSetHidden(list: MutableList<ItemStack>, player: GamePlayer): ArmorModifierType {
-        val stack = loadouts[player.team]!![2]
-        return if (stack.item === ELYTRA) {
-            if (!ItemStack.areEqual(list[2], stack)) list[2] = stack.copy()
-            armorRemove(list, true)
-            ArmorModifierType.ELYTRA
-        } else {
-            armorRemove(list, false)
-            ArmorModifierType.FULL
-        }
-    }
-
-    private enum class ArmorModifierType { NONE, ELYTRA, FULL }
-
-    private companion object {
-
-        private val armorModifierFull =
-            EntityAttributeModifier(UUID.fromString("a459f091-7fc2-42b0-b44f-eb33fddee8c3"), "msd_armor_full", 7.0, EntityAttributeModifier.Operation.ADDITION)
-        private val armorModifierElytra =
-            EntityAttributeModifier(UUID.fromString("442563b0-7d6a-4b18-b82f-01ecc5e6bc77"), "msd_armor_elytra", 4.0, EntityAttributeModifier.Operation.ADDITION)
-
-        private val armorModifiers = immutableListOf(
-            ArmorModifierType.FULL to armorModifierFull,
-            ArmorModifierType.ELYTRA to armorModifierElytra,
-        )
-
     }
 
 }

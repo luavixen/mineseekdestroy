@@ -49,7 +49,7 @@ class GhostService : Service() {
                 }
             }
             if (missing) {
-                attribute.addPersistentModifier(modifier)
+                attribute.addTemporaryModifier(modifier)
             }
         }
     }
