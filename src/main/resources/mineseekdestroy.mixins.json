@@ -17,6 +17,7 @@
         "MixinEntityTrackerUpdateS2CPacket",
         "MixinFarmlandBlock",
         "MixinFireBlock",
+        "MixinHoneyBottleItem",
         "MixinItem",
         "MixinItemEntity",
         "MixinItemFrameEntity",

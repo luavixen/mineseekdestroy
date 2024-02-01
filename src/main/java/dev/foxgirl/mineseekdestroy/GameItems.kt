@@ -172,6 +172,10 @@ object GameItems {
         text("instantly spawns a concrete structure!"),
         text("contains tnt; can be lit & blown up"),
     )
+    val honey = stackOf(
+        HONEY_BOTTLE, nbtCompoundOf("MsdMaryJuice" to true),
+        text("Mary's Honey").gold(),
+    )
     val shield = stackOf(
         SHIELD, nbtDecode("{BlockEntityTag:{id:\"minecraft:banner\",Base:4}}").asCompound(),
         SHIELD.name().teamYellow(),
@@ -280,7 +284,7 @@ object GameItems {
         for (stack in listOf(
             snowBlock, eggBlock, ectoplasm,
             potato, bakedPotato, egg, snowball, spectralArrow, tippedArrow,
-            flintAndSteel, enderPearl, familyGuyBlock, fireworkRocket,
+            flintAndSteel, enderPearl, familyGuyBlock, honey, fireworkRocket,
         )) {
             put(stack.item, stack)
         }
@@ -302,9 +306,9 @@ object GameItems {
         ::toolCrossbow, ::toolBow, ::toolTrident, ::snowBlock, ::eggBlock,
         ::ectoplasm, ::potato, ::bakedPotato, ::egg, ::snowball,
         ::spectralArrow, ::tippedArrow, ::flintAndSteel, ::enderPearl,
-        ::familyGuyBlock, ::shield, ::fireworkRocket, ::potionSlowness,
-        ::potionPoison, ::potionHarming, ::bookDeep, ::bookOccult,
-        ::bookCosmos, ::bookBarter, ::bookFlame, ::summonSteak,
+        ::familyGuyBlock, ::honey, ::shield, ::fireworkRocket,
+        ::potionSlowness, ::potionPoison, ::potionHarming, ::bookDeep,
+        ::bookOccult, ::bookCosmos, ::bookBarter, ::bookFlame, ::summonSteak,
         ::summonGoldenSword, ::summonBlueIce, ::summonWaterBucket,
         ::summonChippedAnvil, ::summonCompass,
     )
