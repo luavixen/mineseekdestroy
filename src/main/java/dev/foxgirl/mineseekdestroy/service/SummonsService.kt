@@ -194,7 +194,7 @@ class SummonsService : Service() {
             val blocks = immutableSetOf<Block>(
                 Blocks.OAK_SAPLING, Blocks.SPRUCE_SAPLING, Blocks.BIRCH_SAPLING,
                 Blocks.JUNGLE_SAPLING, Blocks.ACACIA_SAPLING, Blocks.DARK_OAK_SAPLING,
-                Blocks.MANGROVE_PROPAGULE, Blocks.GRASS, Blocks.TALL_GRASS,
+                Blocks.MANGROVE_PROPAGULE, Blocks.SHORT_GRASS, Blocks.TALL_GRASS,
                 Blocks.FERN, Blocks.LARGE_FERN, Blocks.DEAD_BUSH,
                 Blocks.DANDELION, Blocks.POPPY, Blocks.BLUE_ORCHID, Blocks.ALLIUM,
                 Blocks.AZURE_BLUET, Blocks.RED_TULIP, Blocks.ORANGE_TULIP,
@@ -767,7 +767,7 @@ class SummonsService : Service() {
             shulker.isInvulnerable = true
 
             world.spawnEntity(shulker)
-            context.scoreboard.addPlayerToTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+            context.scoreboard.addScoreHolderToTeam(shulker.nameForScoreboard, context.getTeam(GameTeam.OPERATOR))
 
             lifetime()
                 .withCondition { shulker.isAlive }
@@ -782,7 +782,7 @@ class SummonsService : Service() {
             delay(Rules.summonsAltarGlowDuration)
 
             try {
-                context.scoreboard.removePlayerFromTeam(shulker.entityName, context.getTeam(GameTeam.OPERATOR))
+                context.scoreboard.removeScoreHolderFromTeam(shulker.nameForScoreboard, context.getTeam(GameTeam.OPERATOR))
                 shulker.remove(Entity.RemovalReason.DISCARDED)
             } catch (ignored: IllegalStateException) {}
         }

@@ -65,7 +65,7 @@ class SpecialBoosterService : Service() {
                 ))
             },
             {
-                logger.info("Player '${it.entityName}' launched by blimp fans")
+                logger.info("Player '${it.nameForScoreboard}' launched by blimp fans")
 
                 it.applyVelocity(Vec3d(0.0, Rules.fansKnockback, 0.0))
 
@@ -95,7 +95,7 @@ class SpecialBoosterService : Service() {
                         ))
                     },
                     {
-                        logger.info("Player '${it.entityName}' launched by tower")
+                        logger.info("Player '${it.nameForScoreboard}' launched by tower")
 
                         val p1 = region.center
                         val p2 = it.pos

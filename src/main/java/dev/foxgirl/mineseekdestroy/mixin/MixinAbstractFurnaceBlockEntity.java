@@ -53,7 +53,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
                 world.spawnEntity(entity);
                 var context = Game.getGame().getContext();
                 if (context != null) {
-                    context.scoreboard.addPlayerToTeam(entity.getEntityName(), context.getTeam(GameTeam.OPERATOR));
+                    context.scoreboard.addScoreHolderToTeam(entity.getNameForScoreboard(), context.getTeam(GameTeam.OPERATOR));
                 }
             }
             entity.setInvisible(true);
@@ -64,7 +64,7 @@ public abstract class MixinAbstractFurnaceBlockEntity {
                 var context = Game.getGame().getContext();
                 if (context != null) {
                     try {
-                        context.scoreboard.removePlayerFromTeam(entity.getEntityName(), context.getTeam(GameTeam.OPERATOR));
+                        context.scoreboard.removeScoreHolderFromTeam(entity.getNameForScoreboard(), context.getTeam(GameTeam.OPERATOR));
                     } catch (IllegalStateException ignored) {}
                 }
                 entity.remove(Entity.RemovalReason.DISCARDED);

@@ -28,7 +28,7 @@ class SpecialCarService : Service() {
 
         world.spawnEntity(entity)
 
-        context.scoreboard.addPlayerToTeam(entity.entityName, context.getTeam(GameTeam.OPERATOR))
+        context.scoreboard.addScoreHolderToTeam(entity.nameForScoreboard, context.getTeam(GameTeam.OPERATOR))
 
         console.sendInfo("Spawned new car")
     }

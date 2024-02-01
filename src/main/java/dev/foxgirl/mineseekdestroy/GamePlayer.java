@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.util.NbtKt;
 import dev.foxgirl.mineseekdestroy.util.Rules;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.scoreboard.ScoreHolder;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
@@ -18,7 +19,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class GamePlayer {
+public final class GamePlayer implements ScoreHolder {
 
     private final GameContext context;
 
@@ -63,7 +64,7 @@ public final class GamePlayer {
     }
 
     GamePlayer(@NotNull GameContext context, @NotNull ServerPlayerEntity player) {
-        this(context, player.getUuid(), player.getEntityName());
+        this(context, player.getUuid(), player.getNameForScoreboard());
     }
 
     GamePlayer(@NotNull GameContext context, @NotNull NbtCompound nbt) {
@@ -216,6 +217,11 @@ public final class GamePlayer {
         }
     }
 
+    @Override
+    public String getNameForScoreboard() {
+        return getName();
+    }
+
     private @NotNull Scoreboard getScoreboard() {
         return context.scoreboard;
     }
@@ -273,45 +279,45 @@ public final class GamePlayer {
     }
 
     public void update() {
+        var name = getNameForScoreboard();
+
         var scoreboard = getScoreboard();
         var scoreboardKillsObjective = getScoreboardKillsObjective();
         var scoreboardSoulsObjective = getScoreboardSoulsObjective();
 
-        var playerName = getName();
-
         var teamExpected = getScoreboardTeam();
-        var teamActual = scoreboard.getPlayerTeam(playerName);
+        var teamActual = scoreboard.getScoreHolderTeam(name);
 
         if (teamExpected == null) {
             if (teamActual != null) {
-                scoreboard.clearPlayerTeam(playerName);
+                scoreboard.clearTeam(name);
             }
         } else {
             if (!teamExpected.isEqual(teamActual)) {
-                scoreboard.addPlayerToTeam(playerName, teamExpected);
+                scoreboard.addScoreHolderToTeam(name, teamExpected);
             }
         }
 
         if (isOnScoreboard() && !(isGhost() && Game.getGame().getState().isRunning())) {
             var playerKillsValue = getKills();
-            var playerKillsScore = scoreboard.getPlayerScore(playerName, scoreboardKillsObjective);
+            var playerKillsScore = scoreboard.getOrCreateScore(this, scoreboardKillsObjective);
 
-            if (playerKillsScore.getScore() != playerKillsValue) {
+            // if (playerKillsScore.getScore() != playerKillsValue) {
                 playerKillsScore.setScore(playerKillsValue);
-            }
+            // }
         } else {
-            if (scoreboard.playerHasObjective(playerName, scoreboardKillsObjective)) {
-                scoreboard.resetPlayerScore(playerName, scoreboardKillsObjective);
+            if (scoreboard.getScore(this, scoreboardKillsObjective) != null) {
+                scoreboard.removeScore(this, scoreboardKillsObjective);
             }
         }
 
         {
             var playerSoulsValue = getSoulsCurrent();
-            var playerSoulsScore = scoreboard.getPlayerScore(playerName, scoreboardSoulsObjective);
+            var playerSoulsScore = scoreboard.getOrCreateScore(this, scoreboardSoulsObjective);
 
-            if (playerSoulsScore.getScore() != playerSoulsValue) {
+            // if (playerSoulsScore.getScore() != playerSoulsValue) {
                 playerSoulsScore.setScore(playerSoulsValue);
-            }
+            // }
         }
     }
 

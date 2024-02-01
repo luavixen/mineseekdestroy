@@ -26,10 +26,10 @@ public abstract class RunningGameState extends GameState {
         var player = context.getPlayer(newPlayerEntity);
         if (player.isPlayingOrGhost() && !player.isAlive()) {
             position = Game.getGameProperties().getPositionBlimp();
-            Game.LOGGER.info("Respawning player '{}' in blimp (running!)", newPlayerEntity.getEntityName());
+            Game.LOGGER.info("Respawning player '{}' in blimp (running!)", newPlayerEntity.getNameForScoreboard());
         } else {
             position = Game.getGameProperties().getPositionSpawn().toCenterPos();
-            Game.LOGGER.info("Respawning player '{}' at spawn (running!)", newPlayerEntity.getEntityName());
+            Game.LOGGER.info("Respawning player '{}' at spawn (running!)", newPlayerEntity.getNameForScoreboard());
         }
 
         newPlayerEntity.teleport(
@@ -45,7 +45,7 @@ public abstract class RunningGameState extends GameState {
         if (context == null) return true;
 
         if (damageSource.isOf(DamageTypes.GENERIC_KILL) || damageAmount >= 100000.0F) {
-            Game.LOGGER.info("Invalid death for player '{}' source: {} amount: {}", playerEntity.getEntityName(), damageSource.getName(), damageAmount);
+            Game.LOGGER.info("Invalid death for player '{}' source: {} amount: {}", playerEntity.getNameForScoreboard(), damageSource.getName(), damageAmount);
             return false;
         }
 
@@ -96,7 +96,7 @@ public abstract class RunningGameState extends GameState {
         if (context == null) return false;
 
         if (damageSource.isOf(DamageTypes.GENERIC_KILL) || damageAmount >= 100000.0F) {
-            Game.LOGGER.info("Invalid damage for player '{}' source: {} amount: {}", playerEntity.getEntityName(), damageSource.getName(), damageAmount);
+            Game.LOGGER.info("Invalid damage for player '{}' source: {} amount: {}", playerEntity.getNameForScoreboard(), damageSource.getName(), damageAmount);
             return false;
         }
 

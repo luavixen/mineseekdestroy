@@ -192,7 +192,7 @@ class ArmorService : Service() {
             }
 
             armorAttribute.modifiers
-                .filter { it.name.startsWith("msd_armor_") && it != armorModifier }
+                .filter { it.toString().contains("msd_armor_") && it != armorModifier }
                 .forEach { armorAttribute.removeModifier(it) }
 
             if (armorModifier != null && !armorAttribute.hasModifier(armorModifier)) {

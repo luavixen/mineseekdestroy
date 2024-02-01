@@ -162,7 +162,7 @@ class SnapshotService : Service() {
         val name = "mnsnd-snapshot-${DateTimeFormatter.ISO_INSTANT.format(Instant.now())}.bin"
         val path = Game.CONFIGDIR.resolve(name)
         try {
-            NbtIo.write(nbtCompoundOf("Snapshots" to snapshots), path.toFile())
+            NbtIo.write(nbtCompoundOf("Snapshots" to snapshots), path)
             logger.info("Saved snapshot to file ${name}")
         } catch (cause: Exception) {
             logger.error("Failed to save snapshot to file ${name}", cause)
@@ -183,7 +183,7 @@ class SnapshotService : Service() {
             }
         }
         try {
-            val nbt = NbtIo.read(path.toFile())!!
+            val nbt = NbtIo.read(path)!!
             val snapshots = nbt["Snapshots"].asList().map { Snapshot(context, it.asCompound()) }
 
             this.snapshots.clear()

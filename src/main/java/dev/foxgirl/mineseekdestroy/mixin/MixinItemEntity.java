@@ -43,7 +43,7 @@ public abstract class MixinItemEntity extends Entity {
         ) {
             var context = Game.getGame().getContext();
             if (context != null) {
-                context.scoreboard.addPlayerToTeam(getEntityName(), context.getTeam(GameTeam.OPERATOR));
+                context.scoreboard.addScoreHolderToTeam(getNameForScoreboard(), context.getTeam(GameTeam.OPERATOR));
                 if (!isGlowing()) {
                     setGlowing(true);
                 }
@@ -63,7 +63,7 @@ public abstract class MixinItemEntity extends Entity {
             var context = Game.getGame().getContext();
             if (context != null) {
                 try {
-                    context.scoreboard.removePlayerFromTeam(getEntityName(), context.getTeam(GameTeam.OPERATOR));
+                    context.scoreboard.removeScoreHolderFromTeam(getNameForScoreboard(), context.getTeam(GameTeam.OPERATOR));
                 } catch (IllegalStateException ignored) {
                 }
             }

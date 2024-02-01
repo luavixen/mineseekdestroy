@@ -39,7 +39,7 @@ public final class Region implements Selection {
         );
         chunkStart = new ChunkPos(start);
         chunkEnd = new ChunkPos(end);
-        box = new Box(start, end.add(1, 1, 1));
+        box = Box.enclosing(start, end.add(1, 1, 1));
     }
 
     public @NotNull BlockPos component1() {

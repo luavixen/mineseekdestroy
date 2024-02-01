@@ -53,7 +53,7 @@ fun toNbt(value: BlockPos): NbtCompound = NbtHelper.fromBlockPos(value)
 fun toNbt(value: BlockState): NbtCompound = NbtHelper.fromBlockState(value)
 fun toNbt(value: FluidState): NbtCompound = NbtHelper.fromFluidState(value)
 
-fun toNbt(value: Text) = toNbt(Text.Serializer.toJson(value))
+fun toNbt(value: Text) = toNbt(Text.Serialization.toJsonString(value))
 
 fun toNbt(value: Identifier) = toNbt(value.toString())
 fun toNbt(value: Item) = toNbt(Registries.ITEM.getId(value))

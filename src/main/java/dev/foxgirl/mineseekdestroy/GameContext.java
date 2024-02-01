@@ -11,10 +11,7 @@ import net.minecraft.entity.damage.DamageType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.Team;
+import net.minecraft.scoreboard.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -117,9 +114,10 @@ public final class GameContext {
             scoreboardKillsName,
             ScoreboardCriterion.DUMMY,
             scoreboardKillsDisplayName,
-            ScoreboardCriterion.RenderType.INTEGER
+            ScoreboardCriterion.RenderType.INTEGER,
+            true, null
         );
-        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, scoreboardKills);
+        scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, scoreboardKills);
 
         var scoreboardSoulsOld = scoreboard.getNullableObjective(scoreboardSoulsName);
         if (scoreboardSoulsOld != null) {
@@ -129,9 +127,10 @@ public final class GameContext {
             scoreboardSoulsName,
             ScoreboardCriterion.DUMMY,
             scoreboardSoulsDisplayName,
-            ScoreboardCriterion.RenderType.INTEGER
+            ScoreboardCriterion.RenderType.INTEGER,
+            true, null
         );
-        scoreboard.setObjectiveSlot(Scoreboard.BELOW_NAME_DISPLAY_SLOT_ID, scoreboardSouls);
+        scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.BELOW_NAME, scoreboardSouls);
 
         var scoreboardHeartsOld = scoreboard.getNullableObjective(scoreboardHeartsName);
         if (scoreboardHeartsOld != null) {
@@ -141,9 +140,10 @@ public final class GameContext {
             scoreboardHeartsName,
             ScoreboardCriterion.HEALTH,
             scoreboardHeartsDisplayName,
-            ScoreboardCriterion.RenderType.HEARTS
+            ScoreboardCriterion.RenderType.HEARTS,
+            true, null
         );
-        scoreboard.setObjectiveSlot(Scoreboard.LIST_DISPLAY_SLOT_ID, scoreboardHearts);
+        scoreboard.setObjectiveSlot(ScoreboardDisplaySlot.LIST, scoreboardHearts);
 
         scoreboard.getTeams().removeIf(team -> team.getName().startsWith("msd_"));
 

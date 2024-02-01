@@ -4,19 +4,20 @@ import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntityPositionS2CPacket;
 import net.minecraft.network.packet.s2c.play.EntityTrackerUpdateS2CPacket;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(ServerPlayNetworkHandler.class)
-public abstract class MixinServerPlayNetworkHandler {
+@Mixin(ServerCommonNetworkHandler.class)
+public abstract class MixinServerCommonNetworkHandler {
 
     @ModifyVariable(
-        method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V",
+        method = "send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V",
         at = @At("HEAD"), ordinal = 0
     )
-    private Packet<?> mineseekdestroy$hookSendPacket(Packet<?> packet) {
+    private Packet<?> mineseekdestroy$hookSend(Packet<?> packet) {
         if ((Object) this instanceof ServerPlayNetworkHandler networkHandler) {
             var context = Game.getGame().getContext();
             if (context != null) {
