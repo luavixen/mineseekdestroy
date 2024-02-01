@@ -46,18 +46,17 @@ internal fun setup() {
                     "chaos" to { Rules.chaosEnabled = true },
                     "gifts" to { Rules.giftsEnabled = true },
                 )
-
-                fun registerFlags(it: ArgumentBuilder<ServerCommandSource, *>, enabled: Array<String>) {
-                    val flagsEnabled = mutableListOf<Map.Entry<String, () -> Unit>>()
-                    val flagsRemaining = mutableListOf<Map.Entry<String, () -> Unit>>()
-                    flags.entries.forEach { (if (it.key in enabled) flagsEnabled else flagsRemaining).add(it) }
-
+                fun registerFlags(it: ArgumentBuilder<ServerCommandSource, *>, count: Int, i: Int = 0) {
                     it.action { args ->
                         if (game.context == null) {
                             game.initialize(properties())
-                            if (flagsEnabled.isNotEmpty()) {
-                                flagsEnabled.forEach { (_, action) -> action() }
-                                args.sendInfo("Started new game with flags", flagsEnabled.map { it.key })
+                            val flagsSelected = mutableSetOf<String>()
+                            for (j in 0 until i) {
+                                flagsSelected.add(args["flag$j"])
+                            }
+                            if (flagsSelected.isNotEmpty()) {
+                                flagsSelected.forEach { flags[it]?.invoke() ?: args.sendError("Invalid flag '$it'") }
+                                args.sendInfo("Started new game with flags", flagsSelected)
                             } else {
                                 args.sendInfo("Started new game with defaults")
                             }
@@ -65,15 +64,11 @@ internal fun setup() {
                             args.sendError("Cannot start new game, already running")
                         }
                     }
-
-                    if (flagsRemaining.isNotEmpty()) {
-                        flagsRemaining.forEach { (flag) ->
-                            it.params(argLiteral(flag)) { registerFlags(it, enabled + flag) }
-                        }
+                    if (i < count) {
+                        it.params(argString("flag$i")) { registerFlags(it, count, i + 1) }
                     }
                 }
-
-                it.params(argLiteral(properties().name)) { registerFlags(it, arrayOf()) }
+                it.params(argLiteral(properties().name)) { registerFlags(it, flags.size) }
             }
             GameProperties.instances.forEach { register { it } }
         }

@@ -7,7 +7,7 @@ import net.minecraft.inventory.Inventory
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Position
+import net.minecraft.util.math.Vec3d
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.listDirectoryEntries
@@ -23,7 +23,8 @@ class SnapshotService : Service() {
         val snapshotKills: Int
         val snapshotDeaths: Int
 
-        val snapshotPosition: Position?
+        val snapshotHealth: Float?
+        val snapshotPosition: Vec3d?
         val snapshotInventory: Inventory?
 
         constructor(player: GamePlayer) {
@@ -37,9 +38,11 @@ class SnapshotService : Service() {
 
             val entity = player.entity
             if (entity != null) {
+                snapshotHealth = entity.health
                 snapshotPosition = entity.pos
                 snapshotInventory = Inventories.copyOf(entity.inventory)
             } else {
+                snapshotHealth = null
                 snapshotPosition = null
                 snapshotInventory = null
             }
@@ -52,6 +55,7 @@ class SnapshotService : Service() {
             snapshotAlive = nbt["Alive"].toBoolean()
             snapshotKills = nbt["Kills"].toInt()
             snapshotDeaths = nbt["Deaths"].toInt()
+            snapshotHealth = nbt["Health"]?.toFloat()
             snapshotPosition = nbt["Position"]?.let { it.toBlockPos().toCenterPos() }
             snapshotInventory = nbt["Inventory"]?.let { Inventories.fromNbt(it.asCompound()) }
         }
@@ -64,6 +68,9 @@ class SnapshotService : Service() {
                 "Kills" to snapshotKills,
                 "Deaths" to snapshotDeaths,
             )
+            if (snapshotHealth != null) {
+                nbt["Health"] = snapshotHealth
+            }
             if (snapshotPosition != null) {
                 nbt["Position"] = toNbt(snapshotPosition.let(BlockPos::ofFloored))
             }
@@ -97,6 +104,7 @@ class SnapshotService : Service() {
                 game.destroy()
                 game.initialize(properties)
             }
+            val state = FrozenGameState()
             players.forEach {
                 it.player.team = it.snapshotTeam
                 it.player.isAlive = it.snapshotAlive
@@ -112,8 +120,11 @@ class SnapshotService : Service() {
                         Inventories.copy(source, target)
                     }
                 }
+                if (it.snapshotHealth != null && it.snapshotPosition != null) {
+                    state.setFrozenPlayer(it.player.uuid, it.snapshotPosition, it.snapshotHealth)
+                }
             }
-            game.state = FrozenGameState()
+            game.state = state
         }
     }
 
