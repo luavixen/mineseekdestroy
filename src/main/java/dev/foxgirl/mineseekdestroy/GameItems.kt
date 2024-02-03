@@ -175,6 +175,8 @@ object GameItems {
     val honey = stackOf(
         HONEY_BOTTLE, nbtCompoundOf("MsdMaryJuice" to true),
         text("Mary's Honey").gold(),
+        text("has an oddly milky texture..."),
+        text("recovers full hunger and saturation!"),
     )
     val shield = stackOf(
         SHIELD, nbtDecode("{BlockEntityTag:{id:\"minecraft:banner\",Base:4}}").asCompound(),
