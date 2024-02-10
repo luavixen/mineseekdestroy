@@ -767,7 +767,7 @@ class SummonsService : Service() {
             shulker.isInvulnerable = true
 
             world.spawnEntity(shulker)
-            context.scoreboard.addScoreHolderToTeam(shulker.nameForScoreboard, context.getTeam(GameTeam.OPERATOR))
+            context.scoreboard.addScoreHolderToTeam(shulker.scoreboardName, context.getTeam(GameTeam.OPERATOR))
 
             lifetime()
                 .withCondition { shulker.isAlive }
@@ -782,7 +782,7 @@ class SummonsService : Service() {
             delay(Rules.summonsAltarGlowDuration)
 
             try {
-                context.scoreboard.removeScoreHolderFromTeam(shulker.nameForScoreboard, context.getTeam(GameTeam.OPERATOR))
+                context.scoreboard.removeScoreHolderFromTeam(shulker.scoreboardName, context.getTeam(GameTeam.OPERATOR))
                 shulker.remove(Entity.RemovalReason.DISCARDED)
             } catch (ignored: IllegalStateException) {}
         }

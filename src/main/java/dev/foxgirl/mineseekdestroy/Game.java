@@ -101,6 +101,11 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLUE_ARROW_CRITS =
         GameRuleRegistry.register("msdBlueArrowCrits", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_SYPHON_HEALTH_BACK_ENABLED =
+        GameRuleRegistry.register("msdBlackSyphonHealthBackEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_SYPHON_HEALTH_BACK_DIVISOR =
+        GameRuleRegistry.register("msdBlackSyphonHealthBackDivisor", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
+
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_DAMAGE_FLASH_ENABLED =
         GameRuleRegistry.register("msdDamageFlashEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
@@ -279,6 +284,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.WRITABLE_BOOK,
         Items.KNOWLEDGE_BOOK,
         Items.ENCHANTED_BOOK,
+        Items.RECOVERY_COMPASS,
     });
 
     public static final @NotNull Set<@NotNull Item> DROPPED_ITEMS = ImmutableSet.copyOf(new Item[] {
@@ -286,6 +292,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.FIREWORK_ROCKET,
         Items.CARROT_ON_A_STICK,
         Items.TARGET,
+        Items.RECOVERY_COMPASS,
     });
 
     public static final @NotNull Set<@NotNull Item> UNDROPPABLE_ITEMS = ImmutableSet.copyOf(new Item[] {
@@ -335,6 +342,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.LIME_STAINED_GLASS_PANE,
         Items.RED_CONCRETE,
         Items.LIME_CONCRETE,
+        Items.ARMOR_STAND,
     });
 
     public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_HEARTBREAK =

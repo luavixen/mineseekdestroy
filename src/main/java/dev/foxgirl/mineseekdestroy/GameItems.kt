@@ -173,10 +173,9 @@ object GameItems {
         text("contains tnt; can be lit & blown up"),
     )
     val honey = stackOf(
-        HONEY_BOTTLE, nbtCompoundOf("MsdMaryJuice" to true),
-        text("Mary's Honey").gold(),
-        text("has an oddly milky texture..."),
-        text("recovers full hunger and saturation!"),
+        HONEY_BOTTLE, nbtCompoundOf("MsdHoney" to true),
+        text("“Honey”").gold(),
+        text("instantly refills hunder and saturation bars!"),
     )
     val shield = stackOf(
         SHIELD, nbtDecode("{BlockEntityTag:{id:\"minecraft:banner\",Base:4}}").asCompound(),
@@ -190,6 +189,11 @@ object GameItems {
         text("Crossbow Rocket").teamBlue(),
         text("can be shot out of blue's crossbows!").teamBlue(),
         text("can be used by blue to fly, but will damage you!").teamBlue(),
+    )
+    val temporalGear = stackOf(
+        RECOVERY_COMPASS, nbtCompoundOf("MsdTemporal" to true),
+        text("Temporal Gear").lightPurple(),
+        text("an unknown artifact...").lightPurple(),
     )
     val potionSlowness = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),
@@ -209,7 +213,6 @@ object GameItems {
         text("OOOWWUH"),
         text("affects ghosts").bold(),
     )
-
     val bookDeep = stackOf(
         WRITTEN_BOOK, PagesService.BookType(DEEP).toNbt(),
         text("Sunken Scroll") * DEEP.color,
@@ -287,6 +290,7 @@ object GameItems {
             snowBlock, eggBlock, ectoplasm,
             potato, bakedPotato, egg, snowball, spectralArrow, tippedArrow,
             flintAndSteel, enderPearl, familyGuyBlock, honey, fireworkRocket,
+            temporalGear,
         )) {
             put(stack.item, stack)
         }
@@ -308,7 +312,7 @@ object GameItems {
         ::toolCrossbow, ::toolBow, ::toolTrident, ::snowBlock, ::eggBlock,
         ::ectoplasm, ::potato, ::bakedPotato, ::egg, ::snowball,
         ::spectralArrow, ::tippedArrow, ::flintAndSteel, ::enderPearl,
-        ::familyGuyBlock, ::honey, ::shield, ::fireworkRocket,
+        ::familyGuyBlock, ::honey, ::shield, ::fireworkRocket, ::temporalGear,
         ::potionSlowness, ::potionPoison, ::potionHarming, ::bookDeep,
         ::bookOccult, ::bookCosmos, ::bookBarter, ::bookFlame, ::summonSteak,
         ::summonGoldenSword, ::summonBlueIce, ::summonWaterBucket,

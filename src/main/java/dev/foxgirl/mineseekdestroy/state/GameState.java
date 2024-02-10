@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.state;
 import dev.foxgirl.mineseekdestroy.Game;
 import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GameItems;
+import dev.foxgirl.mineseekdestroy.service.TemporalGearService;
 import dev.foxgirl.mineseekdestroy.util.async.Scheduler;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -167,6 +168,12 @@ public abstract class GameState {
 
     public ActionResult onUseBlockWith(@Nullable GameContext context, PlayerEntity playerEntity, World world, Hand hand, BlockHitResult blockHit, ItemStack stack) {
         if (Game.getGame().isOperator(playerEntity)) {
+            if (context != null) {
+                if (stack.getItem() == Items.RECOVERY_COMPASS) {
+                    var result = context.temporalGearService.handleGearPlace((ServerPlayerEntity) playerEntity, hand, stack, blockHit);
+                    if (result != ActionResult.PASS) return result;
+                }
+            }
             return ActionResult.PASS;
         }
         if (context != null && context.world == world) {
@@ -176,6 +183,10 @@ public abstract class GameState {
             var player = context.getPlayer((ServerPlayerEntity) playerEntity);
             if (player.isPlayingOrGhost() && player.isAlive()) {
                 var item = stack.getItem();
+                if (stack.getItem() == Items.RECOVERY_COMPASS) {
+                    var result = context.temporalGearService.handleGearPlace((ServerPlayerEntity) playerEntity, hand, stack, blockHit);
+                    if (result != ActionResult.PASS) return result;
+                }
                 if (item == Items.CONDUIT) {
                     var result = context.conduitService.handleConduitUse(player, (ServerPlayerEntity) playerEntity, stack);
                     if (result != ActionResult.PASS) return result;
@@ -271,6 +282,13 @@ public abstract class GameState {
                 var result = context.ghostService.handleGhostInteract(player, blockPos, blockState);
                 if (result != ActionResult.PASS) return result;
             }
+            {
+                var stack = playerEntity.getStackInHand(hand);
+                if (stack.getItem() == Items.RECOVERY_COMPASS) {
+                    var result = context.temporalGearService.handleGearUse((ServerPlayerEntity) playerEntity, hand, stack);
+                    if (result != ActionResult.PASS) return result;
+                }
+            }
         }
         return ActionResult.PASS;
     }
@@ -288,6 +306,9 @@ public abstract class GameState {
                     return ActionResult.PASS;
                 }
                 if (entity instanceof MobEntity) {
+                    return ActionResult.PASS;
+                }
+                if (TemporalGearService.isTemporalStand(entity)) {
                     return ActionResult.PASS;
                 }
             }

@@ -19,7 +19,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class GamePlayer implements ScoreHolder {
+public final class GamePlayer {
 
     private final GameContext context;
 
@@ -28,6 +28,8 @@ public final class GamePlayer implements ScoreHolder {
 
     private final String name;
     private final String nameLowercase;
+
+    private final ScoreHolder scoreboardScoreHolder;
 
     @Override
     public int hashCode() {
@@ -61,6 +63,17 @@ public final class GamePlayer implements ScoreHolder {
         this.hash = uuid.hashCode();
         this.name = name;
         this.nameLowercase = name.toLowerCase(Locale.ROOT);
+        this.scoreboardScoreHolder = new ScoreHolder() {
+            @Override
+            public String getNameForScoreboard() {
+                return getName();
+            }
+            @Override
+            public @Nullable Text getDisplayName() {
+                var entity = getEntity();
+                return entity != null ? entity.getDisplayName() : GamePlayer.this.getDisplayName();
+            }
+        };
     }
 
     GamePlayer(@NotNull GameContext context, @NotNull ServerPlayerEntity player) {
@@ -203,6 +216,11 @@ public final class GamePlayer implements ScoreHolder {
         return currentTeam.isCanon();
     }
 
+    @Override
+    public String toString() {
+        return "GamePlayer{name=" + name + ", team=" + currentTeam + ", alive=" + currentAlive + "}";
+    }
+
     public void teleport(@NotNull Position position) {
         var entity = getEntity();
         if (entity != null) {
@@ -217,9 +235,8 @@ public final class GamePlayer implements ScoreHolder {
         }
     }
 
-    @Override
-    public String getNameForScoreboard() {
-        return getName();
+    public @NotNull ScoreHolder getScoreHolder() {
+        return scoreboardScoreHolder;
     }
 
     private @NotNull Scoreboard getScoreboard() {
@@ -279,41 +296,42 @@ public final class GamePlayer implements ScoreHolder {
     }
 
     public void update() {
-        var name = getNameForScoreboard();
+        var scoreHolder = getScoreHolder();
+        var scoreHolderName = getScoreHolder().getNameForScoreboard();
 
         var scoreboard = getScoreboard();
         var scoreboardKillsObjective = getScoreboardKillsObjective();
         var scoreboardSoulsObjective = getScoreboardSoulsObjective();
 
         var teamExpected = getScoreboardTeam();
-        var teamActual = scoreboard.getScoreHolderTeam(name);
+        var teamActual = scoreboard.getScoreHolderTeam(scoreHolderName);
 
         if (teamExpected == null) {
             if (teamActual != null) {
-                scoreboard.clearTeam(name);
+                scoreboard.clearTeam(scoreHolderName);
             }
         } else {
             if (!teamExpected.isEqual(teamActual)) {
-                scoreboard.addScoreHolderToTeam(name, teamExpected);
+                scoreboard.addScoreHolderToTeam(scoreHolderName, teamExpected);
             }
         }
 
         if (isOnScoreboard() && !(isGhost() && Game.getGame().getState().isRunning())) {
             var playerKillsValue = getKills();
-            var playerKillsScore = scoreboard.getOrCreateScore(this, scoreboardKillsObjective);
+            var playerKillsScore = scoreboard.getOrCreateScore(scoreHolder, scoreboardKillsObjective);
 
             // if (playerKillsScore.getScore() != playerKillsValue) {
                 playerKillsScore.setScore(playerKillsValue);
             // }
         } else {
-            if (scoreboard.getScore(this, scoreboardKillsObjective) != null) {
-                scoreboard.removeScore(this, scoreboardKillsObjective);
+            if (scoreboard.getScore(scoreHolder, scoreboardKillsObjective) != null) {
+                scoreboard.removeScore(scoreHolder, scoreboardKillsObjective);
             }
         }
 
         {
             var playerSoulsValue = getSoulsCurrent();
-            var playerSoulsScore = scoreboard.getOrCreateScore(this, scoreboardSoulsObjective);
+            var playerSoulsScore = scoreboard.getOrCreateScore(scoreHolder, scoreboardSoulsObjective);
 
             // if (playerSoulsScore.getScore() != playerSoulsValue) {
                 playerSoulsScore.setScore(playerSoulsValue);

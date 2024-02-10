@@ -35,6 +35,9 @@ object Rules {
     @JvmStatic var blueMeleeCrits by BooleanRuleProperty(RULE_BLUE_MELEE_CRITS)
     @JvmStatic var blueArrowCrits by BooleanRuleProperty(RULE_BLUE_ARROW_CRITS)
 
+    @JvmStatic var blackSyphonHealthBackEnabled by BooleanRuleProperty(RULE_BLACK_SYPHON_HEALTH_BACK_ENABLED)
+    @JvmStatic var blackSyphonHealthBackDivisor by DoubleRuleProperty(RULE_BLACK_SYPHON_HEALTH_BACK_DIVISOR)
+
     @JvmStatic var damageFlashEnabled by BooleanRuleProperty(RULE_DAMAGE_FLASH_ENABLED)
 
     @JvmStatic var ghostsBlackDeathPenaltyAmount by IntRuleProperty(RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT)

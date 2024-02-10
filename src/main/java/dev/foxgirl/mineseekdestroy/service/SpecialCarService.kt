@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.Console
 import dev.foxgirl.mineseekdestroy.util.Reflector
+import dev.foxgirl.mineseekdestroy.util.scoreboardName
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -28,7 +29,7 @@ class SpecialCarService : Service() {
 
         world.spawnEntity(entity)
 
-        context.scoreboard.addScoreHolderToTeam(entity.nameForScoreboard, context.getTeam(GameTeam.OPERATOR))
+        context.scoreboard.addScoreHolderToTeam(entity.scoreboardName, context.getTeam(GameTeam.OPERATOR))
 
         console.sendInfo("Spawned new car")
     }

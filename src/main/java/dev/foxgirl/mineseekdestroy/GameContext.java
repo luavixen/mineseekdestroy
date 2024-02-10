@@ -63,6 +63,7 @@ public final class GameContext {
     public final @NotNull GlowService glowService;
     public final @NotNull ItemService itemService;
     public final @NotNull ShieldService shieldService;
+    public final @NotNull SyphonService syphonService;
     public final @NotNull ConduitService conduitService;
     public final @NotNull GhostService ghostService;
     public final @NotNull SoulService soulService;
@@ -72,6 +73,7 @@ public final class GameContext {
     public final @NotNull AutomationService automationService;
     public final @NotNull PagesService pagesService;
     public final @NotNull SummonsService summonsService;
+    public final @NotNull TemporalGearService temporalGearService;
     public final @NotNull CountdownService countdownService;
     public final @NotNull SpecialGhoulService specialGhoulService;
     public final @NotNull SpecialCarService specialCarService;
@@ -187,6 +189,7 @@ public final class GameContext {
                 glowService = new GlowService(),
                 itemService = new ItemService(),
                 shieldService = new ShieldService(),
+                syphonService = new SyphonService(),
                 conduitService = new ConduitService(),
                 ghostService = new GhostService(),
                 soulService = new SoulService(),
@@ -196,6 +199,7 @@ public final class GameContext {
                 automationService = new AutomationService(),
                 summonsService = new SummonsService(),
                 pagesService = new PagesService(),
+                temporalGearService = new TemporalGearService(),
                 countdownService = new CountdownService(),
                 specialGhoulService = new SpecialGhoulService(),
                 specialCarService = new SpecialCarService(),

@@ -119,7 +119,6 @@ class ArmorService : Service() {
                 .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.SNOUT),
             stackOf(LEATHER_LEGGINGS)
                 .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.HOST)
-                .enchant(Enchantments.THORNS, 3)
                 .enchant(Enchantments.SWIFT_SNEAK, 3),
             stackOf(LEATHER_CHESTPLATE)
                 .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.HOST),

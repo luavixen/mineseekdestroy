@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.scoreboard.ScoreHolder
 import net.minecraft.text.MutableText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -19,6 +20,7 @@ fun text(value: Any?): MutableText {
         is String -> value.asText()
         is Boolean -> value.toString().asText().format(if (value) Formatting.GREEN else Formatting.RED)
         is Number -> value.toString().asText().format(Formatting.YELLOW)
+        is ScoreHolder -> value.styledDisplayName.copy()
         else -> {
             val clazz = value::class.java
             val handle = Reflector.methodHandle(clazz, "getDisplayName")
