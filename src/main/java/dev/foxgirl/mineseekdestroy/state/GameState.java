@@ -63,7 +63,7 @@ public abstract class GameState {
 
     public void onRespawn(@Nullable GameContext context, ServerPlayerEntity oldPlayerEntity, ServerPlayerEntity newPlayerEntity, boolean alive) {
         var position = Game.getGameProperties().getPositionSpawn().toCenterPos();
-        Game.LOGGER.info("Respawning player '{}' at spawn (not running)", newPlayerEntity.getNameForScoreboard());
+        Game.LOGGER.info("Respawning player \"{}\" at spawn (not running)", newPlayerEntity.getNameForScoreboard());
         newPlayerEntity.teleport(
             context != null ? context.world : newPlayerEntity.getServerWorld(),
             position.getX(), position.getY(), position.getZ(),

@@ -23,7 +23,7 @@ class SyphonService : Service() {
 
         attackerEntity.addEffect(StatusEffects.ABSORPTION, Double.MAX_VALUE, amplifier)
 
-        logger.info("Syphoning ${String.format("%.1f", damageAmount)} damage from ${player.name} to ${attacker.name}, now has absorption ${amplifier + 1}")
+        logger.info("Syphoning ${String.format("%.1f", damageAmount)} damage from ${player.nameQuoted} to ${attacker.nameQuoted}, now has absorption ${amplifier + 1}")
     }
 
 }

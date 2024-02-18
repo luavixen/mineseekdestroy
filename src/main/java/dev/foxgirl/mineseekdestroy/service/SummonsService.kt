@@ -301,7 +301,7 @@ class SummonsService : Service() {
                     data()["MsdTargetPlayer"] = target.uuid
                 })
 
-                logger.info("DeepOccultSummon gave tracker for '${target.name}' to '${player.name}'")
+                logger.info("DeepOccultSummon gave tracker for ${target.nameQuoted} to ${player.nameQuoted}")
             }
         }
         override fun update() {

@@ -653,10 +653,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         for (var playerEntity : playerEntities) {
             if (hasOperator(playerEntity)) continue;
             if (playerEntity.interactionManager.getGameMode() != GameMode.SURVIVAL) {
-                LOGGER.info("OOB Player '{}' in incorrect gamemode", playerEntity.getNameForScoreboard());
-                LOGGER.info("OOB Switching player '{}' to survival gamemode", playerEntity.getNameForScoreboard());
+                LOGGER.info("OOB Player \"{}\" in incorrect gamemode", playerEntity.getNameForScoreboard());
+                LOGGER.info("OOB Switching player \"{}\" to survival gamemode", playerEntity.getNameForScoreboard());
                 playerEntity.interactionManager.changeGameMode(GameMode.SURVIVAL);
-                LOGGER.info("OOB Killing player '{}'", playerEntity.getNameForScoreboard());
+                LOGGER.info("OOB Killing player \"{}\"", playerEntity.getNameForScoreboard());
                 playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), 5000.0F);
                 playerEntity.setHealth(0.0F);
             } else if (playerEntity.isAlive()) {
@@ -668,8 +668,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         properties.getRegionPlayable().excludes(playerEntity)
                     )
                 ) {
-                    LOGGER.info("OOB Player '{}' entered out of bounds killzone or is out of the world", playerEntity.getNameForScoreboard());
-                    LOGGER.info("OOB Killing player '{}'", playerEntity.getNameForScoreboard());
+                    LOGGER.info("OOB Player \"{}\" entered out of bounds killzone or is out of the world", playerEntity.getNameForScoreboard());
+                    LOGGER.info("OOB Killing player \"{}\"", playerEntity.getNameForScoreboard());
                     playerEntity.damage(playerEntity.getDamageSources().outsideBorder(), 5000.0F);
                     playerEntity.setHealth(0.0F);
                 } else if (context != null && getState().isPlaying()) {

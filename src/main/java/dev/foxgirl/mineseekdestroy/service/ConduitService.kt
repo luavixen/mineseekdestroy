@@ -190,7 +190,7 @@ class ConduitService : Service() {
         private fun deactivate(unusableReason: UnusableReason) {
             isActive = false
 
-            logger.info("Conduit deactivating for '{}' because ''", player.name, lazyString { unusableReason.stoppingMessage.string })
+            logger.info("Conduit deactivating for {} because '{}'", player.nameQuoted, lazyString { unusableReason.stoppingMessage.string })
 
             val playerEntity = player.entity
             if (playerEntity != null) {
@@ -232,14 +232,14 @@ class ConduitService : Service() {
 
             val unusableReason = checkUnusable(true)
             if (unusableReason != null) {
-                logger.debug("Conduit not activating for '{}' because '{}'", player.name, lazyString { unusableReason.startingMessage.string })
+                logger.debug("Conduit not activating for {} because '{}'", player.nameQuoted, lazyString { unusableReason.startingMessage.string })
                 playerEntity.sendMessage(Console.formatInfo(unusableReason.startingMessage))
                 return
             }
 
             isActive = true
 
-            logger.info("Conduit activating for '{}'", player.name)
+            logger.info("Conduit activating for {}", player.nameQuoted)
 
             playerEntity.sendMessage(Console.formatInfo("You've activated your conduit!"))
             playerEntity.play(SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.PLAYERS, 1.0, 1.0)

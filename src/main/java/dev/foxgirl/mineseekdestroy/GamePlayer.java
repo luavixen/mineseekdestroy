@@ -28,6 +28,7 @@ public final class GamePlayer {
 
     private final String name;
     private final String nameLowercase;
+    private final String nameQuoted;
 
     private final ScoreHolder scoreboardScoreHolder;
 
@@ -63,6 +64,7 @@ public final class GamePlayer {
         this.hash = uuid.hashCode();
         this.name = name;
         this.nameLowercase = name.toLowerCase(Locale.ROOT);
+        this.nameQuoted = "\"" + name + "\"";
         this.scoreboardScoreHolder = new ScoreHolder() {
             @Override
             public String getNameForScoreboard() {
@@ -116,6 +118,10 @@ public final class GamePlayer {
 
     public @NotNull String getNameLowercase() {
         return nameLowercase;
+    }
+
+    public @NotNull String getNameQuoted() {
+        return nameQuoted;
     }
 
     public @NotNull GameTeam getTeam() {
@@ -218,7 +224,7 @@ public final class GamePlayer {
 
     @Override
     public String toString() {
-        return "GamePlayer{name=" + name + ", team=" + currentTeam + ", alive=" + currentAlive + "}";
+        return "GamePlayer{name=" + nameQuoted + ", team=" + currentTeam + ", alive=" + currentAlive + "}";
     }
 
     public void teleport(@NotNull Position position) {

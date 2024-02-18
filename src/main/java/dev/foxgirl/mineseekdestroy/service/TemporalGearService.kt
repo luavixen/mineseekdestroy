@@ -61,7 +61,7 @@ class TemporalGearService : Service() {
         val player = standEntity.linkedPlayer
         if (player == null || !player.isAlive || !standEntity.isAlive) {
             standEntity.poofAndRemove()
-            logger.info("Removing temporal stand for ${player?.name ?: "unknown"} (player or stand dead)")
+            logger.info("Removing temporal stand for ${player?.nameQuoted ?: "unknown"} (player or stand dead)")
             return true
         }
 
@@ -91,7 +91,7 @@ class TemporalGearService : Service() {
             player.entity?.sendInfo("You destroyed your temporal stand!")
         }
 
-        logger.info("Removing temporal stand for ${player.name} (attacked by ${attacker.name})")
+        logger.info("Removing temporal stand for ${player.nameQuoted} (attacked by ${attacker.nameQuoted})")
         standEntity.poofAndRemove()
     }
 
@@ -138,7 +138,7 @@ class TemporalGearService : Service() {
         world.spawnEntityAndPassengers(standEntity)
 
         playerEntity.sendInfo("You placed your temporal stand!")
-        logger.info("Player ${player.name} has placed their temporal stand at ${standEntity.pos}")
+        logger.info("Player ${player.nameQuoted} has placed their temporal stand at ${standEntity.pos}")
 
         return ActionResult.SUCCESS
     }
@@ -178,7 +178,7 @@ class TemporalGearService : Service() {
         playerEntity.play(SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS)
 
         playerEntity.sendInfo("You swapped with your temporal stand!")
-        logger.info("Player ${player.name} swapped with their temporal stand ${trans1.pos} <-> ${trans2.pos}")
+        logger.info("Player ${player.nameQuoted} swapped with their temporal stand ${trans1.pos} <-> ${trans2.pos}")
 
         return ActionResult.CONSUME
     }

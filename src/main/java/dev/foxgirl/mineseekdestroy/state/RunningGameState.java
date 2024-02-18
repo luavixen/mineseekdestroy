@@ -26,10 +26,10 @@ public abstract class RunningGameState extends GameState {
         var player = context.getPlayer(newPlayerEntity);
         if (player.isPlayingOrGhost() && !player.isAlive()) {
             position = Game.getGameProperties().getPositionBlimp();
-            Game.LOGGER.info("Respawning player '{}' in blimp (running!)", newPlayerEntity.getNameForScoreboard());
+            Game.LOGGER.info("Respawning player {} in blimp (running!)", player.getNameQuoted());
         } else {
             position = Game.getGameProperties().getPositionSpawn().toCenterPos();
-            Game.LOGGER.info("Respawning player '{}' at spawn (running!)", newPlayerEntity.getNameForScoreboard());
+            Game.LOGGER.info("Respawning player {} at spawn (running!)", player.getNameQuoted());
         }
 
         newPlayerEntity.teleport(
@@ -45,7 +45,7 @@ public abstract class RunningGameState extends GameState {
         if (context == null) return true;
 
         if (damageSource.isOf(DamageTypes.GENERIC_KILL) || damageAmount >= 100000.0F) {
-            Game.LOGGER.info("Invalid death for player '{}' source: {} amount: {}", playerEntity.getNameForScoreboard(), damageSource.getName(), damageAmount);
+            Game.LOGGER.info("Invalid death for player \"{}\" source: {} amount: {}", playerEntity.getNameForScoreboard(), damageSource.getName(), damageAmount);
             return false;
         }
 
@@ -77,15 +77,15 @@ public abstract class RunningGameState extends GameState {
                 if (player.isGhost()) {
                     context.ghostService.handleGhostDeath(player, playerEntity, attacker, attackerEntity);
                 }
-                Game.LOGGER.info("Death recorded, '{}' was killed by '{}'", player.getName(), attacker.getName());
+                Game.LOGGER.info("Death recorded, {} was killed by {}", player.getNameQuoted(), attacker.getNameQuoted());
             } else {
-                Game.LOGGER.info("Death recorded, '{}' was killed with no valid attacker", player.getName());
+                Game.LOGGER.info("Death recorded, {} was killed with no valid attacker", player.getNameQuoted());
             }
 
             context.soulService.handleDeath(player, playerEntity);
             context.specialBuddyService.handleDeath(player);
         } else {
-            Game.LOGGER.info("Unexpected death for player '{}' who is not playing and alive, continuing", player.getName());
+            Game.LOGGER.info("Unexpected death for player {} who is not playing and alive, continuing", player.getNameQuoted());
         }
 
         return true;
@@ -96,7 +96,7 @@ public abstract class RunningGameState extends GameState {
         if (context == null) return false;
 
         if (damageSource.isOf(DamageTypes.GENERIC_KILL) || damageAmount >= 100000.0F) {
-            Game.LOGGER.info("Invalid damage for player '{}' source: {} amount: {}", playerEntity.getNameForScoreboard(), damageSource.getName(), damageAmount);
+            Game.LOGGER.info("Invalid damage for player \"{}\" source: {} amount: {}", playerEntity.getNameForScoreboard(), damageSource.getName(), damageAmount);
             return false;
         }
 

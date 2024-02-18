@@ -542,7 +542,7 @@ internal fun setup() {
         }
         it.params(argLiteral("cancel")) {
             it.params(argLiteral("exact")) {
-                it.params(argPlayer("aggressor"), argPlayer("victim")) {
+                it.params(argString("aggressor"), argString("victim")) {
                     it.actionWithContext { args, context ->
                         val aggressor = context.getPlayer(args.get<String>("aggressor"))
                         if (aggressor == null) { args.sendError("Invalid aggressor"); return@actionWithContext }
