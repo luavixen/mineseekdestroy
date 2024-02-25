@@ -11,6 +11,7 @@
         "MixinArrowItem",
         "MixinCraftingResultInventory",
         "MixinDamageSource",
+        "MixinDamageTracker",
         "MixinEggEntity",
         "MixinEnderPearlEntity",
         "MixinEntity",

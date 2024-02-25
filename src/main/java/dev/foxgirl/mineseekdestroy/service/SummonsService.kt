@@ -788,7 +788,7 @@ class SummonsService : Service() {
         }
     }
 
-    private fun summon(options: Options) {
+    private fun summon(options: Options): FailureReason? {
         Game.CONSOLE_OPERATORS.sendInfo(
             "Player", options.player,
             "attempting summon", options.kind,
@@ -814,6 +814,8 @@ class SummonsService : Service() {
 
         textUpdateFull()
         summonEffects(options)
+
+        return failure
     }
 
     private interface TextProvider {
@@ -931,11 +933,14 @@ class SummonsService : Service() {
             if (pair.isDouble && !hasSoul()) return
 
             val player = context.getPlayer(playerEntity)
-            summon(Options(pair, altar, player))
+            val failure = summon(Options(pair, altar, player))
 
-            inventory.removeStack(0, 1)
-            inventory.removeStack(1, 1)
-            inventory.removeStack(2, 1)
+            if (failure == null) {
+                inventory.removeStack(0, 1)
+                inventory.removeStack(1, 1)
+                inventory.removeStack(2, 1)
+            }
+
             inventory.setStack(3, stackOf())
         }
 

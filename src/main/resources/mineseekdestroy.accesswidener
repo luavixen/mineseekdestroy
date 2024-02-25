@@ -6,6 +6,8 @@ accessible field net/minecraft/entity/LivingEntity lastDamageTime J
 
 accessible method net/minecraft/entity/attribute/EntityAttributeInstance removeModifier (Lnet/minecraft/entity/attribute/EntityAttributeModifier;)V
 
+accessible method net/minecraft/entity/damage/DamageSource <init> (Lnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/Entity;Lnet/minecraft/util/math/Vec3d;)V
+
 accessible field net/minecraft/item/ItemUsageContext player Lnet/minecraft/entity/player/PlayerEntity;
 accessible field net/minecraft/item/ItemUsageContext hand Lnet/minecraft/util/Hand;
 accessible field net/minecraft/item/ItemUsageContext hit Lnet/minecraft/util/hit/BlockHitResult;

@@ -193,7 +193,10 @@ object GameItems {
     val temporalGear = stackOf(
         RECOVERY_COMPASS, nbtCompoundOf("MsdTemporal" to true),
         text("Temporal Gear").lightPurple(),
-        text("an unknown artifact...").lightPurple(),
+        text("right-click a block to place a substitute").lightPurple(),
+        text("left-click a block to swap places with your substitute").lightPurple(),
+        text("destroy substitute by hitting it").lightPurple(),
+        text("if someone else destroys your substitute, you will be reduced to HALF A HEART").bold().lightPurple(),
     )
     val potionSlowness = stackOf(
         SPLASH_POTION, nbtCompoundOf("Potion" to identifier("strong_slowness")),

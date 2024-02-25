@@ -104,7 +104,7 @@ fun Entity.particles(
     Broadcast.sendParticles(particle, speed.toFloat(), count, world, position(pos))
 }
 
-val Entity.scoreboardName get() = nameForScoreboard
+val Entity.scoreboardName: String get() = nameForScoreboard
 
 data class Translation(val world: World, val pos: Vec3d, val yaw: Float, val pitch: Float, val bodyYaw: Float, val headYaw: Float) {
     constructor(world: World, pos: Vec3d, yaw: Float, pitch: Float) : this(world, pos, yaw, pitch, yaw, yaw)
@@ -125,8 +125,8 @@ data class Translation(val world: World, val pos: Vec3d, val yaw: Float, val pit
         } else {
             entity.teleport(world as ServerWorld, pos.x, pos.y, pos.z, PositionFlag.VALUES, yaw, pitch)
         }
-        entity.setBodyYaw(bodyYaw)
-        entity.setHeadYaw(headYaw)
+        entity.bodyYaw = bodyYaw
+        entity.headYaw = headYaw
     }
 }
 

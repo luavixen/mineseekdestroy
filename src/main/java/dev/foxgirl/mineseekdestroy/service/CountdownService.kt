@@ -88,9 +88,9 @@ class CountdownService : Service() {
             Broadcast.send(TitleS2CPacket(text(DecimalFormat("#.#").format(-damage) + " ❤").red()))
             Broadcast.send(SubtitleS2CPacket(text()))
             Broadcast.sendSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.HOSTILE, 1.0F, 1.0F)
-            Broadcast.sendParticles(ParticleTypes.ELDER_GUARDIAN, 0.0F, 0) { player, playerEntity ->
-                if (player.isPlayingOrGhost && player.isAlive) playerEntity.pos else null
-            }
+            // Broadcast.sendParticles(ParticleTypes.ELDER_GUARDIAN, 0.0F, 0) { player, playerEntity ->
+            //     if (player.isPlayingOrGhost && player.isAlive) playerEntity.pos else null
+            // }
 
             for ((player, playerEntity) in playerEntitiesNormal) {
                 if (!player.isPlayingOrGhost || !player.isAlive) continue
@@ -103,6 +103,13 @@ class CountdownService : Service() {
 
         if (ticks % 5 == 0) {
             Broadcast.send(OverlayMessageS2CPacket(text("${seconds}s until snip").red()))
+        }
+
+        if (ticks <= 6 * 20 && ticks % 2 == 0) {
+            for ((_, playerEntity) in playerEntitiesIn) {
+                if (isProtected(playerEntity)) continue
+                playerEntity.particles(ParticleTypes.CRIMSON_SPORE, 1.0, 1)
+            }
         }
     }
 

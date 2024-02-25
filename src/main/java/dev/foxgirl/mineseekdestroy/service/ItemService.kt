@@ -5,12 +5,14 @@ import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.async.Async
+import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableSet
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.data
 import dev.foxgirl.mineseekdestroy.util.give
 import dev.foxgirl.mineseekdestroy.util.set
 import dev.foxgirl.mineseekdestroy.util.stackOf
+import net.minecraft.block.Block
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -104,7 +106,7 @@ class ItemService : Service() {
                     return@forEach
                 }
 
-                if (illegalItems.contains(item)) {
+                if (illegalItems.contains(item) || !validItems.contains(item)) {
                     inventory.setStack(i, stackOf())
                     return@forEach
                 }
@@ -166,6 +168,15 @@ class ItemService : Service() {
             ENCHANTED_BOOK,
         )
 
+        private val validItems = buildImmutableSet<Item> {
+            addAll(Game.PLACABLE_BLOCKS.mapNotNull(Block::asItem))
+            addAll(Game.USABLE_ITEMS)
+            addAll(GameItems.properties.map { it.get().item })
+            addAll(bookItems)
+            addAll(powderItems)
+            addAll(listOf(SPONGE, SKELETON_SKULL))
+        }
+
         private enum class Tool {
             Tool1, Tool2, Tool3, Tool4;
 
@@ -200,10 +211,10 @@ class ItemService : Service() {
                 Tool.Tool4.stack(GameItems.toolCrossbow),
             ),
             GameTeam.DUELIST to enumMapOf(
-                Tool.Tool1.stack(GameItems.toolSword),
+                Tool.Tool1.stack(GameItems.toolCrossbow),
                 Tool.Tool2.stack(GameItems.toolAxe),
                 Tool.Tool3.stack(GameItems.toolBow),
-                Tool.Tool4.stack(GameItems.toolCrossbow),
+                Tool.Tool4.stack(GameItems.toolSword),
             ),
             GameTeam.BLACK to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolBow),

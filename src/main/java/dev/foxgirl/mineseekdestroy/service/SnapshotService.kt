@@ -56,8 +56,8 @@ class SnapshotService : Service() {
             snapshotKills = nbt["Kills"].toInt()
             snapshotDeaths = nbt["Deaths"].toInt()
             snapshotHealth = nbt["Health"]?.toFloat()
-            snapshotPosition = nbt["Position"]?.let { it.toBlockPos().toCenterPos() }
-            snapshotInventory = nbt["Inventory"]?.let { Inventories.fromNbt(it.asCompound()) }
+            snapshotPosition = nbt["Position"]?.toBlockPos()?.toCenterPos()
+            snapshotInventory = nbt["Inventory"]?.toInventory()
         }
 
         fun toNbt(): NbtCompound {
@@ -84,19 +84,25 @@ class SnapshotService : Service() {
     private class Snapshot {
         val properties: GameProperties
         val players: List<SnapshotPlayer>
+        val damageRecords: List<DamageService.DamageRecord>
 
-
-        constructor(properties: GameProperties, players: List<SnapshotPlayer>) {
+        constructor(properties: GameProperties, players: List<SnapshotPlayer>, damageRecords: List<DamageService.DamageRecord>) {
             this.properties = properties
             this.players = players
+            this.damageRecords = damageRecords
         }
 
         constructor(context: GameContext, nbt: NbtCompound) {
             properties = GameProperties.instancesByName[nbt["Properties"].toActualString()]!!
             players = nbt["Players"].asList().map { SnapshotPlayer(context, it.asCompound()) }
+            damageRecords = nbt["DamageRecords"].asList().map { DamageService.DamageRecord(context, it.asCompound()) }
         }
 
-        fun toNbt() = nbtCompoundOf("Properties" to properties.name, "Players" to players)
+        fun toNbt() = nbtCompoundOf(
+            "Properties" to properties.name,
+            "Players" to players,
+            "DamageRecords" to damageRecords,
+        )
 
         fun restore() {
             val game = Game.getGame()
@@ -104,6 +110,7 @@ class SnapshotService : Service() {
                 game.destroy()
                 game.initialize(properties)
             }
+            val context = game.context!!
             val state = FrozenGameState()
             players.forEach {
                 it.player.team = it.snapshotTeam
@@ -123,6 +130,10 @@ class SnapshotService : Service() {
                 if (it.snapshotHealth != null && it.snapshotPosition != null) {
                     state.setFrozenPlayer(it.player.uuid, it.snapshotPosition, it.snapshotHealth)
                 }
+            }
+            context.damageService.updateDamageRecords {
+                it.clear()
+                it.addAll(damageRecords)
             }
             game.state = state
         }
@@ -156,7 +167,7 @@ class SnapshotService : Service() {
     fun executeSnapshotSave(console: Console) {
         ready = false
 
-        val snapshot = Snapshot(properties, players.map(::SnapshotPlayer))
+        val snapshot = Snapshot(properties, players.map(::SnapshotPlayer), context.damageService.copyDamageRecords())
         snapshots.add(snapshot)
 
         val name = "mnsnd-snapshot-${DateTimeFormatter.ISO_INSTANT.format(Instant.now())}.bin"

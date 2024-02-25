@@ -2,8 +2,6 @@
     "type": "minecraft:crafting_shaped",
     "key": {
         "I": [
-            { "item": "minecraft:snow_block" },
-            { "item": "minecraft:bone_block" },
             { "item": "minecraft:slime_block" },
             { "item": "minecraft:potato" },
             { "item": "minecraft:baked_potato" },

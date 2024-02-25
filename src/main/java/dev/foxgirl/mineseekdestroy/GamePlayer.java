@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy;
 
+import dev.foxgirl.mineseekdestroy.service.DamageService;
 import dev.foxgirl.mineseekdestroy.util.Inventories;
 import dev.foxgirl.mineseekdestroy.util.NbtKt;
 import dev.foxgirl.mineseekdestroy.util.Rules;
@@ -15,6 +16,7 @@ import net.minecraft.util.math.Position;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
@@ -173,6 +175,20 @@ public final class GamePlayer {
         statsDeaths = 0;
     }
 
+    public @NotNull List<DamageService.@NotNull DamageRecord> getGivenDamageRecords() {
+        return context.damageService.findDamageRecords(record -> record.getAttacker() == this);
+    }
+    public @NotNull List<DamageService.@NotNull DamageRecord> getTakenDamageRecords() {
+        return context.damageService.findDamageRecords(record -> record.getVictim() == this);
+    }
+
+    public float getGivenDamage() {
+        return (float) getGivenDamageRecords().stream().mapToDouble(DamageService.DamageRecord::getAmount).sum();
+    }
+    public float getTakenDamage() {
+        return (float) getTakenDamageRecords().stream().mapToDouble(DamageService.DamageRecord::getAmount).sum();
+    }
+
     public @Nullable ServerPlayerEntity getEntity() {
         return context.playerManager.getPlayer(uuid);
     }
@@ -248,12 +264,8 @@ public final class GamePlayer {
     private @NotNull Scoreboard getScoreboard() {
         return context.scoreboard;
     }
-
-    private @NotNull ScoreboardObjective getScoreboardKillsObjective() {
-        return context.scoreboardKills;
-    }
-    private @NotNull ScoreboardObjective getScoreboardSoulsObjective() {
-        return context.scoreboardSouls;
+    private @NotNull ScoreboardObjective getScoreboardDamageObjective() {
+        return context.scoreboardDamage;
     }
 
     private @Nullable Team getScoreboardAliveTeam() {
@@ -306,8 +318,7 @@ public final class GamePlayer {
         var scoreHolderName = getScoreHolder().getNameForScoreboard();
 
         var scoreboard = getScoreboard();
-        var scoreboardKillsObjective = getScoreboardKillsObjective();
-        var scoreboardSoulsObjective = getScoreboardSoulsObjective();
+        var scoreboardDamageObjective = getScoreboardDamageObjective();
 
         var teamExpected = getScoreboardTeam();
         var teamActual = scoreboard.getScoreHolderTeam(scoreHolderName);
@@ -323,26 +334,16 @@ public final class GamePlayer {
         }
 
         if (isOnScoreboard() && !(isGhost() && Game.getGame().getState().isRunning())) {
-            var playerKillsValue = getKills();
-            var playerKillsScore = scoreboard.getOrCreateScore(scoreHolder, scoreboardKillsObjective);
-
-            // if (playerKillsScore.getScore() != playerKillsValue) {
-                playerKillsScore.setScore(playerKillsValue);
-            // }
+            var playerDamageValue = getGivenDamage();
+            var playerDamageScore = scoreboard.getOrCreateScore(scoreHolder, scoreboardDamageObjective);
+            playerDamageScore.setScore((int) (playerDamageValue / 2.0F));
         } else {
-            if (scoreboard.getScore(scoreHolder, scoreboardKillsObjective) != null) {
-                scoreboard.removeScore(scoreHolder, scoreboardKillsObjective);
+            if (scoreboard.getScore(scoreHolder, scoreboardDamageObjective) != null) {
+                scoreboard.removeScore(scoreHolder, scoreboardDamageObjective);
             }
         }
 
-        {
-            var playerSoulsValue = getSoulsCurrent();
-            var playerSoulsScore = scoreboard.getOrCreateScore(scoreHolder, scoreboardSoulsObjective);
-
-            // if (playerSoulsScore.getScore() != playerSoulsValue) {
-                playerSoulsScore.setScore(playerSoulsValue);
-            // }
-        }
+        getSoulsCurrent();
     }
 
 }

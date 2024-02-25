@@ -343,6 +343,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.RED_CONCRETE,
         Items.LIME_CONCRETE,
         Items.ARMOR_STAND,
+        Items.GLASS_BOTTLE,
     });
 
     public static final @NotNull RegistryKey<DamageType> DAMAGE_TYPE_HEARTBREAK =

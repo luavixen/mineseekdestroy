@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder
 import com.sk89q.worldedit.WorldEdit
 import com.sk89q.worldedit.fabric.FabricAdapter
 import dev.foxgirl.mineseekdestroy.*
+import dev.foxgirl.mineseekdestroy.service.DamageService
 import dev.foxgirl.mineseekdestroy.service.PagesService
 import dev.foxgirl.mineseekdestroy.service.SummonsService
 import dev.foxgirl.mineseekdestroy.state.*
@@ -171,6 +172,8 @@ internal fun setup() {
                     console.sendInfo("  - souls:", player.souls)
                     console.sendInfo("  - kills:", player.kills)
                     console.sendInfo("  - deaths:", player.deaths)
+                    console.sendInfo("  - givenDamage:", player.givenDamage)
+                    console.sendInfo("  - takenDamage:", player.takenDamage)
                     console.sendInfo("  - isAlive:", player.isAlive)
                     console.sendInfo("  - isLiving:", player.isLiving)
                     console.sendInfo("  - entity:", player.entity.toString().asText().formatted(Formatting.WHITE))
@@ -189,6 +192,39 @@ internal fun setup() {
                             args.sendError("Player not found")
                         }
                     }
+                }
+            }
+        }
+        it.params(argLiteral("damage")) {
+            it.params(argLiteral("dump")) {
+                it.actionWithContext { args, context ->
+                    context.damageService.updateDamageRecords { records ->
+                        args.sendInfo("Damage Records (${records.size}):")
+                        records.forEach { record -> args.sendInfo("  ", record) }
+                    }
+                }
+            }
+            it.params(argLiteral("clear")) {
+                fun clearDamage(context: GameContext, console: Console, predicate: (DamageService.DamageRecord) -> Boolean) {
+                    var count = 0
+                    context.damageService.updateDamageRecords { records -> records.removeIf { record -> predicate(record).also { if (it) count++ } } }
+                    console.sendInfo("Cleared $count damage record(s)")
+                }
+                it.params(argLiteral("given"), argPlayers()) {
+                    it.actionWithContext { args, context ->
+                        val players = args.players(context)
+                        clearDamage(context, args) { record -> players.any { it.uuid == record.attacker?.uuid } }
+                    }
+                }
+                it.params(argLiteral("taken")) {
+                    it.actionWithContext { args, context ->
+                        val players = args.players(context)
+                        clearDamage(context, args) { record -> players.any { it.uuid == record.victim?.uuid } }
+                    }
+                }
+                it.actionWithContext { args, context ->
+                    context.damageService.updateDamageRecords { records -> records.clear() }
+                    args.sendInfo("Cleared all damage records")
                 }
             }
         }

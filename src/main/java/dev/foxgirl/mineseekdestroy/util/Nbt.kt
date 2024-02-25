@@ -2,6 +2,8 @@ package dev.foxgirl.mineseekdestroy.util
 
 import com.mojang.brigadier.StringReader
 import net.minecraft.block.BlockState
+import net.minecraft.block.entity.BlockEntity
+import net.minecraft.entity.Entity
 import net.minecraft.fluid.FluidState
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
@@ -12,6 +14,8 @@ import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Position
+import net.minecraft.util.math.Vec3d
 import java.util.*
 
 private fun createNbtList(capacity: Int, type: Byte = NbtElement.END_TYPE) = NbtList(ArrayList(capacity.coerceAtLeast(4)), type)
@@ -35,7 +39,7 @@ fun toNbt(value: NbtElement) = value
 
 fun toNbt(value: Byte): NbtByte = NbtByte.of(value)
 fun toNbt(value: ByteArray): NbtByteArray = NbtByteArray(value)
-fun toNbt(value: Short): NbtShort= NbtShort.of(value)
+fun toNbt(value: Short): NbtShort = NbtShort.of(value)
 fun toNbt(value: Int): NbtInt = NbtInt.of(value)
 fun toNbt(value: IntArray): NbtIntArray = NbtIntArray(value)
 fun toNbt(value: Long): NbtLong = NbtLong.of(value)
@@ -53,6 +57,12 @@ fun toNbt(value: BlockPos): NbtCompound = NbtHelper.fromBlockPos(value)
 fun toNbt(value: BlockState): NbtCompound = NbtHelper.fromBlockState(value)
 fun toNbt(value: FluidState): NbtCompound = NbtHelper.fromFluidState(value)
 
+fun toNbt(value: Position): NbtCompound = nbtCompound(4).also {
+    it["X"] = value.x
+    it["Y"] = value.y
+    it["Z"] = value.z
+}
+
 fun toNbt(value: Text) = toNbt(Text.Serialization.toJsonString(value))
 
 fun toNbt(value: Identifier) = toNbt(value.toString())
@@ -60,6 +70,9 @@ fun toNbt(value: Item) = toNbt(Registries.ITEM.getId(value))
 
 fun toNbt(value: ItemStack): NbtCompound = nbtCompound(4).also(value::writeNbt)
 fun toNbt(value: Inventory): NbtCompound = Inventories.toNbt(value)
+
+fun toNbt(value: Entity): NbtCompound = nbtCompound().also(value::saveSelfNbt)
+fun toNbt(value: BlockEntity): NbtCompound = value.createNbtWithIdentifyingData()
 
 fun toNbt(value: Enum<*>) = toNbt(value.name)
 
@@ -87,11 +100,14 @@ private fun toNbtElementConversion(value: Any?): NbtElement {
         is BlockPos -> toNbt(value)
         is BlockState -> toNbt(value)
         is FluidState -> toNbt(value)
+        is Position -> toNbt(value)
         is Text -> toNbt(value)
         is Identifier -> toNbt(value)
         is Item -> toNbt(value)
         is ItemStack -> toNbt(value)
         is Inventory -> toNbt(value)
+        is Entity -> toNbt(value)
+        is BlockEntity -> toNbt(value)
         is Enum<*> -> toNbt(value)
         is Collection<*> -> toNbtList(value)
         is Map<*, *> -> toNbtCompound(value)
@@ -152,6 +168,17 @@ fun NbtElement?.toUUID(): UUID =
     NbtHelper.toUuid(this!!)
 fun NbtElement?.toBlockPos(): BlockPos =
     NbtHelper.toBlockPos(this.asCompound())
+
+fun NbtElement?.toVec3d(): Vec3d =
+    this.asCompound().let { Vec3d(it["X"].toDouble(), it["Y"].toDouble(), it["Z"].toDouble()) }
+
+fun NbtElement?.toIdentifier(): Identifier =
+    Identifier(this.toActualString())
+
+fun NbtElement?.toItemStack(): ItemStack =
+    ItemStack.fromNbt(this.asCompound())
+fun NbtElement?.toInventory(): Inventory =
+    Inventories.fromNbt(this.asCompound())
 
 inline fun <reified E : Enum<E>> NbtElement?.toEnum(): E =
     Reflector.methodHandle(E::class.java, "valueOf", String::class.java)!!.invoke(this.toActualString()) as E
