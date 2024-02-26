@@ -95,7 +95,7 @@ class SnapshotService : Service() {
         constructor(context: GameContext, nbt: NbtCompound) {
             properties = GameProperties.instancesByName[nbt["Properties"].toActualString()]!!
             players = nbt["Players"].asList().map { SnapshotPlayer(context, it.asCompound()) }
-            damageRecords = nbt["DamageRecords"].asList().map { DamageService.DamageRecord(context, it.asCompound()) }
+            damageRecords = nbt["DamageRecords"].asList().map { DamageService.DamageRecord(it.asCompound()) }
         }
 
         fun toNbt() = nbtCompoundOf(
@@ -167,7 +167,7 @@ class SnapshotService : Service() {
     fun executeSnapshotSave(console: Console) {
         ready = false
 
-        val snapshot = Snapshot(properties, players.map(::SnapshotPlayer), context.damageService.copyDamageRecords())
+        val snapshot = Snapshot(properties, players.map(::SnapshotPlayer), context.damageService.damageRecords.toMutableList())
         snapshots.add(snapshot)
 
         val name = "mnsnd-snapshot-${DateTimeFormatter.ISO_INSTANT.format(Instant.now())}.bin"

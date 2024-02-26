@@ -901,7 +901,7 @@ class SummonsService : Service() {
                 override fun getMaxItemCount() = 1
             })
             addSlot(object : InputSlot(2, 44, 48) {
-                override fun canInsert(stack: ItemStack) = hasSoul(stack)
+                override fun canInsert(stack: ItemStack) = hasCobbledBook(stack)
                 override fun getMaxItemCount() = 1
             })
             addSlot(object : OutputSlot(3, 98, 48) {
@@ -924,13 +924,15 @@ class SummonsService : Service() {
             )
         }
 
-        private fun hasSoul(stack: ItemStack = inventory.getStack(2)) = SoulService.containsSoulNbt(stack)
+        private fun hasCobbledBook(stack: ItemStack = inventory.getStack(2)): Boolean {
+            return stack.hasNbt() && "MsdBookCobbled" in stack.nbt!!
+        }
 
         override fun handleTakeResult(stack: ItemStack) {
             stack.count = 0
 
             val pair = theologies() ?: return
-            if (pair.isDouble && !hasSoul()) return
+            if (pair.isDouble && !hasCobbledBook()) return
 
             val player = context.getPlayer(playerEntity)
             val failure = summon(Options(pair, altar, player))
@@ -953,7 +955,7 @@ class SummonsService : Service() {
                             "Name" to text("summon pages required").red(),
                             "Lore" to nbtListOf(
                                 text("put two summon pages into the first two slots"),
-                                text("if the summon pages are the same, you need a soul"),
+                                text("if the summon pages are the same, you need a cobbled book"),
                             ),
                         ),
                         "MsdIllegal" to true,
@@ -961,14 +963,14 @@ class SummonsService : Service() {
                 ))
                 return
             }
-            if (pair.isDouble && !hasSoul()) {
+            if (pair.isDouble && !hasCobbledBook()) {
                 inventory.setStack(3, stackOf(
                     BARRIER, nbtCompoundOf(
                         "display" to nbtCompoundOf(
-                            "Name" to text("soul required").red(),
+                            "Name" to text("cobbled book required").red(),
                             "Lore" to nbtListOf(
                                 text("you are trying to perform a pure summon (same pages)"),
-                                text("this requires a player's soul in the third slot"),
+                                text("this requires a cobbled book in the third slot"),
                             ),
                         ),
                         "MsdIllegal" to true,

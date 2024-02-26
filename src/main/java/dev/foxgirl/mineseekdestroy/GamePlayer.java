@@ -176,17 +176,17 @@ public final class GamePlayer {
     }
 
     public @NotNull List<DamageService.@NotNull DamageRecord> getGivenDamageRecords() {
-        return context.damageService.findDamageRecords(record -> record.getAttacker() == this);
+        return context.damageService.findRecordsForAttacker(this);
     }
     public @NotNull List<DamageService.@NotNull DamageRecord> getTakenDamageRecords() {
-        return context.damageService.findDamageRecords(record -> record.getVictim() == this);
+        return context.damageService.findRecordsForVictim(this);
     }
 
     public float getGivenDamage() {
-        return (float) getGivenDamageRecords().stream().mapToDouble(DamageService.DamageRecord::getAmount).sum();
+        return DamageService.sumDamageRecords(getGivenDamageRecords());
     }
     public float getTakenDamage() {
-        return (float) getTakenDamageRecords().stream().mapToDouble(DamageService.DamageRecord::getAmount).sum();
+        return DamageService.sumDamageRecords(getTakenDamageRecords());
     }
 
     public @Nullable ServerPlayerEntity getEntity() {

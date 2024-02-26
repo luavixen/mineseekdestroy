@@ -1,6 +1,8 @@
 package dev.foxgirl.mineseekdestroy.util
 
+import net.minecraft.util.Util
 import net.minecraft.util.math.BlockPos
+import java.util.*
 
 fun BlockPos.around(radius: Double) = around(radius, radius, radius)
 fun BlockPos.around(radiusX: Double, radiusY: Double, radiusZ: Double) = sequence {
@@ -21,3 +23,6 @@ inline fun lazyString(crossinline block: () -> Any?): Any {
         override fun toString() = block().toString()
     }
 }
+
+fun nilUUID(): UUID = Util.NIL_UUID
+val UUID.isNil get() = this == nilUUID()

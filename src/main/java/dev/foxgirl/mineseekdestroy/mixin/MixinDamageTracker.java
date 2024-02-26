@@ -4,6 +4,7 @@ import dev.foxgirl.mineseekdestroy.Game;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTracker;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,9 +20,11 @@ public abstract class MixinDamageTracker {
 
     @Inject(method = "onDamage", at = @At("TAIL"))
     private void mineseekdestroy$hookOnDamage(DamageSource source, float amount, CallbackInfo info) {
-        var context = Game.getGame().getContext();
-        if (context != null) {
-            context.damageService.handleDamage(entity, source, amount);
+        if (entity instanceof ServerPlayerEntity) {
+            var context = Game.getGame().getContext();
+            if (context != null) {
+                context.damageService.handleDamage((ServerPlayerEntity) entity, source, amount);
+            }
         }
     }
 

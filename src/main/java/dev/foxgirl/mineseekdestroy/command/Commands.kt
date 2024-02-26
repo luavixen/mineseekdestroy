@@ -195,39 +195,6 @@ internal fun setup() {
                 }
             }
         }
-        it.params(argLiteral("damage")) {
-            it.params(argLiteral("dump")) {
-                it.actionWithContext { args, context ->
-                    context.damageService.updateDamageRecords { records ->
-                        args.sendInfo("Damage Records (${records.size}):")
-                        records.forEach { record -> args.sendInfo("  ", record) }
-                    }
-                }
-            }
-            it.params(argLiteral("clear")) {
-                fun clearDamage(context: GameContext, console: Console, predicate: (DamageService.DamageRecord) -> Boolean) {
-                    var count = 0
-                    context.damageService.updateDamageRecords { records -> records.removeIf { record -> predicate(record).also { if (it) count++ } } }
-                    console.sendInfo("Cleared $count damage record(s)")
-                }
-                it.params(argLiteral("given"), argPlayers()) {
-                    it.actionWithContext { args, context ->
-                        val players = args.players(context)
-                        clearDamage(context, args) { record -> players.any { it.uuid == record.attacker?.uuid } }
-                    }
-                }
-                it.params(argLiteral("taken")) {
-                    it.actionWithContext { args, context ->
-                        val players = args.players(context)
-                        clearDamage(context, args) { record -> players.any { it.uuid == record.victim?.uuid } }
-                    }
-                }
-                it.actionWithContext { args, context ->
-                    context.damageService.updateDamageRecords { records -> records.clear() }
-                    args.sendInfo("Cleared all damage records")
-                }
-            }
-        }
         it.params(argLiteral("state")) {
             fun register(literal: String, state: () -> GameState) {
                 it.params(argLiteral(literal)) {
@@ -498,6 +465,46 @@ internal fun setup() {
             it.actionWithContext { args, context ->
                 val players = args.players(context).onEach { it.kills-- }
                 args.sendInfo("Updated kill count for ${players.size} player(s)")
+            }
+        }
+    }
+
+    Command.build("damage") {
+        it.params(argLiteral("dump")) {
+            it.actionWithContext { args, context ->
+                args.sendInfo("Damage Records (${context.damageService.damageRecords.size}):")
+                context.damageService.damageRecords.forEach { record -> args.sendInfo("  ", record) }
+            }
+        }
+        it.params(argLiteral("clear")) {
+            fun clearDamage(context: GameContext, console: Console, predicate: (DamageService.DamageRecord) -> Boolean) {
+                var count = 0
+                context.damageService.updateDamageRecords { records -> records.removeIf { record -> predicate(record).also { if (it) count++ } } }
+                console.sendInfo("Cleared $count damage record(s)")
+            }
+            it.params(argLiteral("given"), argPlayers()) {
+                it.actionWithContext { args, context ->
+                    val players = args.players(context).map(GamePlayer::getUUID).toSet()
+                    clearDamage(context, args) { record -> record.attackerUUID in players }
+                }
+            }
+            it.params(argLiteral("taken")) {
+                it.actionWithContext { args, context ->
+                    val players = args.players(context).map(GamePlayer::getUUID).toSet()
+                    clearDamage(context, args) { record -> record.victimUUID in players }
+                }
+            }
+            it.actionWithContext { args, context ->
+                context.damageService.updateDamageRecords { records -> records.clear() }
+                args.sendInfo("Cleared all damage records")
+            }
+        }
+        it.params(argLiteral("add"), argDouble("hearts", -5000.0, 5000.0), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val damage = args.get<Double>("hearts").toFloat() * 2.0F
+                val players = args.players(context)
+                players.forEach { player -> context.damageService.addRecord(player, damage) }
+                args.sendInfo("Added new damage record(s) for ${players.size} player(s)")
             }
         }
     }

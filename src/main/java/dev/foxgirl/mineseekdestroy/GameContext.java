@@ -17,6 +17,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.GameRules;
 import org.jetbrains.annotations.NotNull;
@@ -409,6 +410,7 @@ public final class GameContext {
 
     public @Nullable GamePlayer getPlayer(@NotNull UUID uuid) {
         Objects.requireNonNull(uuid, "Argument 'uuid'");
+        if (uuid.equals(Util.NIL_UUID)) return null;
         synchronized (playerMapLock) {
             return playerMap.get(uuid);
         }
