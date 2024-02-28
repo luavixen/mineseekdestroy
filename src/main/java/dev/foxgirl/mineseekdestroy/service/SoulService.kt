@@ -1,24 +1,13 @@
 package dev.foxgirl.mineseekdestroy.service
 
-import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
-import dev.foxgirl.mineseekdestroy.state.DuelingGameState
 import dev.foxgirl.mineseekdestroy.util.*
-import dev.foxgirl.mineseekdestroy.util.async.Async
-import net.minecraft.block.Blocks
-import net.minecraft.block.RespawnAnchorBlock
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.entity.player.PlayerInventory
-import net.minecraft.inventory.Inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
-import net.minecraft.screen.ScreenHandlerType
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
 import java.util.*
 import kotlin.random.Random
 
@@ -174,6 +163,8 @@ class SoulService : Service() {
         }
     }
 
+    /*
+
     private data class Duel(
         val aggressor: GamePlayer,
         val victim: GamePlayer,
@@ -311,7 +302,7 @@ class SoulService : Service() {
             addPlayerInventorySlots()
         }
 
-        override fun handleTakeResult(stack: ItemStack) {
+        override fun handleTakeResult(slot: OutputSlot, stack: ItemStack) {
             val soul = createSoulFrom(stack) ?: return
             val player = context.getPlayer(playerEntity)
 
@@ -348,5 +339,7 @@ class SoulService : Service() {
             playerEntity.give(inventory.removeStack(0))
         }
     }
+
+    */
 
 }

@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
+import dev.foxgirl.mineseekdestroy.state.DuelingGameState
 import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.entity.damage.DamageSource
 import net.minecraft.nbt.NbtCompound
@@ -16,6 +17,11 @@ class DamageService : Service() {
         fun sumDamageRecords(records: Iterable<DamageRecord>): Float {
             var total = 0.0F; for (record in records) total += record.amount
             return total
+        }
+
+        @JvmStatic
+        fun damageToScore(damage: Float): Int {
+            return (damage * 10.0F).toInt()
         }
 
     }
@@ -48,8 +54,11 @@ class DamageService : Service() {
         val attacker get() = context?.getPlayer(attackerUUID)
         val victim get() = context?.getPlayer(victimUUID)
 
-        override fun toString() =
-            "DamageRecord(attacker=${attacker?.nameQuoted ?: attackerUUID}, victim=${victim?.nameQuoted ?: victimUUID}, amount=$amount)"
+        override fun toString(): String {
+            val attackerString = if (attackerUUID.isNil) "null" else attacker?.nameQuoted ?: attackerUUID.toString()
+            val victimString = if (victimUUID.isNil) "null" else victim?.nameQuoted ?: victimUUID.toString()
+            return "DamageRecord(attacker=$attackerString, victim=$victimString, amount=$amount)"
+        }
     }
 
     private val records: MutableList<DamageRecord> = ArrayList(1024)
@@ -93,6 +102,7 @@ class DamageService : Service() {
     }
 
     fun handleDamage(victimEntity: ServerPlayerEntity, source: DamageSource, amount: Float) {
+        if (state is DuelingGameState) return
         val attacker =
             if (source.source is ServerPlayerEntity) {
                 context.getPlayer(source.source as ServerPlayerEntity)

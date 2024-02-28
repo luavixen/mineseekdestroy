@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy.util
 
+import dev.foxgirl.mineseekdestroy.util.DynamicChestScreenHandler.ChestSlotProvider
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
@@ -7,6 +8,7 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemConvertible
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
+import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.screen.NamedScreenHandlerFactory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.ScreenHandlerType
@@ -87,11 +89,14 @@ infix fun ItemStack?.contentEquals(other: ItemStack?): Boolean {
     }
 }
 
-fun Inventory.asList(): MutableList<ItemStack> = Inventories.list(this)
-
 fun Item.toNbt() = toNbt(this)
 fun ItemStack.toNbt() = toNbt(this)
 fun Inventory.toNbt() = toNbt(this)
+
+fun Inventory.asList(): MutableList<ItemStack> = Inventories.list(this)
+
+operator fun Inventory.get(index: Int): ItemStack = this.getStack(index)
+operator fun Inventory.set(index: Int, stack: ItemStack): Unit = this.setStack(index, stack)
 
 abstract class DynamicScreenHandlerFactory<T : DynamicScreenHandler> : NamedScreenHandlerFactory {
     protected abstract val name: Text
@@ -113,13 +118,20 @@ abstract class DynamicScreenHandler(
 
     protected abstract val inventory: Inventory
 
-    protected abstract fun handleTakeResult(stack: ItemStack)
+    protected abstract fun handleTakeResult(slot: OutputSlot, stack: ItemStack)
     protected abstract fun handleUpdateResult()
     protected abstract fun handleClosed()
 
-    protected abstract inner class DynamicSlot(index: Int, x: Int, y: Int) : Slot(inventory, index, x, y)
+    protected abstract inner class DynamicSlot(index: Int, x: Int, y: Int, target: Inventory = inventory)
+        : Slot(target, index, x, y)
+    {
+        override fun canInsert(stack: ItemStack) = false
+        override fun canTakeItems(playerEntity: PlayerEntity) = false
+    }
 
-    protected open inner class InputSlot(index: Int, x: Int, y: Int) : DynamicSlot(index, x, y) {
+    protected open inner class InputSlot(index: Int, x: Int, y: Int, target: Inventory = inventory)
+        : DynamicSlot(index, x, y, target)
+    {
         override fun canInsert(stack: ItemStack) = true
         override fun canTakeItems(playerEntity: PlayerEntity) = true
         override fun markDirty() {
@@ -127,13 +139,22 @@ abstract class DynamicScreenHandler(
             handleUpdateResult()
         }
     }
-    protected open inner class OutputSlot(index: Int, x: Int, y: Int) : DynamicSlot(index, x, y) {
+    protected open inner class OutputSlot(index: Int, x: Int, y: Int, target: Inventory = inventory)
+        : DynamicSlot(index, x, y, target)
+    {
         override fun canInsert(stack: ItemStack) = false
         override fun canTakeItems(playerEntity: PlayerEntity) = true
-        override fun onTakeItem(player: PlayerEntity, stack: ItemStack) {
-            super.onTakeItem(player, stack)
-            handleTakeResult(stack)
+        override fun onTakeItem(playerEntity: PlayerEntity, stack: ItemStack) {
+            super.onTakeItem(playerEntity, stack)
+            handleTakeResult(this, stack)
         }
+    }
+
+    protected open inner class StaticSlot(index: Int, x: Int, y: Int, target: Inventory = inventory)
+        : DynamicSlot(index, x, y, target)
+    {
+        final override fun canInsert(stack: ItemStack) = false
+        final override fun canTakeItems(playerEntity: PlayerEntity) = false
     }
 
     protected fun addPlayerInventorySlots() {
@@ -162,4 +183,39 @@ abstract class DynamicScreenHandler(
 
     override fun quickMove(playerEntity: PlayerEntity, slotIndex: Int): ItemStack = stackOf()
     override fun canUse(playerEntity: PlayerEntity) = true
+}
+
+private fun screenHandlerTypeForChest(rows: Int): ScreenHandlerType<GenericContainerScreenHandler> {
+    return when (rows) {
+        1 -> ScreenHandlerType.GENERIC_9X1
+        2 -> ScreenHandlerType.GENERIC_9X2
+        3 -> ScreenHandlerType.GENERIC_9X3
+        4 -> ScreenHandlerType.GENERIC_9X4
+        5 -> ScreenHandlerType.GENERIC_9X5
+        6 -> ScreenHandlerType.GENERIC_9X6
+        else -> throw IllegalArgumentException("Unsupported GenericContainerScreenHandler row count $rows")
+    }
+}
+
+abstract class DynamicChestScreenHandler(protected val rows: Int, sync: Int, playerInventory: PlayerInventory)
+    : DynamicScreenHandler(screenHandlerTypeForChest(rows), sync, playerInventory)
+{
+    final override val inventory = Inventories.create(rows * 9)
+
+    protected fun interface ChestSlotProvider {
+        fun create(index: Int, row: Int, col: Int, x: Int, y: Int): Slot?
+    }
+
+    protected fun addChestInventorySlots(
+        provider: ChestSlotProvider = ChestSlotProvider { _, _, _, _, _ -> null }
+    ) {
+        for (row in 0 until rows) {
+            for (col in 0 until 9) {
+                val index = col + row * 9
+                val x = 8 + col * 18
+                val y = 18 + row * 18
+                addSlot(provider.create(index, row, col, x, y) ?: InputSlot(index, x, y))
+            }
+        }
+    }
 }

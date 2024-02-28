@@ -104,13 +104,20 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_SYPHON_HEALTH_BACK_ENABLED =
         GameRuleRegistry.register("msdBlackSyphonHealthBackEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_SYPHON_HEALTH_BACK_DIVISOR =
-        GameRuleRegistry.register("msdBlackSyphonHealthBackDivisor", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
+        GameRuleRegistry.register("msdBlackSyphonHealthBackDivisor", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(2.0));
+
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_FINALIZE_OLDSCHOOL_ENABLED =
+        GameRuleRegistry.register("msdBlackFinalizeOldschoolEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_FINALIZE_DAMAGE_HEARTS =
+        GameRuleRegistry.register("msdBlackFinalizeDamageAmount", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(9.0));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_DAMAGE_FLASH_ENABLED =
         GameRuleRegistry.register("msdDamageFlashEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT =
         GameRuleRegistry.register("msdGhostsBlackDeathPenaltyAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(2));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_GHOSTS_FREEZING_TICK_AMOUNT =
+        GameRuleRegistry.register("msdGhostsFreezingTickAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(6));
 
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(5));
@@ -166,7 +173,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdSummonsDeepdeepEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_DROPPING_ENABLED =
-        GameRuleRegistry.register("msdSoulsDroppingEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+        GameRuleRegistry.register("msdSoulsDroppingEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SOULS_CONSUMING_ENABLED =
         GameRuleRegistry.register("msdSoulsConsumingEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_SOULS_CONSUMING_EFFECT_DURATION =

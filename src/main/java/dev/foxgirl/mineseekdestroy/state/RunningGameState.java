@@ -134,7 +134,6 @@ public abstract class RunningGameState extends GameState {
                     context.specialCarService.cooldownActivate((PigEntity) vehicle);
                 }
             }
-            context.syphonService.handleDamageTaken(player, playerEntity, damageSource, damageAmount);
             return true;
         }
 

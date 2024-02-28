@@ -105,7 +105,7 @@ public abstract class GameState {
                     if (result != ActionResult.PASS) return result;
                 }
                 if (blockState.getBlock() == Blocks.RESPAWN_ANCHOR) {
-                    var result = context.soulService.handleAnchorOpen(player);
+                    var result = context.duelService.handleAnchorOpen(player);
                     if (result != ActionResult.PASS) return result;
                 }
             }
@@ -138,7 +138,7 @@ public abstract class GameState {
                     blockState.getBlock() == Blocks.RESPAWN_ANCHOR &&
                     properties.getRegionBlimp().contains(blockHit.getBlockPos())
                 ) {
-                    var result = context.soulService.handleAnchorOpen(player);
+                    var result = context.duelService.handleAnchorOpen(player);
                     if (result != ActionResult.PASS) return result;
                 }
             }

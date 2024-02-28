@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.GameTeam;
 import dev.foxgirl.mineseekdestroy.util.Rules;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -48,6 +49,16 @@ public abstract class MixinPlayerEntity extends LivingEntity {
             var player = context.getPlayer(playerEntity);
             context.itemService.handleDropInventory(player, playerEntity);
             context.specialGiftService.handleDropInventory(player, playerEntity);
+        }
+    }
+
+    @Inject(method = "applyDamage", at = @At("TAIL"))
+    private void mineseekdestroy$hookApplyDamage(DamageSource source, float amount, CallbackInfo info) {
+        var self = (ServerPlayerEntity) (Object) this;
+        var context = Game.getGame().getContext();
+        if (context != null) {
+            context.damageService.handleDamage(self, source, amount);
+            context.syphonService.handleDamageTaken(self, source, amount);
         }
     }
 

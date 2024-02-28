@@ -182,11 +182,29 @@ public final class GamePlayer {
         return context.damageService.findRecordsForVictim(this);
     }
 
+    private boolean cachedGivenDamageValid = false;
+    private boolean cachedTakenDamageValid = false;
+    private float cachedGivenDamage = 0.0F;
+    private float cachedTakenDamage = 0.0F;
+
+    private void uncacheDamageRecords() {
+        cachedGivenDamageValid = false;
+        cachedTakenDamageValid = false;
+    }
+
     public float getGivenDamage() {
-        return DamageService.sumDamageRecords(getGivenDamageRecords());
+        if (!cachedGivenDamageValid) {
+            cachedGivenDamage = DamageService.sumDamageRecords(getGivenDamageRecords());
+            cachedGivenDamageValid = true;
+        }
+        return cachedGivenDamage;
     }
     public float getTakenDamage() {
-        return DamageService.sumDamageRecords(getTakenDamageRecords());
+        if (!cachedTakenDamageValid) {
+            cachedTakenDamage = DamageService.sumDamageRecords(getTakenDamageRecords());
+            cachedTakenDamageValid = true;
+        }
+        return cachedTakenDamage;
     }
 
     public @Nullable ServerPlayerEntity getEntity() {
@@ -334,9 +352,9 @@ public final class GamePlayer {
         }
 
         if (isOnScoreboard() && !(isGhost() && Game.getGame().getState().isRunning())) {
-            var playerDamageValue = getGivenDamage();
+            var playerDamageValue = DamageService.damageToScore(getGivenDamage());
             var playerDamageScore = scoreboard.getOrCreateScore(scoreHolder, scoreboardDamageObjective);
-            playerDamageScore.setScore((int) (playerDamageValue / 2.0F));
+            playerDamageScore.setScore(playerDamageValue);
         } else {
             if (scoreboard.getScore(scoreHolder, scoreboardDamageObjective) != null) {
                 scoreboard.removeScore(scoreHolder, scoreboardDamageObjective);
@@ -344,6 +362,7 @@ public final class GamePlayer {
         }
 
         getSoulsCurrent();
+        uncacheDamageRecords();
     }
 
 }

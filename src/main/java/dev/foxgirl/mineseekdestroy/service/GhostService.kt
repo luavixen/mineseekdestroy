@@ -14,6 +14,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.entity.attribute.EntityAttributeInstance
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.damage.DamageType
 import net.minecraft.entity.damage.DamageTypes.*
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -57,6 +58,24 @@ class GhostService : Service() {
     private val healthValues = HashMap<GamePlayer, GhostHealth>(32)
     private fun healthValue(player: GamePlayer) = healthValues.computeIfAbsent(player) { GhostHealth() }
 
+    private val ghostsFreezingPlayers = HashMap<GamePlayer, MutableSet<GamePlayer>>(32)
+    private fun ghostsFreezingPlayer(player: GamePlayer) = ghostsFreezingPlayers.computeIfAbsent(player, ::mutableSetOf)
+
+    private fun markGhostFreezingPlayer(ghostPlayer: GamePlayer, targetPlayer: GamePlayer) {
+        ghostsFreezingPlayer(targetPlayer).add(ghostPlayer)
+    }
+
+    private fun freezingDamageSourceFor(player: GamePlayer, playerEntity: ServerPlayerEntity): DamageSource {
+        val attackerEntity = ghostsFreezingPlayer(player)
+            .mapNotNull { it.entity }
+            .minByOrNull { it.squaredDistanceTo(playerEntity) }
+        val damageType = playerEntity.damageSources.freeze().typeRegistryEntry.key.get()
+        val damageSource = playerEntity.damageSources.create(damageType, attackerEntity)
+        return damageSource
+    }
+
+    private val ghostsToPromote = mutableSetOf<GamePlayer>()
+
     private fun updateGhosts() {
         val running = state.isPlaying
 
@@ -84,10 +103,16 @@ class GhostService : Service() {
 
                 healthValue.apply(healthAttribute)
 
+                if (goingGhost && playerEntity.health + playerEntity.absorptionAmount >= 19.5F) {
+                    if (ghostsToPromote.add(player)) {
+                        Game.CONSOLE_PLAYERS.sendInfo(player, "escaped the afterlife!")
+                    }
+                }
+
             } else {
 
                 if (playerEntity.frozenTicks >= playerEntity.minFreezeDamageTicks) {
-                    playerEntity.damage(playerEntity.damageSources.freeze(), 1.0F)
+                    playerEntity.damage(freezingDamageSourceFor(player, playerEntity), 1.0F)
                 }
 
                 healthModifiers.forEach {
@@ -100,6 +125,8 @@ class GhostService : Service() {
             }
 
         }
+
+        ghostsFreezingPlayers.clear()
     }
 
     private var schedule: Scheduler.Schedule? = null
@@ -112,16 +139,21 @@ class GhostService : Service() {
         if (state.isPlaying) {
             for ((player, playerEntity) in playerEntitiesNormal) {
                 if (player.isGhost) {
-                    playerEntitiesIn.forEach { (_, targetEntity) ->
+                    playerEntitiesIn.forEach { (target, targetEntity) ->
                         if (targetEntity.squaredDistanceTo(playerEntity) <= 20) {
                             targetEntity.frozenTicks = Math.min(
-                                targetEntity.frozenTicks + 4,
+                                targetEntity.frozenTicks + Rules.ghostsFreezingTickAmount,
                                 targetEntity.minFreezeDamageTicks + 20,
                             )
+                            markGhostFreezingPlayer(player, target)
                         }
                     }
                 }
             }
+        }
+        if (state.isWaiting && ghostsToPromote.isNotEmpty()) {
+            ghostsToPromote.forEach { it.team = GameTeam.BLACK }
+            ghostsToPromote.clear()
         }
     }
 

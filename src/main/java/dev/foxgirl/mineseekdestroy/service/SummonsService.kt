@@ -928,7 +928,7 @@ class SummonsService : Service() {
             return stack.hasNbt() && "MsdBookCobbled" in stack.nbt!!
         }
 
-        override fun handleTakeResult(stack: ItemStack) {
+        override fun handleTakeResult(slot: OutputSlot, stack: ItemStack) {
             stack.count = 0
 
             val pair = theologies() ?: return

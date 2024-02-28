@@ -56,22 +56,46 @@ class AutomationService : Service() {
         val teamRemoved =
             if (Rules.automationGhostsEnabled) GameTeam.GHOST else GameTeam.NONE
 
-        for (player in players) {
-            val record = records[player] ?: continue
-            if (player.team == GameTeam.BLACK) {
-                if (player.kills > record.kills) {
-                    tasks.add {
-                        player.team = teamSkip
-                        logger.info("Automation assigned ${player.nameQuoted} to skip")
+        if (Rules.blackFinalizeOldschoolEnabled) {
+            for (player in players) {
+                val record = records[player] ?: continue
+                if (player.team == GameTeam.BLACK) {
+                    if (player.kills > record.kills) {
+                        tasks.add {
+                            player.team = teamSkip
+                            logger.info("Automation assigned ${player.nameQuoted} to skip")
+                        }
+                    } else {
+                        tasks.add {
+                            player.team = teamRemoved
+                            game.sendInfo(
+                                text(player).darkRed(),
+                                text("has been removed from the game!").red(),
+                            )
+                            logger.info("Automation removed ${player.nameQuoted} from the game")
+                        }
                     }
-                } else {
-                    tasks.add {
-                        player.team = teamRemoved
-                        game.sendInfo(
-                            text(player).darkRed(),
-                            text("has been removed from the game!").red(),
-                        )
-                        logger.info("Automation removed ${player.nameQuoted} from the game")
+                }
+            }
+        } else {
+            for (player in players) {
+                if (player.team == GameTeam.BLACK) {
+                    player.entity?.hurtHearts(Rules.blackFinalizeDamageHearts) { it.create(Game.DAMAGE_TYPE_ABYSS) }
+                    if (player.isAlive) {
+                        tasks.add {
+                            player.team = teamSkip
+                            game.sendInfo(player, text("survived this round!"))
+                            logger.info("Automation assigned ${player.nameQuoted} to skip")
+                        }
+                    } else {
+                        tasks.add {
+                            player.team = teamRemoved
+                            game.sendInfo(
+                                text(player).darkRed(),
+                                text("has been removed from the game!").red(),
+                            )
+                            logger.info("Automation removed ${player.nameQuoted} from the game")
+                        }
                     }
                 }
             }

@@ -28,7 +28,7 @@ import java.util.*;
 public final class GameContext {
 
     private static final String scoreboardDamageName = "msd_damage";
-    private static final Text scoreboardDamageDisplayName = Text.of("Mine n Seek n Destroy");
+    private static final Text scoreboardDamageDisplayName = Text.of("-- MNSND: Damage Dealt --");
 
     // private static final String scoreboardSoulsName = "msd_souls";
     // private static final Text scoreboardSoulsDisplayName = Text.of("souls");
@@ -69,6 +69,7 @@ public final class GameContext {
     public final @NotNull ConduitService conduitService;
     public final @NotNull GhostService ghostService;
     public final @NotNull SoulService soulService;
+    public final @NotNull DuelService duelService;
     public final @NotNull SnapshotService snapshotService;
     public final @NotNull StormService stormService;
     public final @NotNull SmokerService smokerService;
@@ -198,6 +199,7 @@ public final class GameContext {
                 conduitService = new ConduitService(),
                 ghostService = new GhostService(),
                 soulService = new SoulService(),
+                duelService = new DuelService(),
                 snapshotService = new SnapshotService(),
                 stormService = new StormService(),
                 smokerService = new SmokerService(),

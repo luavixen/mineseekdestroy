@@ -29,9 +29,9 @@ public class DuelingGameState extends RunningGameState {
             var player1 = players.get(0).getDisplayName();
             var player2 = players.get(1).getDisplayName();
             var text = Text.empty().append(player1).append(" VS ").append(player2).append("!");
-            context.game.sendInfo("Duel started!", text);
+            context.game.sendInfo("Duel started!", text, "FIGHT!");
         } else {
-            context.game.sendInfo("Duel started!");
+            context.game.sendInfo("Duel started! FIGHT!");
         }
 
         Broadcast.sendSoundPing();

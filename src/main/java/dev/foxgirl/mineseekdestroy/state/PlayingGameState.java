@@ -41,8 +41,8 @@ public class PlayingGameState extends RunningGameState {
         switch (teamsCurrentlyAlive.size()) {
             case 1 -> {
                 var team = teamsCurrentlyAlive.iterator().next();
-                context.game.sendInfo("Round over!", team.getDisplayName(), "wins!");
                 context.automationService.handleRoundEnd(team == GameTeam.YELLOW ? GameTeam.BLUE : GameTeam.YELLOW);
+                context.game.sendInfo("Round over!", team.getDisplayName(), "wins!");
             }
             case 0 -> {
                 context.game.sendInfo("Round over! Both teams died at the exact same time, nobody wins!");

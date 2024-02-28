@@ -1,5 +1,9 @@
 package dev.foxgirl.mineseekdestroy.util
 
+import dev.foxgirl.mineseekdestroy.Game
+import dev.foxgirl.mineseekdestroy.GamePlayer
+import net.minecraft.entity.damage.DamageSource
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Util
 import net.minecraft.util.math.BlockPos
 import java.util.*
@@ -17,6 +21,12 @@ fun BlockPos.around(radiusX: Double, radiusY: Double, radiusZ: Double) = sequenc
         }
     }
 }
+
+val ServerPlayerEntity.player: GamePlayer?
+    get() = Game.getGame().context?.getPlayer(this)
+
+val DamageSource.player: GamePlayer?
+    get() = (source as? ServerPlayerEntity)?.player ?: (attacker as? ServerPlayerEntity)?.player
 
 inline fun lazyString(crossinline block: () -> Any?): Any {
     return object {

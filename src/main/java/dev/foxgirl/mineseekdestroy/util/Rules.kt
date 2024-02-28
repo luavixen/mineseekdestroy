@@ -38,9 +38,13 @@ object Rules {
     @JvmStatic var blackSyphonHealthBackEnabled by BooleanRuleProperty(RULE_BLACK_SYPHON_HEALTH_BACK_ENABLED)
     @JvmStatic var blackSyphonHealthBackDivisor by DoubleRuleProperty(RULE_BLACK_SYPHON_HEALTH_BACK_DIVISOR)
 
+    @JvmStatic var blackFinalizeOldschoolEnabled by BooleanRuleProperty(RULE_BLACK_FINALIZE_OLDSCHOOL_ENABLED)
+    @JvmStatic var blackFinalizeDamageHearts by DoubleRuleProperty(RULE_BLACK_FINALIZE_DAMAGE_HEARTS)
+
     @JvmStatic var damageFlashEnabled by BooleanRuleProperty(RULE_DAMAGE_FLASH_ENABLED)
 
     @JvmStatic var ghostsBlackDeathPenaltyAmount by IntRuleProperty(RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT)
+    @JvmStatic var ghostsFreezingTickAmount by IntRuleProperty(RULE_GHOSTS_FREEZING_TICK_AMOUNT)
 
     @JvmStatic var lootCount by IntRuleProperty(RULE_LOOT_COUNT)
 

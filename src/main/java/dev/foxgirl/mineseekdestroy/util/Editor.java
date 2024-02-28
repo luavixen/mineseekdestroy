@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public final class Editor {
 
@@ -326,6 +327,24 @@ public final class Editor {
         Objects.requireNonNull(region, "Argument 'region'");
         synchronized (LOCK) {
             return QUEUES.computeIfAbsent(new Target(world, region), (key) -> new Queue());
+        }
+    }
+
+    /**
+     * Creates a queue of operations for the given world and region, calling the provided function with the new operation queue.
+     * The provided function will be executed while synchronized on the global editor lock, ensuring that the queue instance remains valid and no other operations are enqueued concurrently.
+     * @param world World to perform operations in.
+     * @param region Region to perform operations in.
+     * @param function Function called with the new operation queue.
+     * @return Return value of the provided function.
+     * @throws NullPointerException If either of the provided arguments are null.
+     */
+    public static <T> T queue(@NotNull ServerWorld world, @NotNull Region region, @NotNull Function<@NotNull Queue, T> function) {
+        Objects.requireNonNull(world, "Argument 'world'");
+        Objects.requireNonNull(region, "Argument 'region'");
+        Objects.requireNonNull(function, "Argument 'function'");
+        synchronized (LOCK) {
+            return function.apply(queue(world, region));
         }
     }
 

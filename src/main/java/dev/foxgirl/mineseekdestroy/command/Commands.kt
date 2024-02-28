@@ -550,12 +550,12 @@ internal fun setup() {
     Command.build("duel") {
         it.params(argLiteral("open")) {
             it.actionWithContext { args, context ->
-                context.soulService.executeDuelOpen(args)
+                context.duelService.executeDuelOpen(args)
             }
         }
         it.params(argLiteral("close")) {
             it.actionWithContext { args, context ->
-                context.soulService.executeDuelClose(args)
+                context.duelService.executeDuelClose(args)
             }
         }
         it.params(argLiteral("start")) {
@@ -564,7 +564,7 @@ internal fun setup() {
                 if (playerAggressor == null) { args.sendError("Invalid aggressor"); return }
                 val playerVictim = victim(args)
                 if (playerVictim == null) { args.sendError("Invalid victim"); return }
-                context.soulService.executeDuelStart(args, playerAggressor, playerVictim, force)
+                context.duelService.executeDuelStart(args, playerAggressor, playerVictim, force)
             }
             fun startEntity(args: Command.Arguments<ServerCommandSource>, context: GameContext, force: Boolean) = start(args, context, force, { args.player(context, "aggressor") }, { args.player(context, "victim") })
             fun startExact(args: Command.Arguments<ServerCommandSource>, context: GameContext, force: Boolean) = start(args, context, force, { context.getPlayer(args.get<String>("aggressor")) }, { context.getPlayer(args.get<String>("victim")) })
@@ -591,19 +591,24 @@ internal fun setup() {
                         if (aggressor == null) { args.sendError("Invalid aggressor"); return@actionWithContext }
                         val victim = context.getPlayer(args.get<String>("victim"))
                         if (victim == null) { args.sendError("Invalid victim"); return@actionWithContext }
-                        context.soulService.executeDuelCancel(args, aggressor, victim)
+                        context.duelService.executeDuelCancel(args, aggressor, victim)
                     }
                 }
             }
             it.params(argPlayer("aggressor"), argPlayer("victim")) {
                 it.actionWithContext { args, context ->
-                    context.soulService.executeDuelCancel(args, args.player(context, "aggressor"), args.player(context, "victim"))
+                    context.duelService.executeDuelCancel(args, args.player(context, "aggressor"), args.player(context, "victim"))
                 }
+            }
+        }
+        it.params(argLiteral("create"), argPlayer("aggressor"), argPlayer("victim")) {
+            it.actionWithContext { args, context ->
+                context.duelService.executeDuelCreate(args, args.player(context, "aggressor"), args.player(context, "victim"))
             }
         }
         it.params(argLiteral("list")) {
             it.actionWithContext { args, context ->
-                context.soulService.executeDuelList(args)
+                context.duelService.executeDuelList(args)
             }
         }
     }
