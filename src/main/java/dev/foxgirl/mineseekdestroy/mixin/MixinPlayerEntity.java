@@ -15,10 +15,7 @@ import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -52,13 +49,22 @@ public abstract class MixinPlayerEntity extends LivingEntity {
         }
     }
 
+    @Unique
+    private float mineseekdestroy$previousAbsorptionAmount;
+
+    @Inject(method = "applyDamage", at = @At("HEAD"))
+    private void mineseekdestroy$hookApplyDamage1(DamageSource source, float amount, CallbackInfo info) {
+        mineseekdestroy$previousAbsorptionAmount = getAbsorptionAmount();
+    }
+
     @Inject(method = "applyDamage", at = @At("TAIL"))
-    private void mineseekdestroy$hookApplyDamage(DamageSource source, float amount, CallbackInfo info) {
-        var self = (ServerPlayerEntity) (Object) this;
+    private void mineseekdestroy$hookApplyDamage2(DamageSource source, float amount, CallbackInfo info) {
         var context = Game.getGame().getContext();
         if (context != null) {
-            context.damageService.handleDamage(self, source, amount);
-            context.syphonService.handleDamageTaken(self, source, amount);
+            var self = (ServerPlayerEntity) (Object) this;
+            var amountActual = Math.min(amount, getHealth() + mineseekdestroy$previousAbsorptionAmount);
+            context.damageService.handleDamage(self, source, amountActual);
+            context.syphonService.handleDamageTaken(self, source, amountActual);
         }
     }
 

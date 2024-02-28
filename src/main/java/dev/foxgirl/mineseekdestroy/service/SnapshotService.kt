@@ -170,16 +170,24 @@ class SnapshotService : Service() {
         val snapshot = Snapshot(properties, players.map(::SnapshotPlayer), context.damageService.damageRecords.toMutableList())
         snapshots.add(snapshot)
 
+        console.sendInfo("Created snapshot of ${snapshot.players.size} players")
+
         val name = "mnsnd-snapshot-${DateTimeFormatter.ISO_INSTANT.format(Instant.now())}.bin"
         val path = Game.CONFIGDIR.resolve(name)
-        try {
-            NbtIo.write(nbtCompoundOf("Snapshots" to snapshots), path)
-            logger.info("Saved snapshot to file ${name}")
-        } catch (cause: Exception) {
-            logger.error("Failed to save snapshot to file ${name}", cause)
+
+        val nbt = nbtCompoundOf("Snapshots" to snapshots)
+        val nbtSaveThread = object : Thread("SnapshotSaveThread-${name}") {
+            override fun run() {
+                try {
+                    NbtIo.write(nbt, path)
+                    Game.LOGGER.info("Saved snapshot to file ${name}")
+                } catch (cause: Exception) {
+                    Game.LOGGER.error("Failed to save snapshot to file ${name}", cause)
+                }
+            }
         }
 
-        console.sendInfo("Created snapshot of ${snapshot.players.size} players")
+        nbtSaveThread.start()
     }
 
     fun executeSnapshotLoadBackup(console: Console, name: String?) {

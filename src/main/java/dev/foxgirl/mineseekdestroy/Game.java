@@ -674,6 +674,12 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                         properties.getRegionAll().excludes(playerEntity) &&
                         properties.getRegionLegal().excludes(playerEntity) &&
                         properties.getRegionPlayable().excludes(playerEntity)
+                    ) || (
+                        GameProperties.getInstances().stream().noneMatch(propertiesOther ->
+                            propertiesOther.getRegionAll().contains(playerEntity) ||
+                            propertiesOther.getRegionLegal().contains(playerEntity) ||
+                            propertiesOther.getRegionPlayable().contains(playerEntity)
+                        )
                     )
                 ) {
                     LOGGER.info("OOB Player \"{}\" entered out of bounds killzone or is out of the world", playerEntity.getNameForScoreboard());

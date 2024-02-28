@@ -174,7 +174,16 @@ class ItemService : Service() {
             addAll(GameItems.properties.map { it.get().item })
             addAll(bookItems)
             addAll(powderItems)
-            addAll(listOf(SPONGE, SKELETON_SKULL))
+            addAll(listOf(
+                LEATHER_BOOTS, LEATHER_LEGGINGS, LEATHER_CHESTPLATE, LEATHER_HELMET,
+                CHAINMAIL_BOOTS, CHAINMAIL_LEGGINGS, CHAINMAIL_CHESTPLATE, CHAINMAIL_HELMET,
+                IRON_BOOTS, IRON_LEGGINGS, IRON_CHESTPLATE, IRON_HELMET,
+                GOLDEN_BOOTS, GOLDEN_LEGGINGS, GOLDEN_CHESTPLATE, GOLDEN_HELMET,
+                DIAMOND_BOOTS, DIAMOND_LEGGINGS, DIAMOND_CHESTPLATE, DIAMOND_HELMET,
+                NETHERITE_BOOTS, NETHERITE_LEGGINGS, NETHERITE_CHESTPLATE, NETHERITE_HELMET,
+                SHIELD, BOW, CROSSBOW, TRIDENT, FISHING_ROD, SHEARS, FLINT_AND_STEEL,
+                SPONGE, SKELETON_SKULL,
+            ))
         }
 
         private enum class Tool {
