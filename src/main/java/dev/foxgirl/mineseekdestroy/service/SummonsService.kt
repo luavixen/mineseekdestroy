@@ -368,12 +368,18 @@ class SummonsService : Service() {
 
     private inner class OccultOccultSummon(options: Options) : Summon(options) {
         override fun perform() {
+            val playersAscended = mutableSetOf<GamePlayer>()
+
             for (player in players) {
-                if (player.team === GameTeam.BLACK) player.kills += 2
+                if (player.team === GameTeam.BLACK) {
+                    player.team = GameTeam.SKIP
+                    playersAscended.add(player)
+                    context.damageService.addRecord(player, 100.0F)
+                }
             }
 
             for ((player, entity) in playerEntitiesNormal) {
-                if (!player.isAlive) continue
+                if (!player.isAlive || player in playersAscended) continue
 
                 val source: DamageSource
                 val amount: Float
@@ -1301,9 +1307,9 @@ class SummonsService : Service() {
                 override val title =
                     text("DESPERATION") * OCCULT.color
                 override val subtitle =
-                    text(GameTeam.BLACK, "gains many kills, almost killing everyone else.")
+                    text(GameTeam.BLACK, "ascends, almost killing everyone else.")
                 override val tooltip =
-                    text(GameTeam.BLACK, "players gained two kills.")
+                    text(GameTeam.BLACK, "players have ascended.")
             } },
             Prayer(COSMOS, COSMOS) to { object : DefaultTextProvider(it) {
                 override val title =

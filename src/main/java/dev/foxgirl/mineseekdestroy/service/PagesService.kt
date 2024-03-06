@@ -4,7 +4,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.PagesService.Action.*
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
@@ -790,7 +789,7 @@ class PagesService : Service() {
                 BUSTED, text("Midas’ Records") * BARTER.color,
                 text("right-click to activate!"),
                 text("ghostable blocks disappear upon contact!"),
-                text("user becomes a ghost upon death or round end").bold() + "!",
+                text("watch out, you might fall").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
@@ -828,7 +827,6 @@ class PagesService : Service() {
                                 }
                             }
                         }
-                        user.team = GameTeam.GHOST
                         unlock(user)
                     }
                     userEntity.sparkles()

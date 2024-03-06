@@ -5,9 +5,9 @@ import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.async.Async
-import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableSet
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
+import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
 import dev.foxgirl.mineseekdestroy.util.data
 import dev.foxgirl.mineseekdestroy.util.give
 import dev.foxgirl.mineseekdestroy.util.set
@@ -168,7 +168,7 @@ class ItemService : Service() {
             ENCHANTED_BOOK,
         )
 
-        private val validItems = buildImmutableSet<Item> {
+        private val validItems = buildSet<Item> {
             addAll(Game.PLACABLE_BLOCKS.mapNotNull(Block::asItem))
             addAll(Game.USABLE_ITEMS)
             addAll(GameItems.properties.map { it.get().item })
@@ -181,10 +181,11 @@ class ItemService : Service() {
                 GOLDEN_BOOTS, GOLDEN_LEGGINGS, GOLDEN_CHESTPLATE, GOLDEN_HELMET,
                 DIAMOND_BOOTS, DIAMOND_LEGGINGS, DIAMOND_CHESTPLATE, DIAMOND_HELMET,
                 NETHERITE_BOOTS, NETHERITE_LEGGINGS, NETHERITE_CHESTPLATE, NETHERITE_HELMET,
-                SHIELD, BOW, CROSSBOW, TRIDENT, FISHING_ROD, SHEARS, FLINT_AND_STEEL,
+                ELYTRA, SHIELD, BOW, CROSSBOW, TRIDENT, FISHING_ROD, SHEARS, FLINT_AND_STEEL,
                 SPONGE, SKELETON_SKULL,
             ))
         }
+            .toImmutableSet()
 
         private enum class Tool {
             Tool1, Tool2, Tool3, Tool4;

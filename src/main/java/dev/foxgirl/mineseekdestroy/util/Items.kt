@@ -98,7 +98,7 @@ fun Inventory.asList(): MutableList<ItemStack> = Inventories.list(this)
 operator fun Inventory.get(index: Int): ItemStack = this.getStack(index)
 operator fun Inventory.set(index: Int, stack: ItemStack): Unit = this.setStack(index, stack)
 
-abstract class DynamicScreenHandlerFactory<T : DynamicScreenHandler> : NamedScreenHandlerFactory {
+abstract class DynamicScreenHandlerFactory<T : ScreenHandler> : NamedScreenHandlerFactory {
     protected abstract val name: Text
     protected abstract fun construct(sync: Int, playerInventory: PlayerInventory): T
 

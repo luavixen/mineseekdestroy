@@ -726,6 +726,16 @@ internal fun setup() {
                 context.inventoryService.executeFill(args)
             }
         }
+        it.params(argPlayer("player")) {
+            it.actionWithContext { args, context ->
+                val entity = args.context.source.entity
+                if (entity is ServerPlayerEntity) {
+                    context.inventoryService.executeView(args, context.getPlayer(entity), args.player(context))
+                } else {
+                    args.sendError("Cannot view inventory, command source is not a player")
+                }
+            }
+        }
     }
 
     Command.build("loot") {

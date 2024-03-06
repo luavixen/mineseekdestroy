@@ -1,10 +1,12 @@
 package dev.foxgirl.mineseekdestroy.service
 
 import dev.foxgirl.mineseekdestroy.GamePlayer
-import dev.foxgirl.mineseekdestroy.util.Console
-import dev.foxgirl.mineseekdestroy.util.Inventories
+import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.entity.player.PlayerInventory
 import net.minecraft.inventory.Inventory
+import net.minecraft.item.ItemStack
+import net.minecraft.text.Text
 
 class InventoryService : Service() {
 
@@ -69,6 +71,52 @@ class InventoryService : Service() {
 
     private fun mirrorReset(player: GamePlayer) {
         mirrors.remove(player)
+    }
+
+    private class InventoryViewScreenHandlerFactory(private val targetInventory: PlayerInventory)
+        : DynamicScreenHandlerFactory<InventoryViewScreenHandler>()
+    {
+        override val name: Text get() = targetInventory.player.nameForScoreboard.asText()
+        override fun construct(sync: Int, playerInventory: PlayerInventory) =
+            InventoryViewScreenHandler(sync, playerInventory, targetInventory)
+    }
+
+    private class InventoryViewScreenHandler(
+        sync: Int,
+        playerInventory: PlayerInventory,
+        targetInventory: PlayerInventory,
+    ) : DynamicChestScreenHandler(5, sync, playerInventory) {
+        init {
+            addChestInventorySlots { index, _, _, x, y ->
+                when (index) {
+                    in 0..26 -> InputSlot(index + 9, x, y, targetInventory)
+                    in 27..35 -> InputSlot(index - 27, x, y, targetInventory)
+                    36 -> InputSlot(39, x, y, targetInventory)
+                    37 -> InputSlot(38, x, y, targetInventory)
+                    38 -> InputSlot(37, x, y, targetInventory)
+                    39 -> InputSlot(36, x, y, targetInventory)
+                    44 -> InputSlot(40, x, y, targetInventory)
+                    else -> OutputSlot(index, x, y)
+                }
+            }
+            addPlayerInventorySlots()
+        }
+        override fun handleTakeResult(slot: OutputSlot, stack: ItemStack) {
+        }
+        override fun handleUpdateResult() {
+        }
+        override fun handleClosed() {
+        }
+    }
+
+    fun executeView(console: Console, player: GamePlayer, target: GamePlayer) {
+        val inventory = target.inventory
+        if (inventory != null) {
+            player.entity?.openHandledScreen(InventoryViewScreenHandlerFactory(inventory))
+            console.sendInfo("Opening inventory of ${target.name}")
+        } else {
+            console.sendError("Failed to read inventory of ${target.name}")
+        }
     }
 
 }
