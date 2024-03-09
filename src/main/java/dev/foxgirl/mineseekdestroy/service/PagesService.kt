@@ -20,7 +20,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket
-import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.sound.SoundCategory
@@ -31,10 +30,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.Direction
-import net.minecraft.world.chunk.ChunkStatus
-import net.minecraft.world.chunk.WorldChunk
 import java.util.*
 import kotlin.random.Random
 
@@ -407,6 +403,37 @@ class PagesService : Service() {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lock(user)
                     Async.go("pagesDeepBusted") {
+                        while (true) {
+                            delay(0.1)
+
+                            if (state.isWaiting || !user.isAlive) break
+                            val userEntity = user.entity ?: continue
+                            if (userEntity.world !== world) continue
+
+                            for (pos in userEntity.blockPos.around(5.5)) {
+                                if (properties.regionPlayable.excludes(pos)) continue
+                                if (properties.regionBlimp.contains(pos) || properties.regionBlimpBalloons.contains(pos)) continue
+                                if (world.getBlockState(pos).isAir) {
+                                    world.setBlockState(pos, Blocks.WATER.defaultState)
+                                    userEntity.networkHandler.sendPacket(BlockUpdateS2CPacket(pos, Blocks.WATER.defaultState))
+                                }
+                            }
+
+                            userEntity.particles(ParticleTypes.FALLING_WATER, 1.0, 5) {
+                                it.add(
+                                    Random.nextDouble(-0.4, 0.4),
+                                    Random.nextDouble(0.5, 2.25),
+                                    Random.nextDouble(-0.4, 0.4),
+                                )
+                            }
+                        }
+                        unlock(user)
+                    }
+                    userEntity.sparkles()
+                    return ActionResult.SUCCESS
+                    /*
+                    lock(user)
+                    Async.go("pagesDeepBusted") {
                         val blockPositions = HashSet<BlockPos>()
                         val chunkPositions = HashSet<ChunkPos>()
 
@@ -470,6 +497,7 @@ class PagesService : Service() {
                     }
                     userEntity.sparkles()
                     return ActionResult.SUCCESS
+                    */
                 }
             }
 

@@ -403,10 +403,10 @@ class SummonsService : Service() {
         override val timeout get() = Duration.ofSeconds(90)
         override fun perform() {
             summonListGame.find { it.kind == Prayer(COSMOS, FLAME) }?.destroy()
+            Broadcast.sendSound(SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 2.0F, 1.0F, world, properties.borderCenter)
             for (pos in BlockPos.ofFloored(properties.borderCenter).around(7.0)) {
                 world.setBlockState(pos, (if (Random.nextBoolean()) Blocks.SNOW_BLOCK else Blocks.BONE_BLOCK).defaultState)
             }
-            Broadcast.sendSound(SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 2.0F, 1.0F, world, properties.borderCenter)
         }
     }
 
@@ -435,6 +435,7 @@ class SummonsService : Service() {
     }
 
     private inner class CosmosCosmosSummon(options: Options) : Summon(options) {
+        override val isRoundOnly get() = true
         override fun update() {
             for ((_, entity) in playerEntitiesNormal) {
                 if (!entity.hasEffect(StatusEffects.SLOW_FALLING)) {
@@ -467,7 +468,11 @@ class SummonsService : Service() {
         override fun perform() {
             summonListGame.find { it.kind == Prayer(COSMOS, OCCULT) }?.destroy()
             Broadcast.sendSound(SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 2.0F, 1.0F, world, properties.borderCenter)
+            for (pos in BlockPos.ofFloored(properties.borderCenter).around(7.0)) {
+                world.setBlockState(pos, Blocks.LAVA.defaultState)
+            }
         }
+        /*
         override fun update() {
             val center = BlockPos.ofFloored(properties.borderCenter)
             val region = center.let {
@@ -482,6 +487,7 @@ class SummonsService : Service() {
                 .edit { _, x, y, z -> if (BlockPos(x, y, z) in positions) Blocks.FIRE.defaultState else null }
                 .terminate()
         }
+        */
     }
 
     private inner class BarterBarterSummon(options: Options) : Summon(options) {
@@ -492,6 +498,7 @@ class SummonsService : Service() {
                 WHITE_BANNER, PAPER,
                 COOKED_BEEF, GOLDEN_SWORD, FLINT_AND_STEEL, WATER_BUCKET,
                 COMPASS, TARGET, FIREWORK_ROCKET, ENDER_PEARL, BLUE_ICE,
+                RECOVERY_COMPASS, HONEY_BOTTLE,
                 ANVIL, CHIPPED_ANVIL, DAMAGED_ANVIL,
             )
 
@@ -1126,7 +1133,6 @@ class SummonsService : Service() {
             Prayer(DEEP, BARTER),
             Prayer(OCCULT, OCCULT),
             Prayer(OCCULT, BARTER),
-            Prayer(COSMOS, COSMOS),
             Prayer(COSMOS, FLAME),
             Prayer(FLAME,  FLAME),
         )
@@ -1134,6 +1140,7 @@ class SummonsService : Service() {
             Prayer(DEEP, OCCULT),
             Prayer(DEEP, COSMOS),
             Prayer(OCCULT, COSMOS),
+            Prayer(COSMOS, COSMOS),
             Prayer(BARTER, BARTER),
         )
 
