@@ -45,6 +45,7 @@ object Rules {
 
     @JvmStatic var ghostsBlackDeathPenaltyAmount by IntRuleProperty(RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT)
     @JvmStatic var ghostsFreezingTickAmount by IntRuleProperty(RULE_GHOSTS_FREEZING_TICK_AMOUNT)
+    @JvmStatic var ghostsKnockbackMultiplier by DoubleRuleProperty(RULE_GHOSTS_KNOCKBACK_MULTIPLIER)
 
     @JvmStatic var lootCount by IntRuleProperty(RULE_LOOT_COUNT)
 

@@ -118,6 +118,8 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         GameRuleRegistry.register("msdGhostsBlackDeathPenaltyAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(2));
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_GHOSTS_FREEZING_TICK_AMOUNT =
         GameRuleRegistry.register("msdGhostsFreezingTickAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(6));
+    public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_KNOCKBACK_MULTIPLIER =
+        GameRuleRegistry.register("msdGhostsKnockbackMultiplier", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
 
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_LOOT_COUNT =
         GameRuleRegistry.register("msdLootCount", GameRules.Category.MISC, GameRuleFactory.createIntRule(5));
