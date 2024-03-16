@@ -1,8 +1,12 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameProperties
 import dev.foxgirl.mineseekdestroy.util.*
+import dev.foxgirl.mineseekdestroy.util.async.Async
+import dev.foxgirl.mineseekdestroy.util.async.await
+import net.minecraft.block.Blocks
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.server.network.ServerPlayerEntity
@@ -52,7 +56,47 @@ class SpecialBoosterService : Service() {
         }
     }
 
-    private val trackers = mutableListOf<Tracker>()
+    private val trackers = mutableSetOf<Tracker>()
+
+    fun addYellicopterTrackers(fans: Region.Set) {
+        for (fan in fans) {
+            val tracker = Tracker(
+                fan,
+                {
+                    it.frozenTicks = 120
+                    it.addStatusEffect(StatusEffectInstance(
+                        StatusEffects.SLOW_FALLING,
+                        (Rules.fansEffectDuration * 20.0).toInt(),
+                    ))
+                },
+                {
+                    logger.info("Player '${it.scoreboardName}' launched by Yellicopter fans")
+
+                    it.applyVelocity(Vec3d(0.0, Rules.fansKnockback, 0.0))
+
+                    Broadcast.sendSound(
+                        SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,
+                        SoundCategory.PLAYERS,
+                        1.0F, 1.0F,
+                        world, it.pos,
+                    )
+                },
+            )
+            Async.go {
+                while (true) {
+                    delay(1.0)
+                    val context = Game.getGame().context ?: break
+                    val results = Editor.queue(context.world, fan).search { it.block === Blocks.SCAFFOLDING }.await()
+                    if (results.isEmpty()) {
+                        logger.info("Yellicopter fan destroyed ${fan.center}")
+                        trackers.remove(tracker)
+                        break
+                    }
+                }
+            }
+            trackers.add(tracker)
+        }
+    }
 
     override fun setup() {
         trackers += Tracker(

@@ -112,6 +112,8 @@ sealed interface GameProperties {
             FLETCHING_TABLE,
             QUARTZ_SLAB,
             LEVER,
+            BAMBOO_DOOR,
+            BAMBOO_TRAPDOOR,
         )
 
         override val inflammableBlocks = buildImmutableSet<Block> {

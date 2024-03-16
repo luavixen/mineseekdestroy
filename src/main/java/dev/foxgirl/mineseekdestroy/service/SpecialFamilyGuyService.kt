@@ -67,10 +67,10 @@ class SpecialFamilyGuyService : Service() {
         }
 
         Scheduler.delay(0.05) {
-            notesHarp.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
+            notesHarp.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), SoundCategory.RECORDS, 4.0F, it, world, center) }
         }
         Scheduler.delay(0.45) {
-            notesBass.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.BLOCKS, 2.0F, it, world, center) }
+            notesBass.forEach { Broadcast.sendSound(SoundEvents.BLOCK_NOTE_BLOCK_BASS.value(), SoundCategory.RECORDS, 4.0F, it, world, center) }
         }
 
         for (entity in world.players) {

@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ServerLightingProvider;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -188,7 +189,7 @@ public final class Editor {
             this.operations = operations;
         }
 
-        private boolean performChunk(WorldChunk chunk, Region region, ServerWorld world, Action[] actions) {
+        private boolean performChunk(WorldChunk chunk, Region region, ServerWorld world, ServerLightingProvider lighting, Action[] actions) {
             var cPos = chunk.getPos();
             int offsetX = cPos.x << 4;
             int offsetZ = cPos.z << 4;
@@ -201,11 +202,14 @@ public final class Editor {
 
             int bottomY = world.getBottomY();
 
-            boolean mutated = false;
-
             var sections = chunk.getSectionArray();
+            int sectionsCount = sections.length;
 
-            for (int i = 0, length = sections.length; i < length; i++) {
+            var mutated = false;
+            var mutatedSections = new boolean[sectionsCount];
+
+            for (int i = 0; i < sectionsCount; i++) {
+                boolean mutatedSection = false;
                 var section = sections[i];
                 int offsetY = (i << 4) + bottomY;
                 for (int y = 0; y < 16; y++) {
@@ -223,13 +227,28 @@ public final class Editor {
                                 if (stateNew != null && stateNew != stateOld) {
                                     section.setBlockState(x, y, z, stateNew);
                                     stateOld = stateNew;
-                                    mutated = true;
+                                    mutatedSection = true;
                                 }
                             }
                         }
                     }
                 }
+                if (mutatedSection) {
+                    mutated = true;
+                    mutatedSections[i] = true;
+                }
             }
+
+            /*
+            for (int i = 0; i < sectionsCount; i++) {
+                if (mutatedSections[i]) {
+                    lighting.setSectionStatus(ChunkSectionPos.from(chunk.getPos(), i), true);
+                }
+            }
+            if (mutated) {
+                lighting.propagateLight(chunk.getPos());
+            }
+            */
 
             return mutated;
         }
@@ -242,6 +261,7 @@ public final class Editor {
             ServerWorld world = target.world;
 
             ServerChunkManager manager = world.getChunkManager();
+            ServerLightingProvider lighting = manager.getLightingProvider();
 
             int chunksCount = (int) region.getChunkCount();
 
@@ -266,7 +286,7 @@ public final class Editor {
             }
 
             for (WorldChunk chunk : chunks) {
-                var mutated = performChunk(chunk, region, world, actions);
+                var mutated = performChunk(chunk, region, world, lighting, actions);
                 if (mutated) chunksMutated.add(chunk);
             }
 

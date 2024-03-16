@@ -1,15 +1,11 @@
 package dev.foxgirl.mineseekdestroy.util;
 
-import dev.foxgirl.mineseekdestroy.util.collect.ImmutableSet;
 import kotlin.jvm.internal.ArrayIteratorKt;
 import net.minecraft.util.math.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 
 public final class Region implements Selection {
 
@@ -118,10 +114,10 @@ public final class Region implements Selection {
         private final Region[] regions;
 
         public Set(@NotNull Region... elements) {
-            regions = ImmutableSet.of(elements).toArray(new Region[0]);
+            this(Arrays.asList(elements));
         }
         public Set(@NotNull Collection<Region> collection) {
-            regions = ImmutableSet.of(collection).toArray(new Region[0]);
+            regions = new LinkedHashSet<>(collection).toArray(new Region[0]);
         }
 
         @Override

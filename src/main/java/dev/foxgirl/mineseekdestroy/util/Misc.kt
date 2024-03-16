@@ -6,7 +6,11 @@ import net.minecraft.entity.damage.DamageSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Util
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
+import net.minecraft.util.math.Position
+import net.minecraft.util.math.Vec3d
 import java.util.*
+import kotlin.random.Random
 
 fun BlockPos.around(radius: Double) = around(radius, radius, radius)
 fun BlockPos.around(radiusX: Double, radiusY: Double, radiusZ: Double) = sequence {
@@ -21,6 +25,20 @@ fun BlockPos.around(radiusX: Double, radiusY: Double, radiusZ: Double) = sequenc
         }
     }
 }
+
+fun Box.random() = Vec3d(
+    minX + (maxX - minX) * Random.nextDouble(),
+    minY + (maxY - minY) * Random.nextDouble(),
+    minZ + (maxZ - minZ) * Random.nextDouble(),
+)
+
+operator fun BlockPos.component1() = x
+operator fun BlockPos.component2() = y
+operator fun BlockPos.component3() = z
+
+operator fun Position.component1() = x
+operator fun Position.component2() = y
+operator fun Position.component3() = z
 
 val ServerPlayerEntity.player: GamePlayer?
     get() = Game.getGame().context?.getPlayer(this)

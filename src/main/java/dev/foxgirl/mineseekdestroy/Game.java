@@ -104,12 +104,12 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_SYPHON_HEALTH_BACK_ENABLED =
         GameRuleRegistry.register("msdBlackSyphonHealthBackEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_SYPHON_HEALTH_BACK_DIVISOR =
-        GameRuleRegistry.register("msdBlackSyphonHealthBackDivisor", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(2.0));
+        GameRuleRegistry.register("msdBlackSyphonHealthBackDivisor", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_FINALIZE_OLDSCHOOL_ENABLED =
         GameRuleRegistry.register("msdBlackFinalizeOldschoolEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_FINALIZE_DAMAGE_HEARTS =
-        GameRuleRegistry.register("msdBlackFinalizeDamageAmount", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(9.0));
+        GameRuleRegistry.register("msdBlackFinalizeDamageHearts", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(7.0));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_DAMAGE_FLASH_ENABLED =
         GameRuleRegistry.register("msdDamageFlashEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
@@ -117,7 +117,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT =
         GameRuleRegistry.register("msdGhostsBlackDeathPenaltyAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(2));
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_GHOSTS_FREEZING_TICK_AMOUNT =
-        GameRuleRegistry.register("msdGhostsFreezingTickAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(6));
+        GameRuleRegistry.register("msdGhostsFreezingTickAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(4));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_GHOSTS_KNOCKBACK_MULTIPLIER =
         GameRuleRegistry.register("msdGhostsKnockbackMultiplier", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
 
@@ -250,6 +250,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Blocks.CHIPPED_ANVIL,
         Blocks.DAMAGED_ANVIL,
         Blocks.FIRE,
+        Blocks.BAMBOO_PLANKS, Blocks.BAMBOO_SLAB, Blocks.BAMBOO_STAIRS,
+        Blocks.BAMBOO_BLOCK, Blocks.BAMBOO_SIGN, Blocks.GOLD_BLOCK,
+        Blocks.YELLOW_WOOL, Blocks.YELLOW_STAINED_GLASS, Blocks.COBWEB,
+        Blocks.SCAFFOLDING,
     });
 
     public static final @NotNull Set<@NotNull Item> USABLE_ITEMS = ImmutableSet.copyOf(new Item[] {

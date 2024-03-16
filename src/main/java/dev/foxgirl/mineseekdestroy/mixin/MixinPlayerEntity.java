@@ -88,9 +88,22 @@ public abstract class MixinPlayerEntity extends LivingEntity {
     @Shadow @Final
     private PlayerAbilities abilities;
 
+    @Unique
+    private boolean mineseekdestroy$isYellowArrow(ItemStack stack) {
+        return stack.hasNbt() && stack.getNbt().contains("MsdYellowArrow");
+    }
+    @Unique
+    private boolean mineseekdestroy$canUseArrow(ItemStack stack, int yellowArrowFlag) {
+        if (mineseekdestroy$isYellowArrow(stack)) {
+            return yellowArrowFlag != 2;
+        }
+        return true;
+    }
+
     @Overwrite
     public ItemStack getProjectileType(ItemStack weaponStack) {
         if (weaponStack.getItem() instanceof RangedWeaponItem weaponItem) {
+            // 0 -> NONE, 1 -> YELLOW, 2 -> BLUE
             int yellowArrowFlag = 0;
             var context = Game.getGame().getContext();
             if (context != null) {
@@ -105,10 +118,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
             if (yellowArrowFlag == 1) {
                 for (int i = 0, size = inventory.size(); i < size; i++) {
                     ItemStack arrowStack = inventory.getStack(i);
-                    if (
-                        arrowStack.hasNbt() &&
-                            arrowStack.getNbt().contains("MsdYellowArrow")
-                    ) {
+                    if (mineseekdestroy$isYellowArrow(arrowStack)) {
                         return arrowStack;
                     }
                 }
@@ -116,10 +126,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
 
             ItemStack arrowHeldStack = RangedWeaponItem.getHeldProjectile(this, weaponItem.getHeldProjectiles());
             if (!arrowHeldStack.isEmpty()) {
-                if (yellowArrowFlag != 2 || !(
-                    arrowHeldStack.hasNbt() &&
-                    arrowHeldStack.getNbt().contains("MsdYellowArrow")
-                )) {
+                if (mineseekdestroy$canUseArrow(arrowHeldStack, yellowArrowFlag)) {
                     return arrowHeldStack;
                 }
             }
@@ -128,10 +135,7 @@ public abstract class MixinPlayerEntity extends LivingEntity {
             for (int i = 0, size = inventory.size(); i < size; i++) {
                 ItemStack arrowStack = inventory.getStack(i);
                 if (predicate.test(arrowStack)) {
-                    if (yellowArrowFlag != 2 || !(
-                        arrowStack.hasNbt() &&
-                        arrowStack.getNbt().contains("MsdYellowArrow")
-                    )) {
+                    if (mineseekdestroy$canUseArrow(arrowStack, yellowArrowFlag)) {
                         return arrowStack;
                     }
                 }

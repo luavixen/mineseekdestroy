@@ -4,6 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
+import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.service.PagesService.Action.*
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology
 import dev.foxgirl.mineseekdestroy.service.SummonsService.Theology.*
@@ -336,7 +337,7 @@ class PagesService : Service() {
 
             object : Page(
                 SUMMON, text("Deep Summon Page") * DEEP.color,
-                loreWithDeep() + text("flood the map").format(DEEP.color) + "! (" + text("requires soul").bold().italic() + ")",
+                loreWithDeep() + text("flood the map").format(DEEP.color) + "! (" + text("requires cobbled book").bold().italic() + ")",
                 loreWithOccult() + text("receive a ") + text("player-tracking compass").bold() + "!",
                 loreWithCosmos() + text("summon acid rain!"),
                 loreWithBarter() + text("poison all water!"),
@@ -508,7 +509,7 @@ class PagesService : Service() {
             object : Page(
                 SUMMON, text("Occult Summon Page") * OCCULT.color,
                 loreWithDeep() + text("receive a ") + text("player-tracking compass").bold() + "!",
-                loreWithOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "! (" + text("requires soul").bold().italic() + ")",
+                loreWithOccult() + text("nearly kill your opps and save all black players").format(OCCULT.color) + "! (" + text("requires cobbled book").bold().italic() + ")",
                 loreWithCosmos() + text("majora the storm's center"),
                 loreWithBarter() + text("receive an OP sword!"),
                 loreWithFlame() + text("spawn ") + text("3 ghasts").bold() + "!",
@@ -585,13 +586,14 @@ class PagesService : Service() {
                 text("gain ") + "night vision" + " for " + text("15 seconds").bold() + "!",
                 text("gain ") + "fire resistance" + " for " + text("15 seconds").bold() + "!",
                 text("gain ") + "water breathing" + " for " + text("15 seconds").bold() + "!",
-                text("all living teammates instantly die").bold() + "!",
+                text("all living teammates instantly move to skip").bold() + "!",
             ) {
                 override fun use(user: GamePlayer, userEntity: ServerPlayerEntity): ActionResult {
                     lockDelay(user, 15.0)
-                    for ((player, playerEntity) in playerEntitiesIn) {
+                    for (player in playersIn) {
                         if (player.team === user.team && player != user) {
-                            playerEntity.hurtHearts(500.0) { it.indirectMagic(userEntity, userEntity) }
+                            player.team = GameTeam.SKIP
+                            logger.info("Gruesome Gospel moved ${player.nameQuoted} to skip")
                         }
                     }
                     userEntity.addEffect(SPEED, 15.0, 4)
@@ -615,7 +617,7 @@ class PagesService : Service() {
                 SUMMON, text("Cosmos Summon Page") * COSMOS.color,
                 loreWithDeep() + text("summon acid rain!"),
                 loreWithOccult() + text("majora the storm's center"),
-                loreWithCosmos() + text("reduce gravity").format(COSMOS.color) + "! (" + text("requires soul").bold().italic() + ")",
+                loreWithCosmos() + text("reduce gravity").format(COSMOS.color) + "! (" + text("requires cobbled book").bold().italic() + ")",
                 loreWithBarter() + text("receive ") + text("8 steak").bold() + "!",
                 loreWithFlame() + text("spawn fire at the storm's center!"),
             ) {}
@@ -731,7 +733,7 @@ class PagesService : Service() {
                 loreWithDeep() + text("poison all water!"),
                 loreWithOccult() + text("receive an OP sword!"),
                 loreWithCosmos() + text("receive ") + text("8 steak").bold() + "!",
-                loreWithBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires soul").bold().italic() + ")",
+                loreWithBarter() + text("destroy all special items").formatted(BARTER.color) + "! (" + text("requires cobbled book").bold().italic() + ")",
                 loreWithFlame() + text("receive a stack of ") + text("blue ice").bold() + "!",
             ) {}
 
@@ -872,7 +874,7 @@ class PagesService : Service() {
                 loreWithOccult() + text("spawn ") + text("3 ghasts").bold() + "!",
                 loreWithCosmos() + text("spawn fire at the storm's center!"),
                 loreWithBarter() + text("receive a stack of ") + text("blue ice").bold() + "!",
-                loreWithFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires soul").bold().italic() + ")",
+                loreWithFlame() + text("make every block flammable").format(FLAME.color) + "! (" + text("requires cobbled book").bold().italic() + ")",
             ) {}
 
             object : Page(

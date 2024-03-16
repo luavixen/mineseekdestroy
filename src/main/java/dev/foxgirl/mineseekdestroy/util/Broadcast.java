@@ -46,6 +46,7 @@ public class Broadcast {
         send((player, playerEntity) -> packet);
     }
 
+    @FunctionalInterface
     public interface PositionSupplier {
         @Nullable Position get(@NotNull GamePlayer player, @NotNull ServerPlayerEntity playerEntity);
     }
@@ -94,7 +95,7 @@ public class Broadcast {
     }
 
     public static void sendSound(@NotNull SoundEvent sound, @NotNull SoundCategory category, float volume, float pitch, @NotNull World world, @NotNull Position position) {
-        sendSound(sound, category, volume, pitch, new NearbyPositionSupplier(world, position, 256.0));
+        sendSound(sound, category, volume, pitch, new NearbyPositionSupplier(world, position, 96.0));
     }
 
     public static void sendSound(@NotNull SoundEvent sound, @NotNull SoundCategory category, float volume, float pitch) {

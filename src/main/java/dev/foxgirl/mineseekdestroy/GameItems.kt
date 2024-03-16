@@ -94,13 +94,10 @@ object GameItems {
 
     val toolYellowConduit = stackOf(
         CONDUIT, nbtCompoundOf("MsdTool" to "yellowConduit", "MsdConduit" to GameTeam.YELLOW),
-        text("super magical conduit of power").teamYellow(),
-        text("right click to activate! ") + text("(only when full)").bold(),
-        text("stop holding to deactivate! ") + text("(only when starving)").bold(),
-        text("makes the user immune to all damage except starvation when active").teamYellow(),
+        text("DOMAIN EXPANSION: SMCOP").teamYellow(),
+        text("right click to activate! ") + text("(needs 6 hunger)").bold(),
+        text("spawns the yellicopter").teamYellow(),
         text("saps hunger of user AND nearby enemy players"),
-        text("gain weakness 64 while active").bold(),
-        text("gain mining fatigue 64 while active").bold(),
     )
     val toolBlueConduit = stackOf(
         CONDUIT, nbtCompoundOf("MsdTool" to "blueConduit", "MsdConduit" to GameTeam.BLUE),
@@ -151,7 +148,16 @@ object GameItems {
         text("does not affect ghosts"),
     )
     val tippedArrow = stackOf(
-        TIPPED_ARROW, nbtCompoundOf("MsdYellowArrow" to true, "Potion" to identifier("harming")),
+        TIPPED_ARROW, nbtCompoundOf(
+            "MsdYellowArrow" to true,
+            "Potion" to identifier("harming"),
+            "custom_potion_effects" to nbtListOf(
+                nbtCompoundOf(
+                    "id" to "slow_falling",
+                    "duration" to 200,
+                ),
+            ),
+        ),
         text("Retaliation Arrow").teamYellow(),
         text("functions normally on yellow!").teamYellow(),
         text("cannot be shot by blue players").teamBlue(),
