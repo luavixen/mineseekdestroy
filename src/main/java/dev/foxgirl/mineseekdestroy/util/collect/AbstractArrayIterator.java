@@ -28,17 +28,18 @@ abstract class AbstractArrayIterator<E, T> implements ListIterator<T> {
 
     protected final E getNext() {
         try {
-            E element = elements[index]; index++;
+            var element = elements[index]; index++;
             return element;
-        } catch (ArrayIndexOutOfBoundsException ignored) {
+        } catch (IndexOutOfBoundsException ignored) {
             throw new NoSuchElementException();
         }
     }
     protected final E getPrevious() {
         try {
-            E element = elements[index]; index--;
+            int i = index - 1;
+            var element = elements[i]; index = i;
             return element;
-        } catch (ArrayIndexOutOfBoundsException ignored) {
+        } catch (IndexOutOfBoundsException ignored) {
             throw new NoSuchElementException();
         }
     }

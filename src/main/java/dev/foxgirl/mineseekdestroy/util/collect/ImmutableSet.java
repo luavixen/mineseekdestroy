@@ -39,7 +39,7 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
         return of(collection);
     }
 
-    public static final class Builder<E> extends ArrayBuilder<E> {
+    public static final class Builder<E> extends LinkedHashSet<E> {
         private Builder() {
             super(16);
         }
@@ -98,18 +98,22 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
     private final E[] elements;
 
     private ImmutableSet() {
-        this(ImmutableList.of());
+        this(Set.of());
+    }
+
+    private ImmutableSet(Collection<? extends E> collection) {
+        this(new LinkedHashSet<>(collection));
     }
 
     @SuppressWarnings("unchecked")
-    private ImmutableSet(Collection<? extends E> collection) {
-        int count = collection.size();
+    private ImmutableSet(Set<? extends E> source) {
+        int count = source.size();
         var elements = new ArrayBuilder<E>(count);
 
         int shift = ImmutableMap.shift(count);
         var entries = (Entry<E>[]) new Entry[1 << (32 - shift)];
 
-        for (E element : collection) {
+        for (E element : source) {
             int hash = ImmutableMap.hash(element);
             int index = hash >>> shift;
 
@@ -189,11 +193,6 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
             }
         }
         return hash;
-    }
-
-    @Override
-    public String toString() {
-        return Arrays.toString(elements);
     }
 
 }

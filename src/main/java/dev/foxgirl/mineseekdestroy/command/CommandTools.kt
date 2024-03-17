@@ -177,7 +177,16 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendInfo(vararg values: Any?) {
-            context.source.sendFeedback({ Console.format(values, false) }, true)
+           sendInfoRaw(Console.formatInfo(values))
+        }
+        /**
+         * Sends command completion feedback to the command source and server
+         * operators.
+         *
+         * @param message Message to send as feedback.
+         */
+        override fun sendInfoRaw(message: Text) {
+            context.source.sendFeedback({ message }, true)
         }
 
         /**
@@ -189,7 +198,16 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendError(vararg values: Any?) {
-            context.source.sendError(Console.format(values, true))
+            sendErrorRaw(Console.formatError(values))
+        }
+        /**
+         * Sends command error feedback to the command source and sets the
+         * [result] value to `-1`.
+         *
+         * @param message Message to send as feedback.
+         */
+        override fun sendErrorRaw(message: Text) {
+            context.source.sendError(message)
             result = -1
         }
     }

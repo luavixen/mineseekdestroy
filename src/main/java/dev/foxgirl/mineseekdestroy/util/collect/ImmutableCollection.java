@@ -48,7 +48,7 @@ public abstract class ImmutableCollection<E> extends AbstractCollection<E> imple
             return Arrays.copyOf(elements, size, (Class<? extends T[]>) array.getClass());
         }
 
-        System.arraycopy(array, 0, elements, 0, size);
+        System.arraycopy(elements, 0, array, 0, size);
 
         if (array.length > size) {
             array[size] = null;

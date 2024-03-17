@@ -105,7 +105,7 @@ class GhostService : Service() {
 
                 if (goingGhost && playerEntity.health + playerEntity.absorptionAmount >= 19.5F) {
                     if (ghostsToPromote.add(player)) {
-                        Game.CONSOLE_PLAYERS.sendInfo(player, "escaped the afterlife!")
+                        consolePlayers.sendInfo(player, "escaped the afterlife!")
                     }
                 }
 

@@ -75,16 +75,15 @@ object GameItems {
 
     val toolYellowBow = toolBow.copy().apply {
         getOrCreateNbt()["MsdTool"] = "yellowBow"
-        addEnchantment(Enchantments.PUNCH, 2)
+        addEnchantment(Enchantments.PUNCH, 5)
     }
     val toolYellowSword = toolSword.copy().apply {
         getOrCreateNbt()["MsdTool"] = "yellowSword"
-        addEnchantment(Enchantments.KNOCKBACK, 2)
+        addEnchantment(Enchantments.KNOCKBACK, 5)
         addEnchantment(Enchantments.SWEEPING, 2)
     }
     val toolBlueCrossbow = toolCrossbow.copy().apply {
         getOrCreateNbt()["MsdTool"] = "blueCrossbow"
-        addEnchantment(Enchantments.PIERCING, 4)
         addEnchantment(Enchantments.QUICK_CHARGE, 2)
     }
     val toolBluePickaxe = toolPickaxe.copy().apply {

@@ -222,9 +222,4 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         return Arrays.hashCode(elements);
     }
 
-    @Override
-    public String toString() {
-        return Arrays.toString(elements);
-    }
-
 }

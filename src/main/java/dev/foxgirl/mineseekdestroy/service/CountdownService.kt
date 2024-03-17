@@ -87,7 +87,7 @@ class CountdownService : Service() {
             ))
             Broadcast.send(TitleS2CPacket(text(DecimalFormat("#.#").format(-damage) + " ❤").red()))
             Broadcast.send(SubtitleS2CPacket(text()))
-            Broadcast.sendSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.HOSTILE, 1.0F, 1.0F)
+            Broadcast.sendSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE, SoundCategory.HOSTILE, 0.5F, 1.0F)
             // Broadcast.sendParticles(ParticleTypes.ELDER_GUARDIAN, 0.0F, 0) { player, playerEntity ->
             //     if (player.isPlayingOrGhost && player.isAlive) playerEntity.pos else null
             // }

@@ -809,13 +809,13 @@ class SummonsService : Service() {
 
         val failure = failCheck(options)
         if (failure != null) {
-            Game.CONSOLE_PLAYERS.sendInfo(text(options.team, "failed a summon").styleParent { it.withColor(Formatting.WHITE) })
-            Game.CONSOLE_OPERATORS.sendInfo("Summon failed:", failure, options.kind)
+            consolePlayers.sendInfoRaw(text(options.team, "failed a summon"))
+            consoleOperators.sendInfo("Summon failed:", failure, options.kind)
 
             textProvider = textProvidersFailure[failure]!!(options)
             failPerform(options, failure)
         } else {
-            Game.CONSOLE_PLAYERS.sendInfo(text(options.team, "summoned", options.kind).styleParent { it.withColor(Formatting.WHITE) })
+            consolePlayers.sendInfoRaw(text(options.team, "summoned", options.kind))
 
             textProvider = textProvidersSuccess[options.kind]!!(options)
             summonPerform(options)

@@ -173,7 +173,7 @@ class PagesService : Service() {
             else page.use(user, userEntity)
         }
         if (result.shouldIncrementStat()) {
-            Game.CONSOLE_PLAYERS.sendInfo(
+            consolePlayers.sendInfo(
                 text(user, "used page").styleParent { it.withColor(Formatting.WHITE) },
                 text(page.name).style { it.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_ITEM, HoverEvent.ItemStackContent(page.stack))) },
             )
@@ -411,7 +411,7 @@ class PagesService : Service() {
                             val userEntity = user.entity ?: continue
                             if (userEntity.world !== world) continue
 
-                            for (pos in userEntity.blockPos.around(5.5)) {
+                            for (pos in userEntity.blockPos.around(2.0)) {
                                 if (properties.regionPlayable.excludes(pos)) continue
                                 if (properties.regionBlimp.contains(pos) || properties.regionBlimpBalloons.contains(pos)) continue
                                 if (world.getBlockState(pos).isAir) {

@@ -2,6 +2,7 @@ package dev.foxgirl.mineseekdestroy.util;
 
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,11 +12,27 @@ public interface Console {
     /**
      * Sends feedback to this console.
      *
+     * @param message Message to send as feedback.
+     */
+    void sendInfoRaw(@NotNull Text message);
+
+    /**
+     * Sends feedback to this console.
+     *
      * @param values
      *   Message to send as feedback, values will be converted to strings and
      *   joined with spaces.
      */
-    void sendInfo(Object... values);
+    default void sendInfo(Object... values) {
+        sendInfoRaw(formatInfo(values));
+    }
+
+    /**
+     * Sends error feedback to this console.
+     *
+     * @param message Message to send as feedback.
+     */
+    void sendErrorRaw(@NotNull Text message);
 
     /**
      * Sends error feedback to this console.
@@ -24,7 +41,9 @@ public interface Console {
      *   Message to send as feedback, values will be converted to strings and
      *   joined with spaces.
      */
-    void sendError(Object... values);
+    default void sendError(Object... values) {
+        sendErrorRaw(formatError(values));
+    }
 
     static @NotNull Style STYLE_INFO = Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE);
     static @NotNull Style STYLE_ERROR = Style.EMPTY.withFormatting(Formatting.RED);

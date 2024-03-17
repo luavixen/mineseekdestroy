@@ -368,28 +368,24 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
 
     public static final @NotNull Console CONSOLE_PLAYERS = new Console() {
         @Override
-        public void sendInfo(@Nullable Object... values) {
-            var message = Console.format(values, false);
+        public void sendInfoRaw(@NotNull Text message) {
             LOGGER.info(message.getString());
             Game.getGame().sendToPlayers(message);
         }
         @Override
-        public void sendError(@Nullable Object... values) {
-            var message = Console.format(values, true);
+        public void sendErrorRaw(@NotNull Text message) {
             LOGGER.error(message.getString());
             Game.getGame().sendToPlayers(message);
         }
     };
     public static final @NotNull Console CONSOLE_OPERATORS = new Console() {
         @Override
-        public void sendInfo(@Nullable Object... values) {
-            var message = Console.format(values, false);
+        public void sendInfoRaw(@NotNull Text message) {
             LOGGER.info(message.getString());
             Game.getGame().sendToOperators(message);
         }
         @Override
-        public void sendError(@Nullable Object... values) {
-            var message = Console.format(values, true);
+        public void sendErrorRaw(@NotNull Text message) {
             LOGGER.error(message.getString());
             Game.getGame().sendToOperators(message);
         }
@@ -550,10 +546,18 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public void sendInfo(@Nullable Object... values) {
         CONSOLE_PLAYERS.sendInfo(values);
     }
+    @Override
+    public void sendInfoRaw(@NotNull Text message) {
+        CONSOLE_PLAYERS.sendInfoRaw(message);
+    }
 
     @Override
     public void sendError(@Nullable Object... values) {
         CONSOLE_OPERATORS.sendError(values);
+    }
+    @Override
+    public void sendErrorRaw(@NotNull Text message) {
+        CONSOLE_OPERATORS.sendErrorRaw(message);
     }
 
     @Override
@@ -598,8 +602,13 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                             private void send(Object[] values) {
                                 LOGGER.warn(Arrays.stream(values).map(String::valueOf).collect(Collectors.joining(" ")));
                             }
+                            private void send(Text message) {
+                                LOGGER.warn(message.getString());
+                            }
                             @Override public void sendInfo(Object... values) { send(values); }
                             @Override public void sendError(Object... values) { send(values); }
+                            @Override public void sendInfoRaw(@NotNull Text message) { send(message); }
+                            @Override public void sendErrorRaw(@NotNull Text message) { send(message); }
                         });
                         LOGGER.warn("Writing crash marker file");
                         try {

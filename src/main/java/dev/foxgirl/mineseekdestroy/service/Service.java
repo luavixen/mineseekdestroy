@@ -5,6 +5,7 @@ import dev.foxgirl.mineseekdestroy.GameContext;
 import dev.foxgirl.mineseekdestroy.GamePlayer;
 import dev.foxgirl.mineseekdestroy.GameProperties;
 import dev.foxgirl.mineseekdestroy.state.GameState;
+import dev.foxgirl.mineseekdestroy.util.Console;
 import kotlin.Pair;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -94,6 +95,13 @@ public abstract class Service {
 
     protected final @NotNull Logger getLogger() {
         return Game.LOGGER;
+    }
+
+    protected final @NotNull Console getConsolePlayers() {
+        return Game.CONSOLE_PLAYERS;
+    }
+    protected final @NotNull Console getConsoleOperators() {
+        return Game.CONSOLE_OPERATORS;
     }
 
 }

@@ -19,34 +19,11 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
         if (map.isEmpty()) {
             return of();
         } else {
-            return new ImmutableMap<>(new AbstractCollection<>() {
-                @Override
-                public int size() {
-                    return map.size();
-                }
-
-                @Override
-                public Iterator<Entry<K, V>> iterator() {
-                    return new Iterator<>() {
-                        private final Iterator<? extends Map.Entry<? extends K, ? extends V>> iterator = map.entrySet().iterator();
-
-                        @Override
-                        public boolean hasNext() {
-                            return iterator.hasNext();
-                        }
-
-                        @Override
-                        public Entry<K, V> next() {
-                            Map.Entry<? extends K, ? extends V> entry = iterator.next();
-                            return new Entry<>(entry.getKey(), entry.getValue());
-                        }
-                    };
-                }
-            });
+            return new ImmutableMap<>(map);
         }
     }
 
-    public static final class Builder<K, V> extends ArrayBuilder<Entry<K, V>> {
+    public static final class Builder<K, V> extends LinkedHashMap<K, V> {
         private Builder() {
             super(16);
         }
@@ -61,11 +38,6 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
             } else {
                 return new ImmutableMap<>(this);
             }
-        }
-
-        public @NotNull Builder<K, V> put(K key, V value) {
-            add(new Entry<>(key, value));
-            return this;
         }
     }
 
@@ -266,18 +238,20 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
     private static final ImmutableMap<?, ?> EMPTY = new ImmutableMap<>();
 
     private ImmutableMap() {
-        this(ImmutableList.of());
+        this(Map.of());
     }
 
     @SuppressWarnings("unchecked")
-    private ImmutableMap(Collection<Entry<K, V>> collection) {
-        int count = collection.size();
+    private ImmutableMap(Map<? extends K, ? extends V> source) {
+        int count = source.size();
         var elements = new ArrayBuilder<Entry<K, V>>(count);
 
         int shift = shift(count);
         var entries = (Entry<K, V>[]) new Entry[1 << (32 - shift)];
 
-        for (Entry<K, V> entry : collection) {
+        for (Map.Entry<? extends K, ? extends V> sourceEntry : source.entrySet()) {
+            var entry = new Entry<K, V>(sourceEntry.getKey(), sourceEntry.getValue());
+
             int hash = entry.hash;
             int index = hash >>> shift;
 
@@ -437,9 +411,9 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
             Entry<K, V> entry = iterator.next();
             K key = entry.key;
             V value = entry.value;
-            builder.append(key == this ? "<this>" : key);
+            builder.append(key == this ? "(this Map)" : key);
             builder.append('=');
-            builder.append(value == this ? "<this>" : value);
+            builder.append(value == this ? "(this Map)" : value);
             if (iterator.hasNext()) {
                 builder.append(',');
                 builder.append(' ');
