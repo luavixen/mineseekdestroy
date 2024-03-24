@@ -26,12 +26,6 @@ fun BlockPos.around(radiusX: Double, radiusY: Double, radiusZ: Double) = sequenc
     }
 }
 
-fun Box.random() = Vec3d(
-    minX + (maxX - minX) * Random.nextDouble(),
-    minY + (maxY - minY) * Random.nextDouble(),
-    minZ + (maxZ - minZ) * Random.nextDouble(),
-)
-
 operator fun BlockPos.component1() = x
 operator fun BlockPos.component2() = y
 operator fun BlockPos.component3() = z
@@ -39,6 +33,14 @@ operator fun BlockPos.component3() = z
 operator fun Position.component1() = x
 operator fun Position.component2() = y
 operator fun Position.component3() = z
+
+fun Position.copy(): Vec3d = Vec3d(x, y, z)
+
+fun Box.random() = Vec3d(
+    minX + (maxX - minX) * Random.nextDouble(),
+    minY + (maxY - minY) * Random.nextDouble(),
+    minZ + (maxZ - minZ) * Random.nextDouble(),
+)
 
 val ServerPlayerEntity.player: GamePlayer?
     get() = Game.getGame().context?.getPlayer(this)

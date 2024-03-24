@@ -177,7 +177,7 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendInfo(vararg values: Any?) {
-           sendInfoRaw(Console.formatInfo(values))
+           sendInfoRaw(Console.format(values, false))
         }
         /**
          * Sends command completion feedback to the command source and server
@@ -198,7 +198,7 @@ object Command : CommandRegistrationCallback {
          *   and joined with spaces.
          */
         override fun sendError(vararg values: Any?) {
-            sendErrorRaw(Console.formatError(values))
+            sendErrorRaw(Console.format(values, true))
         }
         /**
          * Sends command error feedback to the command source and sets the

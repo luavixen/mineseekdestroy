@@ -1,6 +1,7 @@
 package dev.foxgirl.mineseekdestroy.state;
 
 import dev.foxgirl.mineseekdestroy.*;
+import dev.foxgirl.mineseekdestroy.util.MiscKt;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffects;
@@ -24,9 +25,14 @@ public abstract class RunningGameState extends GameState {
         Position position;
 
         var player = context.getPlayer(newPlayerEntity);
-        if (player.isPlayingOrGhost() && !player.isAlive()) {
-            position = Game.getGameProperties().getPositionBlimp();
-            Game.LOGGER.info("Respawning player {} in blimp (running!)", player.getNameQuoted());
+        if (player.isPlayingOrGhost()) {
+            if (player.isAlive() || player.isUndead()) {
+                position = Game.getGameProperties().getPositionBlimpTop();
+                Game.LOGGER.info("Respawning player {} in blimp at upper deck (running!)", player.getNameQuoted());
+            } else {
+                position = Game.getGameProperties().getPositionBlimp();
+                Game.LOGGER.info("Respawning player {} in blimp at lower deck (running!)", player.getNameQuoted());
+            }
         } else {
             position = Game.getGameProperties().getPositionSpawn().toCenterPos();
             Game.LOGGER.info("Respawning player {} at spawn (running!)", player.getNameQuoted());
@@ -51,7 +57,11 @@ public abstract class RunningGameState extends GameState {
 
         var player = context.getPlayer(playerEntity);
         if (player.isPlayingOrGhost() && player.isAlive()) {
-            player.setAlive(false);
+            if (player.isUndead()) {
+                player.setAlive(false);
+            } else {
+                player.setUndead(true);
+            }
             player.countDeath();
 
             ServerPlayerEntity attackerEntity;
@@ -133,6 +143,10 @@ public abstract class RunningGameState extends GameState {
                 } else {
                     context.specialCarService.cooldownActivate((PigEntity) vehicle);
                 }
+            }
+            var attacker = MiscKt.getPlayer(damageSource);
+            if (attacker != null && attacker.isUndead()) {
+                return false;
             }
             return true;
         }

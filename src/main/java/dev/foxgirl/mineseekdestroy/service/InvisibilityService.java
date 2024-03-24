@@ -107,7 +107,7 @@ public final class InvisibilityService extends Service {
         };
     }
 
-    private static EntityPositionS2CPacket createInvisiblePositionPacket(int id) {
+    public static EntityPositionS2CPacket createInvisiblePositionPacket(int id) {
         var position = Game.getGameProperties().getPositionHell();
         var packet = Reflector.create(EntityPositionS2CPacket.class);
         var access = (MixinEntityPositionS2CPacket) packet;
@@ -121,10 +121,6 @@ public final class InvisibilityService extends Service {
     public @Nullable EntityPositionS2CPacket handlePositionPacket(@NotNull EntityPositionS2CPacket packet, @NotNull ServerPlayerEntity targetEntity) {
         Objects.requireNonNull(packet, "Argument 'packet'");
         Objects.requireNonNull(targetEntity, "Argument 'targetEntity'");
-
-        if (getState().isWaiting()) return null;
-
-        if (getGame().isOperator(targetEntity) || !targetEntity.isAlive()) return null;
 
         var context = getContext();
 
@@ -141,6 +137,14 @@ public final class InvisibilityService extends Service {
 
         var packetTeam = packetPlayer.getTeam();
         var targetTeam = targetPlayer.getTeam();
+
+        if (context.disguiseService.isDisguised(packetPlayer)) {
+            return createInvisiblePositionPacket(packetId);
+        }
+
+        if (getState().isWaiting()) return null;
+
+        if (getGame().isOperator(targetEntity) || !targetEntity.isAlive()) return null;
 
         if (isVisibleTo(targetTeam, packetTeam, packetEntity)) return null;
 

@@ -1,9 +1,9 @@
 package dev.foxgirl.mineseekdestroy.service;
 
-import com.google.common.collect.ImmutableList;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntity;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityTrackerUpdateS2CPacket;
 import dev.foxgirl.mineseekdestroy.util.Reflector;
+import dev.foxgirl.mineseekdestroy.util.collect.ImmutableList;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -51,10 +51,11 @@ public final class GlowService extends Service {
 
     private void broadcast() {
         var world = getWorld();
+        var context = getContext();
         var players = getPlayers();
 
-        var packetsFake = new ArrayList<EntityTrackerUpdateS2CPacket>(players.size());
-        var packetsReal = new ArrayList<EntityTrackerUpdateS2CPacket>(players.size());
+        var packetsFake = new ArrayList<EntityTrackerUpdateS2CPacket>(players.size() + 10);
+        var packetsReal = new ArrayList<EntityTrackerUpdateS2CPacket>(players.size() + 10);
 
         for (var player : players) {
             var entity = player.getEntity();
@@ -63,6 +64,11 @@ public final class GlowService extends Service {
             boolean glowing = player.isPlayingOrGhost() && player.isAlive();
             packetsFake.add(createFakeFlagsPacket(entity, glowing));
             packetsReal.add(createRealFlagsPacket(entity));
+            var disguiseEntity = context.disguiseService.getDisguise(player);
+            if (disguiseEntity != null) {
+                packetsFake.add(createFakeFlagsPacket(disguiseEntity, glowing));
+                packetsReal.add(createRealFlagsPacket(disguiseEntity));
+            }
         }
 
         for (var player : players) {
@@ -117,7 +123,10 @@ public final class GlowService extends Service {
         if (packetEntity == null || !packetEntity.isAlive()) return null;
 
         var packetPlayer = context.getPlayer(packetEntity);
-        if (packetPlayer == null) return null;
+        if (packetPlayer == null) {
+            packetPlayer = context.disguiseService.getDisguisedPlayer(packetEntity);
+            if (packetPlayer == null) return null;
+        }
 
         if (
             targetPlayer.isPlaying() && targetPlayer.isAlive() &&

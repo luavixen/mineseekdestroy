@@ -38,6 +38,8 @@ object Rules {
     @JvmStatic var blackSyphonHealthBackEnabled by BooleanRuleProperty(RULE_BLACK_SYPHON_HEALTH_BACK_ENABLED)
     @JvmStatic var blackSyphonHealthBackDivisor by DoubleRuleProperty(RULE_BLACK_SYPHON_HEALTH_BACK_DIVISOR)
 
+    @JvmStatic var blackFinalizeDDEnabled by BooleanRuleProperty(RULE_BLACK_FINALIZE_DD_ENABLED)
+    @JvmStatic var blackFinalizeDDAmount by IntRuleProperty(RULE_BLACK_FINALIZE_DD_AMOUNT)
     @JvmStatic var blackFinalizeOldschoolEnabled by BooleanRuleProperty(RULE_BLACK_FINALIZE_OLDSCHOOL_ENABLED)
     @JvmStatic var blackFinalizeDamageHearts by DoubleRuleProperty(RULE_BLACK_FINALIZE_DAMAGE_HEARTS)
 

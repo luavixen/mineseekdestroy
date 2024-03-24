@@ -24,6 +24,9 @@ sealed interface GameProperties {
     val positionDuel2: Position
     val positionHell: Position
 
+    val positionBlimpTop: Position
+        get() = positionBlimp.let { Vec3d(it.x, it.y + 6.0, it.z) }
+
     val templateInventory: BlockPos
     val templateLoottable: BlockPos
 

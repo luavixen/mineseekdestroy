@@ -106,6 +106,10 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_SYPHON_HEALTH_BACK_DIVISOR =
         GameRuleRegistry.register("msdBlackSyphonHealthBackDivisor", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(4.0));
 
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_FINALIZE_DD_ENABLED =
+        GameRuleRegistry.register("msdBlackFinalizeDDEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
+    public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_BLACK_FINALIZE_DD_AMOUNT =
+        GameRuleRegistry.register("msdBlackFinalizeDDAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(480));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_FINALIZE_OLDSCHOOL_ENABLED =
         GameRuleRegistry.register("msdBlackFinalizeOldschoolEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_FINALIZE_DAMAGE_HEARTS =
@@ -298,6 +302,16 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
         Items.KNOWLEDGE_BOOK,
         Items.ENCHANTED_BOOK,
         Items.RECOVERY_COMPASS,
+    });
+
+    public static final @NotNull Set<@NotNull Item> UNUSABLE_AS_UNDEAD_ITEMS = ImmutableSet.copyOf(new Item[] {
+        Items.BOW,
+        Items.CROSSBOW,
+        Items.TRIDENT,
+        Items.FISHING_ROD,
+        Items.POTION,
+        Items.SPLASH_POTION,
+        Items.LINGERING_POTION,
     });
 
     public static final @NotNull Set<@NotNull Item> DROPPED_ITEMS = ImmutableSet.copyOf(new Item[] {
@@ -704,7 +718,7 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
                 } else if (context != null && getState().isPlaying()) {
                     var player = context.getPlayer(playerEntity);
                     if (
-                        player.isPlaying() && player.isAlive() &&
+                        player.isPlaying() && player.isAlive() && !player.isUndead() &&
                         getRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED) && (
                             properties.getRegionBlimp().contains(playerEntity) ||
                             properties.getRegionBlimpBalloons().contains(playerEntity)

@@ -13,6 +13,7 @@ import dev.foxgirl.mineseekdestroy.util.async.Async
 import dev.foxgirl.mineseekdestroy.util.async.await
 import net.minecraft.block.Blocks
 import net.minecraft.command.EntitySelector
+import net.minecraft.entity.EntityType
 import net.minecraft.item.Items
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -23,6 +24,7 @@ import net.minecraft.util.math.Position
 import net.minecraft.world.GameMode
 import net.minecraft.world.GameRules
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 internal fun setup() {
 
@@ -148,6 +150,39 @@ internal fun setup() {
     }
 
     Command.build("debug") {
+        it.params(argLiteral("undead"), argPlayer(), argBool("undead")) {
+            it.actionWithContext { args, context ->
+                args.player(context).isUndead = args["undead"]
+                args.sendInfo("Set player undead state")
+            }
+        }
+        it.params(argLiteral("disguise"), argPlayer()) {
+            it.params(argString("entity")) {
+                it.actionWithContext { args, context ->
+                    val player = args.player(context)
+                    val entityTypeID = args.get<String>("entity").trim().lowercase()
+                    val entityType = EntityType.get(entityTypeID).getOrNull()
+                    if (entityType == null) {
+                        args.sendError("Invalid entity type")
+                    } else {
+                        context.disguiseService.activateDisguise(player, entityType)
+                        args.sendInfo("Disguised player", player, "as", entityType.name)
+                    }
+                }
+            }
+            it.actionWithContext { args, context ->
+                val player = args.player(context)
+                context.disguiseService.activateDisguise(player)
+                args.sendInfo("Disguised player", player)
+            }
+        }
+        it.params(argLiteral("undisguise"), argPlayer()) {
+            it.actionWithContext { args, context ->
+                val player = args.player(context)
+                context.disguiseService.deactivateDisguise(player)
+                args.sendInfo("Undisguised player", player)
+            }
+        }
         it.params(argLiteral("players")) {
             it.params(argLiteral("list")) {
                 it.actionWithContext { args, context ->
@@ -440,6 +475,12 @@ internal fun setup() {
             it.actionWithContext { args, context ->
                 val players = args.players(context).onEach { it.isAlive = false }
                 args.sendInfo("Updated alive status for ${players.size} player(s) to dead")
+            }
+        }
+        it.params(argLiteral("setundead"), argPlayers()) {
+            it.actionWithContext { args, context ->
+                val players = args.players(context).onEach { it.isUndead = true }
+                args.sendInfo("Updated alive status for ${players.size} player(s) to undead")
             }
         }
         it.params(argLiteral("setkills"), argInt("kills"), argPlayers()) {

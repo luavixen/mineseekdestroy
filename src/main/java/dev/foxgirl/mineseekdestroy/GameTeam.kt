@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy
 
+import dev.foxgirl.mineseekdestroy.util.collect.buildImmutableList
 import net.minecraft.scoreboard.Scoreboard
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -12,20 +13,21 @@ enum class GameTeam(
     val colorDead: Formatting = WHITE,
     private val hasTeam: Boolean = true,
     private val hasDeadTeam: Boolean = true,
-    private val hasDamagedTeam: Boolean = true
+    private val hasUndeadTeam: Boolean = true,
+    private val hasDamagedTeam: Boolean = true,
 ) {
 
     // Definitions
 
     // Non-playing teams
     NONE(hasTeam = false),
-    SKIP(color = GREEN, colorDead = GRAY, hasDamagedTeam = false),
-    GHOST(color = GRAY, hasDamagedTeam = false),
-    OPERATOR(color = GREEN, hasDeadTeam = false, hasDamagedTeam = false),
+    SKIP(color = GREEN, colorDead = GRAY, hasUndeadTeam = false, hasDamagedTeam = false),
+    GHOST(color = GRAY, hasUndeadTeam = false, hasDamagedTeam = false),
+    OPERATOR(color = GREEN, hasDeadTeam = false, hasUndeadTeam = false, hasDamagedTeam = false),
     // Actively playing teams
-    DUELIST(color = RED, colorDead = DARK_GRAY),
-    WARDEN(color = RED, colorDead = DARK_RED),
-    BLACK(color = DARK_PURPLE, colorDead = DARK_GRAY),
+    DUELIST(color = RED, colorDead = DARK_GRAY, hasUndeadTeam = false),
+    WARDEN(color = RED, colorDead = DARK_RED, hasUndeadTeam = false),
+    BLACK(color = DARK_PURPLE, colorDead = DARK_GRAY, hasUndeadTeam = false),
     // Actively playing and canon teams
     YELLOW(color = Formatting.YELLOW, colorDead = Formatting.GOLD),
     BLUE(color = Formatting.AQUA, colorDead = Formatting.BLUE);
@@ -58,23 +60,28 @@ enum class GameTeam(
 
     val teamName: String?
     val teamNameDead: String?
+    val teamNameUndead: String?
     val teamNameDamaged: String?
 
-    val teamNames: List<String> get() = buildList(3) {
-        if (teamName != null) add(teamName)
-        if (teamNameDead != null) add(teamNameDead)
-        if (teamNameDamaged != null) add(teamNameDamaged)
-    }
+    val teamNames: List<String>
 
     init {
         if (hasTeam) {
             teamName = "msd_${name.lowercase(Locale.ROOT)}"
             teamNameDead = if (hasDeadTeam) teamName + "_dead" else null
+            teamNameUndead = if (hasUndeadTeam) teamName + "_undead" else null
             teamNameDamaged = if (hasDamagedTeam) teamName + "_damaged" else null
         } else {
             teamName = null
             teamNameDead = null
+            teamNameUndead = null
             teamNameDamaged = null
+        }
+        teamNames = buildImmutableList(4) {
+            if (teamName != null) add(teamName)
+            if (teamNameDead != null) add(teamNameDead)
+            if (teamNameUndead != null) add(teamNameUndead)
+            if (teamNameDamaged != null) add(teamNameDamaged)
         }
     }
 
@@ -99,6 +106,8 @@ enum class GameTeam(
         = getOrCreateTeam(scoreboard, teamName, color)
     fun getDeadTeam(scoreboard: Scoreboard)
         = getOrCreateTeam(scoreboard, teamNameDead, colorDead) { it.prefix = Text.of("\u2620 ") }
+    fun getUndeadTeam(scoreboard: Scoreboard)
+        = getOrCreateTeam(scoreboard, teamNameUndead, colorDead) { it.prefix = Text.of("\u2620 ") }
     fun getDamagedTeam(scoreboard: Scoreboard)
         = getOrCreateTeam(scoreboard, teamNameDamaged, LIGHT_PURPLE)
 

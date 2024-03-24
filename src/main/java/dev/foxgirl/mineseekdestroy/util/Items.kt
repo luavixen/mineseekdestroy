@@ -88,6 +88,9 @@ infix fun ItemStack?.contentEquals(other: ItemStack?): Boolean {
         ItemStack.areEqual(this, other)
     }
 }
+infix fun ItemStack?.contentNotEquals(other: ItemStack?): Boolean {
+    return !(this contentEquals other)
+}
 
 fun Item.toNbt() = toNbt(this)
 fun ItemStack.toNbt() = toNbt(this)

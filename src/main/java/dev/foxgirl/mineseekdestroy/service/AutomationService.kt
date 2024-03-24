@@ -28,6 +28,8 @@ class AutomationService : Service() {
         val team = player.team
         val kills = player.kills
         val deaths = player.deaths
+        val givenDamage = player.givenDamage
+        val takenDamage = player.takenDamage
     }
 
     private var records = mapOf<GamePlayer, Record>()
@@ -56,7 +58,30 @@ class AutomationService : Service() {
         val teamRemoved =
             if (Rules.automationGhostsEnabled) GameTeam.GHOST else GameTeam.NONE
 
-        if (Rules.blackFinalizeOldschoolEnabled) {
+        if (Rules.blackFinalizeDDEnabled) {
+            for (player in players) {
+                val record = records[player] ?: continue
+                if (player.team == GameTeam.BLACK) {
+                    val givenDamage = (player.givenDamage - record.givenDamage).coerceAtLeast(0.0F)
+                    val givenDamageScore = DamageService.damageToScore(givenDamage)
+                    if (givenDamageScore >= Rules.blackFinalizeDDAmount) {
+                        tasks.add {
+                            player.team = teamSkip
+                            logger.info("Automation assigned ${player.nameQuoted} to skip")
+                        }
+                    } else {
+                        tasks.add {
+                            player.team = teamRemoved
+                            game.sendInfo(
+                                text(player).darkRed(),
+                                text("has been removed from the game for gaining only $givenDamageScore DD!").red(),
+                            )
+                            logger.info("Automation removed ${player.nameQuoted} from the game")
+                        }
+                    }
+                }
+            }
+        } else if (Rules.blackFinalizeOldschoolEnabled) {
             for (player in players) {
                 val record = records[player] ?: continue
                 if (player.team == GameTeam.BLACK) {

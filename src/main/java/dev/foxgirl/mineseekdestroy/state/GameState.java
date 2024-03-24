@@ -210,7 +210,13 @@ public abstract class GameState {
                     }
                     return ActionResult.FAIL;
                 }
-                if (!player.isGhost() && Game.USABLE_ITEMS.contains(item)) return ActionResult.PASS;
+                if (!player.isGhost() && Game.USABLE_ITEMS.contains(item)) {
+                    if (player.isUndead() && Game.UNUSABLE_AS_UNDEAD_ITEMS.contains(item)) {
+                        // Not allowed!
+                    } else {
+                        return ActionResult.PASS;
+                    }
+                }
             }
         }
         return ActionResult.FAIL;
@@ -233,17 +239,22 @@ public abstract class GameState {
             if (pageResult != ActionResult.PASS) return pageResult;
             var player = context.getPlayer(playerEntity);
             if (player.isPlaying()) {
-                if (Game.USABLE_ITEMS.contains(stack.getItem())) {
-                    if (stack.getItem() == Items.WRITTEN_BOOK) {
-                        var result = context.pagesService.handleBookUse(playerEntity, stack);
-                        if (result != ActionResult.PASS) return result;
-                    }
+                var item = stack.getItem();
+                if (item == Items.WRITTEN_BOOK) {
+                    var result = context.pagesService.handleBookUse(playerEntity, stack);
+                    if (result != ActionResult.PASS) return result;
                 }
-                if (stack.getItem() == Items.CONDUIT) {
+                if (item == Items.CONDUIT) {
                     var result = context.conduitService.handleConduitUse(player, playerEntity, stack);
                     if (result != ActionResult.PASS) return result;
                 }
-                return ActionResult.PASS;
+                if (Game.USABLE_ITEMS.contains(item)) {
+                    if (player.isUndead() && Game.UNUSABLE_AS_UNDEAD_ITEMS.contains(item)) {
+                        // Not allowed!
+                    } else {
+                        return ActionResult.PASS;
+                    }
+                }
             }
         }
         return ActionResult.FAIL;

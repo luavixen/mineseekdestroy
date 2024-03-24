@@ -33,6 +33,9 @@ public abstract class MixinProjectileEntity {
             if (player != null && (player.isSpectator() || player.isGhost())) {
                 info.setReturnValue(false);
             }
+            if (context.disguiseService.isDisguise(entity)) {
+                info.setReturnValue(false);
+            }
         }
     }
 

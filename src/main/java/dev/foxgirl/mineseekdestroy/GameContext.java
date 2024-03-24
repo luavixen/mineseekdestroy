@@ -60,6 +60,7 @@ public final class GameContext {
     public final @NotNull InventoryService inventoryService;
     public final @NotNull LootService lootService;
     public final @NotNull ArmorService armorService;
+    public final @NotNull DisguiseService disguiseService;
     public final @NotNull InvisibilityService invisibilityService;
     public final @NotNull BarrierService barrierService;
     public final @NotNull GlowService glowService;
@@ -167,6 +168,8 @@ public final class GameContext {
             }
             var teamDead = value.getDeadTeam(scoreboard);
             if (teamDead != null) teamMapBuilder.put(teamDead.getName(), teamDead);
+            var teamUndead = value.getUndeadTeam(scoreboard);
+            if (teamUndead != null) teamMapBuilder.put(teamUndead.getName(), teamUndead);
             var teamDamaged = value.getDamagedTeam(scoreboard);
             if (teamDamaged != null) teamMapBuilder.put(teamDamaged.getName(), teamDamaged);
         }
@@ -190,6 +193,7 @@ public final class GameContext {
                 inventoryService = new InventoryService(),
                 lootService = new LootService(),
                 armorService = new ArmorService(),
+                disguiseService = new DisguiseService(),
                 invisibilityService = new InvisibilityService(),
                 barrierService = new BarrierService(),
                 glowService = new GlowService(),
@@ -464,6 +468,20 @@ public final class GameContext {
 
     public @NotNull GamePlayer getPlayerHerobrine() {
         return playerHerobrine;
+    }
+
+    public @Nullable GameTeam getGameTeam(@NotNull Team team) {
+        Objects.requireNonNull(team, "Argument 'team'");
+        return getGameTeam(team.getName());
+    }
+    public @Nullable GameTeam getGameTeam(@NotNull String name) {
+        Objects.requireNonNull(name, "Argument 'name'");
+        for (GameTeam team : GameTeam.getEntries()) {
+            if (team.getTeamNames().contains(name)) {
+                return team;
+            }
+        }
+        return null;
     }
 
     public @Nullable Team getTeam(@NotNull GameTeam team) {

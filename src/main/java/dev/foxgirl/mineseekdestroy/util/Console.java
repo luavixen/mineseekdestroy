@@ -24,7 +24,7 @@ public interface Console {
      *   joined with spaces.
      */
     default void sendInfo(Object... values) {
-        sendInfoRaw(formatInfo(values));
+        sendInfoRaw(format(values, false));
     }
 
     /**
@@ -42,7 +42,7 @@ public interface Console {
      *   joined with spaces.
      */
     default void sendError(Object... values) {
-        sendErrorRaw(formatError(values));
+        sendErrorRaw(format(values, true));
     }
 
     static @NotNull Style STYLE_INFO = Style.EMPTY.withFormatting(Formatting.LIGHT_PURPLE);

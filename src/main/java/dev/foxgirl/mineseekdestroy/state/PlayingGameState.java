@@ -33,9 +33,11 @@ public class PlayingGameState extends RunningGameState {
     protected @Nullable GameState onUpdate(@NotNull GameContext context) {
         Set<GameTeam> teamsCurrentlyAlive = EnumSet.noneOf(GameTeam.class);
 
-        for (var player : context.getPlayersIn()) {
-            var team = player.getTeam();
-            if (team.isCanon()) teamsCurrentlyAlive.add(team);
+        for (var player : context.getPlayersNormal()) {
+            if (player.isAlive() && !player.isUndead()) {
+                var team = player.getTeam();
+                if (team.isCanon()) teamsCurrentlyAlive.add(team);
+            }
         }
 
         switch (teamsCurrentlyAlive.size()) {

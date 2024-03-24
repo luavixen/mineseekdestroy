@@ -14,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
 import net.minecraft.sound.SoundEvent
+import net.minecraft.util.math.Position
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import kotlin.math.min
@@ -107,8 +108,9 @@ fun Entity.particles(
 val Entity.scoreboardName: String get() = nameForScoreboard
 
 data class Translation(val world: World, val pos: Vec3d, val yaw: Float, val pitch: Float, val bodyYaw: Float, val headYaw: Float) {
-    constructor(world: World, pos: Vec3d, yaw: Float, pitch: Float) : this(world, pos, yaw, pitch, yaw, yaw)
-    constructor(world: World, pos: Vec3d) : this(world, pos, 0.0F, 0.0F)
+    constructor(world: World, pos: Position, yaw: Float, pitch: Float, bodyYaw: Float, headYaw: Float) : this(world, pos.copy(), yaw, pitch, bodyYaw, headYaw)
+    constructor(world: World, pos: Position, yaw: Float, pitch: Float) : this(world, pos, yaw, pitch, yaw, yaw)
+    constructor(world: World, pos: Position) : this(world, pos, 0.0F, 0.0F)
 
     constructor(entity: Entity) : this(
         entity.world,

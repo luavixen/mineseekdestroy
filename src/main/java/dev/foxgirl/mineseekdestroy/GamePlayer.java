@@ -50,7 +50,9 @@ public final class GamePlayer {
         return false;
     }
 
-    private boolean currentAlive = true;
+    private enum AliveState { ALIVE, UNDEAD, DEAD }
+
+    private AliveState currentAlive = AliveState.ALIVE;
     private GameTeam currentTeam = GameTeam.NONE;
 
     private int statsSouls = 0;
@@ -91,7 +93,7 @@ public final class GamePlayer {
             NbtKt.toActualString(nbt.get("Name"))
         );
 
-        currentAlive = NbtKt.toBoolean(nbt.get("Alive"));
+        currentAlive = AliveState.valueOf(NbtKt.toActualString(nbt.get("Alive")));
         currentTeam = GameTeam.valueOf(NbtKt.toActualString(nbt.get("Team")));
         statsSouls = NbtKt.toInt(nbt.get("Souls"));
         statsKills = NbtKt.toInt(nbt.get("Kills"));
@@ -102,7 +104,7 @@ public final class GamePlayer {
         var nbt = NbtKt.nbtCompound(16);
         nbt.putUuid("UUID", uuid);
         nbt.putString("Name", name);
-        nbt.putBoolean("Alive", currentAlive);
+        nbt.putString("Alive", currentAlive.name());
         nbt.putString("Team", currentTeam.name());
         nbt.putInt("Souls", statsSouls);
         nbt.putInt("Kills", statsKills);
@@ -138,7 +140,11 @@ public final class GamePlayer {
     }
 
     public void setAlive(boolean alive) {
-        currentAlive = alive;
+        currentAlive = alive ? AliveState.ALIVE : AliveState.DEAD;
+    }
+
+    public void setUndead(boolean undead) {
+        currentAlive = undead ? AliveState.UNDEAD : AliveState.DEAD;
     }
 
     public int getSouls() {
@@ -217,11 +223,15 @@ public final class GamePlayer {
     }
 
     public boolean isAlive() {
-        return currentAlive;
+        return currentAlive != AliveState.DEAD;
+    }
+
+    public boolean isUndead() {
+        return currentAlive == AliveState.UNDEAD;
     }
 
     public boolean isLiving() {
-        if (currentAlive) {
+        if (isAlive()) {
             var entity = getEntity();
             return entity != null && entity.isAlive() && entity.networkHandler.isConnectionOpen();
         }
@@ -293,13 +303,20 @@ public final class GamePlayer {
         var team = currentTeam.getDeadTeam(getScoreboard());
         return team != null ? team : getScoreboardAliveTeam();
     }
+    private @Nullable Team getScoreboardUndeadTeam() {
+        var team = currentTeam.getUndeadTeam(getScoreboard());
+        return team != null ? team : getScoreboardAliveTeam();
+    }
     private @Nullable Team getScoreboardDamagedTeam() {
         var team = currentTeam.getDamagedTeam(getScoreboard());
         return team != null ? team : getScoreboardAliveTeam();
     }
 
     public @Nullable Team getScoreboardTeam() {
-        if (currentAlive) {
+        if (isUndead()) {
+            return getScoreboardUndeadTeam();
+        }
+        if (isAlive()) {
             var entity = getEntity();
             if (entity != null && entity.isAlive() && entity.networkHandler.isConnectionOpen()) {
                 return (
@@ -358,6 +375,19 @@ public final class GamePlayer {
         } else {
             if (scoreboard.getScore(scoreHolder, scoreboardDamageObjective) != null) {
                 scoreboard.removeScore(scoreHolder, scoreboardDamageObjective);
+            }
+        }
+
+        if (!isOperator()) {
+            if (context.disguiseService.isDisguised(this)) {
+                if (!isUndead()) {
+                    context.disguiseService.deactivateDisguise(this);
+                }
+            } else if (isCannon() && isUndead()) {
+                var entity = getEntity();
+                if (entity != null && entity.isAlive()) {
+                    context.disguiseService.activateDisguise(this);
+                }
             }
         }
 
