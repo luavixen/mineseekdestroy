@@ -15,20 +15,39 @@ class ArrayBuilder<E> extends AbstractCollection<E> {
 
     @SuppressWarnings("unchecked")
     ArrayBuilder(int capacity) {
-        this.elements = (E[]) new Object[capacity];
+        this((E[]) new Object[capacity]);
+    }
+    ArrayBuilder(E[] elements) {
+        this.elements = elements;
     }
 
+    @SuppressWarnings("unchecked")
     final E[] collect() {
-        return elements.length == size ? elements : Arrays.copyOf(elements, size);
+        return collect((Class<E[]>) elements.getClass());
     }
 
+    @SuppressWarnings("unchecked")
     final <T> T[] collect(Class<T[]> clazz) {
-        return Arrays.copyOf(elements, size, clazz);
+        checkValid();
+        T[] result;
+        if (elements.length == size && elements.getClass() == clazz) {
+            result = (T[]) elements;
+        } else {
+            result = Arrays.copyOf(elements, size, clazz);
+        }
+        elements = null;
+        return result;
     }
 
     @Override
     public final int size() {
         return size;
+    }
+
+    private void checkValid() {
+        if (elements == null) {
+            throw new IllegalStateException("Collection builder already consumed");
+        }
     }
 
     private void ensureCapacityFor(int needed) {
@@ -43,6 +62,7 @@ class ArrayBuilder<E> extends AbstractCollection<E> {
 
     @Override
     public final boolean add(E element) {
+        checkValid();
         ensureCapacityFor(1);
         elements[size++] = element;
         return true;
@@ -61,15 +81,18 @@ class ArrayBuilder<E> extends AbstractCollection<E> {
 
     @Override
     public final @NotNull Iterator<E> iterator() {
+        checkValid();
         return new ArrayIterator<>(elements, size, 0);
     }
 
     @Override
     public final Object @NotNull [] toArray() {
+        checkValid();
         return Arrays.copyOf(elements, size);
     }
     @Override
     public final <T> T @NotNull [] toArray(T @NotNull [] array) {
+        checkValid();
         return ImmutableCollection.toArray(array, elements, size);
     }
 

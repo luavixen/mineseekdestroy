@@ -94,6 +94,7 @@ public final class InvisibilityService extends Service {
     private static boolean isVisibleToActive(GameTeam targetTeam, GameTeam packetTeam, Entity packetEntity) {
         return switch (targetTeam) {
             case NONE, SKIP, GHOST, OPERATOR -> true;
+            case DUELIST -> packetTeam.isOperator();
             default -> packetTeam.isOperator() || packetTeam == targetTeam;
         };
     }

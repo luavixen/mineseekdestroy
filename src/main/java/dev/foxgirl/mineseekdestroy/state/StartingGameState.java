@@ -117,7 +117,11 @@ public class StartingGameState extends GameState {
         broadcastText(formatRoundStarted());
         broadcastPing();
 
-        return new PlayingGameState();
+        if (Rules.getSkirmishEnabled()) {
+            return new SkirmishingGameState();
+        } else {
+            return new PlayingGameState();
+        }
     }
 
 }

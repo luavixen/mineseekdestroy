@@ -43,6 +43,8 @@ object Rules {
     @JvmStatic var blackFinalizeOldschoolEnabled by BooleanRuleProperty(RULE_BLACK_FINALIZE_OLDSCHOOL_ENABLED)
     @JvmStatic var blackFinalizeDamageHearts by DoubleRuleProperty(RULE_BLACK_FINALIZE_DAMAGE_HEARTS)
 
+    @JvmStatic var skirmishEnabled by BooleanRuleProperty(RULE_SKIRMISH_ENABLED)
+
     @JvmStatic var damageFlashEnabled by BooleanRuleProperty(RULE_DAMAGE_FLASH_ENABLED)
 
     @JvmStatic var ghostsBlackDeathPenaltyAmount by IntRuleProperty(RULE_GHOSTS_BLACK_DEATH_PENALTY_AMOUNT)

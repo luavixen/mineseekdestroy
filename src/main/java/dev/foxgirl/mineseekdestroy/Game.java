@@ -109,11 +109,14 @@ public final class Game implements Console, DedicatedServerModInitializer, Serve
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_FINALIZE_DD_ENABLED =
         GameRuleRegistry.register("msdBlackFinalizeDDEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));
     public static final @NotNull GameRules.Key<GameRules.IntRule> RULE_BLACK_FINALIZE_DD_AMOUNT =
-        GameRuleRegistry.register("msdBlackFinalizeDDAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(480));
+        GameRuleRegistry.register("msdBlackFinalizeDDAmount", GameRules.Category.MISC, GameRuleFactory.createIntRule(180));
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_BLACK_FINALIZE_OLDSCHOOL_ENABLED =
         GameRuleRegistry.register("msdBlackFinalizeOldschoolEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
     public static final @NotNull GameRules.Key<DoubleRule> RULE_BLACK_FINALIZE_DAMAGE_HEARTS =
         GameRuleRegistry.register("msdBlackFinalizeDamageHearts", GameRules.Category.MISC, GameRuleFactory.createDoubleRule(7.0));
+
+    public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_SKIRMISH_ENABLED =
+        GameRuleRegistry.register("msdSkirmishEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(false));
 
     public static final @NotNull GameRules.Key<GameRules.BooleanRule> RULE_DAMAGE_FLASH_ENABLED =
         GameRuleRegistry.register("msdDamageFlashEnabled", GameRules.Category.MISC, GameRuleFactory.createBooleanRule(true));

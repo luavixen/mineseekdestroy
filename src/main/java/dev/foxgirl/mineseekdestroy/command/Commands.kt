@@ -105,19 +105,30 @@ internal fun setup() {
             register("waiting") { WaitingGameState() }
             register("dueling") { DuelingGameState() }
             register("playing") { PlayingGameState() }
+            register("skirmishing") { SkirmishingGameState() }
         }
     }
 
     Command.build("begin") {
         it.params(argLiteral("round")) {
             it.actionWithContext { args, context ->
-                game.state = StartingGameState()
                 context.snapshotService.executeSnapshotSave(args)
+                Rules.skirmishEnabled = false
+                game.state = StartingGameState()
+            }
+        }
+        it.params(argLiteral("skirmish")) {
+            it.actionWithContext { args, context ->
+                context.snapshotService.executeSnapshotSave(args)
+                Rules.skirmishEnabled = true
+                game.state = SkirmishingGameState()
             }
         }
         it.params(argLiteral("duel")) {
             it.params(argPlayers("aggressor"), argPlayers("victim")) {
                 it.actionWithContext { args, context ->
+                    context.snapshotService.executeSnapshotSave(args)
+
                     context.automationService.handleDuelPrepare()
 
                     val player1 = args.player(context, "aggressor")
@@ -132,12 +143,11 @@ internal fun setup() {
                     player2.teleport(properties.positionDuel2)
 
                     game.state = DuelingGameState()
-                    context.snapshotService.executeSnapshotSave(args)
                 }
             }
             it.actionWithContext { args, context ->
-                game.state = DuelingGameState()
                 context.snapshotService.executeSnapshotSave(args)
+                game.state = DuelingGameState()
             }
         }
     }
@@ -210,6 +220,7 @@ internal fun setup() {
                     console.sendInfo("  - givenDamage:", player.givenDamage)
                     console.sendInfo("  - takenDamage:", player.takenDamage)
                     console.sendInfo("  - isAlive:", player.isAlive)
+                    console.sendInfo("  - isUndead:", player.isUndead)
                     console.sendInfo("  - isLiving:", player.isLiving)
                     console.sendInfo("  - entity:", player.entity.toString().asText().formatted(Formatting.WHITE))
                 }
@@ -246,6 +257,7 @@ internal fun setup() {
             register("starting") { StartingGameState() }
             register("playing") { PlayingGameState() }
             register("dueling") { DuelingGameState() }
+            register("skirmishing") { SkirmishingGameState() }
         }
         it.params(argLiteral("givetools")) {
             it.action { args ->

@@ -91,6 +91,10 @@ object GameItems {
         addEnchantment(Enchantments.EFFICIENCY, 4)
     }
 
+    val toolDuelistConduit = stackOf(
+        CONDUIT, nbtCompoundOf("MsdTool" to "duelistConduit", "MsdConduit" to GameTeam.DUELIST),
+        // TODO
+    )
     val toolYellowConduit = stackOf(
         CONDUIT, nbtCompoundOf("MsdTool" to "yellowConduit", "MsdConduit" to GameTeam.YELLOW),
         text("DOMAIN EXPANSION: SMCOP").teamYellow(),

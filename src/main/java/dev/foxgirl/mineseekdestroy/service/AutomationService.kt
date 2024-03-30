@@ -155,6 +155,13 @@ class AutomationService : Service() {
         }
     }
 
+    fun handleSkirmishBegin() {
+        recordsCreate()
+    }
+
+    fun handleSkirmishEnd(winningPlayer: GamePlayer?) {
+    }
+
     fun handleDuelPrepare() {
         recordsCreate()
     }

@@ -275,6 +275,7 @@ public final class GameContext {
         game.setRuleDouble(Game.RULE_BORDER_CLOSE_DURATION, 180.0);
         game.setRuleBoolean(Game.RULE_KILLZONE_BOUNDS_ENABLED, true);
         game.setRuleBoolean(Game.RULE_KILLZONE_BLIMP_ENABLED, true);
+        game.setRuleBoolean(Game.RULE_SKIRMISH_ENABLED, false);
 
         game.getProperties().setup(this);
 

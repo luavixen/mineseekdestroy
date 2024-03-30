@@ -57,10 +57,14 @@ public abstract class RunningGameState extends GameState {
 
         var player = context.getPlayer(playerEntity);
         if (player.isPlayingOrGhost() && player.isAlive()) {
-            if (player.isUndead()) {
-                player.setAlive(false);
+            if (player.isCannon()) {
+                if (player.isUndead()) {
+                    player.setAlive(false);
+                } else {
+                    player.setUndead(true);
+                }
             } else {
-                player.setUndead(true);
+                player.setAlive(false);
             }
             player.countDeath();
 

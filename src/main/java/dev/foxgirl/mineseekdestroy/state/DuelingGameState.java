@@ -34,9 +34,9 @@ public class DuelingGameState extends RunningGameState {
             context.game.sendInfo("Duel started! FIGHT!");
         }
 
-        Broadcast.sendSoundPing();
-
         context.barrierService.executeArenaClose(Game.CONSOLE_OPERATORS);
+
+        Broadcast.sendSoundPing();
 
         return null;
     }
@@ -61,15 +61,6 @@ public class DuelingGameState extends RunningGameState {
         return null;
     }
 
-    private List<GamePlayer> findPlayers(GameContext context) {
-        var list = new ArrayList<GamePlayer>(2);
-        for (var player : context.getPlayers()) {
-            if (player.getTeam() != GameTeam.DUELIST || !player.isAlive()) continue;
-            list.add(player);
-        }
-        return list;
-    }
-
     @Override
     public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
         if (context != null) {
@@ -77,6 +68,16 @@ public class DuelingGameState extends RunningGameState {
             return player.getTeam() == GameTeam.DUELIST;
         }
         return true;
+    }
+
+    protected @NotNull List<@NotNull GamePlayer> findPlayers(@NotNull GameContext context) {
+        var list = new ArrayList<GamePlayer>();
+        for (GamePlayer player : context.getPlayers()) {
+            if (player.getTeam() == GameTeam.DUELIST && player.isAlive()) {
+                list.add(player);
+            }
+        }
+        return list;
     }
 
 }

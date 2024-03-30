@@ -75,6 +75,7 @@ class DisguiseService : Service() {
         if (disguiseEntity !is LivingEntity) {
             throw IllegalArgumentException("Disguise entity is not a LivingEntity")
         }
+        deactivateDisguise(player)
         logger.info("Disguising ${player.nameQuoted} as ${type.name.string}")
         if (disguiseEntity is MobEntity) {
             disguiseEntity.setAiDisabled(true)

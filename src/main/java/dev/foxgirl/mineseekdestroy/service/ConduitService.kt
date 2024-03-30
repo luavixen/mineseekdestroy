@@ -146,7 +146,7 @@ class ConduitService : Service() {
         }
 
         private fun startYellow() {
-            consolePlayers.sendInfoRaw(text("Yellicopter").teamYellow() + " deployed by " + player.displayName + "!")
+            consolePlayers.sendInfoRaw(text() + text("Yellicopter").teamYellow() + " deployed by " + player.displayName + "!")
 
             val playerEntity = player.entity!!
 

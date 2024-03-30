@@ -244,7 +244,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
     @SuppressWarnings("unchecked")
     private ImmutableMap(Map<? extends K, ? extends V> source) {
         int count = source.size();
-        var elements = new ArrayBuilder<Entry<K, V>>(count);
+        var elements = new ArrayBuilder<Entry<K, V>>(new Entry[count]);
 
         int shift = shift(count);
         var entries = (Entry<K, V>[]) new Entry[1 << (32 - shift)];
