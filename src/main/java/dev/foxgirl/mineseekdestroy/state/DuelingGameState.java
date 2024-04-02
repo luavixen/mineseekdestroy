@@ -65,7 +65,7 @@ public class DuelingGameState extends RunningGameState {
     public boolean onTakeDamage(@Nullable GameContext context, ServerPlayerEntity playerEntity, DamageSource damageSource, float damageAmount) {
         if (context != null) {
             var player = context.getPlayer(playerEntity);
-            return player.getTeam() == GameTeam.DUELIST;
+            return player.getTeam() == GameTeam.DUELIST && player.isAlive();
         }
         return true;
     }

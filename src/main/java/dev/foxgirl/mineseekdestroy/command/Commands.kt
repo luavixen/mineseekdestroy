@@ -121,7 +121,7 @@ internal fun setup() {
             it.actionWithContext { args, context ->
                 context.snapshotService.executeSnapshotSave(args)
                 Rules.skirmishEnabled = true
-                game.state = SkirmishingGameState()
+                game.state = StartingGameState()
             }
         }
         it.params(argLiteral("duel")) {

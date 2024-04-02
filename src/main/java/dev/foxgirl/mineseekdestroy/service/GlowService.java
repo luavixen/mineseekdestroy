@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service;
 
+import dev.foxgirl.mineseekdestroy.GameTeam;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntity;
 import dev.foxgirl.mineseekdestroy.mixin.MixinEntityTrackerUpdateS2CPacket;
 import dev.foxgirl.mineseekdestroy.util.Reflector;
@@ -131,6 +132,11 @@ public final class GlowService extends Service {
         if (
             targetPlayer.isPlaying() && targetPlayer.isAlive() &&
             targetPlayer.getTeam() != packetPlayer.getTeam()
+        ) return null;
+
+        if (
+            targetPlayer.getTeam() == GameTeam.DUELIST &&
+            packetPlayer.getTeam() == GameTeam.DUELIST
         ) return null;
 
         var value = (byte) flags.value();
