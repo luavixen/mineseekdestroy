@@ -77,18 +77,31 @@ public final class GlowService extends Service {
             if (entity == null) continue;
             if (entity.getWorld() != world) continue;
             var networkHandler = entity.networkHandler;
-            var packets = (player.isPlaying() && player.isAlive()) ? packetsReal : packetsFake;
+            List<EntityTrackerUpdateS2CPacket> packets;
+            if (player.isPlaying() && player.isAlive()) {
+                if (context.conduitService.shouldMakeCannonPlayersGlow(player)) {
+                    packets = packetsFake;
+                } else {
+                    packets = packetsReal;
+                }
+            } else {
+                packets = packetsFake;
+            }
             for (var packet : packets) {
                 networkHandler.sendPacket(packet);
             }
         }
     }
 
+    public void broadcastNow() {
+        broadcastTicks = ThreadLocalRandom.current().nextInt(6);
+        broadcast();
+    }
+
     @Override
     public void update() {
         if (broadcastTicks >= 40) {
-            broadcastTicks = ThreadLocalRandom.current().nextInt(6);
-            broadcast();
+            broadcastNow();
         } else {
             broadcastTicks++;
         }
@@ -130,13 +143,11 @@ public final class GlowService extends Service {
         }
 
         if (
-            context.conduitService.isConduitActive(packetPlayer) &&
-            context.conduitService.getConduitTeam(packetPlayer) == GameTeam.BLACK &&
-            targetPlayer.getTeam().isCanon() &&
-            targetPlayer.isPlaying() && targetPlayer.isAlive()
+            context.conduitService.shouldMakeCannonPlayersGlow(packetPlayer) &&
+            targetPlayer.getTeam().isCanon() && targetPlayer.isPlaying() && targetPlayer.isAlive()
         ) {
 
-            // Black conduit exception, make everyone glow!
+            // Black conduit exception, make cannon players glow!
 
         } else {
 

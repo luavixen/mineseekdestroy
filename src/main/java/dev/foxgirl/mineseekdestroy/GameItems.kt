@@ -130,24 +130,25 @@ object GameItems {
         text("saps 5 hunger instantly upon usage"),
     )
 
-    fun duelistTool(stack: ItemStack, key: Int, set: Int) =
+    fun duelistTool(stack: ItemStack, key: Int, set: Int, index: Int) =
         stack.copy().apply {
             val nbt = getOrCreateNbt()
+            nbt["MsdToolDuelist"] = true
             nbt["MsdToolDuelistSet"] = set
-            nbt["MsdToolDuelistKey"] = key
+            nbt["MsdToolDuelistIndex"] = index
             nbt["MsdTool"] = "duelistTool$key"
             nbt["MsdTool$key".intern()] = true
         }
 
     val toolDuelistSet1 = immutableListOf(
-        duelistTool(toolBow, 1, 1),
-        duelistTool(toolSword, 2, 1),
-        duelistTool(toolShovel, 4, 1),
+        duelistTool(toolBow, 1, 1, 0),
+        duelistTool(toolSword, 2, 1, 1),
+        duelistTool(toolShovel, 4, 1, 2),
     )
     val toolDuelistSet2 = immutableListOf(
-        duelistTool(toolCrossbow, 1, 2),
-        duelistTool(toolAxe, 2, 2),
-        duelistTool(toolPickaxe, 4, 2),
+        duelistTool(toolCrossbow, 1, 2, 0),
+        duelistTool(toolAxe, 2, 2, 1),
+        duelistTool(toolPickaxe, 4, 2, 2),
     )
 
     val snowBlock = stackOf(

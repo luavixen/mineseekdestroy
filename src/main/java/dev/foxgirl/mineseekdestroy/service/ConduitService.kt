@@ -326,6 +326,8 @@ class ConduitService : Service() {
 
         override fun activate() {
             startOwnHunger(3.0)
+
+            context.glowService.broadcastNow()
         }
 
         override fun deactivate() {
@@ -336,7 +338,17 @@ class ConduitService : Service() {
         override val team get() = GameTeam.DUELIST
 
         override fun checkUsable(isTryingToUse: Boolean): UnusableReason {
-            return checkNotHungry(10)
+            val playerEntity = playerEntity ?: return UnusableReason.INVALID
+            if (isTryingToUse) {
+                if (playerEntity.hungerManager.foodLevel < 10) {
+                    return UnusableReason.NOT_ENOUGH_FOOD
+                }
+            } else {
+                if (playerEntity.hungerManager.foodLevel > 0) {
+                    return UnusableReason.SUCCESS
+                }
+            }
+            return UnusableReason.PASS
         }
 
         override fun activate() {
@@ -344,13 +356,28 @@ class ConduitService : Service() {
 
             playerEntity.hungerManager.foodLevel = Math.max(playerEntity.hungerManager.foodLevel - 10, 0)
 
+            Scheduler.delay(3.0) {
+                if (isActive) {
+                    isCancelled = true
+                }
+            }
+
+            val tasks = mutableListOf<() -> Unit>()
+
             val inventory = playerEntity.inventory.asList()
             for ((i, stack) in inventory.withIndex()) {
                 val nbt = stack.nbt ?: continue
                 val currentSet = nbt["MsdToolDuelistSet"]?.toInt() ?: continue
-                val currentKey = nbt["MsdToolDuelistKey"]?.toInt() ?: continue
+                val currentIndex = nbt["MsdToolDuelistIndex"]?.toInt() ?: continue
                 val list = if (currentSet == 1) GameItems.toolDuelistSet2 else GameItems.toolDuelistSet1
-                inventory[i] = list[currentKey - 1]
+                tasks.add { inventory[i] = list[currentIndex].copy() }
+            }
+
+            Async.go {
+                for (task in tasks) {
+                    delay(0.5)
+                    task()
+                }
             }
         }
 
@@ -478,7 +505,6 @@ class ConduitService : Service() {
     fun isConduitActive(player: GamePlayer): Boolean {
         return stateFor(player).isActive
     }
-
     fun getConduitTeam(player: GamePlayer): GameTeam? {
         return stateFor(player).team
     }
@@ -490,7 +516,12 @@ class ConduitService : Service() {
 
     fun shouldIgnoreDamage(player: GamePlayer, playerEntity: ServerPlayerEntity, source: DamageSource): Boolean {
         val state = stateFor(player)
-        return state.isActive && state.team == GameTeam.YELLOW && !source.isOf(DamageTypes.STARVE)
+        return state.isActive && state.team === GameTeam.YELLOW && !source.isOf(DamageTypes.STARVE)
+    }
+
+    fun shouldMakeCannonPlayersGlow(player: GamePlayer): Boolean {
+        val state = states[player] ?: return false
+        return state.isActive && state.team === GameTeam.BLACK
     }
 
 }

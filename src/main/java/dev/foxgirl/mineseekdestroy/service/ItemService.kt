@@ -4,14 +4,11 @@ import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
+import dev.foxgirl.mineseekdestroy.util.*
 import dev.foxgirl.mineseekdestroy.util.async.Async
 import dev.foxgirl.mineseekdestroy.util.collect.enumMapOf
 import dev.foxgirl.mineseekdestroy.util.collect.immutableSetOf
 import dev.foxgirl.mineseekdestroy.util.collect.toImmutableSet
-import dev.foxgirl.mineseekdestroy.util.data
-import dev.foxgirl.mineseekdestroy.util.give
-import dev.foxgirl.mineseekdestroy.util.set
-import dev.foxgirl.mineseekdestroy.util.stackOf
 import net.minecraft.block.Block
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
@@ -77,7 +74,15 @@ class ItemService : Service() {
                 if (toolStacks != null) {
                     val tool = Tool.from(stack)
                     if (tool != null) {
-                        val toolStack = toolStacks[tool]!!
+                        val toolStack: ItemStack
+                        if (stack.hasNbt() && "MsdToolDuelist" in stack.nbt!!) {
+                            val toolSet = stack.nbt!!.get("MsdToolDuelistSet").toInt()
+                            val toolIndex = stack.nbt!!.get("MsdToolDuelistIndex").toInt()
+                            toolStack =
+                                if (toolSet == 1) GameItems.toolDuelistSet1[toolIndex] else GameItems.toolDuelistSet2[toolIndex]
+                        } else {
+                            toolStack = toolStacks[tool]!!
+                        }
                         val idExpected = toolStack.nbt?.getString("MsdTool")
                         val idActual = stack.nbt?.getString("MsdTool")
                         if (idActual != idExpected || !ItemStack.areItemsEqual(toolStack, stack)) {
@@ -224,7 +229,7 @@ class ItemService : Service() {
                 Tool.Tool1.stack(GameItems.toolDuelistSet1[0]),
                 Tool.Tool2.stack(GameItems.toolDuelistSet1[1]),
                 Tool.Tool3.stack(GameItems.toolDuelistConduit),
-                Tool.Tool4.stack(GameItems.toolDuelistSet1[3]),
+                Tool.Tool4.stack(GameItems.toolDuelistSet1[2]),
             ),
             GameTeam.BLACK to enumMapOf(
                 Tool.Tool1.stack(GameItems.toolBlackBow),
