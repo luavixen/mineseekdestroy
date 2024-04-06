@@ -64,7 +64,7 @@ class ConduitService : Service() {
         val isNotPass get() = !isPass
     }
 
-    private inner abstract class Handler(val state: State) {
+    private abstract inner class Handler(val state: State) {
         val player get() = state.player
         val playerEntity get() = player.entity
 
@@ -362,21 +362,20 @@ class ConduitService : Service() {
                 }
             }
 
-            val tasks = mutableListOf<() -> Unit>()
+            val items = mutableListOf<Pair<Int, ItemStack>>()
 
-            val inventory = playerEntity.inventory.asList()
-            for ((i, stack) in inventory.withIndex()) {
+            for ((i, stack) in playerEntity.inventory.asList().withIndex()) {
                 val nbt = stack.nbt ?: continue
-                val currentSet = nbt["MsdToolDuelistSet"]?.toInt() ?: continue
-                val currentIndex = nbt["MsdToolDuelistIndex"]?.toInt() ?: continue
-                val list = if (currentSet == 1) GameItems.toolDuelistSet2 else GameItems.toolDuelistSet1
-                tasks.add { inventory[i] = list[currentIndex].copy() }
+                val toolSet = nbt["MsdToolDuelistSet"]?.toInt() ?: continue
+                val toolIndex = nbt["MsdToolDuelistIndex"]?.toInt() ?: continue
+                val list = if (toolSet == 1) GameItems.toolDuelistSet2 else GameItems.toolDuelistSet1
+                items.add(i to list[toolIndex].copy())
             }
 
             Async.go {
-                for (task in tasks) {
+                for ((i, stack) in items) {
                     delay(0.5)
-                    task()
+                    player.inventory?.set(i, stack)
                 }
             }
         }
