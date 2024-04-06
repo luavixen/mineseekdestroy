@@ -93,7 +93,8 @@ class ArmorService : Service() {
 
         val loadoutDuel = arrayOf(
             stackOf(LEATHER_BOOTS)
-                .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SNOUT),
+                .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.SNOUT)
+                .enchant(Enchantments.FROST_WALKER, 1),
             stackOf(CHAINMAIL_LEGGINGS)
                 .trim(ArmorTrimMaterials.REDSTONE, ArmorTrimPatterns.HOST)
                 .enchant(Enchantments.SWIFT_SNEAK, 3),
@@ -116,7 +117,8 @@ class ArmorService : Service() {
         )
         val loadoutBlack = arrayOf(
             stackOf(LEATHER_BOOTS)
-                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.SNOUT),
+                .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.SNOUT)
+                .enchant(Enchantments.FIRE_PROTECTION, 3),
             stackOf(LEATHER_LEGGINGS)
                 .color(DyeColor.BLACK).trim(ArmorTrimMaterials.AMETHYST, ArmorTrimPatterns.HOST)
                 .enchant(Enchantments.SWIFT_SNEAK, 3),

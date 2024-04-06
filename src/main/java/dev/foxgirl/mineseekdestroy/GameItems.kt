@@ -90,11 +90,15 @@ object GameItems {
         getOrCreateNbt()["MsdTool"] = "bluePickaxe"
         addEnchantment(Enchantments.EFFICIENCY, 4)
     }
+    val toolBlackBow = toolBow.copy().apply {
+        getOrCreateNbt()["MsdTool"] = "blackBow"
+        addEnchantment(Enchantments.FLAME, 1)
+    }
+    val toolBlackShovel = toolShovel.copy().apply {
+        getOrCreateNbt()["MsdTool"] = "blackShovel"
+        addEnchantment(Enchantments.EFFICIENCY, 4)
+    }
 
-    val toolDuelistConduit = stackOf(
-        CONDUIT, nbtCompoundOf("MsdTool" to "duelistConduit", "MsdConduit" to GameTeam.DUELIST),
-        // TODO
-    )
     val toolYellowConduit = stackOf(
         CONDUIT, nbtCompoundOf("MsdTool" to "yellowConduit", "MsdConduit" to GameTeam.YELLOW),
         text("DOMAIN EXPANSION: SMCOP").teamYellow(),
@@ -109,6 +113,41 @@ object GameItems {
         text("stop holding to deactivate! ") + text("(any time)").bold(),
         text("removes all blocks around the user above ground level").teamBlue(),
         text("saps hunger of user AND nearby enemy players"),
+    )
+    val toolBlackConduit = stackOf(
+        CONDUIT, nbtCompoundOf("MsdTool" to "blackConduit", "MsdConduit" to GameTeam.BLACK),
+        text("super vengeful conduit of power").teamBlack(),
+        text("right click to activate! ") + text("(only when NOT starving)").bold(),
+        text("stop holding to deactivate! ") + text("(any time)").bold(),
+        text("highlights yellow and blue players").teamBlack(),
+        text("saps hunger of user"),
+    )
+    val toolDuelistConduit = stackOf(
+        CONDUIT, nbtCompoundOf("MsdTool" to "duelistConduit", "MsdConduit" to GameTeam.DUELIST),
+        text("super honorable conduit of power").teamDuel(),
+        text("right click to activate! ") + text("(only when NOT starving)").bold(),
+        text("swaps items to secondary itemset").teamDuel(),
+        text("saps 5 hunger instantly upon usage"),
+    )
+
+    fun duelistTool(stack: ItemStack, key: Int, set: Int) =
+        stack.copy().apply {
+            val nbt = getOrCreateNbt()
+            nbt["MsdToolDuelistSet"] = set
+            nbt["MsdToolDuelistKey"] = key
+            nbt["MsdTool"] = "duelistTool$key"
+            nbt["MsdTool$key".intern()] = true
+        }
+
+    val toolDuelistSet1 = immutableListOf(
+        duelistTool(toolBow, 1, 1),
+        duelistTool(toolSword, 2, 1),
+        duelistTool(toolShovel, 4, 1),
+    )
+    val toolDuelistSet2 = immutableListOf(
+        duelistTool(toolCrossbow, 1, 2),
+        duelistTool(toolAxe, 2, 2),
+        duelistTool(toolPickaxe, 4, 2),
     )
 
     val snowBlock = stackOf(

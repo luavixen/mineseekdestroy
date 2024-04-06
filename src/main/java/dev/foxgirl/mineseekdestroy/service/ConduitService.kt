@@ -1,5 +1,6 @@
 package dev.foxgirl.mineseekdestroy.service
 
+import dev.foxgirl.mineseekdestroy.GameItems
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.GameTeam
 import dev.foxgirl.mineseekdestroy.util.*
@@ -28,9 +29,106 @@ import kotlin.random.Random
 
 class ConduitService : Service() {
 
-    private companion object {
+    private enum class UnusableReason {
+        SUCCESS {
+            override val startingMessage: Text get() = text()
+            override val stoppingMessage: Text get() = text()
+        },
+        PASS {
+            override val startingMessage: Text get() = text()
+            override val stoppingMessage: Text get() = text()
+        },
+        CANCELLED {
+            override val startingMessage: Text get() = text("Conduit start cancelled!")
+            override val stoppingMessage: Text get() = text("Conduit cancelled!")
+        },
+        INVALID,
+        WRONG_STATE,
+        WRONG_TEAM,
+        NOT_ALIVE {
+            override val startingMessage: Text get() = text("You can't use your conduit while you're dead!")
+            override val stoppingMessage: Text get() = text("Your conduit's connection was broken because you died!")
+        },
+        NOT_HOLDING_CONDUIT,
+        NOT_ENOUGH_FOOD {
+            override val startingMessage: Text get() = text("You can't use your conduit while you're hungry!")
+        };
 
-        private class Structure(val region: Region, val center: BlockPos, val fans: Region.Set)
+        open val startingMessage: Text get() = text("You can't use your conduit right now!")
+        open val stoppingMessage: Text get() = text("Your conduit's connection was broken!")
+
+        val isFailure get() = this != SUCCESS && this != PASS
+        val isSuccess get() = this == SUCCESS
+
+        val isPass get() = this == PASS
+        val isNotPass get() = !isPass
+    }
+
+    private inner abstract class Handler(val state: State) {
+        val player get() = state.player
+        val playerEntity get() = player.entity
+
+        val ticks get() = state.ticks
+
+        var isActive by state::isActive
+        var isCancelled by state::isCancelled
+
+        abstract val team: GameTeam
+
+        abstract fun checkUsable(isTryingToUse: Boolean): UnusableReason
+
+        protected fun checkNotHungry(amount: Int = 2): UnusableReason {
+            val playerEntity = playerEntity ?: return UnusableReason.INVALID
+            if (playerEntity.hungerManager.foodLevel < amount) {
+                return UnusableReason.NOT_ENOUGH_FOOD
+            }
+            return UnusableReason.PASS
+        }
+
+        abstract fun activate()
+        abstract fun deactivate()
+
+        protected fun startOwnHunger(hungerPerSecond: Double) {
+            Async.go {
+                delay(0.5)
+                while (isActive) {
+                    val playerEntity = playerEntity ?: continue
+                    if (playerEntity.hungerManager.foodLevel > 0) {
+                        playerEntity.hungerManager.foodLevel--
+                    } else {
+                        playerEntity.hurtHearts(0.5) { it.starve() }
+                    }
+                    delay(1.0 / hungerPerSecond)
+                }
+            }
+        }
+        protected fun startOtherHunger(hungerPerSecond: Double) {
+            Async.go {
+                delay(0.5)
+                val targets = mutableMapOf<GamePlayer, Int>()
+                while (isActive) {
+                    val playerEntity = playerEntity ?: continue
+                    for ((target, targetEntity) in playerEntitiesIn) {
+                        if (player == target) continue
+                        if (player.team === target.team) continue
+                        if (playerEntity.squaredDistanceTo(targetEntity) <= 6.25) {
+                            if (targetEntity.hungerManager.foodLevel > 0) {
+                                targetEntity.hungerManager.foodLevel--
+                            }
+                            val ticksLast = targets.put(target, ticks)
+                            if (ticksLast == null || ticksLast < ticks - 80) {
+                                targetEntity.sendInfo(text("You're being starved by ") + player.displayName + "'s conduit!")
+                            }
+                        }
+                    }
+                    delay(1.0 / hungerPerSecond)
+                }
+            }
+        }
+    }
+
+    private inner class YellowHandler(state: State) : Handler(state) {
+        private inner class Structure(val region: Region, val center: BlockPos, val fans: Region.Set)
 
         private val structures = enumMapOf<Direction, Structure>(
             SOUTH to Structure(Region(BlockPos(-54, -31, -697), BlockPos(-36, -20, -661)), BlockPos(-45, -29, -691), Region.Set(
@@ -51,9 +149,9 @@ class ConduitService : Service() {
             )),
         )
 
-        private class SoundEntry(val sound: SoundEvent, val volume: Float, val pitch: Float, val delay: Double)
+        private inner class SoundEntry(val sound: SoundEvent, val volume: Float, val pitch: Float, val delay: Double)
 
-        private val soundListing = immutableListOf(
+        private val scoreSoundEntries = immutableListOf(
             SoundEntry(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), 4.0F, 0.7937005F, 0.5),
             SoundEntry(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), 4.0F, 1.4142135F, 0.0),
             SoundEntry(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), 4.0F, 0.7937005F, 0.3),
@@ -66,89 +164,26 @@ class ConduitService : Service() {
             SoundEntry(SoundEvents.BLOCK_NOTE_BLOCK_HARP.value(), 4.0F, 1.4142135F, 0.0),
         )
 
-    }
+        override val team get() = GameTeam.YELLOW
 
-    private enum class Team {
-        YELLOW {
-            override val value get() = GameTeam.YELLOW
-        },
-        BLUE {
-            override val value get() = GameTeam.BLUE
-        };
-
-        abstract val value: GameTeam
-    }
-
-    private enum class UnusableReason {
-        CANCELLED {
-            override val startingMessage: Text get() = text("Conduit start cancelled!")
-            override val stoppingMessage: Text get() = text("Conduit cancelled!")
-        },
-        INVALID,
-        WRONG_STATE,
-        WRONG_TEAM,
-        NOT_ALIVE {
-            override val startingMessage: Text get() = text("You can't use your conduit while you're dead!")
-            override val stoppingMessage: Text get() = text("Your conduit's connection was broken because you died!")
-        },
-        NOT_HOLDING_CONDUIT,
-        NOT_ENOUGH_FOOD {
-            override val startingMessage: Text get() = text("You can't use your conduit while you're hungry!")
-        };
-
-        open val startingMessage: Text get() = text("You can't use your conduit right now!")
-        open val stoppingMessage: Text get() = text("Your conduit's connection was broken!")
-    }
-
-    private inner class State(val player: GamePlayer) {
-        var isActive: Boolean = false
-        var isCancelled: Boolean = false
-        var team: Team = Team.YELLOW
-
-        var ticks = 0
-
-        private fun startOwnHunger(hungerPerSecond: Double) {
-            Async.go {
-                delay(0.5)
-                while (isActive) {
-                    val playerEntity = player.entity ?: continue
-                    if (playerEntity.hungerManager.foodLevel > 0) {
-                        playerEntity.hungerManager.foodLevel--
-                    } else {
-                        playerEntity.hurtHearts(0.5) { it.starve() }
-                    }
-                    delay(1.0 / hungerPerSecond)
+        override fun checkUsable(isTryingToUse: Boolean): UnusableReason {
+            val playerEntity = playerEntity ?: return UnusableReason.INVALID
+            if (isTryingToUse) {
+                if (playerEntity.hungerManager.foodLevel < 12) {
+                    return UnusableReason.NOT_ENOUGH_FOOD
+                }
+            } else {
+                if (playerEntity.hungerManager.foodLevel > 0) {
+                    return UnusableReason.SUCCESS
                 }
             }
-        }
-        private fun startOtherHunger(hungerPerSecond: Double) {
-            Async.go {
-                delay(0.5)
-                val targets = mutableMapOf<GamePlayer, Int>()
-                while (isActive) {
-                    val playerEntity = player.entity ?: continue
-                    for ((target, targetEntity) in playerEntitiesIn) {
-                        if (player == target) continue
-                        if (player.team === target.team) continue
-                        if (playerEntity.squaredDistanceTo(targetEntity) <= 6.25) {
-                            if (targetEntity.hungerManager.foodLevel > 0) {
-                                targetEntity.hungerManager.foodLevel--
-                            }
-                            val ticksLast = targets.put(target, ticks)
-                            if (ticksLast == null || ticksLast < ticks - 80) {
-                                targetEntity.sendMessage(Console.formatInfo(text("You're being starved by ") + player.displayName + "'s conduit!"))
-                            }
-                        }
-                    }
-                    delay(1.0 / hungerPerSecond)
-                }
-            }
+            return UnusableReason.PASS
         }
 
-        private fun startYellow() {
+        override fun activate() {
             consolePlayers.sendInfoRaw(text() + text("Yellicopter").teamYellow() + " deployed by " + player.displayName + "!")
 
-            val playerEntity = player.entity!!
+            val playerEntity = playerEntity!!
 
             fun removeHunger(playerEntity: ServerPlayerEntity) {
                 playerEntity.hungerManager.foodLevel = Math.max(playerEntity.hungerManager.foodLevel - 12, 0)
@@ -158,7 +193,7 @@ class ConduitService : Service() {
                 if (targetEntity == playerEntity) continue
                 if (targetEntity.squaredDistanceTo(playerEntity) > 30) continue
                 removeHunger(targetEntity)
-                targetEntity.sendMessage(Console.formatInfo(text("You've been starved by ") + player.displayName + "'s conduit!"))
+                targetEntity.sendInfo(text("You've been starved by ") + player.displayName + "'s conduit!")
             }
 
             removeHunger(playerEntity)
@@ -215,31 +250,27 @@ class ConduitService : Service() {
                     else null
                 }
 
-                for (soundEntry in soundListing) {
+                for (soundEntry in scoreSoundEntries) {
                     if (soundEntry.delay > 0.0) {
                         delay(soundEntry.delay)
                     }
                     Broadcast.sendSound(soundEntry.sound, SoundCategory.RECORDS, soundEntry.volume, soundEntry.pitch, soundPositionSupplier)
                 }
             }
-
-            /*
-            startOwnHunger(2.0)
-            startOtherHunger(3.0)
-
-            Async.go {
-                delay(0.5)
-                while (isActive) {
-                    val playerEntity = player.entity ?: continue
-                    playerEntity.addEffect(StatusEffects.WEAKNESS, 4.75, 64)
-                    playerEntity.addEffect(StatusEffects.MINING_FATIGUE, 4.75, 64)
-                    delay(0.5)
-                }
-            }
-            */
         }
 
-        private fun startBlue() {
+        override fun deactivate() {
+        }
+    }
+
+    private inner class BlueHandler(state: State) : Handler(state) {
+        override val team get() = GameTeam.BLUE
+
+        override fun checkUsable(isTryingToUse: Boolean): UnusableReason {
+            return checkNotHungry()
+        }
+
+        override fun activate() {
             startOwnHunger(3.0)
             startOtherHunger(3.0)
 
@@ -253,7 +284,7 @@ class ConduitService : Service() {
                     delay()
                     iteration += 1
 
-                    val playerEntity = player.entity ?: continue
+                    val playerEntity = playerEntity ?: continue
 
                     blocks.values.removeIf { (blockIteration) -> blockIteration < iteration - 20 }
 
@@ -282,11 +313,124 @@ class ConduitService : Service() {
             }
         }
 
-        private fun checkUnusable(isTryingToUse: Boolean): UnusableReason? {
+        override fun deactivate() {
+        }
+    }
+
+    private inner class BlackHandler(state: State) : Handler(state) {
+        override val team get() = GameTeam.BLACK
+
+        override fun checkUsable(isTryingToUse: Boolean): UnusableReason {
+            return checkNotHungry()
+        }
+
+        override fun activate() {
+            startOwnHunger(3.0)
+        }
+
+        override fun deactivate() {
+        }
+    }
+
+    private inner class DuelistHandler(state: State) : Handler(state) {
+        override val team get() = GameTeam.DUELIST
+
+        override fun checkUsable(isTryingToUse: Boolean): UnusableReason {
+            return checkNotHungry(10)
+        }
+
+        override fun activate() {
+            val playerEntity = playerEntity!!
+
+            playerEntity.hungerManager.foodLevel = Math.max(playerEntity.hungerManager.foodLevel - 10, 0)
+
+            val inventory = playerEntity.inventory.asList()
+            for ((i, stack) in inventory.withIndex()) {
+                val nbt = stack.nbt ?: continue
+                val currentSet = nbt["MsdToolDuelistSet"]?.toInt() ?: continue
+                val currentKey = nbt["MsdToolDuelistKey"]?.toInt() ?: continue
+                val list = if (currentSet == 1) GameItems.toolDuelistSet2 else GameItems.toolDuelistSet1
+                inventory[i] = list[currentKey - 1]
+            }
+        }
+
+        override fun deactivate() {
+        }
+    }
+
+    private val handlerFactories = enumMapOf<GameTeam, (State) -> Handler>(
+        GameTeam.YELLOW to ::YellowHandler,
+        GameTeam.BLUE to ::BlueHandler,
+        GameTeam.BLACK to ::BlackHandler,
+        GameTeam.DUELIST to ::DuelistHandler,
+    )
+
+    private inner class State(val player: GamePlayer) {
+        var isActive = false
+        var isCancelled = false
+
+        var ticks = 0
+
+        var handler: Handler? = null
+        val team: GameTeam? get() = handler?.team
+
+        fun use(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack) {
+            require(player == this.player)
+
+            if (isActive) return
+
+            val team = try {
+                stack.nbt!!.get("MsdConduit").toEnum<GameTeam>()
+            } catch (ignored: Exception) {
+                return
+            }
+
+            val handlerFactory = handlerFactories[team]
+            if (handlerFactory == null) {
+                logger.error("Conduit exists with invalid team $team")
+                return
+            }
+
+            handler = handlerFactory.invoke(this)
+
+            val reason = checkUsable(true)
+            if (reason.isFailure) {
+                playerEntity.sendInfo(reason.startingMessage)
+                return
+            }
+
+            isActive = true
+
+            logger.info("Conduit activating for {}", player.nameQuoted)
+
+            playerEntity.sendInfo("You've activated your conduit!")
+            playerEntity.play(SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.PLAYERS, 1.0, 1.0)
+            playerEntity.particles(ParticleTypes.FLASH)
+
+            handler!!.activate()
+        }
+
+        fun update() {
+            if (isCancelled) {
+                isCancelled = false
+                deactivate(UnusableReason.CANCELLED)
+            } else if (isActive) {
+                val reason = checkUsable(false)
+                if (reason.isFailure) {
+                    deactivate(reason)
+                } else {
+                    player.entity?.particles(ParticleTypes.ENCHANT, Random.nextDouble(0.5, 2.0), 6) { it.add(0.0, Random.nextDouble(0.5, 2.0), 0.0) }
+                }
+            }
+            ticks++
+        }
+
+        private fun checkUsable(isTryingToUse: Boolean): UnusableReason {
             if (game.state.isWaiting) {
                 return UnusableReason.WRONG_STATE
             }
-            if (player.team !== team.value) {
+            val handler = handler
+            if (handler != null && player.team !== handler.team) {
                 return UnusableReason.WRONG_TEAM
             }
             if (!player.isAlive) {
@@ -296,18 +440,10 @@ class ConduitService : Service() {
             if (playerEntity == null) {
                 return UnusableReason.INVALID
             }
-            if (isTryingToUse) {
-                when (team) {
-                    Team.YELLOW -> if (playerEntity.hungerManager.foodLevel < 12) {
-                        return UnusableReason.NOT_ENOUGH_FOOD
-                    }
-                    Team.BLUE -> if (playerEntity.hungerManager.foodLevel < 2) {
-                        return UnusableReason.NOT_ENOUGH_FOOD
-                    }
-                }
-            } else {
-                if (team == Team.YELLOW && playerEntity.hungerManager.foodLevel > 0) {
-                    return null
+            if (handler != null) {
+                val reason = handler.checkUsable(isTryingToUse)
+                if (reason.isNotPass) {
+                    return reason
                 }
             }
             if (
@@ -316,84 +452,35 @@ class ConduitService : Service() {
             ) {
                 return UnusableReason.NOT_HOLDING_CONDUIT
             }
-            return null
+            return UnusableReason.SUCCESS
         }
 
-        private fun deactivate(unusableReason: UnusableReason) {
+        private fun deactivate(reason: UnusableReason) {
             isActive = false
 
-            logger.info("Conduit deactivating for {} because '{}'", player.nameQuoted, lazyString { unusableReason.stoppingMessage.string })
+            logger.info("Conduit deactivating for {}", player.nameQuoted)
 
-            val playerEntity = player.entity
-            if (playerEntity != null) {
-                if (unusableReason != UnusableReason.CANCELLED) {
-                    playerEntity.sendMessage(Console.formatInfo(unusableReason.stoppingMessage))
-                    playerEntity.play(SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS, 1.0, 1.0)
-                }
-                /* if (team == Team.YELLOW) {
-                    playerEntity.removeEffect(StatusEffects.WEAKNESS)
-                    playerEntity.removeEffect(StatusEffects.MINING_FATIGUE)
-                } */
-            }
-        }
+            handler?.deactivate()
 
-        fun update() {
-            if (isCancelled) {
-                isCancelled = false
-                deactivate(UnusableReason.CANCELLED)
-            } else if (isActive) {
-                val unusableReason = checkUnusable(false)
-                if (unusableReason != null) {
-                    deactivate(unusableReason)
-                } else {
-                    player.entity?.particles(ParticleTypes.ENCHANT, Random.nextDouble(0.5, 2.0), 6) { it.add(0.0, Random.nextDouble(0.5, 2.0), 0.0) }
-                }
-            }
-            ticks++
-        }
-
-        fun use(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack) {
-            require(player == this.player)
-
-            if (isActive) return
-
-            team = try {
-                when (stack.nbt!!.get("MsdConduit").toEnum<GameTeam>()) {
-                    GameTeam.YELLOW -> Team.YELLOW
-                    GameTeam.BLUE -> Team.BLUE
-                    else -> return
-                }
-            } catch (ignored: Exception) {
-                return
-            }
-
-            val unusableReason = checkUnusable(true)
-            if (unusableReason != null) {
-                logger.debug("Conduit not activating for {} because '{}'", player.nameQuoted, lazyString { unusableReason.startingMessage.string })
-                playerEntity.sendMessage(Console.formatInfo(unusableReason.startingMessage))
-                return
-            }
-
-            isActive = true
-
-            logger.info("Conduit activating for {}", player.nameQuoted)
-
-            playerEntity.sendMessage(Console.formatInfo("You've activated your conduit!"))
-            playerEntity.play(SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.PLAYERS, 1.0, 1.0)
-            playerEntity.particles(ParticleTypes.FLASH)
-
-            when (team) {
-                Team.YELLOW -> startYellow()
-                Team.BLUE -> startBlue()
-            }
+            player.entity?.sendInfo(reason.stoppingMessage)
+            player.entity?.play(SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS, 1.0, 1.0)
+            player.entity?.particles(ParticleTypes.FLASH)
         }
     }
 
     private val states = mutableMapOf<GamePlayer, State>()
-    private fun stateFor(player: GamePlayer) = states.getOrPut(player) { State(player) }
+    private fun stateFor(player: GamePlayer) = states.computeIfAbsent(player, ::State)
 
     override fun update() {
         states.values.forEach(State::update)
+    }
+
+    fun isConduitActive(player: GamePlayer): Boolean {
+        return stateFor(player).isActive
+    }
+
+    fun getConduitTeam(player: GamePlayer): GameTeam? {
+        return stateFor(player).team
     }
 
     fun handleConduitUse(player: GamePlayer, playerEntity: ServerPlayerEntity, stack: ItemStack): ActionResult {
@@ -403,7 +490,7 @@ class ConduitService : Service() {
 
     fun shouldIgnoreDamage(player: GamePlayer, playerEntity: ServerPlayerEntity, source: DamageSource): Boolean {
         val state = stateFor(player)
-        return state.isActive && state.team == Team.YELLOW && !source.isOf(DamageTypes.STARVE)
+        return state.isActive && state.team == GameTeam.YELLOW && !source.isOf(DamageTypes.STARVE)
     }
 
 }

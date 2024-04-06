@@ -3,6 +3,7 @@ package dev.foxgirl.mineseekdestroy.service
 import dev.foxgirl.mineseekdestroy.Game
 import dev.foxgirl.mineseekdestroy.GamePlayer
 import dev.foxgirl.mineseekdestroy.state.DuelingGameState
+import dev.foxgirl.mineseekdestroy.state.SkirmishingGameState
 import dev.foxgirl.mineseekdestroy.util.*
 import net.minecraft.entity.damage.DamageSource
 import net.minecraft.nbt.NbtCompound
@@ -102,7 +103,7 @@ class DamageService : Service() {
     }
 
     fun handleDamage(victimEntity: ServerPlayerEntity, source: DamageSource, amount: Float) {
-        if (state is DuelingGameState) return
+        if (state is DuelingGameState && state !is SkirmishingGameState) return
         val attacker =
             if (source.source is ServerPlayerEntity) {
                 context.getPlayer(source.source as ServerPlayerEntity)

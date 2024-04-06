@@ -130,14 +130,27 @@ public final class GlowService extends Service {
         }
 
         if (
-            targetPlayer.isPlaying() && targetPlayer.isAlive() &&
-            targetPlayer.getTeam() != packetPlayer.getTeam()
-        ) return null;
+            context.conduitService.isConduitActive(packetPlayer) &&
+            context.conduitService.getConduitTeam(packetPlayer) == GameTeam.BLACK &&
+            targetPlayer.getTeam().isCanon() &&
+            targetPlayer.isPlaying() && targetPlayer.isAlive()
+        ) {
 
-        if (
-            targetPlayer.getTeam() == GameTeam.DUELIST &&
-            packetPlayer.getTeam() == GameTeam.DUELIST
-        ) return null;
+            // Black conduit exception, make everyone glow!
+
+        } else {
+
+            if (
+                targetPlayer.isPlaying() && targetPlayer.isAlive() &&
+                targetPlayer.getTeam() != packetPlayer.getTeam()
+            ) return null;
+
+            if (
+                targetPlayer.getTeam() == GameTeam.DUELIST &&
+                packetPlayer.getTeam() == GameTeam.DUELIST
+            ) return null;
+
+        }
 
         var value = (byte) flags.value();
         if (packetPlayer.isPlayingOrGhost() && packetPlayer.isAlive()) {
